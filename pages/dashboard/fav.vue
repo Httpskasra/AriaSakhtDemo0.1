@@ -1,0 +1,58 @@
+<template>
+  <NuxtLayout name="pannels">
+    <div class="title">
+      <h1>علاقه مندی ها</h1>
+      <img src="/icons/hart.png" alt="" />
+    </div>
+
+    <div class="container">
+      <FavHeader />
+      <FavItems />
+    </div>
+  </NuxtLayout>
+</template>
+
+<script setup></script>
+
+<style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 90%;
+}
+.title {
+  color: var(--blue-dark);
+  font-family: "iran-yekan-Bold";
+  width: 300px;
+  display: flex;
+  justify-content: space-evenly;
+  margin: 15px;
+}
+.title h1 {
+  font-size: 36px;
+}
+.title img {
+  width: 66px;
+  height: 66px;
+}
+@media (max-width: 767px) {
+  .container {
+    width: 95%;
+    margin: auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .title {
+    width: 45%;
+  }
+  .title h1 {
+    font-size: 20px;
+  }
+  .title img {
+    width: 40px;
+    height: 40px;
+  }
+}
+</style>
