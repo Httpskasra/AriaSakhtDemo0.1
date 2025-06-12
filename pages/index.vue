@@ -4,6 +4,8 @@
       <br />
       <Banners />
       <br />
+      <PriceList />
+      <br />
       <MostPopular />
       <br />
       <PopularCategory />

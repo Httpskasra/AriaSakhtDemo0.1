@@ -1,13 +1,34 @@
 <template>
-  <div class="haeader" :class="{ scrolled: isScrolled }">
-    <NuxtLink to="/" class="logo" :class="{ scrolled: isScrolled }">
-      <img src="assets/logo/logo.webp" alt="logo" />
+  <div
+    class="w-full h-[100px] flex justify-evenly items-center fixed left-0 right-0 z-[1000] rounded-b-[15px] bg-[var(--blue-light)] py-2.5 transition-all duration-1000"
+    :class="{
+      'top-0 transition-all duration-500': isScrolled,
+      'top-[80px]': !isScrolled,
+    }"
+  >
+    <NuxtLink
+      to="/"
+      class="transition-all duration-1000 opacity-0 w-0 h-0"
+      :class="{
+        'w-[100px] h-[70px] opacity-100 transition-all duration-1000':
+          isScrolled,
+      }"
+    >
+      <img
+        src="assets/logo/logo.webp"
+        alt="logo"
+        class="w-full h-full object-contain"
+      />
     </NuxtLink>
 
-    <div class="navigation"><NavigationDesctop :isMobile="isMobile" /></div>
+    <div class="w-1/2">
+      <NavigationDesctop :isMobile="isMobile" />
+    </div>
 
-    <div class="search"><SearchBar /></div>
-    <div class="login">
+    <div class="w-[370px]">
+      <SearchBar />
+    </div>
+    <div class="w-[100px]">
       <LoginBtn @click="isOpen = !isOpen" :isLogin="isLogin" />
       <SingUp v-if="isOpen" @close="isOpen = false" />
     </div>
@@ -24,55 +45,3 @@ defineProps({
   },
 });
 </script>
-
-<style scoped>
-.haeader {
-  width: 100%;
-  height: 100px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  background-color: var(--blue-light);
-  padding: 10px 0;
-  position: fixed;
-  top: 80px;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  border-radius: 0 0 15px 15px;
-  /* transition: 0.5s; */
-  transition: 1s;
-}
-.haeader.scrolled {
-  transition: 0.5s;
-  top: 0;
-}
-.navigation {
-  width: 50%;
-}
-.search {
-  width: 370px;
-}
-.login {
-  width: 100px;
-}
-
-.logo {
-  width: 0;
-  height: 0;
-  transition: 1s;
-  opacity: 0;
-}
-.logo.scrolled {
-  width: 100px;
-  height: 70px;
-  object-fit: contain;
-  opacity: 1;
-  transition: 1s;
-}
-.logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-</style>

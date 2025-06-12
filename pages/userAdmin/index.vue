@@ -20,6 +20,4 @@
   </NuxtLayout>
 </template>
 
-<script setup>
-import AdminLastOrders from "~/components/adminPannel/AdminLastOrders.vue";
-</script>
+<script setup></script>

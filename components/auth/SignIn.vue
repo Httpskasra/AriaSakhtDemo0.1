@@ -1,155 +1,88 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="container">
-      <img src="/logo/logo.webp" alt="" />
-      <form @submit.prevent="handleSubmit">
-        <div class="phone-number">
-          <Label class="input">
+    <div class="flex flex-col items-center justify-between h-[50vh] container">
+      <img
+        src="/logo/logo.webp"
+        alt="Logo"
+        class="w-[180px] h-[160px] max-md:w-[70px] max-md:h-[50px]"
+      />
+
+      <form
+        @submit.prevent="handleSubmit"
+        class="h-[400px] w-full flex flex-col items-center justify-evenly"
+      >
+        <div class="w-full">
+          <label
+            class="font-['iran-yekan-num-Regular'] bg-gray-500/20 w-full dir-ltr h-[50px] flex justify-start items-center box-border rounded-[15px] cursor-pointer"
+          >
             <input
               type="text"
               pattern="[0]{1}[9]{1}[0-9]{9}"
               required
-              placeholder="0912345678:مثال"
+              placeholder="مثال: 0912345678"
+              class="bg-transparent h-full w-full px-5 focus:outline-none text-left"
             />
-            <div class="title">
+            <div
+              class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[5px] h-full w-[100px] rounded-l-[15px]"
+            >
               <span>شماره تلفن</span>
             </div>
-          </Label>
-          <span class="error" :class="{ show: phoneError }"
-            >شماره تماس وارد شده صحیح نمی باشد</span
+          </label>
+          <span
+            class="text-red-500 text-xs mt-1.5"
+            :class="{ inline: phoneError, hidden: !phoneError }"
           >
+            شماره تماس وارد شده صحیح نمی باشد
+          </span>
         </div>
 
-        <button class="submit" type="submit">ورود</button>
+        <button
+          class="bg-[var(--blue-dark)] py-2.5 px-[18px] text-white rounded-[15px] relative top-3 hover:cursor-pointer"
+          type="submit"
+        >
+          ورود
+        </button>
       </form>
-      <span class="register-description"
-        >اگر تا حالا عضو سایت نشدید، با کلیک روی دکمه
-        <button class="register" @click="emit('goToSignup')">عضویت</button> به
-        جمع ما بپیوندید.
+
+      <span class="text-sm text-blue-dark mt-2.5">
+        اگر تا حالا عضو سایت نشدید، با کلیک روی دکمه
+        <button
+          class="text-blue-dark font-['iran-yekan-DemiBold'] py-0.5 px-1.5 border-b border-blue-dark cursor-pointer"
+          @click="emit('goToSignup')"
+        >
+          عضویت
+        </button>
+        به جمع ما بپیوندید.
       </span>
     </div>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
+import { useAuthStep } from "@/composables/useAuthStep";
+
+// Assuming BaseModal is a registered component
+// import BaseModal from './BaseModal.vue';
+
 const phoneError = ref<boolean>(true);
 
 const emit = defineEmits(["onSuccess", "goToSignup"]);
 
+const { setStep } = useAuthStep();
+
 const handleSubmit = () => {
   // فرض کنیم که اطلاعات درست باشد
   if (phoneError.value) {
+    // This logic should probably be inverted
     // وقتی اطلاعات درست است، به OTP می‌رویم
     emit("onSuccess"); // ایونت onSuccess که باید از parent گرفته شود
   } else {
     // در غیر این صورت، پیغام خطا یا هر چیزی که بخواهی می‌تونی مدیریت کنی.
   }
 };
-import { useAuthStep } from "@/composables/useAuthStep";
-
-const { authStep, setStep } = useAuthStep();
 
 const closeModal = () => {
   setStep(null); // Reset the authStep to null to close the modal
 };
 </script>
-
-<style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 50vh;
-}
-.container img {
-  width: 180px;
-  height: 160px;
-}
-form {
-  height: 400px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
-}
-
-label,
-button:hover {
-  cursor: pointer;
-}
-
-label.input {
-  font-family: "iran-yekan-num-Regular";
-  background-color: rgba(173, 173, 173, 0.2);
-  width: 100%;
-  direction: ltr;
-  height: 50px;
-  display: flex;
-  justify-content: space-between;
-  box-sizing: border-box;
-  padding-left: 20px;
-  border-radius: 15px;
-}
-input:focus {
-  outline: none;
-}
-
-label.input .title {
-  box-sizing: border-box;
-  background-color: var(--blue-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  padding: 0 18px;
-  width: 100px;
-  border-radius: 0 15px 15px 0;
-}
-.red-rule {
-  display: flex;
-  align-items: center;
-}
-.red-rule span {
-  font-size: 12px;
-  margin: 0 5px;
-}
-.register-description {
-  font-size: 14px;
-  color: var(--blue-dark);
-  margin-top: 10px;
-}
-.register-description .register {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-DemiBold";
-  padding: 2px 5px;
-  border-bottom: 1px solid var(--blue-dark);
-  cursor: pointer;
-}
-.submit {
-  background-color: var(--blue-dark);
-  padding: 10px 18px;
-  color: #fff;
-  border-radius: 15px;
-  position: relative;
-  top: 12px;
-}
-.error {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-  display: none;
-}
-.error.show {
-  display: inline;
-}
-
-@media (max-width: 767px) {
-  .container img {
-    width: 70px;
-    height: 50px;
-  }
-}
-</style>

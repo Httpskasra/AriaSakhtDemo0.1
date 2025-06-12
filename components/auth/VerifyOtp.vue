@@ -1,11 +1,24 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="otp-wrapper">
-      <img src="/logo/logo.webp" alt="" />
-      <p class="title">
-        کد 6 رقمی ارسال شده به شماره <span>09164532683</span> را وارد نمایید
+    <div class="relative flex flex-col items-center gap-5 otp-wrapper">
+      <img
+        src="/logo/logo.webp"
+        alt="Logo"
+        class="w-[180px] h-[160px] mx-auto"
+      />
+
+      <p
+        class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5"
+      >
+        کد 6 رقمی ارسال شده به شماره
+        <span
+          class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark"
+          >09164532683</span
+        >
+        را وارد نمایید
       </p>
-      <div class="code-inputs">
+
+      <div class="flex flex-row-reverse justify-center gap-5 code-inputs">
         <input
           v-for="(value, index) in inputs"
           :key="index"
@@ -18,26 +31,33 @@
           @keydown="onKeydown(index, $event)"
           :disabled="expired"
           required
+          class="w-[45px] h-[50px] text-xl text-center border-2 border-gray-400 rounded-lg outline-none transition-colors duration-200 ease-in-out dir-ltr text-blue-dark font-['iran-yekan-num-DemiBold'] focus:border-blue-dark disabled:bg-gray-200 disabled:cursor-not-allowed"
         />
       </div>
 
-      <div v-if="!expired" class="timer">
+      <div
+        v-if="!expired"
+        class="absolute right-0 bottom-[130px] font-['iran-yekan-num-Regular'] text-xs text-gray-800"
+      >
         🕒 زمان باقی‌مانده: {{ formattedTime }}
       </div>
-      <div v-else class="expired-msg">⛔ کد منقضی شد</div>
-
-      <!-- <div v-if="isComplete && !expired" class="result">
-        ✅ کد وارد شده: <strong>{{ otpCode }}</strong>
-      </div> -->
+      <div v-else class="absolute right-0 bottom-[130px] text-red-500 text-sm">
+        ⛔ کد منقضی شد
+      </div>
 
       <button
-        class="send"
+        class="py-2.5 px-5 text-base bg-blue-500 text-white border-none rounded-lg cursor-pointer transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         @click="verifyOtp"
         :disabled="!isComplete || expired"
       >
         ارسال کد
       </button>
-      <button class="send-again" @click="resetTimer" :disabled="!expired">
+
+      <button
+        class="absolute left-0 bottom-[130px] bg-transparent border-none text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+        @click="resetTimer"
+        :disabled="!expired"
+      >
         ارسال دوباره کد
       </button>
     </div>
@@ -45,6 +65,9 @@
 </template>
 
 <script setup>
+import { ref, onMounted, watch, computed, nextTick } from "vue";
+import { useAuthStep } from "@/composables/useAuthStep";
+
 const inputs = ref(["", "", "", "", "", ""]);
 const otpRefs = ref([]);
 
@@ -95,7 +118,6 @@ const onInput = async (index) => {
     return;
   }
 
-  // صبر کن تا DOM آپدیت بشه، بعد برو به input بعدی
   await nextTick();
   const next = otpRefs.value[index + 1];
   if (next) next.focus();
@@ -111,118 +133,20 @@ const onKeydown = (index, e) => {
 const otpCode = computed(() => inputs.value.join(""));
 const isComplete = computed(() => inputs.value.every((val) => val !== ""));
 const emit = defineEmits(["onVerified"]);
+
 const verifyOtp = () => {
   if (otpCode.value === "123456") {
-    // فرض کنیم کد درست است
+    // Example OTP
     emit("onVerified");
   } else {
-    // خطا
+    // Handle error
+    console.error("Invalid OTP");
   }
 };
-import { useAuthStep } from "@/composables/useAuthStep";
 
-const { authStep, setStep } = useAuthStep();
+const { setStep } = useAuthStep();
 
 const closeModal = () => {
-  setStep(null); // Reset the authStep to null to close the modal
+  setStep(null);
 };
 </script>
-
-<style scoped>
-img {
-  width: 180px;
-  height: 160px;
-  margin: auto;
-}
-.title {
-  font-family: "iran-yekan-Light";
-  width: 50%;
-  text-align: center;
-  margin: auto;
-  padding: 15px 0;
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-.title span {
-  font-family: "iran-yekan-num-Regular";
-  color: var(--blue-dark);
-  border-bottom: 1px solid var(--blue-dark);
-}
-.otp-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  position: relative;
-}
-
-.code-inputs {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-direction: row-reverse;
-}
-
-.code-inputs input {
-  width: 45px;
-  height: 50px;
-  font-size: 20px;
-  text-align: center;
-  border: 2px solid #aaa;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.2s ease;
-  direction: ltr;
-  color: var(--blue-dark);
-  font-family: "iran-yekan-num-DemiBold";
-}
-
-.code-inputs input:focus {
-  border-color: var(--blue-dark);
-}
-
-button.send {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: dodgerblue;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.send-again {
-  position: absolute;
-  position: absolute;
-  left: 0;
-  bottom: 130px;
-}
-
-button:disabled {
-  color: #aaa;
-  cursor: not-allowed;
-}
-
-.timer {
-  font-family: "iran-yekan-num-Regular";
-  font-size: 12px;
-  color: #333;
-}
-
-.expired-msg {
-  color: red;
-  font-size: 14px;
-}
-.timer,
-.expired-msg {
-  position: absolute;
-  right: 0;
-  bottom: 130px;
-}
-
-.result {
-  font-size: 18px;
-  color: green;
-}
-</style>

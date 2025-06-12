@@ -1,157 +1,127 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="container">
-      <img src="/logo/logo.webp" alt="" />
-      <form @submit.prevent="handleSubmit">
-        <div class="meli-code">
-          <Label class="input">
+    <div class="flex flex-col items-center justify-between h-[60vh] container">
+      <img
+        src="/logo/logo.webp"
+        alt="Logo"
+        class="w-[180px] h-[160px] max-md:w-[70px] max-md:h-[50px]"
+      />
+
+      <form
+        @submit.prevent="handleSubmit"
+        class="h-[400px] w-full flex flex-col items-center justify-evenly"
+      >
+        <div class="w-full">
+          <label
+            class="font-['iran-yekan-num-Regular'] bg-gray-500/20 w-full dir-ltr h-[50px] flex justify-between items-center box-border rounded-[15px] cursor-pointer"
+          >
             <input
               type="text"
               pattern="[0-9]{10}"
               required
-              placeholder="2665554789:مثال"
+              placeholder="مثال: 2665554789"
+              class="bg-transparent h-full w-full px-5 focus:outline-none text-left"
             />
-            <div class="title">
+            <div
+              class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[18px] h-full w-[100px] rounded-l-[15px]"
+            >
               <span>کد ملی</span>
             </div>
-          </Label>
-          <span class="error" :class="{ show: phoneError }"
-            >شماره تماس وارد شده صحیح نمی باشد</span
+          </label>
+          <span
+            class="text-red-500 text-xs mt-1.5"
+            :class="{ inline: meliError, hidden: !meliError }"
           >
+            کد ملی وارد شده صحیح نمی باشد
+          </span>
         </div>
-        <div class="phone-number">
-          <Label class="input">
+
+        <div class="w-full">
+          <label
+            class="font-['iran-yekan-num-Regular'] bg-gray-500/20 w-full dir-ltr h-[50px] flex justify-between items-center box-border rounded-[15px] cursor-pointer"
+          >
             <input
               type="text"
               pattern="[0]{1}[9]{1}[0-9]{9}"
               required
-              placeholder="0912345678:مثال"
+              placeholder="مثال: 0912345678"
+              class="bg-transparent h-full w-full px-5 focus:outline-none text-left"
             />
-            <div class="title">
+            <div
+              class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[5px] h-full w-[100px] rounded-l-[15px]"
+            >
               <span>شماره تلفن</span>
             </div>
-          </Label>
-          <span class="error" :class="{ show: meliError }">
-            >کد ملی وارد شده صحیح نمی باشد</span
+          </label>
+          <span
+            class="text-red-500 text-xs mt-1.5"
+            :class="{ inline: phoneError, hidden: !phoneError }"
           >
+            شماره تماس وارد شده صحیح نمی باشد
+          </span>
         </div>
-        <Label class="red-rule">
-          <span>شرایط و قوانین را مطالعه کردم و قبول دارم</span>
-          <input type="checkbox" value="promise" required />
-        </Label>
-        <button type="submit">عضویت</button>
-        <span class="error" :class="{ show: matchingError }"
-          >کد ملی وارد با شماره تماس مطابقت ندارد</span
+
+        <label class="flex items-center cursor-pointer">
+          <span class="text-xs mx-1.5"
+            >شرایط و قوانین را مطالعه کردم و قبول دارم</span
+          >
+          <input
+            type="checkbox"
+            value="promise"
+            required
+            class="cursor-pointer"
+          />
+        </label>
+
+        <button
+          type="submit"
+          class="bg-[var(--blue-dark)] py-2.5 px-[18px] text-white rounded-[15px] relative top-3 hover:cursor-pointer"
         >
+          عضویت
+        </button>
+
+        <span
+          class="text-red-500 text-xs -mt-1"
+          :class="{ inline: matchingError, hidden: !matchingError }"
+        >
+          کد ملی وارد شده با شماره تماس مطابقت ندارد
+        </span>
       </form>
     </div>
-    <button @close="closeModal">close</button>
+    <button
+      @close="closeModal"
+      class="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+    >
+      Close
+    </button>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-const phoneError = ref<boolean>(true);
-const meliError = ref<boolean>(false);
-const matchingError = ref<boolean>(false);
+import { ref } from "vue";
+import { useAuthStep } from "@/composables/useAuthStep";
+
+// Assuming BaseModal is a registered component
+// import BaseModal from './BaseModal.vue';
+
+const phoneError = ref<boolean>(false); // Example value
+const meliError = ref<boolean>(true); // Example value
+const matchingError = ref<boolean>(false); // Example value
+
 const emit = defineEmits(["onSuccess"]);
+
+const { setStep } = useAuthStep();
+
 const handleSubmit = () => {
-  if (true) {
+  // Add your form validation and submission logic here
+  const isFormValid =
+    !phoneError.value && !meliError.value && !matchingError.value;
+  if (isFormValid) {
     emit("onSuccess");
   }
 };
-import { useAuthStep } from "@/composables/useAuthStep";
-
-const { authStep, setStep } = useAuthStep();
 
 const closeModal = () => {
   setStep(null); // Reset the authStep to null to close the modal
 };
 </script>
-
-<style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 60vh;
-}
-.container img {
-  width: 180px;
-  height: 160px;
-}
-form {
-  height: 400px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
-}
-
-label,
-button:hover {
-  cursor: pointer;
-}
-
-label.input {
-  font-family: "iran-yekan-num-Regular";
-  background-color: rgba(173, 173, 173, 0.2);
-  width: 100%;
-  direction: ltr;
-  height: 50px;
-  display: flex;
-  justify-content: space-between;
-  box-sizing: border-box;
-  padding-left: 20px;
-  border-radius: 15px;
-}
-input:focus {
-  outline: none;
-}
-
-label.input .title {
-  box-sizing: border-box;
-  background-color: var(--blue-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  padding: 0 18px;
-  width: 100px;
-  border-radius: 0 15px 15px 0;
-}
-.red-rule {
-  display: flex;
-  align-items: center;
-}
-.red-rule span {
-  font-size: 12px;
-  margin: 0 5px;
-}
-button {
-  background-color: var(--blue-dark);
-  padding: 10px 18px;
-  color: #fff;
-  border-radius: 15px;
-  position: relative;
-  top: 12px;
-}
-.error {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
-  display: none;
-}
-.error.show {
-  display: inline;
-}
-
-@media (max-width: 767px) {
-  .container img {
-    width: 70px;
-    height: 50px;
-  }
-}
-</style>

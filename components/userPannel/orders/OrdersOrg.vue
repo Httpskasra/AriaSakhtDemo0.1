@@ -34,7 +34,7 @@
         </ul>
       </div>
       <div class="search">
-        <SearchBar />
+        <SearchBar dark="true" />
       </div>
     </div>
     <div class="content">

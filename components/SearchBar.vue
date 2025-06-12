@@ -57,7 +57,7 @@ defineProps({
 
 .search-input:focus {
   /* border-color: #007bff; */
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); */
 }
 .search-input.black:focus {
   /* border-color: #007bff; */
