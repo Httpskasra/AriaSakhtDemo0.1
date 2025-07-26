@@ -7,8 +7,14 @@ export default defineNuxtConfig({
       apiBase: process.env.API_BASE_URL || "https://localhost:3000",
     },
   },
-  css: ["~/assets/css/main.css"],
-  modules: ["@nuxt/icon", "@nuxt/image", "@nuxt/ui", "@pinia/nuxt"],
+  css: ["~/assets/css/main.css"], // فایل CSS تو که Tailwind رو داره
+  modules: [
+    "@nuxtjs/tailwindcss",
+    "@nuxt/icon",
+    "@nuxt/image",
+    "@nuxt/ui",
+    "@pinia/nuxt"
+  ],
   components: [
     {
       path: "~/components",
@@ -21,11 +27,24 @@ export default defineNuxtConfig({
         {
           type: "text/javascript",
           innerHTML: `!function(){var i="GFQj9A",a=window,d=document;function g(){var g=d.createElement("script"),s="https://www.goftino.com/widget/"+i,l=localStorage.getItem("goftino_"+i);g.async=!0,g.src=l?s+"?o="+l:s;d.getElementsByTagName("head")[0].appendChild(g);}"complete"===d.readyState?g():a.attachEvent?a.attachEvent("onload",g):a.addEventListener("load",g,!1);}();`,
-
-          // ✅ راه‌حل جایگزین: به جای body: true از این استفاده کنید
           tagPosition: "bodyClose",
         },
       ],
+    },
+  },
+  // تنظیمات PostCSS برای Tailwind
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {},
+    },
+  },
+  // تنظیمات Vite برای حل مشکل form-data
+  vite: {
+    resolve: {
+      alias: {
+        "form-data": "form-data/lib/form_data.js",
+      },
     },
   },
 });
