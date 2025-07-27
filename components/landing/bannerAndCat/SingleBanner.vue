@@ -4,8 +4,6 @@
   </div>
 </template>
 <script setup>
-import { defineProps } from "vue";
-
 defineProps({
   imgSrc: String,
 });

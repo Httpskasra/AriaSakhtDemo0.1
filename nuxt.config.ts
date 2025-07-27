@@ -2,7 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-
+  vite: {
+    ssr: {
+      noExternal: ["axios", "form-data"],
+    },
+  },
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE_URL || "https://localhost:3000",
