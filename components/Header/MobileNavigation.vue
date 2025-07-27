@@ -15,7 +15,7 @@
 const navigationItems = [
   {
     name: "سبد خرید",
-    path: "/dashboard/cart",
+    path: "/userPannel/cart",
     icon: "/MobileIcon/cart.svg",
   },
   {
@@ -25,12 +25,12 @@ const navigationItems = [
   },
   {
     name: "فروشگاه",
-    path: "/shop",
+    path: "/products",
     icon: "/MobileIcon/shop.svg",
   },
   {
     name: "حساب کاربری",
-    path: "/dashboard/",
+    path: "/userPannel/",
     icon: "/MobileIcon/account.svg",
   },
 ];

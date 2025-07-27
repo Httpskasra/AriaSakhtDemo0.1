@@ -4,7 +4,7 @@
       <br />
       <Banners />
       <br />
-      <PriceList />
+      <!-- <PriceList /> -->
       <br />
       <MostPopular />
       <br />

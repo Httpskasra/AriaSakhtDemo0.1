@@ -4,12 +4,10 @@
     <Header
       :isScrolled="isScrolled"
       class="header"
-      :menuType="menueType.role"
-    />
+      :menuType="menueType.role" />
     <div
       class="w-full mx-auto h-full"
-      :class="isScrolled ? 'relative bottom-15' : 'p-0'"
-    >
+      :class="isScrolled ? 'relative bottom-15' : 'p-0'">
       <slot />
     </div>
 
@@ -20,7 +18,7 @@
 <script setup lang="ts">
 import type { MenuType } from "~/types/menu";
 import { useRoute } from "vue-router"; // یا در Nuxt از useRoute استفاده کنید
-
+import { ref, computed, onMounted } from "vue";
 const route = useRoute();
 const menueType = ref<MenuType>({
   role: "default",

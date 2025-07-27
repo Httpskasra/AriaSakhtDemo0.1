@@ -4,21 +4,18 @@
     :class="{
       'top-0 transition-all duration-500': isScrolled,
       'top-[80px]': !isScrolled,
-    }"
-  >
+    }">
     <NuxtLink
       to="/"
       class="transition-all duration-1000 opacity-0 w-0 h-0"
       :class="{
         'w-[100px] h-[70px] opacity-100 transition-all duration-1000':
           isScrolled,
-      }"
-    >
+      }">
       <img
         src="assets/logo/logo.webp"
         alt="logo"
-        class="w-full h-full object-contain"
-      />
+        class="w-full h-full object-contain" />
     </NuxtLink>
 
     <div class="w-1/2">
@@ -30,7 +27,7 @@
     </div>
     <div class="w-[100px]">
       <LoginBtn @click="isOpen = !isOpen" :isLogin="isLogin" />
-      <SingUp v-if="isOpen" @close="isOpen = false" />
+      <ModalWrapper v-if="isOpen" @close="isOpen = false" />
     </div>
   </div>
 </template>
@@ -38,6 +35,7 @@
 <script setup>
 const isMobile = ref(false);
 const isOpen = ref(false);
+const isLogin = ref(false);
 defineProps({
   isScrolled: {
     type: Boolean,
