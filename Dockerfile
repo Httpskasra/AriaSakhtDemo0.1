@@ -1,24 +1,20 @@
-# 1. Use Node base image
-FROM node:20
+# ---------- Build Stage ----------
+FROM node:22-slim as builder
 
-# 2. Enable corepack (for pnpm)
-RUN corepack enable
-
-# 3. Set working directory
 WORKDIR /app
 
-# 4. Copy package.json and lock file
-COPY package.json pnpm-lock.yaml ./
-
-# 5. Install dependencies
-RUN pnpm install
-
-# 6. Copy rest of the project
 COPY . .
+RUN yarn install --frozen-lockfile
+RUN yarn build
 
-# 7. Build the Nuxt app
-RUN pnpm build
+# ---------- Run Stage ----------
+FROM node:22-slim as runner
 
-# 8. Expose port and run
+WORKDIR /app
+
+COPY --from=builder /app ./
+
+ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["pnpm", "start"]
+
+CMD ["pnpm", "preview"]
