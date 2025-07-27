@@ -49,6 +49,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: "iran-yekan-num-Regular", sans-serif;
 }
 .container {
   width: 100%;
@@ -93,13 +94,13 @@
 }
 .item .title {
   display: flex;
+  align-items: center; 
 }
 .item img {
   height: 50px;
 }
 
 .name {
-  font-family: peyda;
   color: black;
   font-size: 15px;
   font-weight: 600;
@@ -132,7 +133,7 @@
   width: 90%;
   font-size: 15px;
   font-weight: 500;
-  font-family: peyda;
+
   /* List → Item */
 
   background: #fdc040;
