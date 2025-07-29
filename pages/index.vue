@@ -18,7 +18,6 @@
       <br />
       <FullRecommend />
       <br />
-
       <Blog />
       <br />
       <br />
