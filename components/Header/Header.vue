@@ -6,8 +6,7 @@
     <HeaderMobile
       class="header-mobile"
       :isScrolled="isScrolled"
-      :Type="menuType"
-    />
+      :Type="menuType" />
     <MobileNavigation />
   </div>
 </template>
@@ -23,7 +22,7 @@ const props = defineProps({
     type: String as PropType<MenuRole>,
     default: "default",
     validator: (value: string): boolean =>
-      ["default", "adminPanel", "userPanel"].includes(value),
+      ["default", "adminPanel", "userPanel", "agentPanel"].includes(value),
   },
 });
 </script>

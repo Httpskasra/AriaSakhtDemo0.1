@@ -53,20 +53,26 @@
   .container {
     flex-direction: column;
     width: 100%;
+    padding: 0 8px;
   }
   .sec-part {
     flex-direction: column-reverse;
-    align-items: center;
+    align-items: stretch;
+    gap: 0;
   }
   .sec-part .wallet {
     flex-basis: 100%;
-    margin: 20px;
+    margin: 16px 0 0 0;
   }
   .sec-part .orders {
     flex-basis: 100%;
+    margin-bottom: 16px;
   }
   .title {
-    width: 30%;
+    width: 100%;
+    margin: 10px 0 18px 0;
+    justify-content: flex-start;
+    gap: 10px;
   }
   .title h1 {
     font-size: 20px;

@@ -153,6 +153,12 @@
   color: var(--blue-dark);
   font-size: 20px;
 }
+.transaction .num {
+  background-color: rgba(37, 61, 78, 0.8);
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: #fff;
+}
 .transaction .icon {
   display: flex;
 }
@@ -167,5 +173,37 @@
 .transaction .price {
   font-family: "iran-yekan-num-Bold";
   color: var(--green-number);
+}
+@media (max-width: 767px) {
+  .container {
+    width: 95%;
+  }
+  .title h2 {
+    font-size: 12px;
+  }
+  .header ul {
+    width: 95%;
+    font-size: 8px;
+    justify-content: space-between;
+  }
+  .header ul li {
+    margin-left: 16px;
+  }
+
+  .transaction {
+    padding: 8px;
+    padding: 10px 0px;
+  }
+  .transaction * {
+    font-size: 8px;
+  }
+  .transaction .num {
+    padding: 2px 6px;
+    color: #fff;
+  }
+  .transaction .icon img {
+    width: 14px;
+    height: 14px;
+  }
 }
 </style>

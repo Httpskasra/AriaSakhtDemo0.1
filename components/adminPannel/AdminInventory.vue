@@ -76,4 +76,28 @@
   height: 23px;
   margin: 0 10px 0 0;
 }
+@media (max-width: 767px) {
+  .container {
+    width: 90%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .title {
+    font-size: 14px;
+    margin: 0 8px;
+  }
+  .price p {
+    font-size: 20px;
+  }
+  .btns button {
+    font-size: 10px;
+  }
+  .btns img {
+    width: 18px;
+    height: 18px;
+    margin: 0 5px 0 0;
+  }
+}
 </style>

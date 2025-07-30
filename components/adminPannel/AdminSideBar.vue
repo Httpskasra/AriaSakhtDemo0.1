@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" :class="{ open: isMenuOpen }">
     <div class="header">
       <div><img src="/assets/profile/blank-profile.png" alt="" /></div>
       <div class="title">
@@ -13,15 +13,13 @@
         :key="item.title"
         :to="item.path"
         class="item"
-        :class="{ active: activePath === item.path }"
-      >
+        :class="{ active: activePath === item.path }">
         <div class="icon">
           <img
             :src="`/adminPannleIcons/${
               activePath === item.path ? `${item.icon}-active` : item.icon
             }.svg`"
-            alt=""
-          />
+            alt="" />
         </div>
         <div class="title">
           <span>{{ item.title }}</span>
@@ -37,35 +35,35 @@ const menuItems = [
     icon: "dashboard",
     title: "داشبورد",
     isActive: false,
-    path: "/admin",
+    path: "/userAdmin",
   },
   {
     icon: "finance",
     title: "گزارش مالی",
     isActive: false,
-    path: "/admin/finance",
+    path: "/userAdmin/finance",
   },
-  { icon: "orders", title: "سفارش ها", path: "/admin/orders" },
+  { icon: "orders", title: "سفارش ها", path: "/userAdmin/orders" },
   {
     icon: "products",
     title: "محصولات",
     badge: 5,
     isActive: false,
-    path: "/admin/products",
+    path: "/userAdmin/products",
   },
   {
     icon: "user",
     title: "اطلاعات  شرکت",
     isActive: false,
-    path: "/admin/user",
+    path: "/userAdmin/user",
   },
   {
     icon: "support",
     title: "پشتیبانی",
     isActive: false,
-    path: "/admin/support",
+    path: "/userAdmin/support",
   },
-  { icon: "exit", title: "خروج", isActive: false, path: "/admin/exit" },
+  { icon: "exit", title: "خروج", isActive: false, path: "/userAdmin/exit" },
 ];
 // const route = useRoute();
 // const isActive = (path) => route.path.startsWith(path);
@@ -73,6 +71,18 @@ const route = useRoute();
 const activePath = ref(route.path);
 watch(route, (newRoute) => {
   activePath.value = newRoute.path;
+});
+defineEmits(["update:isMenuOpen"]);
+
+defineProps({
+  isMenuOpen: {
+    type: Boolean,
+    default: false,
+  },
+  isScrolled: {
+    type: Boolean,
+    default: false,
+  },
 });
 </script>
 
@@ -152,19 +162,58 @@ h5 {
 }
 @media (max-width: 767px) {
   .container {
-    display: none;
+    font-family: "iran-yekan-Bold";
+    color: var(--blue-dark);
+    position: fixed;
+    top: 70px;
+    right: -500px;
+    width: 50%;
+    height: 100%;
+    background-color: #fff;
+    z-index: 999;
+    transition: 0.5s;
+    height: 83vh;
+  }
+  .container.open {
+    right: 0px;
+  }
+  .header {
+    padding: 0;
+    margin: 0;
+    position: relative;
+    bottom: 10px;
+    justify-content: space-evenly;
+  }
+  .header img {
+    width: 50px;
+    height: 50px;
+  }
+  .header h3 {
+    font-size: 14px;
+  }
+  h5 {
+    font-size: 14px;
+  }
+  .item {
+    width: 80%;
+  }
+  .item .title {
+    font-size: 12px;
+  }
+  .item .icon {
+    width: 20px;
+    height: 20px;
   }
 }
 
-.body {
+.container {
   flex: 1;
   overflow-y: auto;
   padding: 10px 0;
   scrollbar-width: none; /* For Firefox */
   -ms-overflow-style: none; /* For Internet Explorer and Edge */
 }
-
-.body::-webkit-scrollbar {
+.container::-webkit-scrollbar {
   display: none; /* For Chrome, Safari, and Opera */
 }
 </style>

@@ -58,4 +58,26 @@
   top: 15px;
   left: 15px;
 }
+@media (max-width: 767px) {
+  .last-order {
+    width: 90%;
+    height: 156px;
+    padding: 10px 0;
+  }
+  .last-order .status {
+    margin: 10px 20px 10px 20px;
+    font-size: 12px;
+  }
+  .last-order .status img {
+    width: 46px;
+    height: 46px;
+  }
+  .last-order .status span {
+    font-size: 10px;
+  }
+  .see-more {
+    font-size: 8px;
+    top: 6px;
+  }
+}
 </style>

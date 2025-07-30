@@ -1,10 +1,10 @@
 <template>
   <div>
-    <Header :isScrolled="true" :menuType="menueType.role" />
+    <Header :isScrolled="true" class="header" :menuType="menueType.role" />
 
-    <AdminSideBar class="sidebar" />
+    <UserPannel class="sidebar" />
     <main class="main-container">
-      <slot></slot>
+      <slot />
       <div class="spacer"></div>
     </main>
   </div>
@@ -14,17 +14,17 @@
 import type { MenuType } from "~/types/menu";
 
 const menueType = ref<MenuType>({
-  role: "adminPanel",
+  role: "userPanel",
 });
 const isScrolled = ref(false);
 </script>
 
 <style scoped>
-.header {
+/* .header {
   position: fixed;
   top: 0;
   z-index: 9999;
-}
+} */
 .main-container {
   width: 80%;
   box-sizing: border-box;

@@ -49,4 +49,30 @@
 .add-item:hover {
   opacity: 0.8;
 }
+
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    padding: 10px;
+    margin: auto;
+  }
+  .header {
+    width: 100%;
+    margin: auto;
+  }
+  .header ul {
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+  }
+  .header ul li {
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+  }
+  .add-item {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
 </style>

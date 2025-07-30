@@ -26,6 +26,7 @@
           {{ order.status }}
         </div>
       </div>
+      <NuxtLink to="/" class="see-more">مشاهده همه</NuxtLink>
     </div>
   </div>
 </template>
@@ -90,13 +91,30 @@ const orders = [
 }
 .header ul {
   padding: 10px;
-  width: 95%;
+  width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
 }
 .header ul li {
   font-family: "iran-yekan-num-Regular";
   font-size: 12px;
+  flex: 1 1 0;
+  text-align: center;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.header ul li:first-child {
+  flex: 0.5 1 0;
+  min-width: 32px;
+  max-width: 40px;
+  padding: 0 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .transactions {
   width: 100%;
@@ -110,9 +128,27 @@ const orders = [
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 99%;
+  width: 100%;
   text-align: center;
   padding: 20px;
+  box-sizing: border-box;
+}
+.transaction > div {
+  flex: 1 1 0;
+  text-align: center;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.transaction > .num {
+  flex: 0.5 1 0;
+  min-width: 32px;
+  max-width: 40px;
+  padding: 0 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .transaction:hover {
   background-color: var(--blue-sky);
@@ -140,5 +176,65 @@ const orders = [
   border-radius: 6px;
   font-family: "iran-yekan-num-Regular";
   font-size: 10px;
+}
+@media (max-width: 767px) {
+  .container {
+    width: 100%;
+    padding: 10px 10px;
+    overflow-x: auto;
+  }
+  .header {
+    min-width: 420px;
+    margin: auto;
+  }
+  .header ul {
+    padding: 6px 2px;
+    gap: 2px;
+  }
+  .header ul li {
+    font-family: "iran-yekan-num-Regular";
+    font-size: 9px;
+    padding: 0 1px;
+    margin: 0 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .transactions {
+    width: 100%;
+    min-width: 420px;
+  }
+  .transaction {
+    padding: 8px 2px;
+    gap: 2px;
+  }
+
+  .transaction * {
+    font-size: 8px !important;
+  }
+
+  .transaction > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .transaction > .num {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .see-more {
+    font-size: 12px;
+    padding: 6px 0;
+    display: block;
+    margin: 8px auto 0 auto;
+    width: max-content;
+  }
+  .transaction .status {
+    font-size: 7px !important;
+    padding: 3px !important;
+  }
 }
 </style>
