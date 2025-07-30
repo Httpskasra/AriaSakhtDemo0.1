@@ -114,7 +114,7 @@ h2 {
     margin-top: 20px;
   }
   .container {
-    width: 120%;
+    width: 100%;
     margin: auto;
     height: 200px;
     min-height: 180px;
