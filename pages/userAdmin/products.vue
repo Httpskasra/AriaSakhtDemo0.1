@@ -19,7 +19,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 90%;
+  width: 100%;
 }
 .title {
   color: var(--blue-dark);

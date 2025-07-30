@@ -244,6 +244,7 @@ button svg {
     width: 160px;
     height: 280px;
     padding: 10px;
+    margin: 0;
     align-items: flex-start;
   }
   .product img {

@@ -1,12 +1,10 @@
 <template>
   <div class="fav-container">
-    <div class="fav-items">
-      <!-- Placeholder for favorite items -->
+    <!-- Placeholder for favorite items -->
 
-      <div class="fav-grid">
-        <div v-for="item in favorites" :key="item.id" class="fav-item">
-          <SingleProduct />
-        </div>
+    <div class="fav-grid">
+      <div v-for="item in favorites" :key="item.id">
+        <SingleProduct />
       </div>
     </div>
   </div>
@@ -71,13 +69,9 @@ const removeFavorite = (id) => {
 .fav-container {
   width: 100%;
   padding: 20px;
-}
-
-.fav-items {
-  background: #ffffff;
-  border-radius: 15px;
-  padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  background-color: #ffff;
 }
 
 .no-items {
@@ -101,60 +95,19 @@ const removeFavorite = (id) => {
 
 .fav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
 }
 
-.fav-item {
-  display: flex;
-  align-items: center;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  position: relative;
-}
-
-.fav-item img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-left: 15px;
-}
-
-.item-info {
-  flex: 1;
-}
-
-.item-info h3 {
-  margin: 0 0 5px 0;
-  color: var(--blue-dark);
-  font-family: "iran-yekan-Medium";
-}
-
-.item-info p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.remove-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-}
-
-.remove-btn img {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-}
-
-.remove-btn:hover {
-  opacity: 0.8;
+@media (max-width: 600px) {
+  .fav-container {
+    width: 100vw;
+    padding: 20px 10px;
+    padding-top: 0;
+  }
+  .fav-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 }
 </style>
