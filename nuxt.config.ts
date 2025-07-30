@@ -1,5 +1,11 @@
-// nuxt.config.ts
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
+  // @ts-ignore
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   vite: {
