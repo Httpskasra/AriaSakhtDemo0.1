@@ -2,26 +2,26 @@
   <section class="some-cat">
     <div class="cats">
       <div class="header">
-        <img src="../../assets/products/building-material.jpg" alt="" />
+        <img src="/products/building-material.jpg" alt="" />
       </div>
       <div class="sub-cats">
         <div class="sub-cat">
-          <img src="../../assets/products/1.webp" alt="" />
+          <img src="/products/1.webp" alt="" />
           <p class="name">تیر آهن</p>
           <span class="strock">90 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/2.webp" alt="" />
+          <img src="/products/2.webp" alt="" />
           <p class="name">میلگرد</p>
           <span class="strock">9 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/3.webp" alt="" />
+          <img src="/products/3.webp" alt="" />
           <p class="name">قوطی</p>
           <span class="strock">12 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/4.jpg" alt="" />
+          <img src="/products/4.jpg" alt="" />
           <p class="name">نبشی</p>
           <span class="strock">6 مورد</span>
         </div>
@@ -29,26 +29,26 @@
     </div>
     <div class="cats">
       <div class="header">
-        <img src="../../assets/products/building-material.jpg" alt="" />
+        <img src="/products/building-material.jpg" alt="" />
       </div>
       <div class="sub-cats">
         <div class="sub-cat">
-          <img src="../../assets/products/1.webp" alt="" />
+          <img src="/products/1.webp" alt="" />
           <p class="name">تیر آهن</p>
           <span class="strock">90 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/2.webp" alt="" />
+          <img src="/products/2.webp" alt="" />
           <p class="name">میلگرد</p>
           <span class="strock">9 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/3.webp" alt="" />
+          <img src="/products/3.webp" alt="" />
           <p class="name">قوطی</p>
           <span class="strock">12 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/4.jpg" alt="" />
+          <img src="/products/4.jpg" alt="" />
           <p class="name">نبشی</p>
           <span class="strock">6 مورد</span>
         </div>
@@ -56,26 +56,26 @@
     </div>
     <div class="cats">
       <div class="header">
-        <img src="../../assets/products/building-material.jpg" alt="" />
+        <img src="/products/building-material.jpg" alt="" />
       </div>
       <div class="sub-cats">
         <div class="sub-cat">
-          <img src="../../assets/products/1.webp" alt="" />
+          <img src="/products/1.webp" alt="" />
           <p class="name">تیر آهن</p>
           <span class="strock">90 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/2.webp" alt="" />
+          <img src="/products/2.webp" alt="" />
           <p class="name">میلگرد</p>
           <span class="strock">9 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/3.webp" alt="" />
+          <img src="/products/3.webp" alt="" />
           <p class="name">قوطی</p>
           <span class="strock">12 مورد</span>
         </div>
         <div class="sub-cat">
-          <img src="../../assets/products/4.jpg" alt="" />
+          <img src="/products/4.jpg" alt="" />
           <p class="name">نبشی</p>
           <span class="strock">6 مورد</span>
         </div>

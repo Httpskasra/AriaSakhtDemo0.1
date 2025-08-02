@@ -30,7 +30,7 @@
     </button>
     <div class="search"><SearchBar /></div>
     <NuxtLink to="/" class="logo" :class="{ scrolled: isScrolled }">
-      <img src="assets/logo/logo.webp" alt="logo" />
+      <img src="/logo/logo.webp" alt="logo" />
     </NuxtLink>
 
     <MenueMobile

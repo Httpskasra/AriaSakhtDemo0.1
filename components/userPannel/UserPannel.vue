@@ -1,7 +1,7 @@
 <template>
   <div class="container" :class="{ open: isMenuOpen }">
     <div class="header">
-      <div><img src="/assets/profile/blank-profile.png" alt="" /></div>
+      <div><img src="/profile/blank-profile.png" alt="" /></div>
       <div class="title">
         <h3>نام شخص</h3>
         <h5>09164532683</h5>
@@ -13,15 +13,13 @@
         :key="item.title"
         :to="item.path"
         class="item"
-        :class="{ active: activePath === item.path }"
-      >
+        :class="{ active: activePath === item.path }">
         <div class="icon">
           <img
             :src="`/userPannleIcons/${
               activePath === item.path ? `${item.icon}-active` : item.icon
             }.svg`"
-            alt=""
-          />
+            alt="" />
         </div>
         <div class="title">
           <span>{{ item.title }}</span>

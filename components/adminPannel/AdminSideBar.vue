@@ -1,7 +1,7 @@
 <template>
   <div class="container" :class="{ open: isMenuOpen }">
     <div class="header">
-      <div><img src="/assets/profile/blank-profile.png" alt="" /></div>
+      <div><img src="/profile/blank-profile.png" alt="" /></div>
       <div class="title">
         <h3>نام شرکت</h3>
         <h5>09164532683</h5>

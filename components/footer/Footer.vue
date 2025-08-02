@@ -87,10 +87,10 @@
           <span>contact@gmail.com </span>
         </div>
         <div class="social">
-          <img src="../../assets/social/icons8-whatsapp.svg" alt="" />
-          <img src="../../assets/social/icons8-instagram.svg" alt="" />
-          <img src="../../assets/social/icons8-telegram.svg" alt="" />
-          <img src="../../assets/social/icons8-linkedin.svg" alt="" />
+          <img src="/social/icons8-whatsapp.svg" alt="" />
+          <img src="/social/icons8-instagram.svg" alt="" />
+          <img src="/social/icons8-telegram.svg" alt="" />
+          <img src="/social/icons8-linkedin.svg" alt="" />
         </div>
       </div>
       <div class="cat" v-for="(category, index) in categories" :key="index">
@@ -106,7 +106,7 @@
     </div>
     <div class="subtitle">
       <div class="enamad">
-        <img src="../../assets/social/enamad.png" alt="" width="260px" />
+        <img src="/social/enamad.png" alt="" width="260px" />
       </div>
       <div class="copyrite">
         <div><p>تمامی حقوق این سایت مطلعق است</p></div>

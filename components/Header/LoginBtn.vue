@@ -21,7 +21,7 @@
 
   <div v-else class="profile-cart">
     <div class="profile">
-      <img src="assets/profile/blank-profile.png" alt="" />
+      <img src="/profile/blank-profile.png" alt="" />
     </div>
     <span class="line"></span>
     <div class="cart">

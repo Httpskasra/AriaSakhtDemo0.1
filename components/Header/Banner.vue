@@ -1,7 +1,7 @@
 <template>
   <div class="adds-sec" :class="{ scrolled: isScrolled }">
     <NuxtLink to="/" class="logo" :class="{ scrolled: isScrolled }">
-      <img src="assets/logo/logo.webp" alt="logo" />
+      <img src="/logo/logo.webp" alt="logo" />
     </NuxtLink>
     <div class="banner-sec">
       <a href="#"
