@@ -55,7 +55,7 @@ const menuItems = [
     icon: "user",
     title: "اطلاعات کاربری",
     isActive: false,
-    path: "/userPannel/user",
+    path: "/userPannel/info",
   },
   {
     icon: "fav",

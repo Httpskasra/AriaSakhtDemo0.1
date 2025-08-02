@@ -55,7 +55,7 @@ const menuItems = [
     icon: "user",
     title: "اطلاعات  شرکت",
     isActive: false,
-    path: "/userAdmin/user",
+    path: "/userAdmin/info",
   },
   {
     icon: "support",
