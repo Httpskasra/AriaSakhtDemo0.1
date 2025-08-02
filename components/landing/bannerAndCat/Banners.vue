@@ -5,15 +5,15 @@
     </div>
     <div class="col-banners">
       <div class="v-banner">
-        <SingleBanner imgSrc="\banner\v-banner.webp" />
+        <SingleBanner imgSrc="/banner/v-banner.webp" />
       </div>
 
       <div class="v-banner">
-        <SingleBanner imgSrc="\banner\v-banner.webp" />
+        <SingleBanner imgSrc="/banner/v-banner.webp" />
       </div>
     </div>
     <div class="h-banner">
-      <SingleBanner imgSrc="\banner\hBanner.webp" />
+      <SingleBanner imgSrc="/banner/hBanner.webp" />
     </div>
   </section>
 </template>

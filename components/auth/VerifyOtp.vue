@@ -2,14 +2,12 @@
   <BaseModal @close="closeModal">
     <div class="relative flex flex-col items-center gap-5 otp-wrapper">
       <img
-        src="/logo/logo.webp"
+        src="/logo/logo.png"
         alt="Logo"
-        class="w-[180px] h-[160px] mx-auto"
-      />
+        class="w-[180px] h-[160px] mx-auto" />
 
       <p
-        class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5"
-      >
+        class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5">
         کد 6 رقمی ارسال شده به شماره
         <span
           class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark"
@@ -31,14 +29,12 @@
           @keydown="onKeydown(index, $event)"
           :disabled="expired"
           required
-          class="w-[45px] h-[50px] text-xl text-center border-2 border-gray-400 rounded-lg outline-none transition-colors duration-200 ease-in-out dir-ltr text-blue-dark font-['iran-yekan-num-DemiBold'] focus:border-blue-dark disabled:bg-gray-200 disabled:cursor-not-allowed"
-        />
+          class="w-[45px] h-[50px] text-xl text-center border-2 border-gray-400 rounded-lg outline-none transition-colors duration-200 ease-in-out dir-ltr text-blue-dark font-['iran-yekan-num-DemiBold'] focus:border-blue-dark disabled:bg-gray-200 disabled:cursor-not-allowed" />
       </div>
 
       <div
         v-if="!expired"
-        class="absolute right-0 bottom-[130px] font-['iran-yekan-num-Regular'] text-xs text-gray-800"
-      >
+        class="absolute right-0 bottom-[130px] font-['iran-yekan-num-Regular'] text-xs text-gray-800">
         🕒 زمان باقی‌مانده: {{ formattedTime }}
       </div>
       <div v-else class="absolute right-0 bottom-[130px] text-red-500 text-sm">
@@ -48,16 +44,14 @@
       <button
         class="py-2.5 px-5 text-base bg-blue-500 text-white border-none rounded-lg cursor-pointer transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         @click="verifyOtp"
-        :disabled="!isComplete || expired"
-      >
+        :disabled="!isComplete || expired">
         ارسال کد
       </button>
 
       <button
         class="absolute left-0 bottom-[130px] bg-transparent border-none text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
         @click="resetTimer"
-        :disabled="!expired"
-      >
+        :disabled="!expired">
         ارسال دوباره کد
       </button>
     </div>
@@ -68,7 +62,7 @@
 import { ref, onMounted, watch, computed, nextTick } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 
-const inputs = ref(["", "", "", "", "", ""]);
+const inputs = ref(["", "", "", ""]);
 const otpRefs = ref([]);
 
 const duration = 10; // ثانیه

@@ -13,7 +13,7 @@
           isScrolled,
       }">
       <img
-        src="/logo/logo.webp"
+        src="/logo/logo.png"
         alt="logo"
         class="w-full h-full object-contain" />
     </NuxtLink>

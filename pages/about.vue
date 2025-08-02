@@ -1,14 +1,12 @@
 <template>
   <NuxtLayout>
     <div
-      class="bg-gradient-to-br from-[#f8fafc] via-[#f8fafc] to-[#e0e7ef] pt-12 pb-8 text-center rounded-b-3xl shadow-lg"
-    >
+      class="bg-gradient-to-br from-[#f8fafc] via-[#f8fafc] to-[#e0e7ef] pt-12 pb-8 text-center rounded-b-3xl shadow-lg">
       <div class="flex flex-col items-center">
         <img
-          src="/logo/logo.webp"
+          src="/logo/logo.png"
           alt="آریا ساخت"
-          class="w-[90px] h-[90px] rounded-full mb-4 shadow-md bg-white object-contain"
-        />
+          class="w-[90px] h-[90px] rounded-full mb-4 shadow-md bg-white object-contain" />
         <h1 class="text-3xl font-bold text-[#2c3e50] mb-2">
           درباره <span class="text-[#1976d2]">آریا ساخت</span>
         </h1>
@@ -19,11 +17,9 @@
     </div>
     <div class="max-w-3xl mx-auto mt-8 px-4 flex flex-col gap-8">
       <section
-        class="flex items-start bg-white rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl"
-      >
+        class="flex items-start bg-white rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl">
         <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all"
-        >
+          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all">
           <span class="material-icons">flag</span>
         </div>
         <div>
@@ -35,11 +31,9 @@
         </div>
       </section>
       <section
-        class="flex items-start bg-gradient-to-l from-[#f5fafd] via-[#f5fafd] to-[#e3f2fd] rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl"
-      >
+        class="flex items-start bg-gradient-to-l from-[#f5fafd] via-[#f5fafd] to-[#e3f2fd] rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl">
         <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all"
-        >
+          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all">
           <span class="material-icons">groups</span>
         </div>
         <div>
@@ -61,11 +55,9 @@
         </div>
       </section>
       <section
-        class="flex items-start bg-white rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl"
-      >
+        class="flex items-start bg-white rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl">
         <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all"
-        >
+          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md mt-1 transition-all">
           <span class="material-icons">mail</span>
         </div>
         <div>
@@ -83,11 +75,9 @@
       </section>
       <!-- بخش جدید اعتماد کسب‌وکارها -->
       <section
-        class="flex items-center bg-gradient-to-l from-[#f8fafc] via-[#f8fafc] to-[#e0f7fa] rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl flex-wrap"
-      >
+        class="flex items-center bg-gradient-to-l from-[#f8fafc] via-[#f8fafc] to-[#e0f7fa] rounded-2xl shadow-md p-8 gap-6 transition-shadow hover:shadow-xl flex-wrap">
         <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md transition-all"
-        >
+          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-[#1976d2] text-white rounded-full text-3xl shadow-md transition-all">
           <span class="material-icons">verified</span>
         </div>
         <div class="flex-1 w-full">
@@ -95,28 +85,23 @@
             کسب‌وکارهایی که به ما اعتماد کردند
           </h2>
           <div
-            class="flex flex-wrap gap-6 mt-4 items-center justify-start sm:justify-center"
-          >
+            class="flex flex-wrap gap-6 mt-4 items-center justify-start sm:justify-center">
             <img
               src="/companies/images.png"
               alt="لوگو ۱"
-              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2"
-            />
+              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2" />
             <img
               src="/companies/images.png"
               alt="لوگو ۲"
-              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2"
-            />
+              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2" />
             <img
               src="/companies/images.png"
               alt="لوگو ۳"
-              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2"
-            />
+              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2" />
             <img
               src="/companies/images.png"
               alt="لوگو ۴"
-              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2"
-            />
+              class="w-20 h-12 object-contain bg-white rounded-lg shadow p-2 transition-transform hover:scale-105 hover:-rotate-2" />
           </div>
         </div>
       </section>

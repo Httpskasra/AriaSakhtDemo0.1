@@ -2,7 +2,7 @@
   <BaseModal @close="closeModal">
     <div class="flex flex-col items-center justify-between h-[50vh] container">
       <img
-        src="/logo/logo.webp"
+        src="/logo/logo.png"
         alt="Logo"
         class="w-[180px] h-[160px] max-md:w-[70px] max-md:h-[50px]"
       />

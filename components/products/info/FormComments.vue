@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <img class="mainPic" src="\productpage\communicaiton.png" alt="" />
+    <img class="mainPic" src="/productpage/communicaiton.png" alt="" />
     <div class="first">
       <h3>تجریه و نظرتان را با ما به اشتراک بگذارید</h3>
       <input type="text" placeholder="عنوان نقد و بررسی شما" />
