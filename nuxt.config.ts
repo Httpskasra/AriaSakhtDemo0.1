@@ -1,9 +1,9 @@
-import { defineNuxtConfig } from 'nuxt/config'
+import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
   // @ts-ignore
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 3000,
   },
   compatibilityDate: "2025-05-15",
@@ -31,10 +31,8 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'آریا ساخت',
-      link: [
-        { rel: 'icon', type: 'image/png', href: '/logo.png' }
-      ],
+      title: "آریا ساخت",
+      link: [{ rel: "icon", type: "image/png", href: "/logo/logo.png" }],
       script: [
         {
           type: "text/javascript",
