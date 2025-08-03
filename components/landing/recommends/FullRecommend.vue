@@ -3,11 +3,19 @@
     <div class="right">
       <Right />
     </div>
-    <div class="products">
+    <div
+      class="products"
+      ref="productsRef"
+      @mousedown="onMouseDown"
+      @mouseleave="onMouseLeave"
+      @mouseup="onMouseUp"
+      @mousemove="onMouseMove"
+      @touchstart.passive="onTouchStart"
+      @touchmove.passive="onTouchMove"
+      @touchend="onTouchEnd">
       <SingleProduct />
       <SingleProduct />
       <SingleProduct />
-
       <SingleProduct />
       <SingleProduct />
       <SingleProduct />
@@ -19,7 +27,66 @@
   </section>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref } from "vue";
+
+const productsRef = ref(null);
+const isDown = ref(false);
+const startX = ref(0);
+const scrollLeft = ref(0);
+
+function isDesktop() {
+  return window.innerWidth > 767;
+}
+
+function onMouseDown(e) {
+  if (!isDesktop()) return;
+  isDown.value = true;
+  startX.value = e.pageX - productsRef.value.offsetLeft;
+  scrollLeft.value = productsRef.value.scrollLeft;
+  productsRef.value.style.cursor = "grabbing";
+}
+
+function onMouseLeave() {
+  if (!isDesktop()) return;
+  isDown.value = false;
+  productsRef.value.style.cursor = "";
+}
+
+function onMouseUp() {
+  if (!isDesktop()) return;
+  isDown.value = false;
+  productsRef.value.style.cursor = "";
+}
+
+function onMouseMove(e) {
+  if (!isDesktop() || !isDown.value) return;
+  e.preventDefault();
+  const x = e.pageX - productsRef.value.offsetLeft;
+  const walk = (x - startX.value) * 1.2; // scroll speed
+  productsRef.value.scrollLeft = scrollLeft.value - walk;
+}
+
+let touchStartX = 0;
+let touchScrollLeft = 0;
+
+function onTouchStart(e) {
+  if (isDesktop()) return;
+  touchStartX = e.touches[0].pageX - productsRef.value.offsetLeft;
+  touchScrollLeft = productsRef.value.scrollLeft;
+}
+
+function onTouchMove(e) {
+  if (isDesktop()) return;
+  const x = e.touches[0].pageX - productsRef.value.offsetLeft;
+  const walk = (x - touchStartX) * 1.2;
+  productsRef.value.scrollLeft = touchScrollLeft - walk;
+}
+
+function onTouchEnd() {
+  // nothing needed
+}
+</script>
 
 <style scoped>
 .container {
@@ -57,6 +124,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding: 10px 0;
+  cursor: grab;
 }
 
 @media (max-width: 767px) {
