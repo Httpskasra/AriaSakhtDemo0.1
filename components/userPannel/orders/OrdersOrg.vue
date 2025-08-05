@@ -5,29 +5,25 @@
         <ul>
           <li
             @click="selectedTab = 'completed'"
-            :class="{ active: selectedTab === 'completed' }"
-          >
+            :class="{ active: selectedTab === 'completed' }">
             انجام شده
             <div class="num">4</div>
           </li>
           <li
             @click="selectedTab = 'current'"
-            :class="{ active: selectedTab === 'current' }"
-          >
+            :class="{ active: selectedTab === 'current' }">
             جاری
             <div class="num">4</div>
           </li>
           <li
             @click="selectedTab = 'cancelled'"
-            :class="{ active: selectedTab === 'cancelled' }"
-          >
+            :class="{ active: selectedTab === 'cancelled' }">
             لغو شده
             <div class="num">4</div>
           </li>
           <li
             @click="selectedTab = 'returned'"
-            :class="{ active: selectedTab === 'returned' }"
-          >
+            :class="{ active: selectedTab === 'returned' }">
             مرجوعی
             <div class="num">4</div>
           </li>

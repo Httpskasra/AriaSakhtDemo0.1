@@ -1,5 +1,5 @@
 <template>
-  <div class="product">
+  <NuxtLink :to="`/products/${productId}`" class="product">
     <div class="header">
       <svg
         width="25"
@@ -81,10 +81,13 @@
         </svg>
       </button>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
+defineProps<{
+  productId: string;
+}>();
 const isMobile = ref(false);
 
 const checkMobile = () => {

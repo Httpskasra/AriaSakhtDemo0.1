@@ -13,16 +13,16 @@
       @touchstart.passive="onTouchStart"
       @touchmove.passive="onTouchMove"
       @touchend="onTouchEnd">
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
     </div>
   </section>
 </template>

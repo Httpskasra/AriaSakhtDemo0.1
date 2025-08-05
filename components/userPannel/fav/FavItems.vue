@@ -5,7 +5,7 @@
 
       <div class="fav-grid">
         <div v-for="item in favorites" :key="item.id" class="fav-item">
-          <SingleProduct />
+          <SingleProduct :productID="item.id" />
         </div>
       </div>
     </div>

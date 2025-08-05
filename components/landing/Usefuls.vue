@@ -2,11 +2,11 @@
   <div class="container">
     <h3>پرکاربردترین ها</h3>
     <div class="products">
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
-      <SingleProduct />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
+      <SingleProduct :productID="1" />
     </div>
   </div>
 </template>
