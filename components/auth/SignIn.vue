@@ -43,7 +43,7 @@
         <button
           class="text-blue-dark font-['iran-yekan-DemiBold'] py-0.5 px-1.5 border-b border-blue-dark cursor-pointer"
           @click="emit('goToSignup')">
-          1عضویت
+          عضویت
         </button>
         به جمع ما بپیوندید.
       </span>
@@ -98,6 +98,7 @@ try {
   }
 } catch (error) {
   console.error("Login error:", error);
+  phoneError.value = true
 }
 };
 const closeModal = () => {
