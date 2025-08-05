@@ -85,13 +85,19 @@ const handleSubmit = async () => {
 
   const formattedPhone = toInternationalPhone(phoneNumber.value);
 
-  try {
-    const response = await $axios.post("/auth/signin", {
-      phoneNumber: formattedPhone, // اینجا شماره با +98 ارسال می‌شود
-    });
-  } catch (error) {
-    console.error("Login error:", error);
+try {
+  const response = await $axios.post("/auth/signin", {
+    phoneNumber: formattedPhone,
+  });
+
+  if (response?.status === 200 || response?.status === 204) {
+    emit("onSuccess");
+  } else {
+    console.error("Unexpected response", response);
   }
+} catch (error) {
+  console.error("Login error:", error);
+}
 };
 const closeModal = () => {
   setStep(null);
