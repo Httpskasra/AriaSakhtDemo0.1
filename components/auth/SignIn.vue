@@ -43,7 +43,7 @@
         <button
           class="text-blue-dark font-['iran-yekan-DemiBold'] py-0.5 px-1.5 border-b border-blue-dark cursor-pointer"
           @click="emit('goToSignup')">
-          عضویت
+          1عضویت
         </button>
         به جمع ما بپیوندید.
       </span>
@@ -91,6 +91,7 @@ try {
   });
 
   if (response?.status === 200 || response?.status === 204) {
+    console.log("emit onSuccess now");
     emit("onSuccess");
   } else {
     console.error("Unexpected response", response);
