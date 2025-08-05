@@ -41,29 +41,29 @@ const menuItems = [
     icon: "finance",
     title: "گزارش مالی",
     isActive: false,
-    path: "/userAdmin/finance",
+    path: "/dashboard/finance",
   },
-  { icon: "orders", title: "سفارش ها", path: "/userAdmin/orders" },
+  { icon: "orders", title: "سفارش ها", path: "/dashboard/orders" },
   {
     icon: "products",
     title: "محصولات",
     badge: 5,
     isActive: false,
-    path: "/userAdmin/products",
+    path: "/dashboard/products",
   },
   {
     icon: "user",
     title: "اطلاعات  شرکت",
     isActive: false,
-    path: "/userAdmin/info",
+    path: "/dashboard/info",
   },
   {
     icon: "support",
     title: "پشتیبانی",
     isActive: false,
-    path: "/userAdmin/support",
+    path: "/dashboard/support",
   },
-  { icon: "exit", title: "خروج", isActive: false, path: "/userAdmin/exit" },
+  { icon: "exit", title: "خروج", isActive: false, path: "/dashboard/exit" },
 ];
 // const route = useRoute();
 // const isActive = (path) => route.path.startsWith(path);

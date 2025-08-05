@@ -119,7 +119,7 @@ export default defineEventHandler((event) => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: "شناسه محصول الزامی است",
+      message: "شناسه محصول الزامی است",
     });
   }
 
@@ -128,7 +128,7 @@ export default defineEventHandler((event) => {
   if (!product) {
     throw createError({
       statusCode: 404,
-      statusMessage: "محصول یافت نشد",
+      message: "محصول یافت نشد",
     });
   }
 

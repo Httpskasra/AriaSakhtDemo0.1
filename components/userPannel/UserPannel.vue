@@ -41,35 +41,35 @@ const menuItems = [
     icon: "wallet",
     title: "کیف پول",
     isActive: false,
-    path: "/userPannel/wallet",
+    path: "/dashboard/wallet",
   },
-  { icon: "orders", title: "سفارشات ها", path: "/userPannel/orders" },
+  { icon: "orders", title: "سفارشات ها", path: "/dashboard/orders" },
   {
     icon: "cart",
     title: "سبد خرید",
     badge: 5,
     isActive: false,
-    path: "/userPannel/cart",
+    path: "/dashboard/carts",
   },
   {
     icon: "user",
     title: "اطلاعات کاربری",
     isActive: false,
-    path: "/userPannel/info",
+    path: "/dashboard/info",
   },
   {
     icon: "fav",
     title: "علاقه‌مندی‌ها",
     isActive: false,
-    path: "/userPannel/fav",
+    path: "/dashboard/fav",
   },
   {
     icon: "support",
     title: "پشتیبانی",
     isActive: false,
-    path: "/userPannel/support",
+    path: "/dashboard/support",
   },
-  { icon: "exit", title: "خروج", isActive: false, path: "/userPannel/exit" },
+  { icon: "exit", title: "خروج", isActive: false, path: "/dashboard/exit" },
 ];
 // const route = useRoute();
 // const isActive = (path) => route.path.startsWith(path);

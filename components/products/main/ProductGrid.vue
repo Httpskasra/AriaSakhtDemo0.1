@@ -3,7 +3,7 @@
     <SingleProduct
       v-for="product in products"
       :key="product.id"
-      :product-id="product.id" />
+      :productId="product.id" />
   </div>
 </template>
 

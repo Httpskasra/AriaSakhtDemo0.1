@@ -77,9 +77,7 @@
     </div>
     <button
       @close="closeModal"
-      class="absolute top-4 right-4 text-gray-500 color-red hover:text-gray-800">
-      Close
-    </button>
+      class="absolute top-4 right-4 text-gray-500 color-red hover:text-gray-800"></button>
   </BaseModal>
 </template>
 

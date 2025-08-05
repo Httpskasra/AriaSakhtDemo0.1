@@ -100,7 +100,7 @@ const startTimer = () => {
 };
 
 const resetTimer = () => {
-  inputs.value = ["", "", "", "", "", ""];
+  inputs.value = ["", "", "", ""];
   startTimer();
   otpRefs.value[0]?.focus();
 };
