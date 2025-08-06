@@ -131,7 +131,7 @@ function validateMeli() {
 
 // اعتبارسنجی شماره تلفن
 function validatePhone() {
-  const valid = /^0?9\d{9}$/.test(phoneNumber.value);
+  const valid = /^[9]{1}[0-9]{9}$/.test(phoneNumber.value);
   phoneError.value = !valid;
   return valid;
 }
@@ -169,8 +169,8 @@ const handleSubmit = async () => {
 
   try {
     const response = await $axios.post("/auth/signup", {
-      nationalId: meliCode.value,
       phoneNumber: toInternationalPhone(phoneNumber.value),
+      nationalId: meliCode.value,
     });
 
     if (response.status === 200 || response.status === 201) {

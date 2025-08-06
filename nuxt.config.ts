@@ -31,7 +31,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "آریا ساخت",
+      title: "47924171",
       link: [{ rel: "icon", type: "image/png", href: "/logo/logo.png" }],
       script: [
         {

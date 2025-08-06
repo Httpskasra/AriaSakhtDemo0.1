@@ -15,9 +15,8 @@
             <input
               type="text"
               v-model="phoneNumber"
-              pattern="[9]{1}[0-9]{9}"
               required
-              placeholder="912345678"
+              placeholder="0912345678"
               class="bg-transparent h-full w-full px-5 focus:outline-none text-left" />
             <div
               class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[5px] h-full w-[100px] rounded-l-[15px]">
