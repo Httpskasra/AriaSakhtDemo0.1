@@ -53,12 +53,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
-
+import { useAuthData } from "@/composables/useAuthData";
 const { $axios } = useNuxtApp();
 
 const phoneNumber = ref("");
 const phoneError = ref(false);
-
+const { phoneNumber: globalPhoneNumber } = useAuthData();
 const emit = defineEmits(["onSuccess", "goToSignup"]);
 const { setStep } = useAuthStep();
 
@@ -90,8 +90,8 @@ try {
   });
 
   if (response?.status === 200 || response?.status === 204) {
-    console.log("emit onSuccess now");
-    emit("onSuccess");
+      globalPhoneNumber.value = formattedPhone;
+      emit("onSuccess");
   } else {
     console.error("Unexpected response", response);
   }

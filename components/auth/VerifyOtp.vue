@@ -6,10 +6,10 @@
       <p
         class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5"
       >
-        کد 6 رقمی ارسال شده به شماره
+        کد 4 رقمی ارسال شده به شماره
         <span
           class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark"
-          >09164532683</span
+          >{{phoneNumber}}</span
         >
         را وارد نمایید
       </p>
@@ -65,7 +65,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, nextTick } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
-
+import { useAuthData } from "@/composables/useAuthData";
+import { useAuthStore } from "@/stores/auth";
+const { phoneNumber } = useAuthData();
 const inputs = ref(Array(4).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
@@ -146,10 +148,16 @@ const verifyOtp = async () => {
   try {
     // درخواست به سرور ارسال کن (آدرس و payload رو با بک‌اند چک کن)
     const response = await $axios.post("/auth/verify-otp", {
-      otp: otpCode.value,
+       phoneNumber: phoneNumber.value,
+       otp: otpCode.value,
     });
 
     if (response.status === 200) {
+      const authStore = useAuthStore();
+      authStore.setTokens(
+      response.data.accessToken,
+      response.data.refreshToken
+);
       emit("onVerified");
     } else {
       errorMessage.value = "کد وارد شده اشتباه است.";

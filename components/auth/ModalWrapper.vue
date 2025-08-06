@@ -4,7 +4,7 @@
     <div class="modal">
       <SignIn
         v-if="authStep === 'signin'"
-        @onSuccess="() => { console.log('Received onSuccess in ModalWrapper'); setStep('otp'); }"
+        @onSuccess="() => setStep('otp')"
         @goToSignup="setStep('signup')"
       />
       <SignUp v-if="authStep === 'signup'" @onSuccess="setStep('otp')" />

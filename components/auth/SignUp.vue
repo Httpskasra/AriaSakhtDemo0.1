@@ -106,7 +106,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
+import { useAuthData } from "@/composables/useAuthData";
 
+const { phoneNumber: globalPhoneNumber } = useAuthData();
 const $axios = useNuxtApp().$axios;
 
 const meliCode = ref("");
@@ -174,6 +176,7 @@ const handleSubmit = async () => {
     });
 
     if (response.status === 200 || response.status === 201) {
+      globalPhoneNumber.value = toInternationalPhone(phoneNumber.value);
       emit("onSuccess");
     } else {
       serverError.value = true;
