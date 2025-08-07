@@ -1,5 +1,5 @@
 <template>
-  <div class="register" v-if="!user">
+  <div class="register" v-if="!isLogin">
     <button @click="setStep('signin')" class="btn">
       <span>ورود </span>
       <svg
@@ -20,9 +20,9 @@
   </div>
 
   <div v-else class="profile-cart">
-    <div class="profile">
+    <NuxtLink to="/dashboard/profile" class="profile">
       <img src="/profile/blank-profile.png" alt="" />
-    </div>
+    </NuxtLink>
     <span class="line"></span>
     <div class="cart">
       <NuxtLink to="/dashboard/carts">
@@ -40,10 +40,12 @@
   </div>
 </template>
 <script setup>
-// const { user, logout } = useAuth();
-const user = ref(false); // Simulating user state, replace with actual auth logic
 import { useAuthStep } from "@/composables/useAuthStep";
-
+import { useAuthStore } from "#imports";
+const authStore = useAuthStore();
+const isLogin = computed(
+  () => !!authStore.getAccessToken() && !!authStore.getRefreshToken()
+);
 const { setStep } = useAuthStep();
 </script>
 <style scoped>

@@ -4,7 +4,7 @@ import { Resource, Action, type User } from "~/types/permissions";
 
 export default defineEventHandler((): User => {
   return {
-    // id: "123456789",
+    // userId: "123456789",
     // permissions: [
     //   {
     //     resource: Resource.ORDERS,
@@ -23,7 +23,7 @@ export default defineEventHandler((): User => {
     //     actions: [Action.READ, Action.CREATE, Action.DELETE],
     //   },
     // ],
-    id: "admin123",
+    userId: "admin123",
     permissions: [
       {
         resource: Resource.ALL,

@@ -32,6 +32,6 @@ export type Permission = {
 };
 
 export type User = {
-  id: number | string;
+  userId: number | string;
   permissions: Permission[];
 };

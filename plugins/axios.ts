@@ -53,7 +53,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch (refreshError) {
           console.error("Refresh token failed:", refreshError);
           authStore.clearTokens();
-          navigateTo("/login");
+          navigateTo("/");
           return Promise.reject(refreshError);
         }
       }

@@ -23,6 +23,14 @@
           <span>{{ resourceLabels[resource] || resource }}</span>
         </div>
       </NuxtLink>
+      <button class="item" @click="handleLogOut">
+        <div class="icon">
+          <img style="color: red" src="/dashboardIcons/logout.svg" alt="" />
+        </div>
+        <div class="title" style="color: red">
+          <span>خروج</span>
+        </div>
+      </button>
     </div>
   </div>
 </template>
@@ -43,7 +51,6 @@ defineEmits(["update:isMenuOpen"]);
 
 const { getResources } = usePermissions();
 const availableResources = computed(() => getResources());
-
 const route = useRoute();
 const activePath = ref(route.path);
 watch(route, (newRoute) => {
@@ -65,6 +72,18 @@ const resourceLabels: Record<string, string> = {
   [Resource.USERS]: "کاربران",
   [Resource.WALLETS]: "کیف پول",
   [Resource.PROFILE]: "پروفایل",
+};
+const { $axios } = useNuxtApp();
+const handleLogOut = async () => {
+  try {
+    const response = await $axios.post("/auth/signout");
+
+    if (response?.status === 200 || response?.status === 204) {
+    } else {
+    }
+  } catch (error) {
+  } finally {
+  }
 };
 </script>
 <style scoped>

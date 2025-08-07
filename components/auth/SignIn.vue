@@ -1,3 +1,64 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { useAuthStep } from "@/composables/useAuthStep";
+import { useAuthData } from "@/composables/useAuthData";
+const { $axios } = useNuxtApp();
+
+const phoneNumber = ref("");
+const phoneError = ref(false);
+const isLoading = ref(false); // ✅ مرحله 1
+
+const { phoneNumber: globalPhoneNumber } = useAuthData();
+const emit = defineEmits(["onSuccess", "goToSignup"]);
+const { setStep } = useAuthStep();
+
+const validatePhone = (number: string): boolean => {
+  return /^[9]{1}[0-9]{9}$/.test(number);
+};
+
+const toInternationalPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) return "+98" + digits.slice(1);
+  if (digits.startsWith("9")) return "+98" + digits;
+  if (digits.startsWith("98")) return "+" + digits;
+  return phone;
+};
+
+const handleSubmit = async () => {
+  if (!validatePhone(phoneNumber.value)) {
+    phoneError.value = true;
+    return;
+  }
+
+  phoneError.value = false;
+  isLoading.value = true; // ✅ مرحله 2
+
+  const formattedPhone = toInternationalPhone(phoneNumber.value);
+
+  try {
+    const response = await $axios.post("/auth/signin", {
+      phoneNumber: formattedPhone,
+    });
+
+    if (response?.status === 200 || response?.status === 204) {
+      globalPhoneNumber.value = formattedPhone;
+      emit("onSuccess");
+    } else {
+      console.error("Unexpected response", response);
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    phoneError.value = true;
+  } finally {
+    isLoading.value = false; // ✅ مرحله 3
+  }
+};
+
+const closeModal = () => {
+  setStep(null);
+};
+</script>
+
 <template>
   <BaseModal @close="closeModal">
     <div class="flex flex-col items-center justify-between h-[50vh] container">
@@ -31,9 +92,11 @@
         </div>
 
         <button
-          class="bg-[var(--blue-dark)] py-2.5 px-[18px] text-white rounded-[15px] relative top-3 hover:cursor-pointer"
-          type="submit">
-          ورود
+          class="bg-[var(--blue-dark)] py-2.5 px-[18px] text-white rounded-[15px] relative top-3 hover:cursor-pointer disabled:opacity-60"
+          type="submit"
+          :disabled="isLoading">
+          <!-- ✅ مرحله 4 -->
+          {{ isLoading ? "در حال ارسال..." : "ورود" }}
         </button>
       </form>
 
@@ -49,58 +112,3 @@
     </div>
   </BaseModal>
 </template>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import { useAuthStep } from "@/composables/useAuthStep";
-import { useAuthData } from "@/composables/useAuthData";
-const { $axios } = useNuxtApp();
-
-const phoneNumber = ref("");
-const phoneError = ref(false);
-const { phoneNumber: globalPhoneNumber } = useAuthData();
-const emit = defineEmits(["onSuccess", "goToSignup"]);
-const { setStep } = useAuthStep();
-
-const validatePhone = (number: string): boolean => {
-  return /^[9]{1}[0-9]{9}$/.test(number);
-};
-
-const toInternationalPhone = (phone: string) => {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("0")) return "+98" + digits.slice(1);
-  if (digits.startsWith("9")) return "+98" + digits;
-  if (digits.startsWith("98")) return "+" + digits;
-  return phone;
-};
-
-const handleSubmit = async () => {
-  if (!validatePhone(phoneNumber.value)) {
-    phoneError.value = true;
-    return;
-  }
-
-  phoneError.value = false;
-
-  const formattedPhone = toInternationalPhone(phoneNumber.value);
-
-try {
-  const response = await $axios.post("/auth/signin", {
-    phoneNumber: formattedPhone,
-  });
-
-  if (response?.status === 200 || response?.status === 204) {
-      globalPhoneNumber.value = formattedPhone;
-      emit("onSuccess");
-  } else {
-    console.error("Unexpected response", response);
-  }
-} catch (error) {
-  console.error("Login error:", error);
-  phoneError.value = true
-}
-};
-const closeModal = () => {
-  setStep(null);
-};
-</script>

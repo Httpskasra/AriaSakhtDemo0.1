@@ -8,11 +8,11 @@
 
       <p
         class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5">
-        کد 4 رقمی ارسال شده به شماره
+        کد ۴ رقمی ارسال شده به شماره
         <span
-          class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark"
-          >{{ phoneNumber }}</span
-        >
+          class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark">
+          {{ phoneNumber }}
+        </span>
         را وارد نمایید
       </p>
 
@@ -67,11 +67,12 @@ import { ref, onMounted, watch, computed, nextTick } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { useAuthStore } from "@/stores/auth";
+
 const { phoneNumber } = useAuthData();
 const inputs = ref(Array(4).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
-const duration = 120; // 2 دقیقه
+const duration = 120;
 const timeLeft = ref(duration);
 const timer = ref<number | null>(null);
 
@@ -82,6 +83,7 @@ const $axios = useNuxtApp().$axios;
 
 onMounted(() => {
   startTimer();
+  resendOtp(); // ارسال اولیه کد هنگام باز شدن مودال
   nextTick(() => otpRefs.value[0]?.focus());
 });
 
@@ -110,12 +112,25 @@ const startTimer = () => {
   }, 1000) as unknown as number;
 };
 
-const resetTimer = () => {
+const resendOtp = async () => {
+  try {
+    loading.value = true;
+    await $axios.post("/auth/send-otp", {
+      phoneNumber: phoneNumber.value,
+    });
+  } catch (err) {
+    errorMessage.value = "خطا در ارسال مجدد کد. لطفاً دوباره تلاش کنید.";
+  } finally {
+    loading.value = false;
+  }
+};
+
+const resetTimer = async () => {
   inputs.value = Array(4).fill("");
   errorMessage.value = "";
   startTimer();
+  await resendOtp();
   nextTick(() => otpRefs.value[0]?.focus());
-  verifyOtp();
 };
 
 const onInput = async (index: number) => {
@@ -147,7 +162,6 @@ const verifyOtp = async () => {
   errorMessage.value = "";
 
   try {
-    // درخواست به سرور ارسال کن (آدرس و payload رو با بک‌اند چک کن)
     const response = await $axios.post("/auth/verify-otp", {
       phoneNumber: phoneNumber.value,
       otp: otpCode.value,
@@ -155,13 +169,10 @@ const verifyOtp = async () => {
 
     if (response.status === 201) {
       const authStore = useAuthStore();
-
-      console.log("accessToken from response:", response.data.accessToken);
       authStore.setTokens(
         response.data.accessToken,
         response.data.refreshToken
       );
-      console.log("after setTokens - accessToken:", authStore.getAccessToken());
       emit("onVerified");
     } else {
       errorMessage.value = "کد وارد شده اشتباه است.";
