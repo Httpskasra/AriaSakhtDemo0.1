@@ -38,29 +38,28 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { usePermissions } from "~/composables/usePermissions";
 import { Resource } from "~/types/permissions";
 import { useAuthStore } from "~/stores/auth";
 import { useUser } from "~/composables/useUser";
 
-defineProps({
+const props = defineProps({
   isMenuOpen: { type: Boolean, default: false },
   isScrolled: { type: Boolean, default: false },
 });
-defineEmits(["update:isMenuOpen"]);
+const emit = defineEmits(["update:isMenuOpen"]);
 
 const route = useRoute();
+const router = useRouter();
 const activePath = ref(route.path);
 watch(route, (newRoute) => {
   activePath.value = newRoute.path;
 });
 
-// دسترسی‌ها
 const { getResources } = usePermissions();
 const availableResources = computed(() => getResources());
 
-// لیبل منابع
 const resourceLabels: Record<string, string> = {
   [Resource.CARTS]: "سبدها",
   [Resource.CATEGORIES]: "دسته‌بندی‌ها",
@@ -77,7 +76,6 @@ const resourceLabels: Record<string, string> = {
   [Resource.PROFILE]: "پروفایل",
 };
 
-// Logout
 const { $axios } = useNuxtApp();
 const authStore = useAuthStore();
 const { clearUser } = useUser();
@@ -88,10 +86,9 @@ const handleLogOut = async () => {
   } catch (error) {
     console.error("Logout failed:", error);
   } finally {
-    // پاک کردن همه state و کوکی‌ها
     authStore.clearTokens();
     clearUser();
-    navigateTo("/");
+    router.push("/");
   }
 };
 </script>
