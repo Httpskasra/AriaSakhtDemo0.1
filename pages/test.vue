@@ -8,8 +8,8 @@ const { $axios } = useNuxtApp();
 
 onMounted(async () => {
   try {
-    const { data } = await $axios.get("/auth/me");
-    console.log(data.data);
+     const response = await $axios.get("/auth/me");
+    console.log(response.data);
   } catch (error) {
     console.log(error);
   }
