@@ -7,11 +7,19 @@
           <span>{{ item.name }}</span>
         </NuxtLink>
       </li>
+      <li>
+        <button @click="handleAccount">
+          <img src="/MobileIcon/account.svg" alt="icon" />
+          <span>{{ isLogin ? "حساب کاربری" : "ورود" }}</span>
+          <ModalWrapper />
+        </button>
+      </li>
     </ul>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+const router = useRouter();
 const navigationItems = [
   {
     name: "سبد خرید",
@@ -28,12 +36,26 @@ const navigationItems = [
     path: "/products",
     icon: "/MobileIcon/shop.svg",
   },
-  {
-    name: "حساب کاربری",
-    path: "/dashboard/",
-    icon: "/MobileIcon/account.svg",
-  },
+  // {
+  //   name: "حساب کاربری",
+  //   path: "/dashboard/",
+  //   icon: "/MobileIcon/account.svg",
+  // },
 ];
+import { useAuthStep } from "@/composables/useAuthStep";
+import { useAuthStore } from "#imports";
+const authStore = useAuthStore();
+const isLogin = computed(
+  () => !!authStore.getAccessToken() && !!authStore.getRefreshToken()
+);
+const { setStep } = useAuthStep();
+
+const handleAccount = () => {
+  if (isLogin) {
+    router.push("/dashboard/profile");
+  }
+  setStep("signin");
+};
 </script>
 
 <style scoped>
@@ -62,6 +84,8 @@ a {
   align-items: center;
   justify-content: center;
   gap: 5px;
+}
+span {
   font-size: 10px;
   font-family: "iran-yekan-Bold";
   color: var(--blue-dark);

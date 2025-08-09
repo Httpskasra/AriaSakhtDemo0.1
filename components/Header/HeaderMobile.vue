@@ -54,7 +54,7 @@ defineProps({
     type: String as PropType<MenuRole>,
     default: "default",
     validator: (value: string): boolean =>
-      ["default", "adminPanel", "userPanel"].includes(value),
+      ["default", "dashboard"].includes(value),
   },
 });
 const isMenuOpen = ref(false);
