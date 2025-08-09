@@ -15,8 +15,8 @@ export const useUser = () => {
 
   const fetchUser = async () => {
     try {
-      const { data } = await $axios.get<User>("/auth/me");
-      setUser(data);
+      const response = await $axios.get<User>("/auth/me");
+      setUser(response.data);
     } catch (err) {
       console.error("Failed to fetch user:", err);
       clearUser();
