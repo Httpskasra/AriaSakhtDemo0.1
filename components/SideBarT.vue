@@ -21,7 +21,7 @@
           <span>{{ resourceLabels[resource] || resource }}</span>
         </div>
       </NuxtLink>
-      <pre>{{ availableResources }}</pre>
+
 
       <!-- Logout -->
       <button class="item" @click="handleLogOut">

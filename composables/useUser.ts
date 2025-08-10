@@ -3,7 +3,7 @@ import { useNuxtApp } from "#app";
 
 export const useUser = () => {
   const user = useState<User | null>("user", () => null);
-  const { $axios } = useNuxtApp(); // استفاده از axios instance با توکن
+  const { $axios } = useNuxtApp();
 
   const setUser = (data: User) => {
     user.value = data;
@@ -13,7 +13,12 @@ export const useUser = () => {
     user.value = null;
   };
 
-  const fetchUser = async () => {
+  const fetchUser = async (force = false) => {
+    // اگر قبلاً کاربر لود شده و force=false، دیگه درخواست نزن
+    if (!force && user.value) {
+      return;
+    }
+
     try {
       const response = await $axios.get<User>("/auth/me");
       setUser(response.data);
