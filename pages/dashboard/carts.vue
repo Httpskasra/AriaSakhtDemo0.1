@@ -12,7 +12,10 @@
   </NuxtLayout>
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'dashboard-auth'
+});</script>
 
 <style scoped>
 .container {

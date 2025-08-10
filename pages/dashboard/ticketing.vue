@@ -30,7 +30,9 @@ import {
   createTicket,
   deleteTicket,
 } from "@/services/ticketService";
-
+definePageMeta({
+  middleware: 'dashboard-auth'
+});
 const { $axios } = useNuxtApp(); // Access $axios from Nuxt context
 const tickets = ref<Ticket[]>([]);
 

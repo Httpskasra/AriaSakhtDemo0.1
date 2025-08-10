@@ -9,7 +9,11 @@
     </div>
   </NuxtLayout>
 </template>
-
+<script setup lang="ts">
+definePageMeta({
+  middleware: 'dashboard-auth'
+});
+</script>
 <style scoped>
 .title {
   color: var(--blue-dark);

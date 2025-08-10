@@ -83,7 +83,7 @@ const $axios = useNuxtApp().$axios;
 
 onMounted(() => {
   startTimer();
-  resendOtp(); // ارسال اولیه کد هنگام باز شدن مودال
+  // resendOtp(); 
   nextTick(() => otpRefs.value[0]?.focus());
 });
 
