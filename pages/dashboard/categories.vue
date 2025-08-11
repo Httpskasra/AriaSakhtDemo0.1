@@ -100,7 +100,7 @@
             v-model="form.parentName"
             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
             <option value="">بدون والد</option>
-            <option v-for="cat in categories" :key="cat._id" :value="cat._id">
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
               {{ cat.name }}
             </option>
           </select>
@@ -139,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import BaseModal from "~/components/BaseModal.vue";
@@ -151,41 +152,64 @@ const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.CATEGORIES
 );
 
-// const categories = ref([
-//   {
-//     id: 1,
-//     name: "مصالح ساختمانی",
-//     slug: "building-materials",
-//     description: "انواع آجر، سیمان، گچ و ...",
-//   },
-//   {
-//     id: 2,
-//     name: "ابزارآلات",
-//     slug: "tools",
-//     description: "انواع ابزار کارگاهی",
-//   },
-//   {
-//     id: 3,
-//     name: "لوازم ایمنی",
-//     slug: "safety",
-//     description: "کلاه ایمنی، دستکش، کفش",
-//   },
-// ]);
-const categories = ref([]);
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parentName?: string;
+  status: "draft" | "published";
+};
+
+// داده mock برای تست سریع
+const mockCategories: Category[] = [
+  {
+    id: "1",
+    name: "سیمان",
+    slug: "cement",
+    description: "دسته بندی انواع سیمان",
+    parentName: "",
+    status: "published",
+  },
+  {
+    id: "2",
+    name: "مصالح ساختمانی",
+    slug: "building-materials",
+    description: "دسته بندی مصالح ساختمان",
+    parentName: "",
+    status: "draft",
+  },
+  {
+    id: "3",
+    name: "رنگ‌ها",
+    slug: "paints",
+    description: "انواع رنگ برای ساختمان",
+    parentName: "2",
+    status: "published",
+  },
+];
+
+// اگر true باشه داده mock استفاده میشه، اگر false باشه درخواست API زده میشه
+const useMock = ref(true);
+
+const categories = ref<Category[]>([]);
 const { $axios } = useNuxtApp();
+
 const isModalOpen = ref(false);
 const editMode = ref(false);
 const form = ref({
+  id: "",
   name: "",
   slug: "",
   description: "",
-  parentName: "", // اینجا id دسته والد ذخیره میشه
+  parentName: "",
   status: "draft",
 });
 
 const openCreateModal = () => {
   editMode.value = false;
   form.value = {
+    id: "",
     name: "",
     slug: "",
     description: "",
@@ -195,32 +219,87 @@ const openCreateModal = () => {
   isModalOpen.value = true;
 };
 
-const editCategory = (cat: any) => {
+const editCategory = (cat: Category) => {
   editMode.value = true;
-  form.value = { ...cat };
+  form.value = {
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    description: cat.description || "",
+    parentName: cat.parentName || "",
+    status: cat.status as "draft" | "published",
+  };
   isModalOpen.value = true;
 };
 
-const deleteCategory = (id: number) => {
-  console.log("حذف دسته‌بندی با ID:", id);
+const deleteCategory = async (id: string) => {
+  if (!canDelete) return alert("شما اجازه حذف ندارید!");
+  if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
+
+  if (useMock.value) {
+    // حذف محلی در داده mock
+    categories.value = categories.value.filter((c) => c.id !== id);
+  } else {
+    try {
+      await $axios.delete(`/category/${id}`);
+      // بعد از حذف، دوباره fetch کن
+      await fetchCategories();
+    } catch (err) {
+      console.error("خطا در حذف دسته‌بندی:", err);
+    }
+  }
 };
 
 const closeModal = () => {
   isModalOpen.value = false;
 };
+
 const fetchCategories = async () => {
+  if (!canRead) return;
   try {
-    const { data } = await $axios.get("/api/category");
-    categories.value = data; // فرض: [{ _id, name, ... }]
+    if (useMock.value) {
+      categories.value = mockCategories;
+    } else {
+      const { data } = await $axios.get("/category");
+      categories.value = data;
+    }
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
+    // fallback به mock
+    categories.value = mockCategories;
   }
 };
+
 const saveCategory = async () => {
+  if (!canCreate && !editMode.value) return alert("شما اجازه ایجاد ندارید!");
+  if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
+
   try {
-    const payload = { ...form.value };
-    await $axios.post("/api/category", payload);
-    isModalOpen.value = false;
+    const payload = {
+      ...form.value,
+      description: form.value.description || "",
+      parentName: form.value.parentName || "",
+      status: form.value.status as "draft" | "published",
+    };
+
+    if (useMock.value) {
+      if (editMode.value) {
+        const idx = categories.value.findIndex((c) => c.id === payload.id);
+        if (idx !== -1) categories.value[idx] = { ...payload };
+      } else {
+        payload.id = Date.now().toString();
+        categories.value.push(payload);
+      }
+      isModalOpen.value = false;
+    } else {
+      if (editMode.value) {
+        await $axios.put(`/category/${payload.id}`, payload);
+      } else {
+        await $axios.post("/category", payload);
+      }
+      await fetchCategories();
+      isModalOpen.value = false;
+    }
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
   }
