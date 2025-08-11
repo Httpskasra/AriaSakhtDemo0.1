@@ -6,17 +6,18 @@
         <img src="/icons/company.png" alt="" />
       </div>
 
-      <div class="actions flex justify-between items-center mb-4">
+      <div
+        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
         <SearchBar v-model="search" dark="true" />
         <button
           v-if="canCreate"
           @click="openModal()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
           + شرکت جدید
         </button>
       </div>
 
-      <div class="bg-white rounded-lg shadow p-4">
+      <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
         <table class="w-full text-sm text-right border-collapse">
           <thead class="border-b">
             <tr class="text-gray-600">

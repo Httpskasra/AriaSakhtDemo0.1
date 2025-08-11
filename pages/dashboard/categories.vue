@@ -342,9 +342,10 @@ onMounted(() => {
 .create-btn {
   background-color: var(--blue-dark);
   color: #fff;
-  padding: 8px 14px;
+  padding: 8px 20px;
   border-radius: 8px;
   font-family: "iran-yekan-Bold";
+  font-size: 10px;
 }
 .create-btn:hover {
   opacity: 0.85;
