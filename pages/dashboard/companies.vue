@@ -8,7 +8,7 @@
 
       <div
         class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-        <SearchBar v-model="search" dark="true" />
+        <SearchBar v-model="search" :dark="true" />
         <button
           v-if="canCreate"
           @click="openModal()"
@@ -164,7 +164,7 @@ import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
 definePageMeta({
-  middleware: "dashboard-auth",
+  middleware: ["dashboard-auth"],
 });
 
 // دسترسی‌ها

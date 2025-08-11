@@ -145,7 +145,7 @@ import { Resource } from "~/types/permissions";
 import BaseModal from "~/components/BaseModal.vue";
 
 definePageMeta({
-  middleware: "dashboard-auth",
+  middleware: ["dashboard-auth"],
 });
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(

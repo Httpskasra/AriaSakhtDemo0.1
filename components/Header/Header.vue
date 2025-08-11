@@ -22,7 +22,7 @@ const props = defineProps({
     type: String as PropType<MenuRole>,
     default: "default",
     validator: (value: string): boolean =>
-      ["default", "adminPanel", "userPanel", "agentPanel"].includes(value),
+      ["default", "dashboard"].includes(value),
   },
 });
 </script>

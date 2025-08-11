@@ -22,7 +22,8 @@
           :key="index"
           type="text"
           maxlength="1"
-          pattern="[0-9]{1}"
+          inputmode="numeric"
+          autocomplete="one-time-code"
           v-model="inputs[index]"
           ref="otpRefs"
           @input="onInput(index)"
@@ -83,7 +84,7 @@ const $axios = useNuxtApp().$axios;
 
 onMounted(() => {
   startTimer();
-  // resendOtp(); 
+  // resendOtp();
   nextTick(() => otpRefs.value[0]?.focus());
 });
 

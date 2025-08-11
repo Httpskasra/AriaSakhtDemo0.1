@@ -15,7 +15,7 @@
           </button>
         </div>
         <div class="search">
-          <SearchBar dark />
+          <SearchBar :dark="true" />
         </div>
       </div>
       <SupportTickets v-if="tickets.length" :tickets="tickets" />
@@ -31,7 +31,7 @@ import {
   deleteTicket,
 } from "@/services/ticketService";
 definePageMeta({
-  middleware: 'dashboard-auth'
+  middleware: ["dashboard-auth"],
 });
 const { $axios } = useNuxtApp(); // Access $axios from Nuxt context
 const tickets = ref<Ticket[]>([]);

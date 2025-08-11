@@ -14,7 +14,7 @@
 import type { MenuType } from "~/types/menu";
 
 const menueType = ref<MenuType>({
-  role: "adminPanel",
+  role: "dashboard",
 });
 const isScrolled = ref(false);
 </script>

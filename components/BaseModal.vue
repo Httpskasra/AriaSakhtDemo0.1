@@ -1,11 +1,22 @@
 <template>
   <div class="modal-overlay no-scroll" @click.self="$emit('close')">
     <div class="modal-content">
+      <!-- دکمه بستن -->
+      <button
+        @click="$emit('close')"
+        aria-label="Close modal"
+        class="close-btn">
+        ×
+      </button>
+
       <slot />
     </div>
   </div>
 </template>
+
 <script setup>
+import { onMounted, onUnmounted } from "vue";
+
 onMounted(() => {
   document.body.classList.add("no-scroll");
 });
@@ -14,6 +25,7 @@ onUnmounted(() => {
   document.body.classList.remove("no-scroll");
 });
 </script>
+
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -27,6 +39,7 @@ onUnmounted(() => {
 }
 
 .modal-content {
+  position: relative; /* برای قرارگیری دکمه بسته شدن */
   background-color: #fff;
   border-radius: 16px;
   max-width: 600px;
@@ -35,5 +48,25 @@ onUnmounted(() => {
   overflow-y: auto;
   padding: 24px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* استایل دکمه بستن */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #ff0000;
+  transition: color 0.2s;
+  padding: 0;
+  user-select: none;
+}
+
+.close-btn:hover {
+  color: #000;
 }
 </style>
