@@ -53,16 +53,16 @@ onUnmounted(() => {
 /* استایل دکمه بستن */
 .close-btn {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 18px;
+  left: 18px;
   background: transparent;
   border: none;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
   cursor: pointer;
   color: #ff0000;
   transition: color 0.2s;
-  padding: 0;
+  padding: 10px;
   user-select: none;
 }
 

@@ -3,7 +3,7 @@ export const login = async (email: string, password: string) => {
   const { $axios } = useNuxtApp();
   try {
     console.log("Sending login request with:", { email, password });
-    return await $axios.post("/login", { username: email, password });
+    return await $axios.post("/", { username: email, password });
   } catch (error: any) {
     console.error("Login error:", error);
     throw new Error(error?.response?.data?.message || "Login failed");
