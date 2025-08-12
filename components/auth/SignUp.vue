@@ -1,103 +1,81 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="flex flex-col items-center justify-between h-[60vh] container">
-      <img
-        src="/logo/logo.png"
-        alt="Logo"
-        class="w-[180px] h-[160px] max-md:w-[70px] max-md:h-[50px]"
-      />
+    <div class="signup-container">
+      <img src="/logo/logo.png" alt="Logo" class="logo-img" />
 
-      <form
-        @submit.prevent="handleSubmit"
-        class="h-[400px] w-full flex flex-col items-center justify-evenly"
-      >
+      <form @submit.prevent="handleSubmit" class="signup-form">
         <!-- کد ملی -->
-        <div class="w-full">
-          <label
-            class="font-['iran-yekan-num-Regular'] bg-gray-500/20 w-full dir-ltr h-[50px] flex justify-between items-center box-border rounded-[15px] cursor-pointer"
-          >
+        <div class="input-group">
+          <label class="input-label">
             <input
               type="text"
               v-model="meliCode"
               required
               placeholder="مثال: 2665554789"
-              class="bg-transparent h-full w-full px-5 focus:outline-none text-left"
-              @input="validateMeli"
-            />
-            <div
-              class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[18px] h-full w-[100px] rounded-l-[15px]"
-            >
+              class="input-field"
+              @input="validateMeli" />
+            <div class="input-addon">
               <span>کد ملی</span>
             </div>
           </label>
           <span
-            class="text-red-500 text-xs mt-1.5"
-            :class="{ inline: meliError, hidden: !meliError }"
-            >کد ملی وارد شده صحیح نمی باشد</span
-          >
+            class="input-error"
+            :class="{ inline: meliError, hidden: !meliError }">
+            کد ملی وارد شده صحیح نمی باشد
+          </span>
         </div>
 
         <!-- شماره تلفن -->
-        <div class="w-full">
-          <label
-            class="font-['iran-yekan-num-Regular'] bg-gray-500/20 w-full dir-ltr h-[50px] flex justify-between items-center box-border rounded-[15px] cursor-pointer"
-          >
+        <div class="input-group">
+          <label class="input-label">
             <input
               type="text"
               v-model="phoneNumber"
               required
               placeholder="مثال: 0912345678"
-              class="bg-transparent h-full w-full px-5 focus:outline-none text-left"
-              @input="validatePhone"
-            />
-            <div
-              class="box-border bg-[var(--blue-dark)] flex items-center justify-center text-white text-sm px-[5px] h-full w-[100px] rounded-l-[15px]"
-            >
+              class="input-field"
+              @input="validatePhone" />
+            <div class="input-addon">
               <span>شماره تلفن</span>
             </div>
           </label>
           <span
-            class="text-red-500 text-xs mt-1.5"
-            :class="{ inline: phoneError, hidden: !phoneError }"
-            >شماره تماس وارد شده صحیح نمی باشد</span
-          >
+            class="input-error"
+            :class="{ inline: phoneError, hidden: !phoneError }">
+            شماره تماس وارد شده صحیح نمی باشد
+          </span>
         </div>
 
         <!-- قبول قوانین -->
-        <label class="flex items-center cursor-pointer">
+        <label class="rules-label">
           <input
             type="checkbox"
             v-model="acceptedRules"
             required
-            class="cursor-pointer"
-          />
-          <span class="text-xs mx-1.5"
-            >شرایط و قوانین را مطالعه کردم و قبول دارم</span
-          >
+            class="rules-checkbox" />
+          <span class="rules-text">
+            شرایط و قوانین را مطالعه کردم و قبول دارم
+          </span>
         </label>
 
         <!-- دکمه ارسال -->
-        <button
-          type="submit"
-          class="bg-[var(--blue-dark)] py-2.5 px-[18px] text-white rounded-[15px] relative top-3 hover:cursor-pointer"
-          :disabled="loading"
-        >
+        <button type="submit" class="submit-btn" :disabled="loading">
           {{ loading ? "در حال ارسال..." : "عضویت" }}
         </button>
 
         <!-- خطای تطابق -->
         <span
-          class="text-red-500 text-xs -mt-1"
-          :class="{ inline: matchingError, hidden: !matchingError }"
-          >کد ملی وارد شده با شماره تماس مطابقت ندارد</span
-        >
+          class="input-error"
+          :class="{ inline: matchingError, hidden: !matchingError }">
+          کد ملی وارد شده با شماره تماس مطابقت ندارد
+        </span>
 
         <!-- خطای سرور -->
         <span
-          class="text-red-500 text-xs -mt-1"
-          :class="{ inline: serverError, hidden: !serverError }"
-          >خطا در ثبت‌نام، دوباره تلاش کنید.</span
-        >
+          class="input-error"
+          :class="{ inline: serverError, hidden: !serverError }">
+          خطا در ثبت‌نام، دوباره تلاش کنید.
+        </span>
       </form>
     </div>
   </BaseModal>
@@ -193,3 +171,160 @@ const closeModal = () => {
   setStep(null);
 };
 </script>
+
+<style scoped>
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 400px;
+  height: 60vh;
+  padding: 16px 0;
+  gap: 16px;
+}
+
+.logo-img {
+  width: 180px;
+  height: 160px;
+  margin-bottom: 10px;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 370px;
+  gap: 18px;
+  padding: 0 8px;
+}
+
+.input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-label {
+  font-family: "iran-yekan-num-Regular";
+  background: rgba(128, 128, 128, 0.08);
+  width: 100%;
+  height: 48px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 15px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.input-field {
+  background: transparent;
+  height: 100%;
+  width: 100%;
+  padding: 0 12px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+  text-align: left;
+}
+
+.input-addon {
+  background: var(--blue-dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  padding: 0 14px;
+  height: 100%;
+  min-width: 90px;
+  border-radius: 0 15px 15px 0;
+}
+
+.input-error {
+  color: #f87171;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.rules-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 6px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.rules-checkbox {
+  cursor: pointer;
+  accent-color: var(--blue-dark);
+}
+
+.rules-text {
+  font-size: 12px;
+  margin-right: 2px;
+}
+
+.submit-btn {
+  background: var(--blue-dark);
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 15px;
+  font-size: 16px;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+  cursor: pointer;
+  border: none;
+  font-family: "iran-yekan-Bold";
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .signup-container {
+    min-height: 250px;
+    height: auto;
+    padding: 8px 0;
+    gap: 10px;
+  }
+  .logo-img {
+    width: 70px;
+    height: 50px;
+    margin-bottom: 4px;
+  }
+  .signup-form {
+    max-width: 95vw;
+    gap: 12px;
+    padding: 0 2px;
+  }
+  .input-label {
+    height: 40px;
+    font-size: 13px;
+  }
+  .input-field {
+    font-size: 14px;
+    padding: 0 6px;
+  }
+  .input-addon {
+    font-size: 11px;
+    min-width: 70px;
+    padding: 0 6px;
+  }
+  .submit-btn {
+    font-size: 14px;
+    padding: 8px 18px;
+    margin-top: 4px;
+  }
+  .rules-text {
+    font-size: 11px;
+  }
+}
+</style>

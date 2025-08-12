@@ -11,8 +11,9 @@
         <button @click="handleAccount">
           <img src="/MobileIcon/account.svg" alt="icon" />
           <span>{{ isLogin ? "حساب کاربری" : "ورود" }}</span>
-          <ModalWrapper />
         </button>
+        <!-- فقط زمانی که مودال فعال است نمایش بده -->
+        <ModalWrapper v-if="authStep" />
       </li>
     </ul>
   </div>
@@ -48,7 +49,7 @@ const authStore = useAuthStore();
 const isLogin = computed(
   () => !!authStore.getAccessToken() && !!authStore.getRefreshToken()
 );
-const { setStep } = useAuthStep();
+const { authStep, setStep } = useAuthStep();
 
 const handleAccount = () => {
   if (isLogin) {
