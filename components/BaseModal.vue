@@ -54,7 +54,7 @@ onUnmounted(() => {
 .close-btn {
   position: absolute;
   top: 18px;
-  right: 18px; /* تغییر از left به right */
+  left: 18px; /* تغییر از left به right */
   background: transparent;
   border: none;
   font-size: 32px;

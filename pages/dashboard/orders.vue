@@ -20,6 +20,7 @@ definePageMeta({
   font-family: "iran-yekan-Bold";
   width: 230px;
   display: flex;
+    align-items: center;
   justify-content: space-evenly;
   margin: 15px;
 }

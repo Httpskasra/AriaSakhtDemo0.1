@@ -14,8 +14,9 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: 'dashboard-auth'
-});</script>
+  middleware: ["dashboard-auth"],
+});
+</script>
 
 <style scoped>
 .container {
