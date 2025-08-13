@@ -115,7 +115,8 @@
             v-model="form.status"
             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
             <option value="draft">پیش‌نویس</option>
-            <option value="published">منتشر شده</option>
+            <option value="active">فعال</option>
+            <option value="inactive">غیر فعال</option>
           </select>
         </div>
 
@@ -158,39 +159,8 @@ type Category = {
   slug: string;
   description?: string;
   parentName?: string;
-  status: "draft" | "published";
+  status: "draft" | "active" | "inactive";
 };
-
-// داده mock برای تست سریع
-const mockCategories: Category[] = [
-  {
-    id: "1",
-    name: "سیمان",
-    slug: "cement",
-    description: "دسته بندی انواع سیمان",
-    parentName: "",
-    status: "published",
-  },
-  {
-    id: "2",
-    name: "مصالح ساختمانی",
-    slug: "building-materials",
-    description: "دسته بندی مصالح ساختمان",
-    parentName: "",
-    status: "draft",
-  },
-  {
-    id: "3",
-    name: "رنگ‌ها",
-    slug: "paints",
-    description: "انواع رنگ برای ساختمان",
-    parentName: "2",
-    status: "published",
-  },
-];
-
-// اگر true باشه داده mock استفاده میشه، اگر false باشه درخواست API زده میشه
-const useMock = ref(true);
 
 const categories = ref<Category[]>([]);
 const { $axios } = useNuxtApp();
@@ -227,7 +197,7 @@ const editCategory = (cat: Category) => {
     slug: cat.slug,
     description: cat.description || "",
     parentName: cat.parentName || "",
-    status: cat.status as "draft" | "published",
+    status: cat.status as "draft" | "active" | "inactive",
   };
   isModalOpen.value = true;
 };
@@ -236,37 +206,23 @@ const deleteCategory = async (id: string) => {
   if (!canDelete) return alert("شما اجازه حذف ندارید!");
   if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
 
-  if (useMock.value) {
-    // حذف محلی در داده mock
-    categories.value = categories.value.filter((c) => c.id !== id);
-  } else {
-    try {
-      await $axios.delete(`/category/${id}`);
-      // بعد از حذف، دوباره fetch کن
-      await fetchCategories();
-    } catch (err) {
-      console.error("خطا در حذف دسته‌بندی:", err);
-    }
+  try {
+    await $axios.delete(`/category/${id}`);
+    // بعد از حذف، دوباره fetch کن
+    await fetchCategories();
+  } catch (err) {
+    console.error("خطا در حذف دسته‌بندی:", err);
   }
-};
-
-const closeModal = () => {
-  isModalOpen.value = false;
 };
 
 const fetchCategories = async () => {
   if (!canRead) return;
   try {
-    if (useMock.value) {
-      categories.value = mockCategories;
-    } else {
-      const { data } = await $axios.get("/category");
-      categories.value = data;
-    }
+    const { data } = await $axios.get("/category");
+    categories.value = data;
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
-    // fallback به mock
-    categories.value = mockCategories;
+    categories.value = [];
   }
 };
 
@@ -276,33 +232,26 @@ const saveCategory = async () => {
 
   try {
     const payload = {
-      ...form.value,
+      name: form.value.name,
+      slug: form.value.slug,
       description: form.value.description || "",
-      parentName: form.value.parentName || "",
+      parentId: form.value.parentName ? form.value.parentName : "",
       status: form.value.status as "draft" | "published",
     };
 
-    if (useMock.value) {
-      if (editMode.value) {
-        const idx = categories.value.findIndex((c) => c.id === payload.id);
-        if (idx !== -1) categories.value[idx] = { ...payload };
-      } else {
-        payload.id = Date.now().toString();
-        categories.value.push(payload);
-      }
-      isModalOpen.value = false;
+    if (editMode.value) {
+      await $axios.put(`/category/${form.value.id}`, payload);
     } else {
-      if (editMode.value) {
-        await $axios.put(`/category/${payload.id}`, payload);
-      } else {
-        await $axios.post("/category", payload);
-      }
-      await fetchCategories();
-      isModalOpen.value = false;
+      await $axios.post("/category", payload);
     }
+    await fetchCategories();
+    isModalOpen.value = false;
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
   }
+};
+const closeModal = () => {
+  isModalOpen.value = false;
 };
 
 onMounted(() => {
