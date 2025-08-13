@@ -207,7 +207,7 @@ const deleteCategory = async (id: string) => {
   if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
 
   try {
-    await $axios.delete(`/category/${id}`);
+    await $axios.delete(`/categories/${id}`);
     // بعد از حذف، دوباره fetch کن
     await fetchCategories();
   } catch (err) {
@@ -218,8 +218,9 @@ const deleteCategory = async (id: string) => {
 const fetchCategories = async () => {
   if (!canRead) return;
   try {
-    const { data } = await $axios.get("/category");
+    const { data } = await $axios.get("/categories");
     categories.value = data;
+    console.log(data);
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
     categories.value = [];
@@ -236,16 +237,16 @@ const saveCategory = async () => {
       slug: form.value.slug,
       description: form.value.description || "",
       parentId: form.value.parentName ? form.value.parentName : "",
-      status: form.value.status as "draft" | "published",
+      status: form.value.status as "draft" | "active" | "inactive",
     };
 
     if (editMode.value) {
-      await $axios.put(`/category/${form.value.id}`, payload);
+      await $axios.put(`/categories/${form.value.id}`, payload);
     } else {
-      await $axios.post("/category", payload);
+      await $axios.post("/categories", payload);
     }
-    await fetchCategories();
     isModalOpen.value = false;
+    await fetchCategories(); // بعد از بستن مودال، دوباره fetch کن
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
   }
