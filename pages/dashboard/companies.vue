@@ -33,8 +33,8 @@
           </thead>
           <tbody>
             <tr
-              v-for="company in filteredCompanies"
-              :key="company._id"
+              v-for="(company, idx) in filteredCompanies"
+              :key="company._id || idx"
               class="border-b hover:bg-gray-50">
               <td class="p-3">
                 <img
@@ -63,7 +63,7 @@
                 </button>
                 <button
                   v-if="canDelete"
-                  @click="deleteCompany(company._id)"
+                  @click="deleteCompany(company)"
                   class="text-red-500 hover:underline">
                   حذف
                 </button>
@@ -174,7 +174,7 @@ const { canCreate, canRead, canUpdate, canDelete } = useAccess(
 
 // نوع شرکت
 type Company = {
-  _id: string;
+  _id?: string; // changed from id to _id
   name: string;
   email: string;
   phone: string;
@@ -183,33 +183,6 @@ type Company = {
   isActive: boolean;
   image: string;
 };
-
-// داده‌های mock برای تست سریع
-const mockCompanies: Company[] = [
-  {
-    _id: "1",
-    name: "Tech Innovations Inc.",
-    email: "info@techinnovations.com",
-    phone: "+982123456789",
-    registrationNumber: "1234567890",
-    address: "Tehran, Iran",
-    isActive: true,
-    image: "https://via.placeholder.com/150",
-  },
-  {
-    _id: "2",
-    name: "Future Solutions LLC",
-    email: "contact@futuresolutions.com",
-    phone: "+982198765432",
-    registrationNumber: "0987654321",
-    address: "Mashhad, Iran",
-    isActive: false,
-    image: "https://via.placeholder.com/150",
-  },
-];
-
-// این متغیر رو بذار true تا داده‌ها mock باشند، false تا از API واقعی استفاده بشه
-const useMock = ref(true);
 
 const companies = ref<Company[]>([]);
 const search = ref("");
@@ -232,15 +205,11 @@ const { $axios } = useNuxtApp();
 const fetchCompanies = async () => {
   if (!canRead) return;
   try {
-    if (useMock.value) {
-      companies.value = mockCompanies;
-    } else {
-      const res = await $axios.get("/companies");
-      companies.value = res.data;
-    }
+    const res = await $axios.get("/companies");
+    companies.value = res.data;
   } catch (err) {
-    console.warn("API در دسترس نیست، داده mock بارگذاری شد.");
-    companies.value = mockCompanies;
+    console.warn("API در دسترس نیست.");
+    companies.value = [];
   }
 };
 
@@ -250,11 +219,11 @@ const filteredCompanies = computed(() =>
   )
 );
 
-function openModal(company: Company | null = null) {
+function openModal(company: any | null = null) {
   if (company) {
     if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
     editMode.value = true;
-    selectedId.value = company._id;
+    selectedId.value = company._id; // changed from company.id
     form.value = { ...company };
   } else {
     if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
@@ -291,45 +260,41 @@ function onFileChange(e: Event) {
 
 const saveCompany = async () => {
   try {
-    if (useMock.value) {
-      if (editMode.value) {
-        const idx = companies.value.findIndex(
-          (c) => c._id === selectedId.value
-        );
-        if (idx !== -1)
-          companies.value[idx] = { _id: selectedId.value!, ...form.value };
-      } else {
-        const newId = Date.now().toString();
-        companies.value.push({ _id: newId, ...form.value });
+    if (editMode.value) {
+      if (!selectedId.value || selectedId.value.length !== 24) {
+        alert("شناسه شرکت معتبر نیست!");
+        return;
       }
-      closeModal();
+      // فقط فیلدهای مجاز را ارسال کن
+      const cleanData = {
+        name: form.value.name,
+        email: form.value.email,
+        phone: form.value.phone,
+        registrationNumber: form.value.registrationNumber,
+        address: form.value.address,
+        isActive: form.value.isActive,
+        image: form.value.image,
+      };
+      console.log("PATCH id:", selectedId.value); // برای دیباگ
+      await $axios.patch(`/companies/${selectedId.value}`, cleanData);
     } else {
-      if (editMode.value) {
-        await $axios.put(`/companies/${selectedId.value}`, form.value);
-      } else {
-        await $axios.post("/companies", form.value);
-      }
-      await fetchCompanies();
-      closeModal();
+      await $axios.post("/companies", form.value);
     }
+    await fetchCompanies();
+    closeModal();
   } catch (err) {
     console.error("خطا در ذخیره شرکت:", err);
   }
 };
 
-const deleteCompany = async (id: string) => {
+const deleteCompany = async (company: Company) => {
   if (!canDelete) return alert("شما اجازه حذف ندارید!");
   if (!confirm("آیا از حذف این شرکت مطمئن هستید؟")) return;
-
-  if (useMock.value) {
-    companies.value = companies.value.filter((c) => c._id !== id);
-  } else {
-    try {
-      await $axios.delete(`/companies/${id}`);
-      await fetchCompanies();
-    } catch (err) {
-      console.error("خطا در حذف شرکت:", err);
-    }
+  try {
+    await $axios.delete(`/companies/${company._id}`); // changed from company.id
+    await fetchCompanies();
+  } catch (err) {
+    console.error("خطا در حذف شرکت:", err);
   }
 };
 
