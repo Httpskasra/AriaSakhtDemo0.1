@@ -262,9 +262,20 @@ const saveCategory = async () => {
 const closeModal = () => {
   isModalOpen.value = false;
 };
-
+const fetchCategoriesID = async () => {
+  if (!canRead) return;
+  try {
+    const { data } = await $axios.get("/categories/689e731d66013d97225ac25b");
+    categories.value = data;
+    console.log(data);
+  } catch (err) {
+    console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
+    categories.value = [];
+  }
+};
 onMounted(() => {
   fetchCategories();
+  fetchCategoriesID()
 });
 </script>
 <style scoped>
