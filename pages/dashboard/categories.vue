@@ -232,17 +232,25 @@ const saveCategory = async () => {
   if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
 
   try {
-    const payload = {
-      name: form.value.name,
-      slug: form.value.slug,
-      description: form.value.description || "",
-      parentId: form.value.parentName ? form.value.parentName : "",
-      status: form.value.status as "draft" | "active" | "inactive",
-    };
-
+    let payload;
     if (editMode.value) {
-      await $axios.put(`/categories/${form.value.id}`, payload);
+      payload = {
+        id: form.value.id,
+        name: form.value.name,
+        slug: form.value.slug,
+        description: form.value.description,
+        parentId: form.value.parentName,
+        status: form.value.status,
+      };
+      await $axios.patch(`/categories/${form.value.id}`, payload);
     } else {
+      payload = {
+        name: form.value.name,
+        slug: form.value.slug,
+        description: form.value.description,
+        parentId: form.value.parentName,
+        status: form.value.status,
+      };
       await $axios.post("/categories", payload);
     }
     isModalOpen.value = false;
