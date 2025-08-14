@@ -267,6 +267,7 @@ const saveCompany = async () => {
       }
       // فقط فیلدهای مجاز را ارسال کن
       const cleanData = {
+        id: selectedId.value, // اضافه کردن id
         name: form.value.name,
         email: form.value.email,
         phone: form.value.phone,
