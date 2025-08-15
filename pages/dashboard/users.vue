@@ -3,8 +3,9 @@
 import { Resource } from '~/types/permissions'
 import { useAccess } from '~/composables/useAccess'
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.PROFILE)
+import dashboardAuth from "~/middleware/dashboard-auth";
 definePageMeta({
-  middleware: 'dashboard-auth'
+  middleware: dashboardAuth,
 });
 </script>
 

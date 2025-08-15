@@ -162,9 +162,9 @@
 import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-
+import dashboardAuth from "~/middleware/dashboard-auth";
 definePageMeta({
-  middleware: ["dashboard-auth"],
+  middleware: dashboardAuth,
 });
 
 // دسترسی‌ها

@@ -122,6 +122,10 @@
 import { ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 // داده mock برای تست سریع
 const actionOptions = [
   { value: Action.READ, label: "خواندن" },
@@ -287,21 +291,19 @@ function togglePermission(
 }
 
 import { useAccess } from "~/composables/useAccess";
-// const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
-const { canCreate, canRead, canUpdate, canDelete } = {
-  canCreate: true,
-  canRead: true,
-  canUpdate: true,
-  canDelete: true,
-};
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
+// const { canCreate, canRead, canUpdate, canDelete } = {
+//   canCreate: true,
+//   canRead: true,
+//   canUpdate: true,
+//   canDelete: true,
+// };
 
 onMounted(() => {
   if (useMock.value) roles.value = mockRoles;
   // اگر API داشتی اینجا fetch کن
 });
-// definePageMeta({
-//   middleware: "dashboard-auth",
-// });
+
 </script>
 
 <style scoped>

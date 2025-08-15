@@ -88,8 +88,9 @@ const handleSubmit = () => {
   // ارسال اطلاعات به سرور یا نمایش پیام موفقیت
   alert("اطلاعات با موفقیت ذخیره شد!");
 };
+import dashboardAuth from "~/middleware/dashboard-auth";
 definePageMeta({
-  middleware: 'dashboard-auth'
+  middleware: dashboardAuth,
 });
 </script>
 
