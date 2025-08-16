@@ -232,6 +232,9 @@ const saveCategory = async () => {
   if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
 
   try {
+    const parentId =
+      form.value.parentName === "" ? null : form.value.parentName;
+
     let payload;
     if (editMode.value) {
       payload = {
@@ -239,7 +242,7 @@ const saveCategory = async () => {
         name: form.value.name,
         slug: form.value.slug,
         description: form.value.description,
-        parentId: form.value.parentName,
+        parentId,
         status: form.value.status,
       };
       await $axios.patch(`/categories/${form.value.id}`, payload);
@@ -248,13 +251,14 @@ const saveCategory = async () => {
         name: form.value.name,
         slug: form.value.slug,
         description: form.value.description,
-        parentId: form.value.parentName,
+        parentId,
         status: form.value.status,
       };
       await $axios.post("/categories", payload);
     }
+
     isModalOpen.value = false;
-    await fetchCategories(); // بعد از بستن مودال، دوباره fetch کن
+    await fetchCategories();
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
   }
