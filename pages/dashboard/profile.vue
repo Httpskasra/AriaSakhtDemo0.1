@@ -77,6 +77,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 
+const { $axios } = useNuxtApp();
+
 const form = ref({
   phoneNumber: "",
   nationalId: "",
@@ -85,27 +87,20 @@ const form = ref({
   address: "",
 });
 
-// گرفتن پروفایل از سرور
+// گرفتن پروفایل
 const fetchProfile = async () => {
   try {
-    const { data } = await useFetch("/api/profile", {
-      method: "GET",
-    });
-    if (data.value) {
-      form.value = { ...form.value, ...data.value };
-    }
+    const { data } = await $axios.get("/profile");
+    form.value = { ...form.value, ...data };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
   }
 };
 
-// ارسال تغییرات پروفایل
+// ذخیره تغییرات پروفایل
 const handleSubmit = async () => {
   try {
-    await useFetch("/api/profile", {
-      method: "PATCH",
-      body: form.value,
-    });
+    await $axios.patch("/profile", form.value);
     alert("اطلاعات با موفقیت ذخیره شد!");
   } catch (err) {
     console.error("خطا در ذخیره پروفایل:", err);
