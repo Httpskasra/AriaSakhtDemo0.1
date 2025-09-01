@@ -1,81 +1,92 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div
-      class="title flex items-center justify-evenly text-blue-900 font-bold font-yekan mb-4 w-[230px] mx-4">
-      <h1 class="text-3xl md:text-xl">اطلاعات کاربری</h1>
-      <img
-        src="/icons/info.png"
-        alt=""
-        class="w-[66px] h-[66px] md:w-10 md:h-10" />
-    </div>
+    <div class="container">
+      <div class="title">
+        <h1>اطلاعات کاربری</h1>
+        <img src="/icons/info.png" alt="profile" />
+      </div>
 
-    <div class="container w-[90%] mx-auto flex flex-col items-center">
-      <form
-        class="bg-white rounded-lg shadow-md p-8 w-full max-w-xl flex flex-col gap-6"
-        @submit.prevent="handleSubmit">
+      <div class="bg-white rounded-lg shadow p-6 w-full max-w-xl mx-auto">
+        <form @submit.prevent="saveProfile" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">نام</label>
+            <input
+              v-model="form.firstName"
+              type="text"
+              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :disabled="!canUpdate"
+              required
+            />
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <label for="firstName" class="font-semibold text-blue-900">نام</label>
-          <input
-            id="firstName"
-            v-model="form.firstName"
-            type="text"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-            required />
-        </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">نام خانوادگی</label>
+            <input
+              v-model="form.lastName"
+              type="text"
+              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :disabled="!canUpdate"
+              required
+            />
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <label for="lastName" class="font-semibold text-blue-900">نام خانوادگی</label>
-          <input
-            id="lastName"
-            v-model="form.lastName"
-            type="text"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-            required />
-        </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">شماره موبایل</label>
+            <input
+              v-model="form.phoneNumber"
+              type="tel"
+              class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
+              disabled
+            />
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <label for="phoneNumber" class="font-semibold text-blue-900">شماره موبایل</label>
-          <input
-            id="phoneNumber"
-            v-model="form.phoneNumber"
-            type="tel"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-left bg-gray-100"
-            disabled />
-        </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">کد ملی</label>
+            <input
+              v-model="form.nationalId"
+              type="text"
+              class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
+              disabled
+            />
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <label for="nationalId" class="font-semibold text-blue-900">کد ملی</label>
-          <input
-            id="nationalId"
-            v-model="form.nationalId"
-            type="text"
-            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-left bg-gray-100"
-            disabled />
-        </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">آدرس</label>
+            <textarea
+              v-model="form.address"
+              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+              :disabled="!canUpdate"
+              required
+            ></textarea>
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <label for="address" class="font-semibold text-blue-900">آدرس</label>
-          <textarea
-            id="address"
-            v-model="form.address"
-            class="input border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-            rows="3"
-            required></textarea>
-        </div>
-
-        <button
-          type="submit"
-          class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded transition">
-          ذخیره اطلاعات
-        </button>
-      </form>
+          <div class="flex justify-end">
+            <button
+              v-if="canUpdate"
+              type="submit"
+              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              ذخیره اطلاعات
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useAccess } from "~/composables/useAccess";
+import { Resource } from "~/types/permissions";
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
+
+// دسترسی‌ها
+const { canRead, canUpdate } = useAccess(Resource.PROFILE);
 
 const { $axios } = useNuxtApp();
 
@@ -95,40 +106,53 @@ const form = ref<Profile>({
   address: "",
 });
 
-// گرفتن پروفایل
+// گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
-  console.log("fetchProfile called ✅");
+  if (!canRead) return;
+  console.log("start fetching")
   try {
-    const response = await $axios.get("/profile");
-     console.log("profile response:", response.data);
-    const { phoneNumber, nationalId, firstName, lastName, address } =
-      response.data;
-
+    const res = await $axios.get("/profile");
+    const { phoneNumber, nationalId, firstName, lastName, address } = res.data;
     form.value = { phoneNumber, nationalId, firstName, lastName, address };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
   }
 };
 
-// ذخیره تغییرات پروفایل
-const handleSubmit = async () => {
+// ذخیره تغییرات
+const saveProfile = async () => {
+  if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
   try {
     await $axios.patch("/profile", form.value);
     alert("اطلاعات با موفقیت ذخیره شد!");
+    await fetchProfile();
   } catch (err) {
     console.error("خطا در ذخیره پروفایل:", err);
     alert("ذخیره اطلاعات با مشکل مواجه شد.");
   }
 };
 
-onMounted(()=>{
-  console.log("mounted ✅");
-  fetchProfile()
-});
+onMounted(() => {
 
-// 🟦 middleware
-import dashboardAuth from "~/middleware/dashboard-auth";
-definePageMeta({
-  middleware: dashboardAuth,
+  fetchProfile();
 });
 </script>
+
+<style scoped>
+.container {
+  width: 90%;
+  margin: auto;
+}
+.title {
+  color: var(--blue-dark);
+  font-family: "iran-yekan-Bold";
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+.title img {
+  width: 50px;
+  height: 50px;
+}
+</style>
