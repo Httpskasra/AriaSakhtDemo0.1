@@ -79,7 +79,15 @@ import { ref, onMounted } from "vue";
 
 const { $axios } = useNuxtApp();
 
-const form = ref({
+interface Profile {
+  phoneNumber: string;
+  nationalId: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+}
+
+const form = ref<Profile>({
   phoneNumber: "",
   nationalId: "",
   firstName: "",
@@ -90,8 +98,11 @@ const form = ref({
 // گرفتن پروفایل
 const fetchProfile = async () => {
   try {
-    const { data } = await $axios.get("/profile");
-    form.value = { ...form.value, ...data };
+    const response = await $axios.get("/profile");
+    const { phoneNumber, nationalId, firstName, lastName, address } =
+      response.data;
+
+    form.value = { phoneNumber, nationalId, firstName, lastName, address };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
   }
