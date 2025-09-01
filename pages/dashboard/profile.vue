@@ -97,8 +97,10 @@ const form = ref<Profile>({
 
 // گرفتن پروفایل
 const fetchProfile = async () => {
+  console.log("fetchProfile called ✅");
   try {
     const response = await $axios.get("/profile");
+     console.log("profile response:", response.data);
     const { phoneNumber, nationalId, firstName, lastName, address } =
       response.data;
 
@@ -119,7 +121,10 @@ const handleSubmit = async () => {
   }
 };
 
-onMounted(fetchProfile);
+onMounted(()=>{
+  console.log("mounted ✅");
+  fetchProfile()
+});
 
 // 🟦 middleware
 import dashboardAuth from "~/middleware/dashboard-auth";
