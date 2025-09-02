@@ -64,7 +64,7 @@
             />
           </svg>
 
-          <span> (071)325 47 44</span>
+          <span> +989026995994</span>
         </div>
         <div class="item">
           <svg

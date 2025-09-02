@@ -14,7 +14,7 @@
     <div class="information">
       <ul>
         <li>
-          <span class="number">(025) 3886 25 16</span>
+          <span class="number">+989026995994</span>
           <svg
             width="18"
             height="18"

@@ -54,13 +54,13 @@
         <div class="flex flex-col gap-2 items-center">
           <div>
             <span class="material-icons align-middle text-[#1976d2]">call</span>
-            <span class="mr-2">۰۲۱-۱۲۳۴۵۶۷۸</span>
+            <span class="mr-2">+989026995994</span>
           </div>
           <div>
             <span class="material-icons align-middle text-[#1976d2]"
               >location_on</span
             >
-            <span class="mr-2">تهران، خیابان مثال، پلاک ۱۲۳</span>
+            <span class="mr-2">استان فارس ، شهعرستان شیراز ، شهرک کوثر ، رحمت ، کوچه (کاکتوس) ، کوچه (نرگس) پلاک 0و طبثه 1 و کد پستی 7158681439۱۲۳</span>
           </div>
         </div>
       </div>
