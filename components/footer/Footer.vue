@@ -40,7 +40,7 @@
             />
           </svg>
 
-          <span> کیلومتر 10 شهرک صنعتی پلاک 5</span>
+          <span> استان فارس ، شهعرستان شیراز ، شهرک کوثر ، رحمت ، کوچه (کاکتوس) ، کوچه (نرگس) پلاک 0و طبثه 1 و کد پستی 7158681439</span>
         </div>
         <div class="item">
           <svg
@@ -114,6 +114,7 @@
 
         <div>
           <p>© 2024 <strong>Shawonetc3</strong> . All Rights Reserved</p>
+          <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=642960&Code=Qvay7Yhqx0g2B6KsraXZkiqdnSVyvrYW'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=642960&Code=Qvay7Yhqx0g2B6KsraXZkiqdnSVyvrYW' alt='' style='cursor:pointer' code='Qvay7Yhqx0g2B6KsraXZkiqdnSVyvrYW'></a>
         </div>
       </div>
     </div>
