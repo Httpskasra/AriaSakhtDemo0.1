@@ -40,7 +40,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         originalRequest._retry = true;
         try {
           const { data } = await axios.post(
-            `${config.public.apiBase}/refresh`,
+            `${config.public.apiBase}/auth/refresh`,
             {
               refresh_token: authStore.getRefreshToken(),
             }
