@@ -11,9 +11,9 @@
 </template>
 <script setup lang="ts">
 import dashboardAuth from "~/middleware/dashboard-auth";
-definePageMeta({
-  middleware: dashboardAuth,
-});
+// definePageMeta({
+//   middleware: dashboardAuth,
+// });
 </script>
 <style scoped>
 .title {
@@ -21,7 +21,7 @@ definePageMeta({
   font-family: "iran-yekan-Bold";
   width: 230px;
   display: flex;
-    align-items: center;
+  align-items: center;
   justify-content: space-evenly;
   margin: 15px;
 }

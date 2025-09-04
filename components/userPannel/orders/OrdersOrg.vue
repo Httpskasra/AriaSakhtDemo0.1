@@ -34,23 +34,82 @@
       </div>
     </div>
     <div class="content">
-      <CompletedOrders v-if="selectedTab === 'completed'" />
-      <CurrentOrders v-if="selectedTab === 'current'" />
-      <CancelledOrders v-if="selectedTab === 'cancelled'" />
-      <ReturnedOrders v-if="selectedTab === 'returned'" />
+      <CompletedOrders
+        v-if="selectedTab === 'completed'"
+        :orders="completedOrders" />
+      <CurrentOrders v-if="selectedTab === 'current'" :orders="currentOrders" />
+      <CancelledOrders
+        v-if="selectedTab === 'cancelled'"
+        :orders="cancelledOrders" />
+      <ReturnedOrders
+        v-if="selectedTab === 'returned'"
+        :orders="returnedOrders" />
     </div>
   </div>
 </template>
 
 <script setup>
-// import { ref } from "vue";
-// import SearchBar from "../../Header/SearchBar.vue";
-// import CompletedOrders from "./CompletedOrders.vue";
-// import CurrentOrders from "./CurrentOrders.vue";
-// import CancelledOrders from "./CancelledOrders.vue";
-// import ReturnedOrders from "./ReturnedOrders.vue";
+import { ref, onMounted } from "vue";
 
+const { $axios } = useNuxtApp();
 const selectedTab = ref("completed");
+const orders = ref([]);
+const products = ref([]);
+const companies = ref([]);
+
+const completedOrders = ref([]);
+const currentOrders = ref([]);
+const cancelledOrders = ref([]);
+const returnedOrders = ref([]);
+
+const fetchOrders = async () => {
+  const res = await $axios.get("/orders");
+  orders.value = res.data.items ? res.data.items : [];
+  // گرفتن اطلاعات محصولات و کمپانی‌ها
+  const productIds = [
+    ...new Set(orders.value.flatMap((o) => o.items.map((i) => i.productId))),
+  ];
+  const companyIds = [...new Set(orders.value.map((o) => o.companyId))];
+  const productsRes = await $axios.get("/products", {
+    params: { ids: productIds },
+  });
+  products.value = productsRes.data;
+  const companiesRes = await $axios.get("/companies", {
+    params: { ids: companyIds },
+  });
+  companies.value = companiesRes.data;
+  // ترکیب اطلاعات سفارش با محصول و کمپانی
+  const ordersWithDetails = orders.value.map((order) => {
+    return {
+      ...order,
+      products: order.items.map((item) => {
+        const product =
+          products.value.find((p) => p._id === item.productId) || {};
+        return {
+          ...product,
+          quantity: item.quantity,
+        };
+      }),
+      company: companies.value.find((c) => c._id === order.companyId) || {},
+    };
+  });
+  completedOrders.value = ordersWithDetails.filter(
+    (o) => o.status === "completed"
+  );
+  currentOrders.value = ordersWithDetails.filter(
+    (o) => o.status === "pending" || o.status === "current"
+  );
+  cancelledOrders.value = ordersWithDetails.filter(
+    (o) => o.status === "cancelled"
+  );
+  returnedOrders.value = ordersWithDetails.filter(
+    (o) => o.status === "returned"
+  );
+};
+
+onMounted(() => {
+  fetchOrders();
+});
 </script>
 
 <style scoped>

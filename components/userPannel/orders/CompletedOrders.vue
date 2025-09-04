@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="item" v-for="order in orders" :key="order.id">
+    <div class="item" v-for="order in orders" :key="order._id">
       <span class="see-more">مشاهده جزئیات</span>
       <div class="status">
         <img src="/icons/check.png" alt="" />
@@ -9,15 +9,21 @@
       <div class="infos">
         <div class="info">
           <p class="name">شناسه تراکنش</p>
-          <p class="val">{{ order.id }}</p>
+          <p class="val">{{ order._id }}</p>
         </div>
         <div class="info">
           <p class="name">تاریخ ثبت</p>
-          <p class="val">{{ order.date }}</p>
+          <p class="val">
+            {{ order.createdAt ? order.createdAt.split("T")[0] : "" }}
+          </p>
         </div>
         <div class="info">
           <p class="name">زمان ثبت</p>
-          <p class="val">{{ order.time }}</p>
+          <p class="val">
+            {{
+              order.createdAt ? order.createdAt.split("T")[1]?.slice(0, 8) : ""
+            }}
+          </p>
         </div>
         <div class="info">
           <p class="name">مبلغ کل</p>
@@ -28,15 +34,15 @@
         <div
           class="product"
           v-for="product in limitedProducts(order.products)"
-          :key="product.id"
-        >
-          <img :src="product.img" alt="" />
+          :key="product._id">
+          <img :src="product.image || '/products/ajor.jpg'" alt="" />
           <p>{{ product.name }}</p>
           <div class="rate">
-            <Raiting />
+            <!-- <Raiting /> -->
           </div>
           <div class="price">
             <span>{{ product.price }} ریال</span>
+            <span>تعداد: {{ product.quantity }}</span>
           </div>
         </div>
       </div>
@@ -45,102 +51,19 @@
 </template>
 
 <script setup>
-const orders = ref([
-  {
-    id: 16784698,
-    date: "1403/10/08",
-    time: "23:45:08",
-    totalPrice: 1200000,
-
-    products: [
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-    ],
-  },
-  {
-    id: 16784698,
-    date: "1403/10/08",
-    time: "23:45:08",
-    totalPrice: 1200000,
-    products: [
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-    ],
-  },
-  {
-    id: 16784698,
-    date: "1403/10/08",
-    time: "23:45:08",
-    totalPrice: 1200000,
-    products: [
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-      {
-        id: 1,
-        name: "کفش اجر",
-        price: 1651653,
-        img: "/products/ajor.jpg",
-      },
-    ],
-  },
-]);
+defineProps({ orders: Array });
+import { ref, onMounted, onUnmounted } from "vue";
 const isMobile = ref(false);
 onMounted(() => {
   checkScreenSize();
   window.addEventListener("resize", checkScreenSize);
 });
-
 onUnmounted(() => {
   window.removeEventListener("resize", checkScreenSize);
 });
-
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth <= 767;
 };
-
-// تابع محدود کردن تعداد محصولات
 const limitedProducts = (products) => {
   const limit = isMobile.value ? 2 : 3;
   return products.slice(0, limit);
