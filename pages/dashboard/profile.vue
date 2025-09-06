@@ -15,8 +15,7 @@
               type="text"
               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               :disabled="!canUpdate"
-              required
-            />
+              required />
           </div>
 
           <div>
@@ -26,8 +25,7 @@
               type="text"
               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               :disabled="!canUpdate"
-              required
-            />
+              required />
           </div>
 
           <div>
@@ -36,8 +34,7 @@
               v-model="form.phoneNumber"
               type="tel"
               class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
-              disabled
-            />
+              disabled />
           </div>
 
           <div>
@@ -46,8 +43,7 @@
               v-model="form.nationalId"
               type="text"
               class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
-              disabled
-            />
+              disabled />
           </div>
 
           <div>
@@ -57,16 +53,14 @@
               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows="3"
               :disabled="!canUpdate"
-              required
-            ></textarea>
+              required></textarea>
           </div>
 
           <div class="flex justify-end">
             <button
               v-if="canUpdate"
               type="submit"
-              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-            >
+              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
               ذخیره اطلاعات
             </button>
           </div>
@@ -109,7 +103,7 @@ const form = ref<Profile>({
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
   if (!canRead) return;
-  console.log("start fetching")
+  console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
     const { phoneNumber, nationalId, firstName, lastName, address } = res.data;
@@ -133,7 +127,6 @@ const saveProfile = async () => {
 };
 
 onMounted(() => {
-
   fetchProfile();
 });
 </script>

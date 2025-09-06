@@ -22,7 +22,6 @@
         </div>
       </NuxtLink>
 
-
       <!-- Logout -->
       <button class="item" @click="handleLogOut">
         <div class="icon">
@@ -33,6 +32,7 @@
         </div>
       </button>
     </div>
+    <p class="h-[200px]"></p>
   </div>
 </template>
 
