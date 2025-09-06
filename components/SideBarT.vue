@@ -31,8 +31,8 @@
           <span>خروج</span>
         </div>
       </button>
+      <p class="h-[200px]"></p>
     </div>
-    <p class="h-[200px]"></p>
   </div>
 </template>
 
@@ -116,6 +116,7 @@ const handleLogOut = async () => {
 
 .body {
   margin-top: 20px;
+  padding-bottom: 100px;
 }
 
 .item {
