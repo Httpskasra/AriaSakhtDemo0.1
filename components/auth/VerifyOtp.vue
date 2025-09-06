@@ -129,6 +129,7 @@ const resendOtp = async () => {
 const resetTimer = async () => {
   inputs.value = Array(4).fill("");
   errorMessage.value = "";
+  loading.value = false;
   startTimer();
   await resendOtp();
   nextTick(() => otpRefs.value[0]?.focus());
