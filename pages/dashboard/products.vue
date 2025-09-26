@@ -53,7 +53,8 @@
                   class="px-2 py-1 rounded text-white"
                   :class="{
                     'bg-gray-500': product.status === 'draft',
-                    'bg-green-600': product.status === 'published',
+                    'bg-green-600': product.status === 'active',
+                    'bg-gray-600': product.status === 'inactive',
                     'bg-red-500': product.status === 'archived',
                   }">
                   {{ statusFa(product.status) }}
@@ -379,14 +380,98 @@ type Product = {
   images: ImageItem[];
   comments: string[];
   rating?: number;
-  status: "draft" | "published" | "archived";
+  status: "draft" | "active" | "inactive" | "archived";
 };
 
 const search = ref("");
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
-const products = ref<Product[]>([]);
+// const products = ref<Product[]>([]);
+
+const MOCK_PRODUCTS: Product[] = [
+  {
+    _id: "64f1a1c0a1b2c3d4e5f60001",
+    name: "سیمان پرتلند 50kg",
+    slug: "portland-cement-50kg",
+    sku: "CEM-001",
+    basePrice: 125000,
+    companyId: "60ad0bbf5b4c4a3f9c8f9b1a",
+    categories: ["60a1b2c3d4e5f60000000001"],
+    description: "سیمان پرتلند برای مصارف عمومی ساختمانی.",
+    stock: { quantity: 120 },
+    variants: [
+      {
+        name: "بسته‌بندی",
+        options: [
+          { value: "50kg", priceModifier: 0 },
+          { value: "25kg", priceModifier: -10000 },
+        ],
+      },
+    ],
+    attributes: { strength: "42.5 MPa", color: "خاکستری" },
+    tags: ["سیمان", "ساختمان"],
+    images: [{ url: "/mock/products/cement-50.jpg" }],
+    comments: [],
+    rating: 4.5,
+    status: "active",
+  },
+  {
+    _id: "64f1a1c0a1b2c3d4e5f60002",
+    name: "آهن میلگرد 12mm",
+    slug: "rebar-12mm",
+    sku: "REB-012",
+    basePrice: 220000,
+    companyId: "60ad0bbf5b4c4a3f9c8f9b1b",
+    categories: ["60a1b2c3d4e5f60000000002"],
+    description: "میلگرد فولادی استاندارد برای بتن مسلح.",
+    stock: { quantity: 500 },
+    variants: [{ name: "طول", options: [{ value: "6m", priceModifier: 0 }] }],
+    attributes: { grade: "A3", diameter: "12mm" },
+    tags: ["آهن", "سازه"],
+    images: [{ url: "/mock/products/rebar-12.jpg" }],
+    comments: [],
+    rating: 4.2,
+    status: "active",
+  },
+  {
+    _id: "64f1a1c0a1b2c3d4e5f60003",
+    name: "گچ ساختمانی",
+    slug: "building-gypsum",
+    sku: "GYPS-100",
+    basePrice: 45000,
+    companyId: "60ad0bbf5b4c4a3f9c8f9b1c",
+    categories: ["60a1b2c3d4e5f60000000003"],
+    description: "گچ نرم برای روکار دیوار و سقف.",
+    stock: { quantity: 250 },
+    variants: [],
+    attributes: { dryingTime: "24h" },
+    tags: ["گچ", "پوشش"],
+    images: [{ url: "/mock/products/gypsum.jpg" }],
+    comments: [],
+    rating: 3.8,
+    status: "draft",
+  },
+  {
+    _id: "64f1a1c0a1b2c3d4e5f60004",
+    name: "رنگ اکریلیک سفید 4L",
+    slug: "acrylic-white-4l",
+    sku: "PAINT-W-4L",
+    basePrice: 98000,
+    companyId: "60ad0bbf5b4c4a3f9c8f9b1d",
+    categories: ["60a1b2c3d4e5f60000000004"],
+    description: "رنگ اکریلیک پایه آب برای داخل ساختمان.",
+    stock: { quantity: 60 },
+    variants: [{ name: "حجم", options: [{ value: "4L", priceModifier: 0 }] }],
+    attributes: { finish: "مات" },
+    tags: ["رنگ", "داخلی"],
+    images: [{ url: "/mock/products/paint-white.jpg" }],
+    comments: [],
+    rating: 4.7,
+    status: "inactive",
+  },
+];
+const products = ref<Product[]>(MOCK_PRODUCTS);
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.PRODUCTS
@@ -443,7 +528,13 @@ function syncTagsFromInput() {
 }
 
 function statusFa(s: Product["status"]) {
-  return s === "draft" ? "پیش‌نویس" : s === "published" ? "منتشر شده" : "آرشیو";
+  return s === "draft"
+    ? "پیش‌نویس"
+    : s === "active"
+    ? "فعال"
+    : s === "inactive"
+    ? "غیر فعال"
+    : "آرشیو";
 }
 function numberFormat(n?: number) {
   if (typeof n !== "number") return "-";
