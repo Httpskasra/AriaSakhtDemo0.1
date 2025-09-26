@@ -99,14 +99,16 @@ const form = ref<Profile>({
   lastName: "",
   address: "",
 });
-
+const id = ref<string | null>(null);
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
   if (!canRead) return;
   console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
-    const { phoneNumber, nationalId, firstName, lastName, address } = res.data;
+    const { phoneNumber, nationalId, firstName, lastName, address, _id } =
+      res.data;
+    id.value = _id;
     form.value = { phoneNumber, nationalId, firstName, lastName, address };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
@@ -117,7 +119,7 @@ const fetchProfile = async () => {
 const saveProfile = async () => {
   if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
   try {
-    await $axios.patch("/profile", form.value);
+    await $axios.patch(`/profile/${id}`, form.value);
     alert("اطلاعات با موفقیت ذخیره شد!");
     await fetchProfile();
   } catch (err) {
