@@ -327,7 +327,8 @@
                 v-model="form.status"
                 class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="draft">پیش‌نویس</option>
-                <option value="published">منتشر شده</option>
+                <option value="active">فعال</option>
+                <option value="inactive">غیر فعال</option>
                 <option value="archived">آرشیو</option>
               </select>
             </div>
