@@ -128,12 +128,14 @@ span.number {
   direction: ltr;
   unicode-bidi: embed;
   font-size: 12px;
-  font-family: "iran-yekan-num-Regular";
+  font-family: "iran-yekan-num-Light";
 }
 span.addres {
   direction: ltr;
   width: 190px;
   font-size: 10px;
+  text-align: left;
+  font-family: "iran-yekan-Light";
 }
 @media (max-width: 768px) {
   .adds-sec {
@@ -158,6 +160,15 @@ span.addres {
   .information svg {
     width: 10px;
     height: 10px;
+  }
+  span.addres {
+    width: 80px;
+    font-size: 5px;
+  }
+  span.number {
+    direction: ltr;
+    unicode-bidi: embed;
+    font-size: 6px;
   }
 }
 </style>

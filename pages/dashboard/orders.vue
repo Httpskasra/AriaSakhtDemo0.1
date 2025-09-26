@@ -10,7 +10,7 @@
   </NuxtLayout>
 </template>
 <script setup lang="ts">
-import dashboardAuth from "~/middleware/dashboard-auth";
+// import dashboardAuth from "~/middleware/dashboard-auth";
 // definePageMeta({
 //   middleware: dashboardAuth,
 // });
