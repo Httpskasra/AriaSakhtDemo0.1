@@ -119,7 +119,7 @@ const fetchProfile = async () => {
 const saveProfile = async () => {
   if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
   try {
-    await $axios.patch(`/profile/${id}`, form.value);
+    await $axios.patch(`/profile/${id.value}`, form.value);
     alert("اطلاعات با موفقیت ذخیره شد!");
     await fetchProfile();
   } catch (err) {
