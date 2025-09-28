@@ -1,49 +1,33 @@
 <template>
   <div class="container">
-    <div class="item">
+    <div v-for="cat in categories" :key="cat" class="item">
       <div class="title">
-        <img src="/banner/images2.png" alt="" /><span class="name">
-          ساختمانی</span
-        >
+        <img src="/banner/images2.png" alt="" />
+        <span class="name">{{ cat }}</span>
       </div>
-      <div class="counter"><div class="num">8</div></div>
     </div>
-    <div class="item">
-      <div class="title">
-        <img src="/banner/images2.png" alt="" /><span class="name">
-          ساختمانی
-        </span>
-      </div>
-      <div class="counter"><div class="num">8</div></div>
-    </div>
-    <div class="item">
-      <div class="title">
-        <img src="/banner/images2.png" alt="" /><span class="name"
-          >ساختمانی</span
-        >
-      </div>
-      <div class="counter"><div class="num">8</div></div>
-    </div>
-    <div class="item">
-      <div class="title">
-        <img src="/banner/images2.png" alt="" /><span class="name"
-          >ساختمانی</span
-        >
-      </div>
-      <div class="counter"><div class="num">8</div></div>
-    </div>
-    <div class="item">
-      <div class="title">
-        <img src="/banner/images2.png" alt="" /><span class="name"
-          >ساختمانی</span
-        >
-      </div>
-      <div class="counter"><div class="num">8</div></div>
-    </div>
-
     <button class="show-more">مشاهده کامل</button>
   </div>
 </template>
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+
+const categories = ref<string[]>([]);
+const nuxtApp = useNuxtApp() as any;
+const api = nuxtApp.$axios as any;
+
+onMounted(async () => {
+  try {
+    const res = await api.get("/categories");
+    // Expecting array of objects with 'name' property
+    if (Array.isArray(res.data)) {
+      categories.value = res.data.slice(0, 8).map((cat: any) => cat.name);
+    }
+  } catch (e) {
+    categories.value = [];
+  }
+});
+</script>
 <style scoped>
 * {
   box-sizing: border-box;
@@ -94,7 +78,7 @@
 }
 .item .title {
   display: flex;
-  align-items: center; 
+  align-items: center;
 }
 .item img {
   height: 50px;
