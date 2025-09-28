@@ -13,8 +13,8 @@
           v-if="canCreate"
           @click="openModal()"
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-          + شرکت جدید
-        </button>
+          + افزودن       
+         </button>
       </div>
 
       <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
