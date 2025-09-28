@@ -70,6 +70,26 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
+            >شماره موبایل</label
+          >
+          <input
+            v-model="phoneNumber"
+            type="tel"
+            placeholder="+989123456789"
+            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >کد ملی</label
+          >
+          <input
+            v-model="nationalId"
+            type="text"
+            placeholder="2284280072"
+            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
             >دسترسی‌ها</label
           >
           <div class="resources-actions-list">
@@ -96,6 +116,35 @@
                     " />
                   <span>{{ action.label }}</span>
                 </label>
+              </div>
+
+              <!-- products-only: company selector -->
+              <div v-if="resource.value === Resource.PRODUCTS" class="mt-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >شرکت (برای محصولات)</label
+                >
+                <input
+                  v-model="companySearch"
+                  placeholder="جستجو شرکت..."
+                  class="w-full rounded-lg border-gray-300 shadow-sm px-3 py-2 mb-2" />
+                <div class="max-h-40 overflow-auto border rounded">
+                  <div
+                    v-for="c in filteredCompanies"
+                    :key="c._id || c.id"
+                    class="p-2 hover:bg-gray-100 cursor-pointer"
+                    @click="
+                      setCompanyForResource(
+                        resource.value,
+                        String(c._id || c.id)
+                      )
+                    ">
+                    {{ c.name }}
+                  </div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                  انتخاب شده:
+                  {{ selectedCompanyNameForResource(resource.value) || "هیچ" }}
+                </div>
               </div>
             </div>
           </div>
@@ -132,11 +181,6 @@ const actionOptions = [
   { value: Action.UPDATE, label: "ویرایش" },
   { value: Action.CREATE, label: "ایجاد" },
   { value: Action.DELETE, label: "حذف" },
-  { value: Action.MANAGE, label: "مدیریت" },
-  { value: Action.DEFAULT, label: "پیش‌فرض" },
-  { value: Action.deposit_company, label: "واریز شرکت" },
-  { value: Action.deposit_intermediary, label: "واریز واسطه" },
-  { value: Action.deposit_user, label: "واریز کاربر" },
 ];
 
 const resourceOptions = [
@@ -162,44 +206,7 @@ type Role = {
   description: string;
   permissions: Permission[];
 };
-
-const mockRoles: Role[] = [
-  {
-    id: "1",
-    name: "ادمین",
-    description: "دسترسی کامل به همه بخش‌ها",
-    permissions: resourceOptions.map((r) => ({
-      resource: r.value,
-      actions: [
-        Action.READ,
-        Action.UPDATE,
-        Action.CREATE,
-        Action.DELETE,
-        Action.MANAGE,
-      ],
-    })),
-  },
-  {
-    id: "2",
-    name: "اپراتور",
-    description: "دسترسی محدود به سفارش‌ها و محصولات",
-    permissions: [
-      { resource: Resource.ORDERS, actions: [Action.READ, Action.UPDATE] },
-      { resource: Resource.PRODUCTS, actions: [Action.READ, Action.UPDATE] },
-    ],
-  },
-  {
-    id: "3",
-    name: "مهمان",
-    description: "فقط مشاهده اطلاعات",
-    permissions: [
-      { resource: Resource.PRODUCTS, actions: [Action.READ] },
-      { resource: Resource.CATEGORIES, actions: [Action.READ] },
-    ],
-  },
-];
-
-const useMock = ref(true);
+// NOTE: mock roles removed. Fetch real data from API in onMounted.
 const roles = ref<Role[]>([]);
 const isModalOpen = ref(false);
 const editMode = ref(false);
@@ -209,6 +216,10 @@ const form = ref<Role>({
   description: "",
   permissions: [],
 });
+
+// companies for products selection
+const companies = ref<Array<{ id?: string; _id?: string; name: string }>>([]);
+const companySearch = ref("");
 
 const openCreateModal = () => {
   editMode.value = false;
@@ -245,9 +256,8 @@ const editRole = (role: Role) => {
 const deleteRole = (id: string) => {
   if (!canDelete) return alert("شما اجازه حذف ندارید!");
   if (!confirm("آیا از حذف این نقش مطمئن هستید؟")) return;
-  if (useMock.value) {
-    roles.value = roles.value.filter((r) => r.id !== id);
-  }
+  // optimistic local delete (replace with API call)
+  roles.value = roles.value.filter((r) => r.id !== id);
   // اگر API داشتی اینجا اضافه کن
 };
 
@@ -255,20 +265,53 @@ const closeModal = () => {
   isModalOpen.value = false;
 };
 
-const saveRole = () => {
+const saveRole = async () => {
   if (!canCreate && !editMode.value) return alert("شما اجازه ایجاد ندارید!");
   if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
-  if (useMock.value) {
-    if (editMode.value) {
-      const idx = roles.value.findIndex((r) => r.id === form.value.id);
-      if (idx !== -1) roles.value[idx] = { ...form.value };
-    } else {
-      form.value.id = Date.now().toString();
-      roles.value.push({ ...form.value });
-    }
-    isModalOpen.value = false;
+
+  // Build permissions payload, including companyId when set on permission
+  const permissionsPayload = form.value.permissions
+    .filter((p) => p.actions && p.actions.length > 0)
+    .map((p) => {
+      // @ts-ignore
+      const companyId = (p as any).companyId;
+      const out: any = { resource: p.resource, actions: p.actions };
+      if (companyId) out.companyId = companyId;
+      return out;
+    });
+
+  const body: any = {
+    phoneNumber: phoneNumber.value,
+    nationalId: nationalId.value,
+    permissions: permissionsPayload,
+  };
+
+  // If any top-level companyId selected (e.g., from products permission), set it
+  const prodPerm = form.value.permissions.find(
+    (p) => p.resource === Resource.PRODUCTS
+  );
+  // @ts-ignore
+  const topCompanyId = prodPerm ? (prodPerm as any).companyId : undefined;
+  if (topCompanyId) body.companyId = topCompanyId;
+
+  // optimistic local save (keep UI responsive)
+  if (editMode.value) {
+    const idx = roles.value.findIndex((r) => r.id === form.value.id);
+    if (idx !== -1) roles.value[idx] = { ...form.value };
+  } else {
+    form.value.id = Date.now().toString();
+    roles.value.push({ ...form.value });
   }
-  // اگر API داشتی اینجا اضافه کن
+  isModalOpen.value = false;
+
+  // send to API
+  try {
+    await axios.post("/admin-signup", body);
+    alert("ارسال با موفقیت انجام شد");
+  } catch (err) {
+    console.error("admin-signup failed:", err);
+    alert("خطا در ارسال به سرور");
+  }
 };
 
 // مدیریت انتخاب اکشن‌ها برای هر resource
@@ -291,6 +334,10 @@ function togglePermission(
 }
 
 import { useAccess } from "~/composables/useAccess";
+import { computed } from "vue";
+const nuxtApp = useNuxtApp();
+const axios = nuxtApp.$axios as any;
+
 // const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
 const { canCreate, canRead, canUpdate, canDelete } = {
   canCreate: true,
@@ -299,9 +346,44 @@ const { canCreate, canRead, canUpdate, canDelete } = {
   canDelete: true,
 };
 
-onMounted(() => {
-  if (useMock.value) roles.value = mockRoles;
-  // اگر API داشتی اینجا fetch کن
+// phone + national inputs
+const phoneNumber = ref("");
+const nationalId = ref("");
+
+const filteredCompanies = computed(() => {
+  const q = companySearch.value.trim().toLowerCase();
+  if (!q) return companies.value;
+  return companies.value.filter((c) => c.name.toLowerCase().includes(q));
+});
+
+function setCompanyForResource(resource: Resource, companyId: string) {
+  const perm = form.value.permissions.find((p) => p.resource === resource);
+  if (!perm) return;
+  // attach companyId to this permission
+  // @ts-ignore
+  (perm as any).companyId = companyId;
+}
+
+function selectedCompanyNameForResource(resource: Resource) {
+  const perm = form.value.permissions.find((p) => p.resource === resource);
+  // @ts-ignore
+  const cid = perm ? (perm as any).companyId : undefined;
+  if (!cid) return "";
+  const found = companies.value.find((c) => (c._id || c.id) === cid);
+  return found ? found.name : "";
+}
+
+onMounted(async () => {
+  // fetch companies from /companies
+  try {
+    const { data } = await axios.get("/companies");
+    // expect data to be array of companies
+    companies.value = Array.isArray(data) ? data : data.data || [];
+  } catch (err) {
+    console.error("Failed to fetch companies:", err);
+  }
+
+  // TODO: fetch roles from API here and populate `roles`.
 });
 </script>
 
