@@ -153,7 +153,7 @@
         >
       </li>
       <li>
-        <NuxtLink to="/">
+        <NuxtLink to="/colabration">
           <svg
             width="24"
             height="24"
