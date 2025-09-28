@@ -15,5 +15,4 @@ const { authStep, setStep } = useAuthStep();
 </script>
 
 <style scoped>
-/* اگر استایل خاصی برای modal-overlay داشتی، حذف کن */
 </style>
