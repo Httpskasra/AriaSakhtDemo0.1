@@ -14,6 +14,13 @@
       </div>
       <div v-if="canRead" class="list">
         <table>
+          <thead>
+            <tr>
+              <th>نام نقش</th>
+              <th>توضیحات</th>
+              <th v-if="canUpdate || canDelete">عملیات</th>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="role in roles" :key="role.id">
               <td>{{ role.name }}</td>
@@ -42,25 +49,6 @@
         {{ editMode ? "ویرایش نقش" : "ایجاد نقش جدید" }}
       </h2>
       <form class="space-y-5" @submit.prevent="saveRole">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >نام نقش</label
-          >
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >توضیحات</label
-          >
-          <textarea
-            v-model="form.description"
-            rows="3"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition"></textarea>
-        </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >شماره موبایل</label
@@ -195,8 +183,6 @@ const resourceOptions = [
 
 type Role = {
   id: string;
-  name: string;
-  description: string;
   permissions: Permission[];
 };
 // NOTE: mock roles removed. Fetch real data from API in onMounted.
@@ -205,8 +191,6 @@ const isModalOpen = ref(false);
 const editMode = ref(false);
 const form = ref<Role>({
   id: "",
-  name: "",
-  description: "",
   permissions: [],
 });
 
@@ -218,8 +202,6 @@ const openCreateModal = () => {
   editMode.value = false;
   form.value = {
     id: "",
-    name: "",
-    description: "",
     permissions: resourceOptions.map((r) => ({
       resource: r.value,
       actions: [],
@@ -239,8 +221,6 @@ const editRole = (role: Role) => {
   });
   form.value = {
     id: role.id,
-    name: role.name,
-    description: role.description,
     permissions,
   };
   isModalOpen.value = true;
