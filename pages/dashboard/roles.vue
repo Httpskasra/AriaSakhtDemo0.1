@@ -14,13 +14,6 @@
       </div>
       <div v-if="canRead" class="list">
         <table>
-          <thead>
-            <tr>
-              <th>نام نقش</th>
-              <th>توضیحات</th>
-              <th v-if="canUpdate || canDelete">عملیات</th>
-            </tr>
-          </thead>
           <tbody>
             <tr v-for="role in roles" :key="role.id">
               <td>{{ role.name }}</td>
@@ -197,7 +190,7 @@ const resourceOptions = [
   { value: Resource.USERS, label: "کاربران" },
   { value: Resource.WALLETS, label: "کیف پول" },
   { value: Resource.PROFILE, label: "پروفایل" },
-  { value: Resource.ALL, label: "همه" },
+
 ];
 
 type Role = {
@@ -306,7 +299,7 @@ const saveRole = async () => {
 
   // send to API
   try {
-    await axios.post("/admin-signup", body);
+    await axios.post("auth/admin-signup", body);
     alert("ارسال با موفقیت انجام شد");
   } catch (err) {
     console.error("admin-signup failed:", err);
