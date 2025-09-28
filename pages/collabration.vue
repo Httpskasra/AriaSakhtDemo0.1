@@ -153,19 +153,37 @@ async function submit() {
   success.value = null;
   loading.value = true;
   try {
-    // Use FormData to allow file upload
-    const fd = new FormData();
-    fd.append("name", form.name);
-    fd.append("email", form.email);
-    fd.append("phone", form.phone);
-    fd.append("registrationNumber", form.registrationNumber);
-    fd.append("address", form.address);
-    fd.append("isActive", "true");
-    if (form.image) fd.append("image", form.image);
+    // Backend expects string fields in JSON. Convert file to base64 string if provided.
+    async function fileToBase64(file: File) {
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    }
 
-    const res = await api.post("/companies", fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const payload: Record<string, string> = {
+      name: String(form.name || ""),
+      email: String(form.email || ""),
+      phone: String(form.phone || ""),
+      registrationNumber: String(form.registrationNumber || ""),
+      address: String(form.address || ""),
+      isActive: String(true),
+      image: "",
+    };
+
+    if (form.image) {
+      try {
+        payload.image = await fileToBase64(form.image);
+      } catch (e) {
+        // If base64 conversion fails, leave image empty and continue
+        console.warn("image convert failed", e);
+        payload.image = "";
+      }
+    }
+
+    const res = await api.post("/companies", payload);
 
     success.value = "اطلاعات با موفقیت ارسال شد.";
     resetForm();
