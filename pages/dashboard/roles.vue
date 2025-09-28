@@ -23,8 +23,6 @@
           </thead>
           <tbody>
             <tr v-for="role in roles" :key="role.id">
-              <td>{{ role.name }}</td>
-              <td>{{ role.description }}</td>
               <td v-if="canUpdate || canDelete" class="actions">
                 <button v-if="canUpdate" class="edit" @click="editRole(role)">
                   ویرایش
