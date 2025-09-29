@@ -16,13 +16,19 @@
         <table>
           <thead>
             <tr>
-              <th>نام نقش</th>
-              <th>توضیحات</th>
+              <th>شماره تماس</th>
+              <th>کد ملی</th>
+              <th>دسترسی‌ها</th>
               <th v-if="canUpdate || canDelete">عملیات</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="role in roles" :key="role.id">
+              <td>{{ role.phoneNumber || "-" }}</td>
+              <td>{{ role.nationalId || "-" }}</td>
+              <td class="permissions-cell">
+                {{ formatPermissions(role.permissions) || "-" }}
+              </td>
               <td v-if="canUpdate || canDelete" class="actions">
                 <button v-if="canUpdate" class="edit" @click="editRole(role)">
                   ویرایش
@@ -176,11 +182,12 @@ const resourceOptions = [
   { value: Resource.USERS, label: "کاربران" },
   { value: Resource.WALLETS, label: "کیف پول" },
   { value: Resource.PROFILE, label: "پروفایل" },
-
 ];
 
 type Role = {
   id: string;
+  phoneNumber?: string;
+  nationalId?: string;
   permissions: Permission[];
 };
 // NOTE: mock roles removed. Fetch real data from API in onMounted.
@@ -189,6 +196,8 @@ const isModalOpen = ref(false);
 const editMode = ref(false);
 const form = ref<Role>({
   id: "",
+  phoneNumber: "",
+  nationalId: "",
   permissions: [],
 });
 
@@ -200,6 +209,8 @@ const openCreateModal = () => {
   editMode.value = false;
   form.value = {
     id: "",
+    phoneNumber: "",
+    nationalId: "",
     permissions: resourceOptions.map((r) => ({
       resource: r.value,
       actions: [],
@@ -219,17 +230,27 @@ const editRole = (role: Role) => {
   });
   form.value = {
     id: role.id,
+    phoneNumber: role.phoneNumber || "",
+    nationalId: role.nationalId || "",
     permissions,
   };
   isModalOpen.value = true;
 };
 
-const deleteRole = (id: string) => {
+const deleteRole = async (id: string) => {
   if (!canDelete) return alert("شما اجازه حذف ندارید!");
   if (!confirm("آیا از حذف این نقش مطمئن هستید؟")) return;
-  // optimistic local delete (replace with API call)
+  // optimistic UI
+  const prev = [...roles.value];
   roles.value = roles.value.filter((r) => r.id !== id);
-  // اگر API داشتی اینجا اضافه کن
+  try {
+    await axios.delete(`/users/${id}`);
+    // success
+  } catch (err) {
+    console.error("failed to delete user", err);
+    alert("خطا در حذف از سرور");
+    roles.value = prev; // rollback
+  }
 };
 
 const closeModal = () => {
@@ -252,8 +273,8 @@ const saveRole = async () => {
     });
 
   const body: any = {
-    phoneNumber: phoneNumber.value,
-    nationalId: nationalId.value,
+    phoneNumber: form.value.phoneNumber,
+    nationalId: form.value.nationalId,
     permissions: permissionsPayload,
   };
 
@@ -266,21 +287,35 @@ const saveRole = async () => {
   if (topCompanyId) body.companyId = topCompanyId;
 
   // optimistic local save (keep UI responsive)
-  if (editMode.value) {
-    const idx = roles.value.findIndex((r) => r.id === form.value.id);
-    if (idx !== -1) roles.value[idx] = { ...form.value };
-  } else {
-    form.value.id = Date.now().toString();
-    roles.value.push({ ...form.value });
-  }
   isModalOpen.value = false;
-
-  // send to API
   try {
-    await axios.post("auth/admin-signup", body);
-    alert("ارسال با موفقیت انجام شد");
+    if (editMode.value) {
+      // update user
+      await axios.put(`/users/${form.value.id}`, body);
+      const idx = roles.value.findIndex((r) => r.id === form.value.id);
+      if (idx !== -1) {
+        roles.value[idx] = { ...form.value } as Role;
+      }
+      alert("ویرایش با موفقیت انجام شد");
+    } else {
+      // create user
+      const { data } = await axios.post("auth/admin-signup", body);
+      // try to use server id if returned
+      const newId =
+        data && (data._id || data.id || data.userId)
+          ? data._id || data.id || data.userId
+          : Date.now().toString();
+      const newRole: Role = {
+        id: String(newId),
+        phoneNumber: form.value.phoneNumber,
+        nationalId: form.value.nationalId,
+        permissions: form.value.permissions,
+      };
+      roles.value.push(newRole);
+      alert("ایجاد با موفقیت انجام شد");
+    }
   } catch (err) {
-    console.error("admin-signup failed:", err);
+    console.error("saveRole failed:", err);
     alert("خطا در ارسال به سرور");
   }
 };
@@ -303,8 +338,6 @@ function togglePermission(
     perm.actions = perm.actions.filter((a) => a !== action);
   }
 }
-
-import { useAccess } from "~/composables/useAccess";
 import { computed } from "vue";
 const nuxtApp = useNuxtApp();
 const axios = nuxtApp.$axios as any;
@@ -353,9 +386,29 @@ onMounted(async () => {
   } catch (err) {
     console.error("Failed to fetch companies:", err);
   }
-
-  // TODO: fetch roles from API here and populate `roles`.
+  // fetch users and populate roles list
+  try {
+    const { data } = await axios.get("/users");
+    const users = Array.isArray(data) ? data : data.data || [];
+    roles.value = users.map((u: any) => ({
+      id: String(u._id || u.id || u.userId || u._id),
+      phoneNumber: u.phoneNumber || u.phone || u.mobile || "",
+      nationalId: u.nationalId || u.nationalID || u.nationalid || "",
+      permissions: Array.isArray(u.permissions) ? u.permissions : [],
+    }));
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
+  }
 });
+
+function formatPermissions(perms: Permission[] = []) {
+  return perms
+    .map(
+      (p) =>
+        `${p.resource}: ${Array.isArray(p.actions) ? p.actions.join(",") : ""}`
+    )
+    .join(" | ");
+}
 </script>
 
 <style scoped>
