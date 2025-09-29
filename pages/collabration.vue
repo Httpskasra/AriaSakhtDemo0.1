@@ -203,8 +203,8 @@ async function submit() {
 </script>
 
 <style scoped>
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 * {
   font-family: "iran-yekan-DemiBold";
 }
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 </style>

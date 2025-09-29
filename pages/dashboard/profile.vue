@@ -6,51 +6,75 @@
         <img src="/icons/info.png" alt="profile" />
       </div>
 
-      <div class="bg-white rounded-lg shadow p-6 w-full max-w-xl mx-auto">
-        <form @submit.prevent="saveProfile" class="space-y-4">
+      <div class="w-full max-w-xl mx-auto">
+        <form
+          @submit.prevent="saveProfile"
+          class="bg-white rounded-2xl shadow-md p-8 flex flex-col gap-6">
           <div>
-            <label class="block text-sm font-medium mb-1">نام</label>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >نام</label
+            >
             <input
               v-model="form.firstName"
               type="text"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
               :disabled="!canUpdate"
               required />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">نام خانوادگی</label>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >نام خانوادگی</label
+            >
             <input
               v-model="form.lastName"
               type="text"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
               :disabled="!canUpdate"
               required />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">شماره موبایل</label>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >ایمیل</label
+            >
+            <input
+              v-model="form.email"
+              type="email"
+              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
+              :disabled="!canUpdate"
+              required />
+          </div>
+
+          <div>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >شماره موبایل</label
+            >
             <input
               v-model="form.phoneNumber"
               type="tel"
-              class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
+              class="w-full rounded-lg border border-gray-200 p-3 bg-gray-100 text-left"
               disabled />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">کد ملی</label>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >کد ملی</label
+            >
             <input
               v-model="form.nationalId"
               type="text"
-              class="w-full border rounded px-3 py-2 bg-gray-100 text-left"
+              class="w-full rounded-lg border border-gray-200 p-3 bg-gray-100 text-left"
               disabled />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">آدرس</label>
+            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+              >آدرس</label
+            >
             <textarea
               v-model="form.address"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
               rows="3"
               :disabled="!canUpdate"
               required></textarea>
@@ -60,7 +84,7 @@
             <button
               v-if="canUpdate"
               type="submit"
-              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+              class="bg-[#1976d2] disabled:opacity-60 text-white rounded-lg py-3 font-bold hover:bg-[#125ea7] transition">
               ذخیره اطلاعات
             </button>
           </div>
@@ -74,10 +98,10 @@
 import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
-definePageMeta({
-  middleware: dashboardAuth,
-});
+// import dashboardAuth from "~/middleware/dashboard-auth";
+// definePageMeta({
+//   middleware: dashboardAuth,
+// });
 
 // دسترسی‌ها
 const { canRead, canUpdate } = useAccess(Resource.PROFILE);
@@ -90,6 +114,7 @@ interface Profile {
   firstName: string;
   lastName: string;
   address: string;
+  email: String;
 }
 
 const form = ref<Profile>({
@@ -98,6 +123,7 @@ const form = ref<Profile>({
   firstName: "",
   lastName: "",
   address: "",
+  email: "",
 });
 const id = ref<string | null>(null);
 // گرفتن اطلاعات پروفایل
@@ -106,10 +132,24 @@ const fetchProfile = async () => {
   console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
-    const { phoneNumber, nationalId, firstName, lastName, address, _id } =
-      res.data;
+    const {
+      phoneNumber,
+      nationalId,
+      firstName,
+      lastName,
+      address,
+      _id,
+      email,
+    } = res.data;
     id.value = _id;
-    form.value = { phoneNumber, nationalId, firstName, lastName, address };
+    form.value = {
+      phoneNumber,
+      nationalId,
+      firstName,
+      lastName,
+      address,
+      email,
+    };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
   }
