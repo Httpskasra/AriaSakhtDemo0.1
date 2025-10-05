@@ -156,10 +156,10 @@
 import { ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
-// import dashboardAuth from "~/middleware/dashboard-auth";
-// definePageMeta({
-//   middleware: dashboardAuth,
-// });
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 // داده mock برای تست سریع
 const actionOptions = [
   { value: Action.READ, label: "خواندن" },

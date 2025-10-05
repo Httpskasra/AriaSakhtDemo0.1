@@ -98,10 +98,10 @@
 import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-// import dashboardAuth from "~/middleware/dashboard-auth";
-// definePageMeta({
-//   middleware: dashboardAuth,
-// });
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 
 // دسترسی‌ها
 const { canRead, canUpdate } = useAccess(Resource.PROFILE);

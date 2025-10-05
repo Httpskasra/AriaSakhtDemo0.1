@@ -362,10 +362,10 @@ import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-// import dashboardAuth from "~/middleware/dashboard-auth";
-
-// definePageMeta({ middleware: dashboardAuth });
-
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 type VariantOption = { value: string; priceModifier: number };
 type Variant = { name: string; options: VariantOption[] };
 type ImageItem = { url: string };
