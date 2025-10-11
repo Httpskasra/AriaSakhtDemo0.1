@@ -298,13 +298,32 @@ const saveRole = async () => {
   isModalOpen.value = false;
   try {
     if (editMode.value) {
-      // update user
-      await axios.put(`/users/${form.value.id}`, body);
-      const idx = roles.value.findIndex((r) => r.id === form.value.id);
-      if (idx !== -1) {
-        roles.value[idx] = { ...form.value } as Role;
+      // update permissions via dedicated endpoint
+      try {
+        // send permissions only to the permissions endpoint
+        await axios.patch(`/auth/users/${form.value.id}/permissions`, {
+          permissions: permissionsPayload,
+        });
+        // also update simple profile fields on /users/:id
+        await axios.put(`/users/${form.value.id}`, {
+          phoneNumber: form.value.phoneNumber,
+          nationalId: form.value.nationalId,
+        });
+
+        const idx = roles.value.findIndex((r) => r.id === form.value.id);
+        if (idx !== -1) {
+          roles.value[idx] = {
+            ...roles.value[idx],
+            phoneNumber: form.value.phoneNumber,
+            nationalId: form.value.nationalId,
+            permissions: form.value.permissions,
+          } as Role;
+        }
+        alert("ویرایش با موفقیت انجام شد");
+      } catch (err) {
+        console.error("failed to update permissions/profile:", err);
+        throw err;
       }
-      alert("ویرایش با موفقیت انجام شد");
     } else {
       // create user
       const { data } = await axios.post("auth/admin-signup", body);
@@ -409,12 +428,21 @@ onMounted(async () => {
   }
   // fetch users and populate roles list
   try {
-    const { data } = await axios.get("/users");
-    const users = Array.isArray(data) ? data : data.data || [];
-    roles.value = users.map((u: any) => ({
-      id: String(u._id || u.id || u.userId || u._id),
-      phoneNumber: u.phoneNumber || u.phone || u.mobile || "",
-      nationalId: u.nationalId || u.nationalID || u.nationalid || "",
+    const { data } = await axios.get("/users/created-by-super");
+    // response shape: { items: [...], total }
+    const items = Array.isArray(data)
+      ? data
+      : data.items || data.data?.items || [];
+    roles.value = (items || []).map((u: any) => ({
+      id: String(u.id || u._id || u.userId || ""),
+      phoneNumber:
+        u.phoneNumber || u.phone || u.mobile || u.profile?.phoneNumber || "",
+      nationalId:
+        u.nationalId ||
+        u.nationalID ||
+        u.nationalid ||
+        u.profile?.nationalId ||
+        "",
       permissions: Array.isArray(u.permissions) ? u.permissions : [],
     }));
   } catch (err) {
