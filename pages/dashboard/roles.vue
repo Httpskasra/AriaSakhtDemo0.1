@@ -58,7 +58,7 @@
             >شماره موبایل</label
           >
           <input
-            v-model="phoneNumber"
+            v-model="form.phoneNumber"
             type="tel"
             placeholder="+989123456789"
             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
@@ -68,7 +68,7 @@
             >کد ملی</label
           >
           <input
-            v-model="nationalId"
+            v-model="form.nationalId"
             type="text"
             placeholder="2284280072"
             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
@@ -82,7 +82,17 @@
               v-for="resource in resourceOptions"
               :key="resource.value"
               class="resource-block">
-              <div class="resource-title">{{ resource.label }}</div>
+              <div class="resource-header">
+                <div class="resource-title">{{ resource.label }}</div>
+                <button
+                  type="button"
+                  class="toggle-all-btn"
+                  @click="toggleAll(resource.value)">
+                  {{
+                    allChecked(resource.value) ? "برداشتن تیک همه" : "تیک همه"
+                  }}
+                </button>
+              </div>
               <div class="actions-list">
                 <label
                   v-for="action in actionOptions"
@@ -169,11 +179,9 @@ const actionOptions = [
 ];
 
 const resourceOptions = [
-  { value: Resource.CARTS, label: "سبد خرید" },
   { value: Resource.CATEGORIES, label: "دسته‌بندی‌ها" },
   { value: Resource.COMPANIES, label: "شرکت‌ها" },
   { value: Resource.ORDERS, label: "سفارش‌ها" },
-  { value: Resource.PAYMENT, label: "پرداخت" },
   { value: Resource.PRODUCTS, label: "محصولات" },
   { value: Resource.ROLES, label: "نقش‌ها" },
   { value: Resource.TICKETING, label: "تیکتینگ" },
@@ -338,6 +346,21 @@ function togglePermission(
     perm.actions = perm.actions.filter((a) => a !== action);
   }
 }
+// toggle all actions for a resource
+function allChecked(resource: Resource) {
+  const perm = form.value.permissions.find((p) => p.resource === resource);
+  if (!perm) return false;
+  return actionOptions.every((a) => perm.actions.includes(a.value));
+}
+function toggleAll(resource: Resource) {
+  const perm = form.value.permissions.find((p) => p.resource === resource);
+  if (!perm) return;
+  if (allChecked(resource)) {
+    perm.actions = [];
+  } else {
+    perm.actions = actionOptions.map((a) => a.value);
+  }
+}
 import { computed } from "vue";
 const nuxtApp = useNuxtApp();
 const axios = nuxtApp.$axios as any;
@@ -350,9 +373,7 @@ const { canCreate, canRead, canUpdate, canDelete } = {
   canDelete: true,
 };
 
-// phone + national inputs
-const phoneNumber = ref("");
-const nationalId = ref("");
+// note: phone/national are stored on `form` (bound to inputs) so no separate refs
 
 const filteredCompanies = computed(() => {
   const q = companySearch.value.trim().toLowerCase();
@@ -498,6 +519,23 @@ function formatPermissions(perms: Permission[] = []) {
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 4px;
+}
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.toggle-all-btn {
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  color: var(--blue-dark);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.toggle-all-btn:hover {
+  background: rgba(59, 130, 246, 0.06);
+  cursor: pointer;
 }
 .resource-title {
   font-size: 14px;
