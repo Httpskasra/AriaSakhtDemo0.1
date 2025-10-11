@@ -11,17 +11,19 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-
 const categories = ref<string[]>([]);
-const nuxtApp = useNuxtApp() as any;
-const api = nuxtApp.$axios as any;
+const { $axios } = useNuxtApp();
 
 onMounted(async () => {
   try {
-    const res = await api.get("/categories");
+    const res = await $axios.get("/categories");
     // Expecting array of objects with 'name' property
     if (Array.isArray(res.data)) {
-      categories.value = res.data.slice(0, 8).map((cat: any) => cat.name);
+      categories.value = res.data.slice(0, 8).map((cat: any) => {
+        if (cat.status === "active" && cat.parentId === "") {
+          return cat.name;
+        }
+      });
     }
   } catch (e) {
     categories.value = [];

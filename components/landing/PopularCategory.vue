@@ -2,82 +2,97 @@
   <section class="some-cat">
     <div class="cats">
       <div class="header">
-        <img src="/products/building-material.jpg" alt="" />
+        <!-- <img
+          src="/categoriesIcons/Building-Materials-solid.jpg"
+          class="rounded-lg"
+          alt="" /> -->
+        <h3 class="py-5">مصالح جامد</h3>
       </div>
       <div class="sub-cats">
         <div class="sub-cat">
-          <img src="/products/1.webp" alt="" />
-          <p class="name">تیر آهن</p>
-          <span class="strock">90 مورد</span>
+          <img src="/categoriesIcons/ahan.jpg" alt="" />
+          <p class="name">فلز</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/2.webp" alt="" />
-          <p class="name">میلگرد</p>
-          <span class="strock">9 مورد</span>
+          <img src="/categoriesIcons/ajor.jpg" alt="" />
+          <p class="name">آجر</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/3.webp" alt="" />
-          <p class="name">قوطی</p>
-          <span class="strock">12 مورد</span>
+          <img src="/categoriesIcons/beton.jpg" alt="" />
+          <p class="name">بتن</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/4.jpg" alt="" />
-          <p class="name">نبشی</p>
-          <span class="strock">6 مورد</span>
+          <img src="/categoriesIcons/chob.jpg" alt="" />
+          <p class="name">چوب</p>
         </div>
       </div>
     </div>
     <div class="cats">
       <div class="header">
-        <img src="/products/building-material.jpg" alt="" />
+        <!-- <img
+          src="/categoriesIcons/Building-Materials-solid.jpg"
+          class="rounded-lg"
+          alt="" /> -->
+        <h3 class="py-5">مصالح پودری</h3>
       </div>
       <div class="sub-cats">
         <div class="sub-cat">
-          <img src="/products/1.webp" alt="" />
-          <p class="name">تیر آهن</p>
-          <span class="strock">90 مورد</span>
+          <img src="/categoriesIcons/siman.jpg" alt="" />
+          <p class="name">سیمان</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/2.webp" alt="" />
-          <p class="name">میلگرد</p>
-          <span class="strock">9 مورد</span>
+          <img src="/categoriesIcons/gach.webp" alt="" />
+          <p class="name">گچ</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/3.webp" alt="" />
-          <p class="name">قوطی</p>
-          <span class="strock">12 مورد</span>
+          <img src="/categoriesIcons/sang.jpg" alt="" />
+          <p class="name">پودر سنگ</p>
+        </div>
+        <!-- <div class="sub-cat">
+          <img src="/categoriesIcons/chob.jpg" alt="" />
+          <p class="name">چوب</p>
+        </div> -->
+      </div>
+    </div>
+    <div class="cats">
+      <div class="header">
+        <!-- <img
+          src="/categoriesIcons/Building-Materials-solid.jpg"
+          class="rounded-lg"
+          alt="" /> -->
+        <h3 class="py-5">مصالح مایع</h3>
+      </div>
+      <div class="sub-cats">
+        <div class="sub-cat">
+          <img src="/categoriesIcons/color.jpg" alt="" />
+          <p class="name">رنگ</p>
         </div>
         <div class="sub-cat">
-          <img src="/products/4.jpg" alt="" />
-          <p class="name">نبشی</p>
-          <span class="strock">6 مورد</span>
+          <img src="/categoriesIcons/chasb.png" alt="" />
+          <p class="name">چسب</p>
         </div>
       </div>
     </div>
     <div class="cats">
       <div class="header">
-        <img src="/products/building-material.jpg" alt="" />
+        <!-- <img
+          src="/categoriesIcons/Building-Materials-solid.jpg"
+          class="rounded-lg"
+          alt="" /> -->
+        <h3 class="py-5">مصالح نوین</h3>
       </div>
-      <div class="sub-cats">
+      <div class="sub-cats" style="width: 100%">
         <div class="sub-cat">
-          <img src="/products/1.webp" alt="" />
-          <p class="name">تیر آهن</p>
-          <span class="strock">90 مورد</span>
+          <img src="/categoriesIcons/window.jpg" alt="" />
+          <p
+            class="name"
+            style="font-size: 8px; font-family: 'iran-yekan-Bold'">
+            شیشه‌های هوشمند
+          </p>
         </div>
         <div class="sub-cat">
-          <img src="/products/2.webp" alt="" />
-          <p class="name">میلگرد</p>
-          <span class="strock">9 مورد</span>
-        </div>
-        <div class="sub-cat">
-          <img src="/products/3.webp" alt="" />
-          <p class="name">قوطی</p>
-          <span class="strock">12 مورد</span>
-        </div>
-        <div class="sub-cat">
-          <img src="/products/4.jpg" alt="" />
-          <p class="name">نبشی</p>
-          <span class="strock">6 مورد</span>
+          <img src="/categoriesIcons/nano.jpg" alt="" />
+          <p class="name">مواد نانویی</p>
         </div>
       </div>
     </div>
