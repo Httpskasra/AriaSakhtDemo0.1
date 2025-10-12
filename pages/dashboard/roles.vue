@@ -33,12 +33,6 @@
                 <button v-if="canUpdate" class="edit" @click="editRole(role)">
                   ویرایش
                 </button>
-                <button
-                  v-if="canDelete"
-                  class="delete"
-                  @click="deleteRole(role.id)">
-                  حذف
-                </button>
               </td>
             </tr>
           </tbody>
@@ -245,22 +239,6 @@ const editRole = (role: Role) => {
   isModalOpen.value = true;
 };
 
-const deleteRole = async (id: string) => {
-  if (!canDelete) return alert("شما اجازه حذف ندارید!");
-  if (!confirm("آیا از حذف این نقش مطمئن هستید؟")) return;
-  // optimistic UI
-  const prev = [...roles.value];
-  roles.value = roles.value.filter((r) => r.id !== id);
-  try {
-    await axios.delete(`/users/${id}`);
-    // success
-  } catch (err) {
-    console.error("failed to delete user", err);
-    alert("خطا در حذف از سرور");
-    roles.value = prev; // rollback
-  }
-};
-
 const closeModal = () => {
   isModalOpen.value = false;
 };
@@ -303,9 +281,6 @@ const saveRole = async () => {
         // send permissions only to the permissions endpoint
         await axios.patch(`/auth/users/${form.value.id}/permissions`, {
           permissions: permissionsPayload,
-        });
-        // also update simple profile fields on /users/:id
-        await axios.put(`/users/${form.value.id}`, {
           phoneNumber: form.value.phoneNumber,
           nationalId: form.value.nationalId,
         });
