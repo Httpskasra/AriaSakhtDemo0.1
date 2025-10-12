@@ -42,7 +42,7 @@ const axios = nuxtApp.$axios as any;
 
 async function loadTopSales() {
   try {
-    const { data } = await axios.get("/top-sales");
+    const { data } = await axios.get("/products/top-sales");
     const topSales: TopSale[] = data || [];
 
     // Fetch product details in parallel
