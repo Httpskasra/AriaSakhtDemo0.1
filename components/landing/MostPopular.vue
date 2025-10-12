@@ -2,39 +2,79 @@
   <section class="most-popular">
     <h3>پر فروش ترین ها</h3>
     <div class="products">
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
-      <div class="product">
-        <img src="/products/siman.jpeg" alt="" />
-        <p>سیمان پرتلند</p>
-      </div>
+      <template v-if="loading">
+        <div class="product" v-for="n in 6" :key="'skeleton-' + n">
+            <p>...</p>
+        </div>
+      </template>
+
+      <template v-else>
+        <div
+          class="product"
+          v-for="product in products"
+          :key="product.id || product.name">
+          <img
+            :src="product.image"
+            :alt="product.name" />
+          <p>{{ product.name }}</p>
+        </div>
+      </template>
     </div>
   </section>
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+
+type TopSale = { id: string; name?: string; sales?: number };
+type ProductDetail = {
+  id?: string;
+  name: string;
+  images?: Array<{ url?: string }>;
+  slug?: string;
+};
+
+const products = ref<Array<{ id?: string; name: string; image?: string }>>([]);
+const loading = ref(true);
+
+const nuxtApp = useNuxtApp() as any;
+const axios = nuxtApp.$axios as any;
+
+async function loadTopSales() {
+  try {
+    const { data } = await axios.get("/top-sales");
+    const topSales: TopSale[] = data || [];
+
+    // Fetch product details in parallel
+    const requests = topSales.map((t) =>
+      axios
+        .get(`/product/${t.id}`)
+        .then((r: any) => ({ id: t.id, data: r.data }))
+        .catch(() => ({ id: t.id, data: null }))
+    );
+
+    const results = await Promise.all(requests);
+
+    products.value = results
+      .map((r) => {
+        const d: ProductDetail | null = r.data;
+        if (!d) return null;
+        const image = (d.images && d.images.length && d.images[0].url) || "";
+        return { id: r.id, name: d.name || "بدون نام", image };
+      })
+      .filter(Boolean) as Array<{ id?: string; name: string; image?: string }>;
+  } catch (e) {
+    // silent fail: keep static fallback UI
+    console.error("Failed to load top sales", e);
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(() => {
+  loadTopSales();
+});
+</script>
 
 <style scoped>
 .most-popular {
