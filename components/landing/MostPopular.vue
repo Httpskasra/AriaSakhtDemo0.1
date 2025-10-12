@@ -4,7 +4,7 @@
     <div class="products">
       <template v-if="loading">
         <div class="product" v-for="n in 6" :key="'skeleton-' + n">
-            <p>...</p>
+          <p>...</p>
         </div>
       </template>
 
@@ -13,9 +13,7 @@
           class="product"
           v-for="product in products"
           :key="product.id || product.name">
-          <img
-            :src="product.image"
-            :alt="product.name" />
+          <img :src="product.image" :alt="product.name" />
           <p>{{ product.name }}</p>
         </div>
       </template>
@@ -42,7 +40,7 @@ const axios = nuxtApp.$axios as any;
 
 async function loadTopSales() {
   try {
-    const { data } = await axios.get("/products/top-sales");
+    const { data } = await axios.get("/products/top-sales?limit=5 ");
     const topSales: TopSale[] = data || [];
 
     // Fetch product details in parallel
