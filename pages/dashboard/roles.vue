@@ -281,8 +281,8 @@ const saveRole = async () => {
         // send permissions only to the permissions endpoint
         await axios.patch(`/auth/users/${form.value.id}/permissions`, {
           permissions: permissionsPayload,
-          phoneNumber: form.value.phoneNumber,
-          nationalId: form.value.nationalId,
+          // phoneNumber: form.value.phoneNumber,
+          // nationalId: form.value.nationalId,
         });
 
         const idx = roles.value.findIndex((r) => r.id === form.value.id);

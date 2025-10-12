@@ -20,7 +20,7 @@ onMounted(async () => {
     // Expecting array of objects with 'name' property
     if (Array.isArray(res.data)) {
       categories.value = res.data.slice(0, 8).map((cat: any) => {
-        if (cat.status === "active" && cat.parentId === "") {
+        if (cat.status === "active" && !cat.parentId) {
           return cat.name;
         }
       });
