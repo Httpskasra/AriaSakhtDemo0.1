@@ -288,7 +288,7 @@ const saveRole = async () => {
           permissions: permissionsPayload,
         });
         if (companyIdFromProducts) {
-          await axios.patch(`/auth/users/${form.value.id}`, {
+          await axios.patch(`/auth/users/${form.value.id}/permissions`, {
             companyId: companyIdFromProducts,
           });
         }

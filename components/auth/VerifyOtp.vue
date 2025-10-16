@@ -116,7 +116,7 @@ const startTimer = () => {
 const resendOtp = async () => {
   try {
     loading.value = true;
-    await $axios.post("/auth/verify-otp", {
+    await $axios.post("/auth/signin", {
       phoneNumber: phoneNumber.value,
     });
   } catch (err) {
