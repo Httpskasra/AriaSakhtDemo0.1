@@ -7,16 +7,6 @@
     @mouseleave="startCloseTimer">
     <div class="panel-inner">
       <!-- left column: subcategories of hovered parent -->
-      <div class="col col-left" v-if="activeChildren.length">
-        <div class="child-list">
-          <div
-            v-for="child in activeChildren"
-            :key="child._id"
-            class="child-item">
-            {{ child.name }}
-          </div>
-        </div>
-      </div>
 
       <!-- right column: parent categories stacked vertically -->
       <div class="col col-right">
@@ -27,6 +17,16 @@
           :class="{ active: parent._id === hoveredParentId }"
           @mouseenter="onHoverParent(parent._id)">
           {{ parent.name }}
+        </div>
+      </div>
+      <div class="col col-left" v-if="activeChildren.length">
+        <div class="child-list">
+          <div
+            v-for="child in activeChildren"
+            :key="child._id"
+            class="child-item">
+            {{ child.name }}
+          </div>
         </div>
       </div>
     </div>
@@ -87,7 +87,7 @@ function onHoverParent(id: string | undefined) {
   hoveredParentId.value = id ?? null;
 }
 
-onMounted(() => {
+onBeforeMount(() => {
   if (!hoveredParentId.value && parents.value.length)
     hoveredParentId.value = parents.value[0]._id ?? null;
 });
@@ -95,7 +95,7 @@ onMounted(() => {
 
 <style scoped>
 .category-panel {
-  background: white;
+  background: rgb(255, 0, 0);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   padding: 12px;

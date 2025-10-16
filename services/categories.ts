@@ -1,5 +1,5 @@
 // src/api/categories.ts
-const { $axios } = useNuxtApp(); // اگر مسیر شما متفاوت است، آن را تغییر دهید
+// اگر مسیر شما متفاوت است، آن را تغییر دهید
 
 export interface Category {
   _id?: string;
@@ -11,6 +11,7 @@ export interface Category {
 }
 
 export async function fetchCategories(): Promise<Category[]> {
+  const { $axios } = useNuxtApp();
   const res = await $axios.get("/categories");
   const payload = res.data;
 
