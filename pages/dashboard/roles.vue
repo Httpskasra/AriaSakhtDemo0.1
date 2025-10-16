@@ -257,17 +257,22 @@ const saveRole = async () => {
       if (companyId) out.companyId = companyId;
       return out;
     });
-
+  const prodPerm = form.value.permissions.find(
+    (p) => p.resource === Resource.PRODUCTS
+  );
+  // @ts-ignore
+  const companyIdFromProducts = prodPerm
+    ? (prodPerm as any).companyId
+    : undefined;
   const body: any = {
     phoneNumber: form.value.phoneNumber,
     nationalId: form.value.nationalId,
     permissions: permissionsPayload,
+    ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),
   };
 
   // If any top-level companyId selected (e.g., from products permission), set it
-  const prodPerm = form.value.permissions.find(
-    (p) => p.resource === Resource.PRODUCTS
-  );
+
   // @ts-ignore
   const topCompanyId = prodPerm ? (prodPerm as any).companyId : undefined;
   if (topCompanyId) body.companyId = topCompanyId;
@@ -282,6 +287,11 @@ const saveRole = async () => {
         await axios.patch(`/auth/users/${form.value.id}/permissions`, {
           permissions: permissionsPayload,
         });
+        if (companyIdFromProducts) {
+          await axios.patch(`/auth/users/${form.value.id}`, {
+            companyId: companyIdFromProducts,
+          });
+        }
 
         const idx = roles.value.findIndex((r) => r.id === form.value.id);
         if (idx !== -1) {
