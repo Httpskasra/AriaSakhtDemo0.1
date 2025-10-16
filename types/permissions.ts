@@ -11,25 +11,26 @@ export enum Action {
 }
 
 export enum Resource {
-    CARTS = "carts",
-    CATEGORIES = "categories",
-    COMPANIES = "companies",
-    ORDERS = "orders",
-    PAYMENT = "payment",
-    PRODUCTS = "products",
-    ROLES = "roles",
-    TICKETING = "ticketing",
-    TRANSACTION = "transaction",
-    TRANSPORTING = "transporting",
-    USERS = "users",
-    WALLETS = "wallets",
-    PROFILE = "profile",
-    ALL = "all",
+  CARTS = "carts",
+  CATEGORIES = "categories",
+  COMPANIES = "companies",
+  ORDERS = "orders",
+  PAYMENT = "payment",
+  PRODUCTS = "products",
+  ROLES = "roles",
+  TICKETING = "ticketing",
+  TRANSACTION = "transaction",
+  TRANSPORTING = "transporting",
+  USERS = "users",
+  WALLETS = "wallets",
+  PROFILE = "profile",
+  ALL = "all",
 }
 
 export type Permission = {
   resource: Resource;
   actions: Action[];
+  companyId?: string; // only for Resource.PRODUCTS
 };
 
 export type User = {

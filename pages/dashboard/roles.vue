@@ -225,10 +225,16 @@ const editRole = (role: Role) => {
   editMode.value = true;
   // اطمینان از وجود همه resourceها در فرم
   const permissions: Permission[] = resourceOptions.map((r) => {
-    const found = role.permissions.find((p) => p.resource === r.value);
+    const found: any = role.permissions.find(
+      (p: any) => p.resource === r.value
+    );
     return found
-      ? { resource: r.value, actions: [...found.actions] }
-      : { resource: r.value, actions: [] };
+      ? ({
+          resource: r.value,
+          actions: [...found.actions],
+          ...(found.companyId ? { companyId: found.companyId } : {}),
+        } as any)
+      : ({ resource: r.value, actions: [] } as any);
   });
   form.value = {
     id: role.id,
@@ -264,6 +270,15 @@ const saveRole = async () => {
   const companyIdFromProducts = prodPerm
     ? (prodPerm as any).companyId
     : undefined;
+  if (
+    prodPerm &&
+    prodPerm.actions &&
+    prodPerm.actions.length > 0 &&
+    !companyIdFromProducts
+  ) {
+    alert("برای دسترسی محصولات، انتخاب شرکت الزامی است");
+    return;
+  }
   const body: any = {
     phoneNumber: form.value.phoneNumber,
     nationalId: form.value.nationalId,
@@ -283,16 +298,14 @@ const saveRole = async () => {
     if (editMode.value) {
       // update permissions via dedicated endpoint
       try {
-        // send permissions only to the permissions endpoint
-        await axios.patch(`/auth/users/${form.value.id}/permissions`, {
-          permissions: permissionsPayload,
-        });
+        const targetId = meUserId.value || form.value.id;
+        const payload: any = { permissions: permissionsPayload };
         if (companyIdFromProducts) {
-          await axios.patch(`/auth/users/${form.value.id}/permissions`, {
-            companyId: companyIdFromProducts,
-          });
+          payload.companyId = companyIdFromProducts;
         }
+        await axios.patch(`/users/${targetId}/permissions`, payload);
 
+        // به‌روزرسانی UI محلی
         const idx = roles.value.findIndex((r) => r.id === form.value.id);
         if (idx !== -1) {
           roles.value[idx] = {
@@ -365,15 +378,16 @@ function toggleAll(resource: Resource) {
 }
 import { computed } from "vue";
 const nuxtApp = useNuxtApp();
-const axios = nuxtApp.$axios as any;
+const axios = nuxtApp.$axios;
+const meUserId = ref<string | null>(null);
 
-// const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
-const { canCreate, canRead, canUpdate, canDelete } = {
-  canCreate: true,
-  canRead: true,
-  canUpdate: true,
-  canDelete: true,
-};
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
+// const { canCreate, canRead, canUpdate, canDelete } = {
+//   canCreate: true,
+//   canRead: true,
+//   canUpdate: true,
+//   canDelete: true,
+// };
 
 // note: phone/national are stored on `form` (bound to inputs) so no separate refs
 
@@ -401,6 +415,14 @@ function selectedCompanyNameForResource(resource: Resource) {
 }
 
 onMounted(async () => {
+  try {
+    const { data } = await axios.get("/me");
+    const id = data?.userId || data?.id || data?._id || null;
+    meUserId.value = id ? String(id) : null;
+  } catch (err) {
+    console.error("Failed to fetch /me:", err);
+  }
+
   // fetch companies from /companies
   try {
     const { data } = await axios.get("/companies");
