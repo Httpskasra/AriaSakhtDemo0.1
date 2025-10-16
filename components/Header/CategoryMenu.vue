@@ -76,9 +76,14 @@ onMounted(() => {
 .menu-button {
   background: none;
   border: none;
-  font-weight: 600;
   cursor: pointer;
   padding: 8px 12px;
+  font-family: "iran-yekan-Bold";
+  font-size: 14px;
+}
+.menu-button:hover {
+  transform: scale(1.2);
+  transition: 0.5s;
 }
 .panel-absolute {
   position: absolute;
@@ -102,6 +107,7 @@ onMounted(() => {
   top: calc(100% + 8px);
   left: 0;
   background: white;
+  opacity: 0;
   padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.06);
