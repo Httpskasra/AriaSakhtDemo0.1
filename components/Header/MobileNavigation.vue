@@ -33,7 +33,7 @@ const navigationItems = [
     icon: "/MobileIcon/home.svg",
   },
   {
-    name: "فروشگاه",
+    name: "محصولات",
     path: "/products",
     icon: "/MobileIcon/shop.svg",
   },
