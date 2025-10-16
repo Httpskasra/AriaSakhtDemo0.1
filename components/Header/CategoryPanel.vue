@@ -16,6 +16,7 @@
           class="parent-item"
           :class="{ active: parent._id === hoveredParentId }"
           @mouseenter="onHoverParent(parent._id)">
+          <img src="/dashboardIcons/categories-active.svg" alt="" />
           {{ parent.name }}
         </div>
       </div>
@@ -95,8 +96,9 @@ onBeforeMount(() => {
 
 <style scoped>
 .category-panel {
-  background: rgb(255, 0, 0);
+  background: rgb(255, 255, 255);
   border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 5px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   padding: 12px;
   display: inline-block;
@@ -119,6 +121,7 @@ onBeforeMount(() => {
 .child-item {
   padding: 8px 6px;
   white-space: nowrap;
+  color: var(--blue-dark);
 }
 
 /* right (parents) stacked vertically */
@@ -130,10 +133,17 @@ onBeforeMount(() => {
 .parent-item {
   padding: 8px 6px;
   cursor: pointer;
+  color: var(--blue-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .parent-item.active {
   font-weight: 600;
   background: rgba(0, 0, 0, 0.03);
+}
+img {
+  width: 15px;
 }
 
 @media (max-width: 1024px) {
