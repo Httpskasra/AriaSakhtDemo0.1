@@ -46,7 +46,8 @@
               <td class="p-3 ltr">{{ product.sku }}</td>
               <td class="p-3">{{ numberFormat(product.basePrice) }}</td>
               <td class="p-3">{{ product.stock?.quantity ?? 0 }}</td>
-              <td class="p-3 ltr text-xs">{{ product.companyId }}</td>
+              <!-- <td class="p-3 ltr text-xs">{{ product.companyId }}</td> -->
+              <td class="p-3 ltr text-xs">ID</td>
               <td class="p-3">
                 <span
                   class="px-2 py-1 rounded text-xs"
@@ -375,7 +376,7 @@ type Product = {
   slug: string;
   sku: string;
   basePrice: number;
-  companyId: string;
+  // companyId: string;
   categories: string[];
   description: string;
   stock: { quantity: number };
@@ -464,7 +465,7 @@ const form = ref<Product>({
   slug: "",
   sku: "",
   basePrice: 0,
-  companyId: "",
+  // companyId: "",
   categories: [],
   description: "",
   stock: { quantity: 0 },
@@ -547,7 +548,7 @@ function openModal(product: Product | null = null) {
       slug: "",
       sku: "",
       basePrice: 0,
-      companyId: "",
+      // companyId: "",
       categories: [],
       description: "",
       stock: { quantity: 0 },
