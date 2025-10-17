@@ -46,7 +46,7 @@ async function loadTopSales() {
     // Fetch product details in parallel
     const requests = topSales.map((t) =>
       axios
-        .get(`/product/${t.id}`)
+        .get(`/products/${t.id}`)
         .then((r: any) => ({ id: t.id, data: r.data }))
         .catch(() => ({ id: t.id, data: null }))
     );

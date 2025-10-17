@@ -79,7 +79,7 @@
       </div>
 
       <!-- Modal -->
-      <BaseModal :show="showModal" @close="closeModal">
+      <BaseModal v-if="showModal" @close="closeModal">
         <template #default>
           <h2 class="text-lg font-semibold mb-4">
             {{ editMode ? "ویرایش محصول" : "محصول جدید" }}
