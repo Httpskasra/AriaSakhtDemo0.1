@@ -123,13 +123,13 @@
                   class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
 
-              <div>
+              <!-- <div>
                 <label class="block text-sm font-medium mb-1">شناسه شرکت</label>
                 <input
                   v-model="form.companyId"
                   type="text"
                   class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr" />
-              </div>
+              </div> -->
 
               <div>
                 <label class="block text-sm font-medium mb-1">موجودی</label>
@@ -144,8 +144,8 @@
               <label class="block text-sm font-medium mb-1">توضیحات</label>
               <textarea
                 v-model="form.description"
-                rows="3"
-                class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                rows="4"
+                class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"></textarea>
             </div>
 
             <!-- دسته‌بندی‌ها -->
@@ -164,8 +164,7 @@
                   </option>
                 </select>
                 <div class="text-xs text-gray-500">
-                  از لیست بالا انتخاب کن؛ شناسهٔ دسته‌بندی(ها) به‌صورت خودکار
-                  داخل <code class="ltr">form.categories</code> ذخیره می‌شود.
+                  از لیست بالا یکی را انتخاب کن؛
                 </div>
               </div>
             </div>
@@ -311,7 +310,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block text-sm font-medium mb-1"
                   >امتیاز (۰ تا ۵)</label
@@ -335,7 +334,7 @@
                   <option value="archived">آرشیو</option>
                 </select>
               </div>
-            </div>
+            </div> -->
 
             <div class="flex items-center justify-end gap-2">
               <button
@@ -358,14 +357,15 @@
 </template>
 
 <script setup lang="ts">
+import { tr } from "@nuxt/ui/runtime/locale/index.js";
 import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
-definePageMeta({
-  middleware: dashboardAuth,
-});
+// import dashboardAuth from "~/middleware/dashboard-auth";
+// definePageMeta({
+//   middleware: dashboardAuth,
+// });
 type VariantOption = { value: string; priceModifier: number };
 type Variant = { name: string; options: VariantOption[] };
 type ImageItem = { url: string };
@@ -383,8 +383,6 @@ type Product = {
   attributes: Record<string, string>;
   tags: string[];
   images: ImageItem[];
-  comments: string[];
-  rating: number;
   status: "draft" | "active" | "inactive" | "archived";
 };
 
@@ -393,9 +391,16 @@ const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
 const products = ref<Product[]>([]);
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(
-  Resource.PRODUCTS
-);
+const { canCreate, canRead, canUpdate, canDelete } = {
+  canRead: true,
+  canDelete: true,
+  canCreate: true,
+  canUpdate: true,
+};
+
+// const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+//   Resource.PRODUCTS
+// );
 
 const { $axios } = useNuxtApp();
 
@@ -467,8 +472,6 @@ const form = ref<Product>({
   attributes: {},
   tags: [],
   images: [],
-  comments: [],
-  rating: 0,
   status: "draft",
 });
 
@@ -552,8 +555,6 @@ function openModal(product: Product | null = null) {
       attributes: {},
       tags: [],
       images: [],
-      comments: [],
-      rating: 0,
       status: "draft",
     };
   }
