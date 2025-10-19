@@ -2,7 +2,7 @@
   <footer>
     <div class="container">
       <div class="info">
-        <h3>نام و جریانات شرکت</h3>
+        <h3>نام و مشخصات</h3>
         <div class="item">
           <svg
             width="25"
@@ -92,7 +92,7 @@
         </ul>
       </div>
 
-      <p class="submit">برای ثبت نام و خرید <a>اینجا</a> کلیک کنید</p>
+      <!-- <p class="submit">برای ثبت نام و خرید <a>اینجا</a> کلیک کنید</p> -->
     </div>
     <div class="subtitle">
       <div class="enamad">
@@ -113,7 +113,7 @@
         <br />
 
         <div>
-          <p>© 2024 <strong>Shawonetc3</strong> . All Rights Reserved</p>
+          <p>© 2024 <strong>ariasakht</strong> . All Rights Reserved</p>
           <div class="enamad"></div>
         </div>
       </div>

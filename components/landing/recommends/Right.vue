@@ -13,7 +13,7 @@
           fill="#FD8B00" />
       </svg>
     </div>
-    <div class="item">
+    <!-- <div class="item">
       <div class="title">
         <span class="name"> زیر %50 تخفیف </span>
         <svg
@@ -57,7 +57,7 @@
             fill="black" />
         </svg>
       </div>
-    </div>
+    </div> -->
 
     <button class="show-more">مشاهده همه</button>
   </div>
@@ -80,10 +80,10 @@
 }
 .container {
   width: 100%;
-  height: 100%;
+
   margin: auto;
   display: flex;
-  position: absolute;
+  /* position: absolute; */
   left: 0;
   flex-direction: column;
   justify-content: space-evenly;

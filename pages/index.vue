@@ -18,7 +18,7 @@
       <br />
       <FullRecommend />
       <br />
-      <Blog />
+      <!-- <Blog /> -->
       <br />
       <br />
 

@@ -102,11 +102,12 @@ function onTouchEnd() {
 .right {
   position: relative;
   flex-basis: 22%;
-  height: 100%;
+  height: 50%;
   min-width: 260px;
   padding: 0;
   background: #ffff;
-
+  display: flex;
+  flex-direction: column;
   /* Main */
 
   box-shadow: 5px 5px 32.4px rgba(176, 176, 176, 0.38);

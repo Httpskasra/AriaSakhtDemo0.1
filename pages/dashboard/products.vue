@@ -363,10 +363,10 @@ import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-// import dashboardAuth from "~/middleware/dashboard-auth";
-// definePageMeta({
-//   middleware: dashboardAuth,
-// });
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 type VariantOption = { value: string; priceModifier: number };
 type Variant = { name: string; options: VariantOption[] };
 type ImageItem = { url: string };
@@ -392,16 +392,16 @@ const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
 const products = ref<Product[]>([]);
-const { canCreate, canRead, canUpdate, canDelete } = {
-  canRead: true,
-  canDelete: true,
-  canCreate: true,
-  canUpdate: true,
-};
+// const { canCreate, canRead, canUpdate, canDelete } = {
+//   canRead: true,
+//   canDelete: true,
+//   canCreate: true,
+//   canUpdate: true,
+// };
 
-// const { canCreate, canRead, canUpdate, canDelete } = useAccess(
-//   Resource.PRODUCTS
-// );
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+  Resource.PRODUCTS
+);
 
 const { $axios } = useNuxtApp();
 
