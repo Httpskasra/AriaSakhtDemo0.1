@@ -108,7 +108,7 @@
                       @click="openDetails(u)">
                       ویرایش
                     </button> -->
-<!-- 
+                    <!-- 
                     <button
                       v-if="canDelete"
                       class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs text-white opacity-70 cursor-not-allowed"
@@ -164,7 +164,9 @@
 
     <!-- Details Modal -->
     <BaseModal v-if="showModal" @close="showModal = false">
-      <div class="min-w-[min(90vw,56rem)] space-y-5" dir="rtl">
+      <div
+        class="w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 space-y-5"
+        dir="rtl">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-gray-800">جزییات کاربر</h3>
         </div>
@@ -276,14 +278,17 @@ import BaseModal from "~/components/BaseModal.vue";
 import { useNuxtApp } from "#app";
 import { useAccess } from "~/composables/useAccess";
 import { Action, Resource } from "~/types/permissions";
-
+import dashboardAuth from "~/middleware/dashboard-auth";
+definePageMeta({
+  middleware: dashboardAuth,
+});
 // Access control
-// const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
-const { canRead, canUpdate, canDelete } = {
-  canRead: true,
-  canDelete: true,
-  canUpdate: true,
-};
+const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
+// const { canRead, canUpdate, canDelete } = {
+//   canRead: true,
+//   canDelete: true,
+//   canUpdate: true,
+// };
 
 // State
 type Permission = {
