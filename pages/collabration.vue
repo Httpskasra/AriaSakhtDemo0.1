@@ -49,6 +49,16 @@
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
+            >کدملی</label
+          >
+          <input
+            v-model="form.nationalId"
+            type="text"
+            class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
+            placeholder="کدملی" />
+        </div>
+        <div>
+          <label class="block mb-2 text-right font-semibold text-[#1976d2]"
             >شماره ثبت شرکت</label
           >
           <input
@@ -127,6 +137,7 @@ const form = reactive({
   phone: "",
   registrationNumber: "",
   address: "",
+  nationalId: "",
   isActive: true,
   image: null as File | null,
 });
@@ -143,6 +154,7 @@ function resetForm() {
   form.phone = "";
   form.registrationNumber = "";
   form.address = "";
+  form.nationalId = "";
   form.isActive = true;
   form.image = null;
   if (fileInput.value) fileInput.value.value = "";
@@ -170,6 +182,7 @@ async function submit() {
       registrationNumber: String(form.registrationNumber || ""),
       address: String(form.address || ""),
       isActive: String(true),
+      nationalId: String(form.nationalId || ""),
       image: "",
     };
 

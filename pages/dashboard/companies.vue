@@ -13,8 +13,8 @@
           v-if="canCreate"
           @click="openModal()"
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-          + افزودن       
-         </button>
+          + افزودن
+        </button>
       </div>
 
       <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
@@ -23,10 +23,10 @@
             <tr class="text-gray-600">
               <th class="p-3">لوگو</th>
               <th class="p-3">نام</th>
-              <th class="p-3">ایمیل</th>
+              <th class="p-3 hidden sm:table-cell">ایمیل</th>
               <th class="p-3">تلفن</th>
-              <th class="p-3">شماره ثبت</th>
-              <th class="p-3">آدرس</th>
+              <th class="p-3 hidden md:table-cell">شماره ثبت</th>
+              <th class="p-3 hidden lg:table-cell">آدرس</th>
               <th class="p-3">وضعیت</th>
               <th class="p-3">عملیات</th>
             </tr>
@@ -42,31 +42,70 @@
                   :src="company.image"
                   class="w-12 h-12 rounded-full object-cover" />
               </td>
-              <td class="p-3">{{ company.name }}</td>
-              <td class="p-3">{{ company.email }}</td>
+              <td class="p-3 font-medium text-gray-800">{{ company.name }}</td>
+              <td class="p-3 hidden sm:table-cell">{{ company.email }}</td>
               <td class="p-3">{{ company.phone }}</td>
-              <td class="p-3">{{ company.registrationNumber }}</td>
-              <td class="p-3">{{ company.address }}</td>
-              <td class="p-3">
-                <span
-                  class="px-2 py-1 rounded text-white"
-                  :class="company.isActive ? 'bg-green-500' : 'bg-red-500'">
-                  {{ company.isActive ? "فعال" : "غیرفعال" }}
-                </span>
+              <td class="p-3 hidden md:table-cell">
+                {{ company.registrationNumber }}
               </td>
-              <td class="p-3 flex gap-2">
-                <button
-                  v-if="canUpdate"
-                  @click="openModal(company)"
-                  class="text-blue-500 hover:underline">
-                  ویرایش
-                </button>
-                <button
-                  v-if="canDelete"
-                  @click="deleteCompany(company)"
-                  class="text-red-500 hover:underline">
-                  حذف
-                </button>
+              <td class="p-3 hidden lg:table-cell truncate max-w-[220px]">
+                {{ company.address }}
+              </td>
+              <td class="p-3">
+                <!-- Status badge + inline select for quick status change -->
+                <div class="flex items-center gap-2">
+                  <span
+                    class="px-2 py-1 rounded text-white text-xs"
+                    :class="
+                      company.status === 'active' || company.isActive
+                        ? 'bg-green-500'
+                        : company.status === 'pending'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
+                    ">
+                    {{
+                      company.status
+                        ? company.status === "active"
+                          ? "فعال"
+                          : company.status === "pending"
+                          ? "در انتظار"
+                          : "غیرفعال"
+                        : company.isActive
+                        ? "فعال"
+                        : "غیرفعال"
+                    }}
+                  </span>
+
+                  <select
+                    v-if="canUpdate"
+                    :disabled="statusLoading[company._id || '']"
+                    class="text-sm border rounded px-2 py-1 bg-white focus:outline-none"
+                    :value="
+                      company.status ??
+                      (company.isActive ? 'active' : 'inactive')
+                    "
+                    @change="onChangeStatus($event, company)">
+                    <option value="active">فعال</option>
+                    <option value="inactive">غیرفعال</option>
+                    <option value="pending">در انتظار</option>
+                  </select>
+                </div>
+              </td>
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <button
+                    v-if="canUpdate"
+                    @click="openModal(company)"
+                    class="text-blue-500 hover:underline text-sm">
+                    ویرایش
+                  </button>
+                  <button
+                    v-if="canDelete"
+                    @click="deleteCompany(company)"
+                    class="text-red-500 hover:underline text-sm">
+                    حذف
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -182,6 +221,8 @@ type Company = {
   address: string;
   isActive: boolean;
   image: string;
+  // optional status returned by API (preferred) - fallback to isActive
+  status?: "active" | "inactive" | "pending";
 };
 
 const companies = ref<Company[]>([]);
@@ -201,6 +242,44 @@ const form = ref({
 });
 
 const { $axios } = useNuxtApp();
+
+// small map to track loading state per-company when changing status
+const statusLoading = ref<Record<string, boolean>>({});
+
+/**
+ * Handle inline status change. Sends PATCH to /companies/:id/status
+ * body: { status: 'pending' | 'active' | 'inactive' }
+ */
+async function onChangeStatus(e: Event, company: Company) {
+  if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+  const select = e.target as HTMLSelectElement;
+  const newStatus = select.value as "active" | "inactive" | "pending";
+  if (!company._id) {
+    return alert("شناسه شرکت موجود نیست");
+  }
+  // optional confirmation for destructive changes
+  if (!confirm("آیا از تغییر وضعیت این شرکت مطمئن هستید؟")) {
+    // rollback select to previous value
+    select.value = company.status ?? (company.isActive ? "active" : "inactive");
+    return;
+  }
+
+  try {
+    statusLoading.value[company._id] = true;
+    await $axios.patch(`/companies/${company._id}/status`, {
+      status: newStatus,
+    });
+    // update local object to reflect new status (optimistic)
+    company.status = newStatus;
+  } catch (err) {
+    console.error("خطا در تغییر وضعیت:", err);
+    alert("خطا در تغییر وضعیت. دوباره تلاش کنید.");
+    // rollback select
+    select.value = company.status ?? (company.isActive ? "active" : "inactive");
+  } finally {
+    if (company._id) statusLoading.value[company._id] = false;
+  }
+}
 
 const fetchCompanies = async () => {
   if (!canRead) return;
@@ -305,20 +384,44 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* styles (همان نسخهٔ آماده در پروژه ذخیره‌شده) */
 .container {
+  display: flex;
+  justify-content: space-between;
   width: 90%;
-  margin: auto;
 }
 .title {
   color: var(--blue-dark);
   font-family: "iran-yekan-Bold";
+  width: 230px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0;
+  justify-content: space-evenly;
+  margin: 15px;
+}
+.title h1 {
+  font-size: 36px;
 }
 .title img {
-  width: 50px;
-  height: 50px;
+  width: 66px;
+  height: 66px;
+}
+@media (max-width: 767px) {
+  .container {
+    width: 95%;
+    margin: auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .title {
+    width: 40%;
+  }
+  .title h1 {
+    font-size: 20px;
+  }
+  .title img {
+    width: 40px;
+    height: 40px;
+  }
 }
 </style>

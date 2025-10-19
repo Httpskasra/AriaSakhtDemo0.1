@@ -172,13 +172,13 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="space-y-1">
+          <!-- <div class="space-y-1">
             <label class="text-xs text-gray-500">شناسه</label>
             <div
               class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
               {{ selected?.id }}
             </div>
-          </div>
+          </div> -->
 
           <div class="space-y-1">
             <label class="text-xs text-gray-500">موبایل</label>
@@ -198,13 +198,13 @@
             </div>
           </div>
 
-          <div class="space-y-1">
+          <!-- <div class="space-y-1">
             <label class="text-xs text-gray-500">کیف پول</label>
             <div
               class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
               {{ selected?.profile?.walletId || "—" }}
             </div>
-          </div>
+          </div> -->
 
           <div class="space-y-1 md:col-span-2">
             <label class="text-xs text-gray-500">نام و نام خانوادگی</label>
@@ -223,7 +223,7 @@
           </div>
         </div>
 
-        <div class="space-y-3">
+        <!-- <div class="space-y-3">
           <h4 class="text-sm font-semibold text-gray-800">مجوزها</h4>
           <div class="overflow-x-auto border border-gray-100 rounded-xl">
             <table class="min-w-full text-sm">
@@ -266,7 +266,7 @@
               </tbody>
             </table>
           </div>
-        </div>
+        </div> -->
       </div>
     </BaseModal>
   </NuxtLayout>
