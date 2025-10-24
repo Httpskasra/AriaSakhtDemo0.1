@@ -387,6 +387,7 @@ onMounted(() => {
 /* styles (همان نسخهٔ آماده در پروژه ذخیره‌شده) */
 .container {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   width: 90%;
 }
