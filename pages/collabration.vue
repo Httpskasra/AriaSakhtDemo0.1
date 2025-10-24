@@ -138,7 +138,6 @@ const form = reactive({
   registrationNumber: "",
   address: "",
   nationalId: "",
-  isActive: true,
   image: null as File | null,
 });
 
@@ -155,7 +154,6 @@ function resetForm() {
   form.registrationNumber = "";
   form.address = "";
   form.nationalId = "";
-  form.isActive = true;
   form.image = null;
   if (fileInput.value) fileInput.value.value = "";
 }
@@ -181,7 +179,6 @@ async function submit() {
       phone: String(form.phone || ""),
       registrationNumber: String(form.registrationNumber || ""),
       address: String(form.address || ""),
-      isActive: String(true),
       nationalId: String(form.nationalId || ""),
       image: "",
     };
