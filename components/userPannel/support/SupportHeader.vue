@@ -8,13 +8,14 @@
       </div>
     </div>
     <div class="create">
-      <button @click="isCreateModalOpen = true">ایجاد تیکت جدید</button>
+      <button v-if="canCreate" @click="isCreateModalOpen = true">
+        ایجاد تیکت جدید
+      </button>
     </div>
     <BaseModal v-if="isCreateModalOpen" @close="isCreateModalOpen = false">
       <NewTicketForm
         @submitted="handleNewTicket"
-        @cancel="isCreateModalOpen = false"
-      />
+        @cancel="isCreateModalOpen = false" />
     </BaseModal>
   </div>
 </template>
@@ -23,6 +24,8 @@
 import type { Ticket } from "@/types/ticket";
 const isCreateModalOpen = ref(false);
 const emit = defineEmits(["submitted"]);
+const props = defineProps<{ canCreate?: boolean }>();
+const canCreate = props.canCreate ?? true;
 const handleNewTicket = (newTicket: Ticket) => {
   isCreateModalOpen.value = false;
   emit("submitted", newTicket);

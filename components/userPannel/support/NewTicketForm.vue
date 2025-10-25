@@ -28,8 +28,7 @@
           type="file"
           @change="handleImageUpload"
           multiple
-          accept="image/*"
-        />
+          accept="image/*" />
       </label>
 
       <div class="actions">
@@ -51,7 +50,7 @@ const form = ref({
   images: [] as string[],
 });
 
-const emit = defineEmits(["submitted"]);
+const emit = defineEmits(["submitted", "cancel"]);
 
 const handleImageUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -82,9 +81,6 @@ const handleImageUpload = (event: Event) => {
 //   };
 //   emit("submitted", newTicket);
 // };
-import { createTicket } from "@/services/ticketService";
-const { $axios } = useNuxtApp();
-
 const submitForm = async () => {
   const newTicket: Ticket = {
     id: Date.now(),
@@ -96,7 +92,7 @@ const submitForm = async () => {
     time: new Date().toLocaleTimeString("fa-IR"),
     images: form.value.images,
   };
-  await createTicket($axios, newTicket); // Pass $axios here
+  // emit the new ticket to parent; parent will call backend if allowed
   emit("submitted", newTicket);
 };
 </script>

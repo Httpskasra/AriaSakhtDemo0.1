@@ -2,10 +2,10 @@
   <NuxtLayout name="dashboard">
     <!-- عنوان صفحه -->
     <div
-      class="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 mb-4"
+      class="container"
       dir="rtl">
-      <h1 class="text-xl font-semibold text-gray-800">کاربران</h1>
-      <img src="/icons/roles.png" alt="users" class="w-8 h-8" />
+      <h1 class="title">کاربران</h1>
+      <img src="/icons/roles.png"  />
     </div>
 
     <!-- Guard: only render content if user can read -->

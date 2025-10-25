@@ -1,12 +1,12 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="container">
+    <div v-if="canRead" class="container">
       <div class="title">
         <h1>پشتیبانی</h1>
         <img src="/userPannleIcons/support.png" alt="" />
       </div>
 
-      <SupportHeader @submitted="handleNewTicket" />
+      <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" />
       <div class="fillter">
         <div class="fillter-btn">
           <button>
@@ -20,6 +20,7 @@
       </div>
       <SupportTickets v-if="tickets.length" :tickets="tickets" />
     </div>
+    <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
   </NuxtLayout>
 </template>
 
@@ -36,14 +37,34 @@ definePageMeta({
 });
 const { $axios } = useNuxtApp(); // Access $axios from Nuxt context
 const tickets = ref<Ticket[]>([]);
+import { useAccess } from "~/composables/useAccess";
+import { Resource } from "~/types/permissions";
+
+const { canRead, canCreate, canDelete, canUpdate } = useAccess(
+  Resource.TICKETING
+);
 
 const fetchTickets = async () => {
-  tickets.value = await getTickets($axios);
+  if (!canRead) return;
+  try {
+    tickets.value = await getTickets($axios);
+  } catch (err) {
+    console.error("خطا در دریافت تیکت‌ها:", err);
+    tickets.value = [];
+  }
 };
 
 const handleNewTicket = async (ticket: Ticket) => {
-  // const newTicket = await createTicket($axios, ticket);
-  tickets.value.push(ticket);
+  if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
+  try {
+    const created = await createTicket($axios, ticket);
+    // If backend returns created ticket, use it; otherwise push the original
+    tickets.value.push(created || ticket);
+  } catch (err) {
+    console.error("خطا در ایجاد تیکت:", err);
+    // optimistic fallback
+    tickets.value.push(ticket);
+  }
 };
 
 onMounted(() => {
