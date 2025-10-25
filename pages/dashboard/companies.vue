@@ -61,6 +61,8 @@
                         ? 'bg-green-500'
                         : company.status === 'pending'
                         ? 'bg-yellow-500'
+                        : company.status === 'suspended'
+                        ? 'bg-gray-500'
                         : 'bg-red-500'
                     ">
                     {{
@@ -69,10 +71,14 @@
                           ? "فعال"
                           : company.status === "pending"
                           ? "در انتظار"
-                          : "غیرفعال"
+                          : company.status === "rejected"
+                          ? "رد شده"
+                          : company.status === "suspended"
+                          ? "معلق"
+                          : "رد شده"
                         : company.isActive
                         ? "فعال"
-                        : "غیرفعال"
+                        : "معلق"
                     }}
                   </span>
 
@@ -82,12 +88,13 @@
                     class="text-sm border rounded px-2 py-1 bg-white focus:outline-none"
                     :value="
                       company.status ??
-                      (company.isActive ? 'active' : 'inactive')
+                      (company.isActive ? 'active' : 'suspended')
                     "
                     @change="onChangeStatus($event, company)">
                     <option value="active">فعال</option>
-                    <option value="inactive">غیرفعال</option>
+                    <option value="suspended">معلق</option>
                     <option value="pending">در انتظار</option>
+                    <option value="rejected">رد شده</option>
                   </select>
                 </div>
               </td>
@@ -222,7 +229,8 @@ type Company = {
   isActive: boolean;
   image: string;
   // optional status returned by API (preferred) - fallback to isActive
-  status?: "active" | "inactive" | "pending";
+  // new statuses: active | suspended | pending | rejected
+  status?: "active" | "suspended" | "pending" | "rejected";
 };
 
 const companies = ref<Company[]>([]);
@@ -250,10 +258,18 @@ const statusLoading = ref<Record<string, boolean>>({});
  * Handle inline status change. Sends PATCH to /companies/:id/status
  * body: { status: 'pending' | 'active' | 'inactive' }
  */
+/**
+ * Handle inline status change. Sends PATCH to /companies/:id/status
+ * body: { status: 'pending' | 'active' | 'suspended' | 'rejected' }
+ */
 async function onChangeStatus(e: Event, company: Company) {
   if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
   const select = e.target as HTMLSelectElement;
-  const newStatus = select.value as "active" | "inactive" | "pending";
+  const newStatus = select.value as
+    | "active"
+    | "suspended"
+    | "pending"
+    | "rejected";
   if (!company._id) {
     return alert("شناسه شرکت موجود نیست");
   }
