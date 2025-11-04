@@ -19,11 +19,13 @@ onMounted(async () => {
     const res = await $axios.get("/categories");
     // Expecting array of objects with 'name' property
     if (Array.isArray(res.data)) {
-      categories.value = res.data.slice(0, 8).map((cat: any) => {
-        if (cat.status === "active" && !cat.parentId) {
-          return cat.name;
-        }
-      });
+      // First keep only top-level categories (no parentId) and active ones,
+      // then limit to 8 and map to names.
+      const topLevel = (res.data as any[])
+        .filter((cat: any) =>  !cat.parentId)
+        .slice(0, 8)
+        .map((cat: any) => cat.name ?? "");
+      categories.value = topLevel;
     }
   } catch (e) {
     categories.value = [];
