@@ -75,10 +75,8 @@
                           ? "رد شده"
                           : company.status === "suspended"
                           ? "معلق"
-                          : "رد شده"
-                        : company.isActive
-                        ? "فعال"
-                        : "معلق"
+                          : "نامشخص"
+                        : "نامشخص"
                     }}
                   </span>
 
@@ -169,10 +167,12 @@
           <div>
             <label class="block text-sm font-medium mb-1">وضعیت</label>
             <select
-              v-model="form.isActive"
+              v-model="form.status"
               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option :value="true">فعال</option>
-              <option :value="false">غیرفعال</option>
+              <option value="active">فعال</option>
+              <option value="suspended">معلق</option>
+              <option value="pending">در انتظار</option>
+              <option value="rejected">رد شده</option>
             </select>
           </div>
 
@@ -245,7 +245,7 @@ const form = ref({
   phone: "",
   registrationNumber: "",
   address: "",
-  isActive: true,
+  status: "",
   image: "",
 });
 
@@ -330,7 +330,7 @@ function openModal(company: any | null = null) {
       phone: "",
       registrationNumber: "",
       address: "",
-      isActive: true,
+      status: "",
       image: "",
     };
   }
@@ -368,7 +368,7 @@ const saveCompany = async () => {
         phone: form.value.phone,
         registrationNumber: form.value.registrationNumber,
         address: form.value.address,
-        isActive: form.value.isActive,
+        status: form.value.status,
         image: form.value.image,
       };
       console.log("PATCH id:", selectedId.value); // برای دیباگ
