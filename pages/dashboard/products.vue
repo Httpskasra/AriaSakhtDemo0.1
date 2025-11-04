@@ -364,6 +364,9 @@ import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد | محصولات ",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });

@@ -32,6 +32,9 @@ import {
   deleteTicket,
 } from "@/services/ticketService";
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد | تیکتینگ ",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });

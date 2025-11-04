@@ -109,7 +109,11 @@
   </NuxtLayout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  title: " درباره ما | آریاساخت",
+});
+</script>
 
 <!-- هیچ استایلی نیاز نیست، همه چیز با کلاس‌های Tailwind انجام شده است -->
 <style scoped>

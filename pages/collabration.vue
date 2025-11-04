@@ -120,6 +120,9 @@
 </template>
 
 <script setup lang="ts">
+useHead({
+  title: " همکاری | آریاساخت",
+});
 import { ref, reactive } from "vue";
 import type { AxiosError } from "axios";
 

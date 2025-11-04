@@ -1,6 +1,9 @@
 <!-- pages/dashboard/carts.vue -->
 <script setup lang="ts">
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });

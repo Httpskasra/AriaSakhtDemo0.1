@@ -140,6 +140,9 @@
 </template>
 
 <script setup lang="ts">
+useHead({
+  title: " آریاساخت | داشبورد | دسته بندی ها",
+});
 import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";

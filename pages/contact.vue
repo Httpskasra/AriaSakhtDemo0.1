@@ -66,7 +66,11 @@
   </NuxtLayout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  title: " ارتباط با ما | آریاساخت",
+});
+</script>
 
 <style scoped>
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");

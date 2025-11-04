@@ -27,7 +27,11 @@
   </NuxtLayout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+useHead({
+  title: " صفحه اصلی | آریاساخت",
+});
+</script>
 
 <style scoped>
 @media (max-width: 767px) {

@@ -17,6 +17,9 @@ import dashboardAuth from "~/middleware/dashboard-auth";
 definePageMeta({
   middleware: dashboardAuth,
 });
+useHead({
+  title: " آریاساخت | داشبورد | سبد خرید",
+});
 </script>
 
 <style scoped>

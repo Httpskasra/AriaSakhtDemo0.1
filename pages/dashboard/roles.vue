@@ -161,6 +161,9 @@ import { ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد | نقش ها ",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });

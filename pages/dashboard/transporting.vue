@@ -4,6 +4,9 @@ import { Resource } from '~/types/permissions'
 import { useAccess } from '~/composables/useAccess'
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.TRANSPORTING)
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد | حمل و نقل ",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });

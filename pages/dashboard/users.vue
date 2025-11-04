@@ -279,6 +279,9 @@ import { useNuxtApp } from "#app";
 import { useAccess } from "~/composables/useAccess";
 import { Action, Resource } from "~/types/permissions";
 import dashboardAuth from "~/middleware/dashboard-auth";
+useHead({
+  title: " آریاساخت | داشبورد | کاربران ",
+});
 definePageMeta({
   middleware: dashboardAuth,
 });
