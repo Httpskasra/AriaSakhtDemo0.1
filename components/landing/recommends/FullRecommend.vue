@@ -13,24 +13,33 @@
       @touchstart.passive="onTouchStart"
       @touchmove.passive="onTouchMove"
       @touchend="onTouchEnd">
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
+      <template v-if="products && products.length">
+        <SingleProduct
+          v-for="p in products"
+          :key="getId(p)"
+          :productId="String(getId(p))" />
+      </template>
+      <template v-else>
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+      </template>
     </div>
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
+defineProps<{ products?: Array<{ id?: string | number } | string | number> }>();
 
-const productsRef = ref(null);
+const productsRef = ref(null as null | HTMLElement);
 const isDown = ref(false);
 const startX = ref(0);
 const scrollLeft = ref(0);
@@ -39,52 +48,60 @@ function isDesktop() {
   return window.innerWidth > 767;
 }
 
-function onMouseDown(e) {
+function onMouseDown(e: MouseEvent) {
   if (!isDesktop()) return;
   isDown.value = true;
-  startX.value = e.pageX - productsRef.value.offsetLeft;
-  scrollLeft.value = productsRef.value.scrollLeft;
-  productsRef.value.style.cursor = "grabbing";
+  if (!productsRef.value) return;
+  startX.value = (e as any).pageX - (productsRef.value as any).offsetLeft;
+  scrollLeft.value = (productsRef.value as any).scrollLeft;
+  (productsRef.value as any).style.cursor = "grabbing";
 }
 
 function onMouseLeave() {
   if (!isDesktop()) return;
   isDown.value = false;
-  productsRef.value.style.cursor = "";
+  if (productsRef.value) (productsRef.value as any).style.cursor = "";
 }
 
 function onMouseUp() {
   if (!isDesktop()) return;
   isDown.value = false;
-  productsRef.value.style.cursor = "";
+  if (productsRef.value) (productsRef.value as any).style.cursor = "";
 }
 
-function onMouseMove(e) {
-  if (!isDesktop() || !isDown.value) return;
+function onMouseMove(e: MouseEvent) {
+  if (!isDesktop() || !isDown.value || !productsRef.value) return;
   e.preventDefault();
-  const x = e.pageX - productsRef.value.offsetLeft;
+  const x = (e as any).pageX - (productsRef.value as any).offsetLeft;
   const walk = (x - startX.value) * 1.2; // scroll speed
-  productsRef.value.scrollLeft = scrollLeft.value - walk;
+  (productsRef.value as any).scrollLeft = scrollLeft.value - walk;
 }
 
 let touchStartX = 0;
 let touchScrollLeft = 0;
 
-function onTouchStart(e) {
-  if (isDesktop()) return;
-  touchStartX = e.touches[0].pageX - productsRef.value.offsetLeft;
-  touchScrollLeft = productsRef.value.scrollLeft;
+function onTouchStart(e: TouchEvent) {
+  if (isDesktop() || !productsRef.value) return;
+  touchStartX = e.touches[0].pageX - (productsRef.value as any).offsetLeft;
+  touchScrollLeft = (productsRef.value as any).scrollLeft;
 }
 
-function onTouchMove(e) {
-  if (isDesktop()) return;
-  const x = e.touches[0].pageX - productsRef.value.offsetLeft;
+function onTouchMove(e: TouchEvent) {
+  if (isDesktop() || !productsRef.value) return;
+  const x = e.touches[0].pageX - (productsRef.value as any).offsetLeft;
   const walk = (x - touchStartX) * 1.2;
-  productsRef.value.scrollLeft = touchScrollLeft - walk;
+  (productsRef.value as any).scrollLeft = touchScrollLeft - walk;
 }
 
 function onTouchEnd() {
   // nothing needed
+}
+
+function getId(p: any) {
+  if (p == null) return "";
+  if (typeof p === "string" || typeof p === "number") return String(p);
+  if (typeof p === "object") return String((p as any).id ?? "");
+  return String(p);
 }
 </script>
 

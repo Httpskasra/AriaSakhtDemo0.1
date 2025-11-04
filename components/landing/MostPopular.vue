@@ -32,6 +32,13 @@ type ProductDetail = {
   slug?: string;
 };
 
+const props = defineProps<{
+  products?: Array<
+    { id?: string; name?: string; image?: string } | string | number
+  >;
+  loading?: boolean;
+}>();
+
 const products = ref<Array<{ id?: string; name: string; image?: string }>>([]);
 const loading = ref(true);
 
@@ -40,7 +47,7 @@ const axios = nuxtApp.$axios as any;
 
 async function loadTopSales() {
   try {
-    const { data } = await axios.get("/products/top-sales?limit=5 ");
+    const { data } = await axios.get("/products/top-sales?limit=5");
     const topSales: TopSale[] = data || [];
 
     // Fetch product details in parallel
@@ -70,7 +77,20 @@ async function loadTopSales() {
 }
 
 onMounted(() => {
-  loadTopSales();
+  if (props.products && props.products.length) {
+    // use provided products prop
+    products.value = (props.products as any)
+      .map((p: any) => {
+        if (!p) return null;
+        if (typeof p === "string" || typeof p === "number")
+          return { id: String(p), name: "", image: "" };
+        return { id: p.id, name: p.name || "", image: p.image || "" };
+      })
+      .filter(Boolean) as any;
+    loading.value = !!props.loading;
+  } else {
+    loadTopSales();
+  }
 });
 </script>
 

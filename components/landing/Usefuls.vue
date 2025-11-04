@@ -2,16 +2,33 @@
   <div class="container">
     <h3>پرکاربردترین ها</h3>
     <div class="products">
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
-      <SingleProduct productId="1" />
+      <template v-if="products && products.length">
+        <SingleProduct
+          v-for="p in products"
+          :key="getId(p)"
+          :productId="String(getId(p))" />
+      </template>
+      <template v-else>
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+        <SingleProduct productId="1" />
+      </template>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup lang="ts">
+defineProps<{ products?: Array<{ id?: string | number } | string | number> }>();
+
+function getId(p: any) {
+  if (p == null) return "";
+  if (typeof p === "string" || typeof p === "number") return String(p);
+  if (typeof p === "object") return String((p as any).id ?? "");
+  return String(p);
+}
+</script>
 
 <style scoped>
 .container {
