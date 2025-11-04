@@ -165,7 +165,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-1">وضعیت</label>
+            <!-- <label class="block text-sm font-medium mb-1">وضعیت</label>
             <select
               v-model="form.status"
               class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -173,7 +173,7 @@
               <option value="suspended">معلق</option>
               <option value="pending">در انتظار</option>
               <option value="rejected">رد شده</option>
-            </select>
+            </select> -->
           </div>
 
           <div>
@@ -245,7 +245,7 @@ const form = ref({
   phone: "",
   registrationNumber: "",
   address: "",
-  status: "",
+  // status: "",
   image: "",
 });
 
@@ -330,7 +330,7 @@ function openModal(company: any | null = null) {
       phone: "",
       registrationNumber: "",
       address: "",
-      status: "",
+      // status: "",
       image: "",
     };
   }
@@ -368,7 +368,7 @@ const saveCompany = async () => {
         phone: form.value.phone,
         registrationNumber: form.value.registrationNumber,
         address: form.value.address,
-        status: form.value.status,
+        // status: form.value.status,
         image: form.value.image,
       };
       console.log("PATCH id:", selectedId.value); // برای دیباگ
