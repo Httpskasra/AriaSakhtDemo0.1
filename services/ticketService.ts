@@ -88,12 +88,12 @@ export async function patchTicketStatus(
 }
 
 export async function escalateTicket(id: string): Promise<void> {
-  await api.post(`/api/tickets/${id}/escalate`);
+  await $axios.post(`/api/tickets/${id}/escalate`);
 }
 
 export async function resolveTicket(
   id: string,
   refund: boolean
 ): Promise<void> {
-  await api.patch(`/api/tickets/${id}/resolve`, { refund });
+  await $axios.patch(`/api/tickets/${id}/resolve`, { refund });
 }

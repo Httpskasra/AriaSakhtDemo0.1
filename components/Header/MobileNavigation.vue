@@ -52,10 +52,9 @@ const isLogin = computed(
 const { authStep, setStep } = useAuthStep();
 
 const handleAccount = () => {
-  if (isLogin) {
+  if (isLogin.value) {
     router.push("/dashboard/profile");
-  }
-  if (!isLogin) {
+  } else {
     setStep("signin");
   }
 };
