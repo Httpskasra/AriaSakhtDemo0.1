@@ -48,9 +48,9 @@ const tickets = ref<Ticket[]>([]);
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
-const { canRead, canCreate, canDelete, canUpdate } = useAccess(
-  Resource.TICKETING
-);
+// const { canRead, canCreate, canDelete, canUpdate } = useAccess(
+//   Resource.TICKETING
+// );
 const { canRead, canUpdate, canDelete, canCreate } = {
   canRead: true,
   canDelete: true,
@@ -61,7 +61,7 @@ const { canRead, canUpdate, canDelete, canCreate } = {
 const fetchTickets = async () => {
   if (!canRead) return;
   try {
-    tickets.value = await getTickets($axios);
+    // tickets.value = await getTickets($axios);
   } catch (err) {
     console.error("خطا در دریافت تیکت‌ها:", err);
     tickets.value = [];
@@ -71,9 +71,9 @@ const fetchTickets = async () => {
 const handleNewTicket = async (ticket: Ticket) => {
   if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
   try {
-    const created = await createTicket($axios, ticket);
+    // const created = await createTicket($axios, ticket);
     // If backend returns created ticket, use it; otherwise push the original
-    tickets.value.push(created || ticket);
+    // tickets.value.push(created || ticket);
   } catch (err) {
     console.error("خطا در ایجاد تیکت:", err);
     // optimistic fallback
