@@ -1,107 +1,54 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { listTickets, type Ticket } from "@/services/ticketService";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const items = ref<Ticket[]>([]);
+const loading = ref(true);
+const errorMsg = ref("");
+
+onMounted(async () => {
+  try {
+    items.value = await listTickets();
+  } catch (e: any) {
+    errorMsg.value = e?.response?.data?.message ?? "Failed to load tickets";
+  } finally {
+    loading.value = false;
+  }
+});
+
+function openTicket(t: Ticket) {
+  router.push({ name: "single-ticket", params: { id: t.id } });
+}
+</script>
+
 <template>
-  <div class="tickets">
-    <SingleTicket
-      v-for="ticket in tickets"
-      :key="ticket.id"
-      :ticket="ticket"
-      @show-details="togglePopUp"
-    />
-    <transition name="fade">
-      <BaseModal v-if="selectedTicket" @click.self="closeModal">
-        <TicketPopUp
-          v-if="selectedTicket"
-          :ticket="selectedTicket"
-          @close="selectedTicket = null"
-        />
-      </BaseModal>
-    </transition>
+  <div>
+    <div v-if="loading">Loading tickets...</div>
+    <div v-else-if="errorMsg" class="text-red-500">{{ errorMsg }}</div>
+    <ul v-else class="space-y-3">
+      <li v-for="t in items" :key="t.id" class="card" @click="openTicket(t)">
+        <div class="title">{{ t.title }}</div>
+        <div class="meta">#{{ t.id }} · {{ t.status }} · {{ t.priority }}</div>
+      </li>
+    </ul>
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Ticket } from "@/types/ticket";
-// const tickets = ref<Ticket[]>([
-//   {
-//     id: 1,
-//     title: "تیکت 1",
-//     status: "پاسخ داده شده",
-//     date: "1402/01/01 ",
-//     time: "14:00:12",
-//     description:
-//       "توضیحات لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از  طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و  سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه  درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه درصد گذشته  حال و آینده، شناخت فراوان جامعه و متخصصان را می طلبد، تا با نرم افزارها  شناخت بیشتری را برای طراحان رایانه ای علی الخصوص طراحان خلاقی، و فرهنگ  پیشرو در زبان فارسی ایجاد کرد، در این صورت می توان امید داشت که تمام و  دشواری موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان  مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل  دنیای موجود طراحی اساسا مورد استفاده قرار گیرد. لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با استفاده از  طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در ستون و  سطرآنچنان که لازم است، و برای شرایط فعلی تکنولوژی مورد نیاز، و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه  درصد گذشته حال و آینده، شناخت فراوان جامعه و متخصصان را می طع با هدف بهبود ابزارهای کاربردی می باشد، کتابهای زیادی در شصت و سه درصد گذشته  حال و آینده، شناخت فراوان جامعه ه راهکارها، و شرایط سخت تایپ به پایان رسد و زمان  مورد نیاز شامل حروفچینی دستاوردهای اصلی، و جوابگوی سوالات پیوسته اهل  دنیای موجود طراحی اساسا مورد استفاده قرار گیرد. ",
-//     priority: "کم",
-//     images: [
-//       "/sampleSC/screen.png",
-//       "/sampleSC/screen.png",
-//       "/sampleSC/screen.png",
-//     ],
-//     reply: {
-//       id: 1,
-//       message: "سلام، در حال بررسی هستیم. به زودی پاسخ می‌دهیم.",
-//       date: "1402/01/02",
-//       time: "10:32:00",
-//       sender: "پشتیبان",
-//     },
-//   },
-//   {
-//     id: 2,
-//     title: "تیکت 2",
-//     status: "درحال بررسی",
-//     date: "1402/01/01 ",
-//     time: "14:00:12",
-//     description:
-//       "توضیحات تیکتتیکت یکتتی کتتیکتتیکتتیکتتیکتتیکتتیکتتیکتتیکتتیکت",
-//     priority: "کم",
-//   },
-//   {
-//     id: 3,
-//     title: "تیکت 3",
-//     status: "بسته",
-//     date: "1402/01/01 ",
-//     time: "14:00:12",
-//     description:
-//       "توضیحات تیکتتیک تتیکتتیکتتیکتتیکت تیکتتیکتتیکتتیکتتیکتتیکتتیکت",
-//     priority: "کم",
-//   },
-//   {
-//     id: 4,
-//     title: "تیکت 4",
-//     status: "بسته",
-//     date: "1402/01/01 ",
-//     time: "14:00:12",
-//     description:
-//       "توضیحات تیکتتیک تتیکتتیکتتیکتتیکت تیکتتیکتتیکتتیکتتیکتتیکتتیکت",
-//     priority: "کم",
-//   },
-// ]);
-const ticket = defineProps<{
-  tickets: Ticket[];
-}>();
-const selectedTicket = ref<Ticket | null>(null);
-
-const togglePopUp = (ticket: Ticket) => {
-  selectedTicket.value = ticket;
-};
-const closeModal = () => (selectedTicket.value = null);
-</script>
-
 <style scoped>
-.tickets {
-  width: 95%;
-  margin: 0 auto;
-  margin-top: 10px;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.card {
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
 }
-
-@media (max-width: 767px) {
-  .tickets {
-    width: 100%;
-    padding: 10px;
-  }
+.title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.meta {
+  color: #666;
+  font-size: 0.85rem;
 }
 </style>

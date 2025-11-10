@@ -1,71 +1,99 @@
-// // services/ticketService.ts
-// import type { Ticket } from "@/types/ticket";
+// tickets.ts
+const { $axios } = useNuxtApp();
 
-// const { $axios } = useNuxtApp();
+// ==== Types (طبق Swagger) ====
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
+export type TicketStatus =
+  | "open"
+  | "in_progress"
+  | "resolved"
+  | "closed"
+  | "reopened"
+  | "escalated";
 
-// // دریافت همه تیکت‌ها
-// export const getTickets = async (): Promise<Ticket[]> => {
-//   const res = await $axios.get("/tickets");
-//   return res.data;
-// };
+export interface CreateTicketDto {
+  title: string;
+  description: string;  
+  priority?: TicketPriority; // default: low
+  orderId?: string;
+}
 
-// // ارسال تیکت جدید
-// export const createTicket = async (ticket: Ticket): Promise<Ticket> => {
-//   const res = await $axios.post("/tickets", ticket);
-//   return res.data;
-// };
+export interface UpdateTicketDto {
+  title?: string;
+  description?: string;
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  assignedTo?: string;
+  orderId?: string;
+}
 
-// // حذف تیکت
-// export const deleteTicket = async (id: number): Promise<void> => {
-//   await $axios.delete(`/tickets/${id}`);
-// };
+export interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  createdBy?: string;
+  assignedTo?: string;
+  orderId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-// // ویرایش تیکت
-// export const updateTicket = async (ticket: Ticket): Promise<Ticket> => {
-//   const res = await $axios.put(`/tickets/${ticket.id}`, ticket);
-//   return res.data;
-// };
+export interface TicketStatusResponseDto {
+  status: TicketStatus;
+}
 
-// services/ticketService.ts
-// import type { Ticket } from "@/types/ticket";
-// import { useNuxtApp } from "#app";
+// ==== API calls ====
+export async function createTicket(body: CreateTicketDto): Promise<Ticket> {
+  const { data } = await $axios.post("/tickets", body);
+  return data;
+}
 
-// const { $axios } = useNuxtApp(); // استفاده صحیح از axios داخل setup
+export async function listTickets(): Promise<Ticket[]> {
+  const { data } = await $axios.get("/tickets");
+  return data;
+}
 
-// export const getTickets = async (): Promise<Ticket[]> => {
-//   const res = await $axios.get("/tickets");
-//   return res.data;
-// };
+export async function getTicket(id: string): Promise<Ticket> {
+  const { data } = await $axios.get(`/tickets/${id}`);
+  return data;
+}
 
-// export const createTicket = async (ticket: Ticket): Promise<Ticket> => {
-//   const res = await $axios.post("/tickets", ticket);
-//   return res.data;
-// };
+export async function updateTicket(
+  id: string,
+  body: UpdateTicketDto
+): Promise<Ticket> {
+  const { data } = await $axios.patch(`/tickets/${id}`, body);
+  return data;
+}
 
-// export const deleteTicket = async (id: number): Promise<void> => {
-//   await $axios.delete(`/tickets/${id}`);
-// };
+export async function getTicketStatus(
+  id: string
+): Promise<TicketStatusResponseDto> {
+  const { data } = await $axios.get(`/tickets/${id}/status`);
+  return data;
+}
 
-// export const updateTicket = async (ticket: Ticket): Promise<Ticket> => {
-//   const res = await $axios.put(`/tickets/${ticket.id}`, ticket);
-//   return res.data;
-// };
-import type { Ticket } from "@/types/ticket";
+export async function patchTicketStatus(
+  id: string,
+  status: TicketStatus,
+  refund?: boolean
+): Promise<Ticket> {
+  const { data } = await $axios.patch(`/tickets/${id}/status`, {
+    status,
+    refund,
+  });
+  return data;
+}
 
-export const getTickets = async ($axios: any): Promise<Ticket[]> => {
-  return await $axios.get("/tickets").then((res: any) => res.data);
-};
+export async function escalateTicket(id: string): Promise<void> {
+  await api.post(`/api/tickets/${id}/escalate`);
+}
 
-export const createTicket = async (
-  $axios: any,
-  ticket: Ticket
-): Promise<Ticket> => {
-  return await $axios.post("/tickets", ticket).then((res: any) => res.data);
-};
-
-export const deleteTicket = async (
-  $axios: any,
-  ticketId: number
-): Promise<void> => {
-  await $axios.delete(`/tickets/${ticketId}`);
-};
+export async function resolveTicket(
+  id: string,
+  refund: boolean
+): Promise<void> {
+  await api.patch(`/api/tickets/${id}/resolve`, { refund });
+}

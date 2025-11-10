@@ -1,135 +1,76 @@
-<template>
-  <div class="container">
-    <form class="ticket-form" @submit.prevent="submitForm">
-      <h2>ثبت تیکت جدید</h2>
-
-      <label>
-        عنوان:
-        <input v-model="form.title" type="text" required />
-      </label>
-
-      <label>
-        توضیحات:
-        <textarea v-model="form.description" required></textarea>
-      </label>
-
-      <label>
-        اولویت:
-        <select v-model="form.priority" required>
-          <option value="کم">کم</option>
-          <option value="متوسط">متوسط</option>
-          <option value="زیاد">زیاد</option>
-        </select>
-      </label>
-
-      <label>
-        افزودن تصویر:
-        <input
-          type="file"
-          @change="handleImageUpload"
-          multiple
-          accept="image/*" />
-      </label>
-
-      <div class="actions">
-        <button @submit.prevent="submitForm" class="submit">ارسال</button>
-        <button type="button" class="close" @click="$emit('cancel')">
-          انصراف
-        </button>
-      </div>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
-import type { Ticket, TicketPriority } from "@/types/ticket";
-const form = ref({
-  title: "",
-  description: "",
-  priority: "کم",
-  images: [] as string[],
-});
+import { ref } from "vue";
+import { createTicket, type TicketPriority } from "@/services/ticketService";
 
-const emit = defineEmits(["submitted", "cancel"]);
+const title = ref("");
+const description = ref("");
+const priority = ref<TicketPriority>("low");
+const orderId = ref<string | undefined>(undefined);
 
-const handleImageUpload = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  if (!files) return;
-  // form.value.images = [];
+const loading = ref(false);
+const errorMsg = ref("");
+const successMsg = ref("");
 
-  for (const file of Array.from(files)) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        form.value.images.push(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+async function submitForm() {
+  errorMsg.value = "";
+  successMsg.value = "";
+  loading.value = true;
+  try {
+    await createTicket({
+      title: title.value,
+      description: description.value,
+      priority: priority.value,
+      orderId: orderId.value,
+    });
+    successMsg.value = "Ticket created successfully";
+    // اگر پاپ‌آپ داری ببند، یا روتر بده به لیست
+    // this.$emit('created')  یا  router.push('/support/tickets')
+  } catch (e: any) {
+    errorMsg.value = e?.response?.data?.message ?? "Failed to create ticket";
+  } finally {
+    loading.value = false;
   }
-};
-
-// const submitForm = () => {
-//   const newTicket: Ticket = {
-//     id: Date.now(), // یا UUID
-//     title: form.value.title,
-//     description: form.value.description,
-//     priority: form.value.priority as TicketPriority,
-//     status: "درحال بررسی",
-//     date: new Date().toLocaleDateString("fa-IR"),
-//     time: new Date().toLocaleTimeString("fa-IR"),
-//     images: form.value.images,
-//   };
-//   emit("submitted", newTicket);
-// };
-const submitForm = async () => {
-  const newTicket: Ticket = {
-    id: Date.now(),
-    title: form.value.title,
-    description: form.value.description,
-    priority: form.value.priority as TicketPriority,
-    status: "درحال بررسی",
-    date: new Date().toLocaleDateString("fa-IR"),
-    time: new Date().toLocaleTimeString("fa-IR"),
-    images: form.value.images,
-  };
-  // emit the new ticket to parent; parent will call backend if allowed
-  emit("submitted", newTicket);
-};
+}
 </script>
 
+<template>
+  <form @submit.prevent="submitForm" class="space-y-4">
+    <input v-model="title" required placeholder="Title" class="input" />
+    <textarea
+      v-model="description"
+      required
+      placeholder="Describe your issue"
+      class="textarea" />
+    <select v-model="priority" class="select">
+      <option value="low">Low</option>
+      <option value="medium">Medium</option>
+      <option value="high">High</option>
+      <option value="urgent">Urgent</option>
+    </select>
+    <input v-model="orderId" placeholder="Order ID (optional)" class="input" />
+
+    <button :disabled="loading" class="btn-primary">
+      {{ loading ? "Submitting..." : "Create Ticket" }}
+    </button>
+
+    <p v-if="errorMsg" class="text-red-500">{{ errorMsg }}</p>
+    <p v-if="successMsg" class="text-green-600">{{ successMsg }}</p>
+  </form>
+</template>
+
 <style scoped>
-.ticket-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-input,
-textarea,
-select {
+.input,
+.textarea,
+.select {
   width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
 }
-
-.actions {
-  display: flex;
-  justify-content: space-between;
-}
-
-button {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-}
-button.submit {
-  background-color: #4caf50;
+.btn-primary {
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  background: #2b6cb0;
   color: white;
-}
-
-button.close {
-  color: var(--red-danger);
 }
 </style>
