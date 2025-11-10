@@ -7,7 +7,7 @@
       </div>
 
       <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
-      <SupportHeader />
+      <SupportHeader :canCreate="canCreate" />
       <div class="fillter">
         <div class="fillter-btn">
           <button>
@@ -45,14 +45,15 @@ const tickets = ref<Ticket[]>([]);
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
-// const { canRead, canCreate, canDelete, canUpdate } = useAccess(
-//   Resource.TICKETING
-// );
-const { canRead, canUpdate, canDelete } = {
-  canRead: true,
-  canDelete: true,
-  canUpdate: true,
-};
+const { canRead, canCreate, canDelete, canUpdate } = useAccess(
+  Resource.TICKETING
+);
+// const { canRead, canUpdate, canDelete, canCreate } = {
+//   canRead: true,
+//   canDelete: true,
+//   canUpdate: true,
+//   canCreate: true,
+// };
 
 // const fetchTickets = async () => {
 //   if (!canRead) return;

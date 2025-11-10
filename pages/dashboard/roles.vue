@@ -64,7 +64,7 @@
           <input
             v-model="form.nationalId"
             type="text"
-            placeholder="2284280072"
+            placeholder="1234567891"
             class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
         </div>
         <div>

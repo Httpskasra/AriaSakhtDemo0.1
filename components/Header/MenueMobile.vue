@@ -20,8 +20,8 @@
               stroke-linecap="round"
               stroke-linejoin="round" />
           </svg>
-          <span>خانه</span></NuxtLink
-        >
+          <span>خانه</span>
+        </NuxtLink>
       </li>
       <li>
         <NuxtLink to="/">
@@ -314,6 +314,9 @@ ul {
   flex-direction: column;
   justify-content: space-between;
 }
+li {
+  padding: 15px 0;
+}
 li a {
   text-align: right;
   width: 80%;
@@ -322,6 +325,7 @@ li a {
   justify-content: flex-start;
   text-decoration: none;
   font-size: 14px;
+  padding: 10px 0;
 }
 svg {
   margin-left: 13px;

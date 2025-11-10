@@ -49,7 +49,7 @@ async function submitForm() {
     </select>
     <input v-model="orderId" placeholder="Order ID (optional)" class="input" />
 
-    <button :disabled="loading" class="btn-primary">
+    <button :disabled="loading" @click="submitForm" class="btn-primary">
       {{ loading ? "Submitting..." : "Create Ticket" }}
     </button>
 

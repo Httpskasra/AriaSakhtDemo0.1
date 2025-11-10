@@ -84,7 +84,7 @@
             <button
               v-if="canUpdate"
               type="submit"
-              class="bg-[#1976d2] disabled:opacity-60 text-white rounded-lg py-3 font-bold hover:bg-[#125ea7] transition">
+              class="bg-[#1976d2] disabled:opacity-60 text-white rounded-lg py-3 px-2 font-bold hover:bg-[#125ea7] transition">
               ذخیره اطلاعات
             </button>
           </div>

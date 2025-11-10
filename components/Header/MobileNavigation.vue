@@ -55,7 +55,9 @@ const handleAccount = () => {
   if (isLogin) {
     router.push("/dashboard/profile");
   }
-  setStep("signin");
+  if (!isLogin) {
+    setStep("signin");
+  }
 };
 </script>
 

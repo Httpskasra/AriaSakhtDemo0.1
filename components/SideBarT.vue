@@ -18,7 +18,7 @@
             alt="" />
         </div>
         <div class="title">
-          <span>{{ resourceLabels[resource] || resource }}</span>
+          <span>{{ resourceLabels[resource] }}</span>
         </div>
       </NuxtLink>
 
