@@ -1,3 +1,5 @@
+<!-- TEMPLATE -->
+<!--
 <template>
   <NuxtLayout name="dashboard">
     <div v-if="canRead" class="container">
@@ -5,8 +7,6 @@
         <h1>پشتیبانی</h1>
         <img src="/userPannleIcons/support.png" alt="" />
       </div>
-
-      <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
       <SupportHeader :canCreate="canCreate" />
       <div class="fillter">
         <div class="fillter-btn">
@@ -19,20 +19,17 @@
           <SearchBar :dark="true" />
         </div>
       </div>
-      <!-- <SupportTickets v-if="tickets.length" :tickets="tickets" /> -->
       <SupportTickets />
     </div>
     <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
   </NuxtLayout>
 </template>
+-->
 
+<!-- SCRIPT -->
+<!--
 <script setup lang="ts">
 import type { Ticket } from "@/types/ticket";
-// import {
-//   getTickets,
-//   createTicket,
-//   deleteTicket,
-// } from "@/services/ticketService";
 import dashboardAuth from "~/middleware/dashboard-auth";
 definePageMeta({
   middleware: dashboardAuth,
@@ -48,9 +45,6 @@ const tickets = ref<Ticket[]>([]);
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
-// const { canRead, canCreate, canDelete, canUpdate } = useAccess(
-//   Resource.TICKETING
-// );
 const { canRead, canUpdate, canDelete, canCreate } = {
   canRead: true,
   canDelete: true,
@@ -72,11 +66,9 @@ const handleNewTicket = async (ticket: Ticket) => {
   if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
   try {
     // const created = await createTicket($axios, ticket);
-    // If backend returns created ticket, use it; otherwise push the original
     // tickets.value.push(created || ticket);
   } catch (err) {
     console.error("خطا در ایجاد تیکت:", err);
-    // optimistic fallback
     tickets.value.push(ticket);
   }
 };
@@ -85,6 +77,10 @@ onMounted(() => {
   fetchTickets();
 });
 </script>
+-->
+
+<!-- STYLE -->
+<!--
 <style scoped>
 * {
   box-sizing: border-box;
@@ -163,3 +159,4 @@ onMounted(() => {
   }
 }
 </style>
+-->
