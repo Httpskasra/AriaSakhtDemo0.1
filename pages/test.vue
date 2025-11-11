@@ -160,3 +160,10 @@ onMounted(() => {
 }
 </style>
 -->
+<template>
+  <div>Placeholder page</div>
+</template>
+
+<script setup lang="ts">
+// خالی ولی معتبر
+</script>
