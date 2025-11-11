@@ -1,12 +1,13 @@
 <template>
-  <NuxtLayout name="dashboard">
+  <h1>test</h1>
+  <!-- <NuxtLayout name="dashboard">
     <div v-if="canRead" class="container">
       <div class="title">
         <h1>پشتیبانی</h1>
         <img src="/userPannleIcons/support.png" alt="" />
       </div>
 
-      <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
+       <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" />
       <SupportHeader :canCreate="canCreate" />
       <div class="fillter">
         <div class="fillter-btn">
@@ -19,71 +20,71 @@
           <SearchBar :dark="true" />
         </div>
       </div>
-      <!-- <SupportTickets v-if="tickets.length" :tickets="tickets" /> -->
+      <SupportTickets v-if="tickets.length" :tickets="tickets" /> 
       <SupportTickets />
     </div>
     <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
-  </NuxtLayout>
+  </NuxtLayout>-->
 </template>
 
 <script setup lang="ts">
-import type { Ticket } from "@/types/ticket";
-// import {
-//   getTickets,
-//   createTicket,
-//   deleteTicket,
-// } from "@/services/ticketService";
-import dashboardAuth from "~/middleware/dashboard-auth";
-definePageMeta({
-  middleware: dashboardAuth,
-});
-useHead({
-  title: " آریاساخت | داشبورد | تیکتینگ ",
-});
-definePageMeta({
-  middleware: dashboardAuth,
-});
-const { $axios } = useNuxtApp();
-const tickets = ref<Ticket[]>([]);
-import { useAccess } from "~/composables/useAccess";
-import { Resource } from "~/types/permissions";
+// import type { Ticket } from "@/types/ticket";
+// // import {
+// //   getTickets,
+// //   createTicket,
+// //   deleteTicket,
+// // } from "@/services/ticketService";
+// import dashboardAuth from "~/middleware/dashboard-auth";
+// definePageMeta({
+//   middleware: dashboardAuth,
+// });
+// useHead({
+//   title: " آریاساخت | داشبورد | تیکتینگ ",
+// });
+// definePageMeta({
+//   middleware: dashboardAuth,
+// });
+// const { $axios } = useNuxtApp();
+// const tickets = ref<Ticket[]>([]);
+// import { useAccess } from "~/composables/useAccess";
+// import { Resource } from "~/types/permissions";
 
-// const { canRead, canCreate, canDelete, canUpdate } = useAccess(
-//   Resource.TICKETING
-// );
-const { canRead, canUpdate, canDelete, canCreate } = {
-  canRead: true,
-  canDelete: true,
-  canUpdate: true,
-  canCreate: true,
-};
+// // const { canRead, canCreate, canDelete, canUpdate } = useAccess(
+// //   Resource.TICKETING
+// // );
+// const { canRead, canUpdate, canDelete, canCreate } = {
+//   canRead: true,
+//   canDelete: true,
+//   canUpdate: true,
+//   canCreate: true,
+// };
 
-const fetchTickets = async () => {
-  if (!canRead) return;
-  try {
-    // tickets.value = await getTickets($axios);
-  } catch (err) {
-    console.error("خطا در دریافت تیکت‌ها:", err);
-    tickets.value = [];
-  }
-};
+// const fetchTickets = async () => {
+//   if (!canRead) return;
+//   try {
+//     // tickets.value = await getTickets($axios);
+//   } catch (err) {
+//     console.error("خطا در دریافت تیکت‌ها:", err);
+//     tickets.value = [];
+//   }
+// };
 
-const handleNewTicket = async (ticket: Ticket) => {
-  if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
-  try {
-    // const created = await createTicket($axios, ticket);
-    // If backend returns created ticket, use it; otherwise push the original
-    // tickets.value.push(created || ticket);
-  } catch (err) {
-    console.error("خطا در ایجاد تیکت:", err);
-    // optimistic fallback
-    tickets.value.push(ticket);
-  }
-};
+// const handleNewTicket = async (ticket: Ticket) => {
+//   if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
+//   try {
+// const created = await createTicket($axios, ticket);
+// If backend returns created ticket, use it; otherwise push the original
+// tickets.value.push(created || ticket);
+// } catch (err) {
+//   console.error("خطا در ایجاد تیکت:", err);
+// optimistic fallback
+//     tickets.value.push(ticket);
+//   }
+// };
 
-onMounted(() => {
-  fetchTickets();
-});
+// onMounted(() => {
+//   fetchTickets();
+// });
 </script>
 <style scoped>
 * {

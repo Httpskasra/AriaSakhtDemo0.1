@@ -76,12 +76,6 @@
 
           <span>contact@gmail.com </span>
         </div>
-        <!-- <div class="social">
-          <img src="/social/icons8-whatsapp.svg" alt="" />
-          <img src="/social/icons8-instagram.svg" alt="" />
-          <img src="/social/icons8-telegram.svg" alt="" />
-          <img src="/social/icons8-linkedin.svg" alt="" />
-        </div> -->
       </div>
       <div class="cat" v-for="(category, index) in categories" :key="index">
         <h3 @click="toggleCategory(index)">

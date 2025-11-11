@@ -342,9 +342,6 @@ svg {
 .close:hover {
   opacity: 0.8;
 }
-.mobile-menu {
-  /* padding: 8px 12px; */
-}
 .toggle-cats {
   display: flex;
   justify-content: space-between;
