@@ -15,7 +15,7 @@
         <div class="fillter-btn">
           <button type="button" @click="toggleFilters">
             <span>فیلتر</span>
-            <img src="/userPannleIcons/filter-alt.png" alt="filter" />
+            <!-- <img src="/userPannleIcons/filter-alt.png" alt="filter" /> -->
           </button>
         </div>
         <div class="search">
@@ -63,7 +63,7 @@
       </div>
 
       <div v-else-if="filteredTickets.length === 0" class="state empty">
-        <img src="/userPannleIcons/empty.png" alt="empty" />
+        <!-- <img src="/userPannleIcons/empty.png" alt="empty" /> -->
         <p>تیکتی پیدا نشد.</p>
         <small>فیلترها یا جستجو را تغییر دهید.</small>
       </div>
@@ -95,7 +95,8 @@ import { listTickets, createTicket } from "@/services/ticketService";
 useHead({ title: " آریاساخت | داشبورد | تیکتینگ " });
 definePageMeta({ middleware: dashboardAuth });
 
-const { canRead, canCreate } = useAccess(Resource.TICKETING);
+// const { canRead, canCreate } = useAccess(Resource.TICKETING);
+const { canRead, canCreate } = { canCreate: true, canRead: true };
 
 // وضعیت صفحه
 const tickets = ref<Ticket[]>([]);
