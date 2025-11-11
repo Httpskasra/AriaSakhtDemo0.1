@@ -95,8 +95,8 @@ import { listTickets, createTicket } from "@/services/ticketService";
 useHead({ title: " آریاساخت | داشبورد | تیکتینگ " });
 definePageMeta({ middleware: dashboardAuth });
 
-// const { canRead, canCreate } = useAccess(Resource.TICKETING);
-const { canRead, canCreate } = { canCreate: true, canRead: true };
+const { canRead, canCreate } = useAccess(Resource.TICKETING);
+// const { canRead, canCreate } = { canCreate: true, canRead: true };
 
 // وضعیت صفحه
 const tickets = ref<Ticket[]>([]);
