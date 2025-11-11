@@ -15,7 +15,7 @@
 
       <div class="flex w-full flex-col md:flex-row">
         <div
-          class="fixed md:sticky top-16 md:top-10 right-0 w-full md:w-72 bg-white shadow-lg p-6 z-50 transition-transform duration-300 overflow-y-auto md:h-[60vh] h-[100vh]"
+          class="fixed md:sticky top-16 md:top-25 right-0 w-full bg-white md:bg-inherit md:w-72 p-6 z-50 transition-transform duration-300 overflow-y-auto md:h-[100vh] h-[100vh]"
           :class="{
             'translate-x-0': isSidebarOpen,
             'translate-x-full md:translate-x-0': !isSidebarOpen && !$mq.md,
@@ -39,18 +39,17 @@ import { useMediaQuery } from "@vueuse/core";
 const $mq = useMediaQuery("(min-width: 768px)");
 
 const products = ref([
-  { id: 1, name: "محصول 1", price: 100000, brand: "برند A" },
-  { id: 2, name: "محصول 2", price: 150000, brand: "برند B" },
-  { id: 3, name: "محصول 3", price: 200000, brand: "برند A" },
-  { id: 4, name: "محصول 4", price: 150000, brand: "برند B" },
-  { id: 5, name: "محصول 5", price: 200000, brand: "برند A" },
-  { id: 6, name: "محصول 6", price: 150000, brand: "برند B" },
-  { id: 7, name: "محصول 7", price: 200000, brand: "برند A" },
-  { id: 8, name: "محصول 8", price: 150000, brand: "برند B" },
-  { id: 9, name: "محصول 9", price: 200000, brand: "برند A" },
-  { id: 10, name: "محصول 10", price: 150000, brand: "برند B" },
-  { id: 11, name: "محصول 11", price: 200000, brand: "برند A" },
-  { id: 12, name: "محصول 12", price: 150000, brand: "برند B" },
+  { id: "1", name: "محصول 1", price: 100000, brand: "برند A" },
+  { id: "2", name: "محصول 2", price: 150000, brand: "برند B" },
+  { id: "3", name: "محصول 3", price: 200000, brand: "برند A" },
+  { id: "4", name: "محصول 4", price: 150000, brand: "برند B" },
+  { id: "5", name: "محصول 5", price: 200000, brand: "برند A" },
+  { id: "6", name: "محصول 6", price: 150000, brand: "برند B" },
+  { id: "8", name: "محصول 8", price: 150000, brand: "برند B" },
+  { id: "9", name: "محصول 9", price: 200000, brand: "برند A" },
+  { id: "10", name: "محصول 10", price: 150000, brand: "برند B" },
+  { id: "11", name: "محصول 11", price: 200000, brand: "برند A" },
+  { id: "12", name: "محصول 12", price: 150000, brand: "برند B" },
 ]);
 
 const isSidebarOpen = ref(false);

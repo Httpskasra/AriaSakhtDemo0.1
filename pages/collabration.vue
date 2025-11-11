@@ -3,9 +3,72 @@
     <div
       class="bg-gradient-to-br from-[#f8fafc] via-[#f8fafc] to-[#e0e7ef] pt-12 pb-8 text-center rounded-b-3xl shadow-lg">
       <div class="flex flex-col items-center">
-        <span class="material-icons text-[#1976d2] text-5xl mb-2"
-          >handshake</span
-        >
+        <span class="text-[#1976d2] text-5xl mb-2">
+          <svg
+            width="50"
+            height="50"
+            viewBox="0 0 24 24"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink">
+            <title />
+
+            <g
+              fill="none"
+              fill-rule="evenodd"
+              id="页面-1"
+              stroke="none"
+              stroke-width="2">
+              <g id="导航图标" transform="translate(-250.000000, -15.000000)">
+                <g id="编组" transform="translate(249.000000, 15.000000)">
+                  <polygon
+                    fill="#FFFFFF"
+                    fill-opacity="0.01"
+                    fill-rule="nonzero"
+                    id="路径"
+                    points="26 0 0 0 0 26 26 26" />
+
+                  <path
+                    d="M13,21.6666667 L19.5,15.1666667 L17.3333333,17.3333333 L15.1666667,19.5 L13,21.6666667 Z M13,21.6666667 L2.16666667,10.8333333 L8.66666667,4.33333333 L13,8.66666667"
+                    id="形状"
+                    stroke="#1673ff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2" />
+
+                  <path
+                    d="M9.20833333,12.4583333 L17.3333333,4.33333333 L23.8333333,10.8333333 L19.5,15.1666667 L15.1666667,10.8333333 L11.9166667,14.0833333 L9.20833333,12.4583333 Z M9.20833333,12.4583333 L13,8.66666667"
+                    id="形状"
+                    stroke="#1673ff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2" />
+
+                  <line
+                    id="路径"
+                    stroke="#1673ff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    x1="15.1666667"
+                    x2="13.5416667"
+                    y1="19.5"
+                    y2="17.875" />
+
+                  <line
+                    id="路径"
+                    stroke="#1673ff"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width=""
+                    x1="17.3333333"
+                    x2="15.7083333"
+                    y1="17.3333333"
+                    y2="15.7083333" />
+                </g>
+              </g>
+            </g></svg
+        ></span>
         <h1 class="text-3xl font-bold text-[#2c3e50] mb-2">همکاری با ما</h1>
         <p class="text-[#607d8b] text-base">
           اگر صاحب کسب‌وکار هستید و تمایل به همکاری با آریا ساخت دارید، اطلاعات
@@ -25,7 +88,7 @@
             v-model="form.name"
             type="text"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="نام شرکت" />
+            placeholder="آریا ساخت" />
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
@@ -35,7 +98,7 @@
             v-model="form.email"
             type="email"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="ایمیل شرکت" />
+            placeholder="email@example.com" />
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
@@ -45,7 +108,7 @@
             v-model="form.phone"
             type="text"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="شماره تماس" />
+            placeholder="09123456789" />
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
@@ -55,7 +118,7 @@
             v-model="form.nationalId"
             type="text"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="کدملی" />
+            placeholder="1234567891" />
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
@@ -65,7 +128,7 @@
             v-model="form.registrationNumber"
             type="text"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="شماره ثبت" />
+            placeholder="10002110222" />
         </div>
         <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"
@@ -75,7 +138,7 @@
             v-model="form.address"
             type="text"
             class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-            placeholder="آدرس شرکت" />
+            placeholder="شیراز،..." />
         </div>
         <!-- <div>
           <label class="block mb-2 text-right font-semibold text-[#1976d2]"

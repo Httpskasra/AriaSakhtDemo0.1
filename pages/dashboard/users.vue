@@ -1,11 +1,11 @@
 <template>
   <NuxtLayout name="dashboard">
     <!-- عنوان صفحه -->
-    <div
-      class="container"
-      dir="rtl">
-      <h1 class="title">کاربران</h1>
-      <img src="/icons/roles.png"  />
+    <div class="container" dir="rtl">
+      <div class="title">
+        <h1>کاربران</h1>
+        <img src="/icons/roles.png" />
+      </div>
     </div>
 
     <!-- Guard: only render content if user can read -->

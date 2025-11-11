@@ -17,7 +17,7 @@
               d="M16.5046 16.53C16.3746 16.53 16.2446 16.5 16.1246 16.42L13.0246 14.57C12.2546 14.11 11.6846 13.1 11.6846 12.21V8.10999C11.6846 7.69999 12.0246 7.35999 12.4346 7.35999C12.8446 7.35999 13.1846 7.69999 13.1846 8.10999V12.21C13.1846 12.57 13.4846 13.1 13.7946 13.28L16.8946 15.13C17.2546 15.34 17.3646 15.8 17.1546 16.16C17.0046 16.4 16.7546 16.53 16.5046 16.53Z"
               fill="#57626D" />
           </svg>
-          <span> شنبه تا 5 شنبه ساعت 1 تا 2</span>
+          <span> شنبه تا 5 شنبه ساعت 8 تا 16</span>
         </div>
         <div class="item">
           <svg
@@ -74,7 +74,7 @@
               fill="#57626D" />
           </svg>
 
-          <span>contact@gmail.com </span>
+          <span>ariasakht@gmail.com </span>
         </div>
       </div>
       <div class="cat" v-for="(category, index) in categories" :key="index">
@@ -115,24 +115,60 @@
   </footer>
 </template>
 
-<script setup>
-const categories = [
-  {
-    title: "دسته بندی ها ۱",
-    links: ["ساختمانی ", "صنعتی ", "خاک ", "سنگ", "آهن آلات", "ابزار"],
-  },
-  {
-    title: "دسته بندی ها ۲",
-    links: ["ساختمانی ", "صنعتی ", "خاک ", "سنگ", "آهن آلات", "ابزار"],
-  },
-  {
-    title: "دسته بندی ها ۳",
-    links: ["ساختمانی ", "صنعتی ", "خاک ", "سنگ", "آهن آلات", "ابزار"],
-  },
-];
-const isOpen = ref(Array(categories.length).fill(false));
+<script setup lang="ts">
+import { useCategories } from "~/composables/useCategories";
 
-const toggleCategory = (index) => {
+interface CategoryItem {
+  title: string;
+  links: string[];
+}
+
+interface CategoryData {
+  _id?: string;
+  name: string;
+  parentId?: string | null;
+}
+
+const { categories: allCategories, load } = useCategories();
+const categories = ref<CategoryItem[]>([]);
+const isOpen = ref<boolean[]>([]);
+
+// دریافت دسته‌بندی‌ها و سازمان‌دهی آن‌ها
+const fetchAndOrganizeCategories = async () => {
+  try {
+    await load();
+
+    // فیلتر کردن دسته‌بندی‌های اصلی (بدون parentId)
+    const parentCategories = (allCategories.value as CategoryData[]).filter(
+      (cat) => !cat.parentId
+    );
+
+    // ساخت آرایه‌ای از دسته‌بندی‌ها با زیردسته‌ها
+    const organized: CategoryItem[] = parentCategories.map((parent) => {
+      // یافتن تمام فرزند‌های این دسته‌بندی
+      const children = (allCategories.value as CategoryData[])
+        .filter((cat) => cat.parentId === parent._id)
+        .map((cat) => cat.name);
+
+      return {
+        title: parent.name,
+        links: children,
+      };
+    });
+
+    categories.value = organized;
+    isOpen.value = Array(organized.length).fill(false);
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+};
+
+// فراخوانی در هنگام mount کامپوننت
+onMounted(() => {
+  fetchAndOrganizeCategories();
+});
+
+const toggleCategory = (index: number) => {
   isOpen.value[index] = !isOpen.value[index];
 };
 </script>
@@ -236,8 +272,6 @@ span.addres {
   direction: rtl;
   width: 190px;
   font-size: 10px;
-}
-.enamad {
 }
 @media (min-width: 769px) {
   .footer-links {
