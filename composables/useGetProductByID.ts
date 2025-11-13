@@ -1,14 +1,15 @@
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, unref } from "vue";
 import type { Product } from "~/types/product";
 import { getProductById } from "~/services/productService";
 
-export function useProductById(id: string) {
+export function useProductById(id: string | Ref<string> | ComputedRef<string>) {
   const data = ref<Product | null>(null); // داده محصول
   const loading = ref(true); // وضعیت بارگذاری
   const error = ref<string | null>(null); // پیام خطا
 
   const fetchProduct = async () => {
-    if (!id) {
+    const currentId = unref(id);
+    if (!currentId) {
       error.value = "شناسه محصول یافت نشد";
       loading.value = false;
       return;
@@ -17,7 +18,7 @@ export function useProductById(id: string) {
     loading.value = true; // شروع بارگذاری
     error.value = null; // پاک کردن خطاهای قبلی
     try {
-      const response = await getProductById(id); // فراخوانی سرویس
+      const response = await getProductById(currentId); // فراخوانی سرویس
       data.value = response.data; // ذخیره داده محصول
     } catch (err: any) {
       error.value =
@@ -35,7 +36,7 @@ export function useProductById(id: string) {
 
   // به‌روزرسانی خودکار هنگام تغییر id
   watch(
-    () => id,
+    () => unref(id),
     () => {
       fetchProduct();
     }

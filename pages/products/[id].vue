@@ -30,9 +30,10 @@
 
 <script setup lang="ts">
 const route = useRoute();
-const id = route.params.id;
 
-const { data, loading, error } = useProductById(id as string);
+const { data, loading, error } = useProductById(
+  computed(() => route.params.id as string)
+);
 </script>
 
 <style scoped>
