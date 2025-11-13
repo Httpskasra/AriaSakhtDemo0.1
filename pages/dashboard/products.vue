@@ -667,7 +667,8 @@ async function saveProduct() {
         throw new Error("companyId برای این کاربر یافت نشد");
       }
 
-      const payload = { ...form.value, companyId };
+      // const payload = { ...form.value, companyId };
+      const payload = { ...form.value };
       await $axios.post("/products", payload);
     }
     await fetchProducts();
