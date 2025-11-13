@@ -184,7 +184,11 @@
             <div>
               <label class="block text-sm font-medium mb-1">تصاویر</label>
               <div class="space-y-3">
-                <input type="file" multiple @change="onImageFilesSelected" />
+                <input
+                  type="file"
+                  multiple
+                  @change="onImageFilesSelected"
+                  @click="uploadSelectedImages" />
                 <div
                   v-if="imageFiles.length"
                   class="flex items-center gap-2 text-sm">
@@ -373,13 +377,25 @@ definePageMeta({
 type VariantOption = { value: string; priceModifier: number };
 type Variant = { name: string; options: VariantOption[] };
 type ImageItem = { url: string };
+type ImageMeta = {
+  filename: string;
+  contentType: string;
+  size: number;
+};
+
+type PresignItem = {
+  filename: string;
+  contentType: string;
+  presignedUrl: string;
+  publicUrl: string;
+};
 type Product = {
   _id?: string;
   name: string;
   slug: string;
   sku: string;
   basePrice: number;
-  // companyId: string;
+  companyId?: string;
   categories: string[];
   description: string;
   stock: { quantity: number };
@@ -388,6 +404,25 @@ type Product = {
   tags: string[];
   images: ImageItem[];
   status: "draft" | "active" | "inactive" | "archived";
+};
+
+type UserMe = {
+  userId: string;
+  phoneNumber: string;
+  permissions: Array<{
+    resource: string;
+    actions: string[];
+    companyId?: string;
+    _id: string;
+  }>;
+  profile: {
+    phoneNumber: string;
+    nationalId: string;
+    firstName: string;
+    lastName: string;
+    address: string;
+    walletId: string;
+  };
 };
 
 const search = ref("");
@@ -441,20 +476,56 @@ function onImageFilesSelected(e: Event) {
 
 async function uploadSelectedImages() {
   if (!imageFiles.value.length) return;
+
   try {
     uploading.value = true;
-    const fd = new FormData();
-    imageFiles.value.forEach((f) => fd.append("files", f));
-    // NOTE: مسیر آپلود را با بک‌اند خود هماهنگ کنید.
-    const { data } = await $axios.post("/uploads", fd, {
-      headers: { "Content-Type": "multipart/form-data" },
+
+    // 1) ساخت متادیتا برای هر فایل طبق ImageMetaDto
+    const filesMeta: ImageMeta[] = imageFiles.value.map((file) => ({
+      filename: file.name,
+      contentType: file.type || "application/octet-stream",
+      size: file.size,
+    }));
+
+    // 2) درخواست presign به بک‌اند طبق /api/images/presign
+    const { data: presignRes } = await $axios.post<{
+      items: PresignItem[];
+    }>("/images/presign", {
+      type: "product",
+      files: filesMeta,
     });
-    // فرض می‌کنیم بک‌اند آرایه‌ای از URLها برمی‌گرداند
-    const urls: string[] = Array.isArray(data) ? data : data?.urls || [];
-    form.value.images = [
-      ...form.value.images,
-      ...urls.map((u) => ({ url: u })),
-    ];
+
+    const items = presignRes?.items || [];
+    if (!items.length) {
+      throw new Error("هیچ لینک آپلودی از سرور دریافت نشد.");
+    }
+
+    // 3) آپلود واقعی هر فایل به presignedUrl
+    // فرض می‌کنیم ترتیب items با files یکی است
+    await Promise.all(
+      items.map((item, index) => {
+        const file = imageFiles.value[index];
+        if (!file) return;
+
+        return fetch(item.presignedUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+        }).then((res) => {
+          if (!res.ok) {
+            throw new Error("آپلود فایل ناموفق بود: " + item.filename);
+          }
+        });
+      })
+    );
+
+    // 4) ثبت URLهای عمومی در فرم محصول
+    const newImages = items.map((item) => ({ url: item.publicUrl }));
+    form.value.images = [...form.value.images, ...newImages];
+
+    // اگر نخواستی دوباره لیست فایل‌ها را نگه داری:
     imageFiles.value = [];
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
@@ -551,7 +622,6 @@ function openModal(product: Product | null = null) {
       slug: "",
       sku: "",
       basePrice: 0,
-      // companyId: "",
       categories: [],
       description: "",
       stock: { quantity: 0 },
@@ -583,7 +653,22 @@ async function saveProduct() {
       const payload = { ...form.value };
       await $axios.patch(`/products/${selectedId.value}`, payload);
     } else {
-      await $axios.post("/products", form.value);
+      // برای ایجاد محصول جدید، companyId را از /me بگیر
+      const meResponse = await $axios.get<UserMe>("/me");
+      const userData = meResponse.data;
+
+      // companyId را از permissions بگیر (برای محصولات)
+      const productPermission = userData.permissions.find(
+        (p) => p.resource === "products"
+      );
+      const companyId = productPermission?.companyId;
+
+      if (!companyId) {
+        throw new Error("companyId برای این کاربر یافت نشد");
+      }
+
+      const payload = { ...form.value, companyId };
+      await $axios.post("/products", payload);
     }
     await fetchProducts();
     closeModal();
