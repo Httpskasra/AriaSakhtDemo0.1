@@ -24,7 +24,7 @@
         </NuxtLink>
       </li>
       <li>
-        <NuxtLink to="/">
+        <NuxtLink to="/products">
           <svg
             width="24"
             height="24"
@@ -85,7 +85,7 @@
         </NuxtLink>
       </li>
       <li>
-        <NuxtLink to="/">
+        <NuxtLink to="/contact">
           <svg
             width="24"
             height="24"
@@ -100,7 +100,7 @@
         >
       </li>
       <li>
-        <NuxtLink to="/"
+        <NuxtLink to="/about"
           ><svg
             width="24"
             height="24"

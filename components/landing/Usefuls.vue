@@ -71,7 +71,8 @@ h3 {
     gap: 0 14px;
     width: 100%;
     margin: 0 auto;
-    padding: 0 2px;
+    padding: 20px 2px;
+
     scrollbar-width: none;
   }
   .products::-webkit-scrollbar {

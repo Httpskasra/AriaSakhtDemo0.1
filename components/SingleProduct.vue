@@ -53,7 +53,7 @@
     <div class="footer">
       <span class="old-price"><del>1.500.000</del></span>
       <span class="price">1.600.000 <span class="toman">تومان</span></span>
-      <button>
+      <!-- <button>
         مشاهده
         <svg
           width="17"
@@ -79,7 +79,7 @@
             </clipPath>
           </defs>
         </svg>
-      </button>
+      </button> -->
     </div>
   </NuxtLink>
 </template>
@@ -124,7 +124,7 @@ span {
   /* width: 100%;
   height: 100%; */
   width: 210px;
-  height: 380px;
+  height: 315px;
   position: relative;
   top: 15px;
   display: flex;
@@ -164,7 +164,7 @@ img {
   margin: auto;
 }
 .discription {
-  padding: 15px 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -204,9 +204,9 @@ img {
 }
 .footer {
   display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
 }
 .footer .price {
   display: flex;
@@ -220,9 +220,9 @@ img {
   font-size: 10px;
 }
 .footer .old-price {
-  position: absolute;
-  bottom: 48px;
-  left: 40px;
+  /* position: absolute; */
+  /* bottom: 48px; */
+  /* left: 40px; */
   font-size: 10px;
 }
 button {
@@ -246,7 +246,7 @@ button svg {
   .product {
     width: 160px;
     height: 280px;
-    padding: 10px;
+    padding: 8px;
     margin: 0;
     align-items: flex-start;
   }
@@ -297,8 +297,8 @@ button svg {
     width: 40px;
     height: 22px;
     position: absolute;
-    top: -15px;
-    left: -10px;
+    top: -7px;
+    left: -8px;
   }
   .header .notif span {
     font-size: 10px;
