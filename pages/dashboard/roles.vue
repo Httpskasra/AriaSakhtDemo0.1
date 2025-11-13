@@ -160,6 +160,7 @@
 import { ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
+import { toInternationalPhone } from "~/utils/PhoneNumber";
 import dashboardAuth from "~/middleware/dashboard-auth";
 useHead({
   title: " آریاساخت | داشبورد | نقش ها ",
@@ -283,7 +284,7 @@ const saveRole = async () => {
     return;
   }
   const body: any = {
-    phoneNumber: form.value.phoneNumber,
+    phoneNumber: toInternationalPhone(form.value.phoneNumber || ""),
     nationalId: form.value.nationalId,
     permissions: permissionsPayload,
     ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),

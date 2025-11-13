@@ -187,6 +187,7 @@ useHead({
   title: " همکاری | آریاساخت",
 });
 import { ref, reactive } from "vue";
+import { toInternationalPhone } from "@/utils/PhoneNumber";
 import type { AxiosError } from "axios";
 
 const nuxtApp = useNuxtApp() as any;
@@ -242,7 +243,7 @@ async function submit() {
     const payload: Record<string, string> = {
       name: String(form.name || ""),
       email: String(form.email || ""),
-      phone: String(form.phone || ""),
+      phone: toInternationalPhone(String(form.phone || "")),
       registrationNumber: String(form.registrationNumber || ""),
       address: String(form.address || ""),
       nationalId: String(form.nationalId || ""),

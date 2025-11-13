@@ -85,6 +85,7 @@
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
+import { toInternationalPhone } from "@/utils/PhoneNumber";
 
 const { phoneNumber: globalPhoneNumber } = useAuthData();
 const $axios = useNuxtApp().$axios;
@@ -114,15 +115,6 @@ function validatePhone() {
   const valid = /^[9]{1}[0-9]{9}$/.test(phoneNumber.value);
   phoneError.value = !valid;
   return valid;
-}
-
-// تبدیل شماره به فرمت بین‌المللی مثل SignIn
-function toInternationalPhone(phone: string) {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("0")) return "+98" + digits.slice(1);
-  if (digits.startsWith("9")) return "+98" + digits;
-  if (digits.startsWith("98")) return "+" + digits;
-  return phone;
 }
 
 // چک تطابق شماره و کد ملی (مثال ساده، باید API بهتر باشه)

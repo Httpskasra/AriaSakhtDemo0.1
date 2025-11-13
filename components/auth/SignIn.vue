@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
+import { toInternationalPhone } from "@/utils/PhoneNumber";
 const { $axios } = useNuxtApp();
 
 const phoneNumber = ref("");
@@ -14,14 +15,6 @@ const { setStep } = useAuthStep();
 
 const validatePhone = (number: string): boolean => {
   return /^[9]{1}[0-9]{9}$/.test(number);
-};
-
-const toInternationalPhone = (phone: string) => {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("0")) return "+98" + digits.slice(1);
-  if (digits.startsWith("9")) return "+98" + digits;
-  if (digits.startsWith("98")) return "+" + digits;
-  return phone;
 };
 
 const handleSubmit = async () => {
