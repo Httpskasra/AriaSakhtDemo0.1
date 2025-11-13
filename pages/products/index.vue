@@ -1,101 +1,78 @@
 <template>
   <NuxtLayout>
-    <div class="w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
-      <!-- فیلترها بالا -->
+    <div class="w-full mx-auto px-4 sm:px-8">
+      <!-- نوار بالا: Sort + تعداد رکورد + دکمه باز کردن سایدبار در موبایل -->
       <div
-        class="bg-white rounded-xl shadow p-4 flex flex-col md:flex-row gap-4">
-        <div class="flex-1 flex flex-col md:flex-row gap-4">
-          <!-- سرچ -->
-          <input
-            v-model="localFilters.query"
-            type="text"
-            placeholder="جستجو در محصولات (نام، توضیح، ...)"
-            class="border rounded-lg px-3 py-2 w-full md:w-1/2"
-            @keyup.enter="applyFilters" />
-
-          <!-- نام شرکت -->
-          <input
-            v-model="localFilters.companyName"
-            type="text"
-            placeholder="نام شرکت (مثال: Nike)"
-            class="border rounded-lg px-3 py-2 w-full md:w-1/3"
-            @keyup.enter="applyFilters" />
-
-          <!-- حداکثر قیمت -->
-          <input
-            v-model.number="localFilters.maxPrice"
-            type="number"
-            min="0"
-            placeholder="حداکثر قیمت"
-            class="border rounded-lg px-3 py-2 w-full md:w-1/3"
-            @keyup.enter="applyFilters" />
+        class="flex justify-between items-center w-full md:w-1/2 mx-auto mb-4">
+        <div class="flex items-center space-x-6 rtl:space-x-reverse">
+          <!-- فرض: SortFilter با v-model کار می‌کند -->
+          <SortFilter
+            :model-value="sortOption"
+            @update:model-value="onSortChange" />
+          <RecordCount :count="total" />
         </div>
-
-        <div class="flex items-center gap-4">
-          <!-- sort -->
-          <select
-            v-model="localFilters.sort"
-            class="border rounded-lg px-3 py-2"
-            @change="applyFilters">
-            <option value="">مرتب‌سازی</option>
-            <option value="basePrice:asc">قیمت از کم به زیاد</option>
-            <option value="basePrice:desc">قیمت از زیاد به کم</option>
-          </select>
-
-          <button
-            @click="applyFilters"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg">
-            اعمال فیلتر
-          </button>
-        </div>
+        <button
+          @click="toggleSidebar"
+          class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">
+          فیلترها
+        </button>
       </div>
 
-      <!-- نتایج -->
-      <div v-if="pending" class="text-center py-10">
-        در حال بارگذاری محصولات...
-      </div>
-
-      <div v-else>
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">تعداد نتایج: {{ total }}</h2>
-
-          <!-- صفحه‌بندی ساده -->
-          <div class="flex items-center gap-2">
-            <button
-              :disabled="page <= 1"
-              @click="changePage(page - 1)"
-              class="px-3 py-1 border rounded disabled:opacity-50">
-              قبلی
-            </button>
-            <span>صفحه {{ page }}</span>
-            <button
-              :disabled="products.length < limit"
-              @click="changePage(page + 1)"
-              class="px-3 py-1 border rounded disabled:opacity-50">
-              بعدی
-            </button>
-          </div>
-        </div>
-
-        <div
-          v-if="products.length"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="flex w-full flex-col md:flex-row relative">
+        <!-- سایدبار فیلترها -->
+        <div class="md:w-1/3 lg:w-1/4 w-full md:static">
+          <!-- بک‌دراپ موبایل -->
           <div
-            v-for="product in products"
-            :key="product.id"
-            class="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition">
-            <h3 class="font-semibold text-lg mb-2">
-              {{ product.name }}
-            </h3>
-            <p class="text-gray-600 mb-2">
-              {{ product.description?.slice(0, 80) }}…
-            </p>
-            <p class="font-bold">{{ product.basePrice }} تومان</p>
+            v-if="isSidebarOpen"
+            class="fixed inset-0 bg-black/40 z-30 md:hidden"
+            @click="toggleSidebar"></div>
+
+          <!-- خود سایدبار -->
+          <div
+            class="fixed top-16 right-0 h-[calc(100vh-4rem)] w-80 bg-white z-40 transform transition-transform duration-300 md:static md:h-auto md:w-full md:transform-none md:z-auto shadow-md md:shadow-none"
+            :class="{
+              'translate-x-0': isSidebarOpen,
+              'translate-x-full md:translate-x-0': !isSidebarOpen,
+            }">
+            <FilterSidebar @apply-filters="onFiltersFromSidebar" />
           </div>
         </div>
 
-        <div v-else class="text-center py-8 text-gray-600">
-          محصولی یافت نشد.
+        <!-- لیست محصولات -->
+        <div class="pt-20 md:pt-0 flex-1 w-full mx-auto">
+          <div v-if="pending" class="py-10 text-center text-gray-600">
+            در حال بارگذاری محصولات...
+          </div>
+
+          <div v-else>
+            <!-- هدر نتایج + صفحه‌بندی -->
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold">تعداد نتایج: {{ total }}</h2>
+
+              <div class="flex items-center gap-2 text-sm">
+                <button
+                  class="px-3 py-1 border rounded disabled:opacity-50"
+                  :disabled="page <= 1"
+                  @click="changePage(page - 1)">
+                  قبلی
+                </button>
+                <span>صفحه {{ page }} از {{ totalPages }}</span>
+                <button
+                  class="px-3 py-1 border rounded disabled:opacity-50"
+                  :disabled="page >= totalPages"
+                  @click="changePage(page + 1)">
+                  بعدی
+                </button>
+              </div>
+            </div>
+
+            <div v-if="products.length">
+              <ProductGrid :products="products" />
+            </div>
+            <div v-else class="text-center py-8 text-gray-500">
+              محصولی با این فیلترها یافت نشد.
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -103,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
+import { ref, computed } from "vue";
 import { useRoute, useRouter } from "#app";
 import type { Product } from "~/types/product";
 import {
@@ -115,45 +92,45 @@ import {
 const route = useRoute();
 const router = useRouter();
 
-/* ---------- خواندن مقدار اولیه از query ---------- */
+/* ---------- وضعیت UI ---------- */
+const isSidebarOpen = ref(false);
+const sortOption = ref<string>((route.query.sort as string) || "");
 
+/* ---------- صفحه و limit از روی query ---------- */
 const page = computed(() => Number(route.query.page || 1));
 const limit = computed(() => Number(route.query.limit || 12));
 
-const localFilters = reactive<{
-  query: string;
-  maxPrice: number | null;
-  companyName: string;
-  sort: string;
-  categoryIds: string[];
+/* ---------- آخرین فیلترهای اعمال‌شده (از سایدبار) ---------- */
+const lastFilters = ref<{
+  price: number | null;
+  brand: string;
+  category: string;
 }>({
-  query: (route.query.query as string) || "",
-  maxPrice: route.query.maxPrice ? Number(route.query.maxPrice) : null,
-  companyName: (route.query.companyName as string) || "",
-  sort: (route.query.sort as string) || "",
-  categoryIds: Array.isArray(route.query.categoryIds)
-    ? (route.query.categoryIds as string[])
-    : route.query.categoryIds
-    ? [route.query.categoryIds as string]
-    : [],
+  // این‌ها را از query هم سینک می‌کنیم تا رفرش صفحه خراب نشود
+  price: route.query.maxPrice ? Number(route.query.maxPrice) : null,
+  brand: (route.query.companyName as string) || "",
+  // اگر بک‌اند categoryIds دارد، ما فعلاً فقط اولین مقدار را می‌خوانیم
+  category: Array.isArray(route.query.categoryIds)
+    ? (route.query.categoryIds[0] as string) || ""
+    : (route.query.categoryIds as string) || "",
 });
 
-/* ---------- call به advanced-search ---------- */
-
+/* ---------- ساخت پارامتر برای advanced-search ---------- */
 const buildParams = (): AdvancedSearchParams => ({
-  query: localFilters.query || undefined,
   maxPrice:
-    typeof localFilters.maxPrice === "number"
-      ? localFilters.maxPrice
+    typeof lastFilters.value.price === "number"
+      ? lastFilters.value.price
       : undefined,
-  companyName: localFilters.companyName || undefined,
-  categoryIds: localFilters.categoryIds.length
-    ? localFilters.categoryIds
+  companyName: lastFilters.value.brand || undefined,
+  categoryIds: lastFilters.value.category
+    ? [lastFilters.value.category]
     : undefined,
+  sort: sortOption.value || undefined,
   page: page.value,
   limit: limit.value,
-  sort: localFilters.sort || undefined,
 });
+
+/* ---------- گرفتن داده از بک‌اند با useAsyncData ---------- */
 
 const { data, pending, error, refresh } = await useAsyncData<
   PaginatedResponse<Product>
@@ -170,23 +147,37 @@ const { data, pending, error, refresh } = await useAsyncData<
 
 const products = computed<Product[]>(() => data.value?.items ?? []);
 const total = computed<number>(() => data.value?.total ?? 0);
+const totalPages = computed(() =>
+  total.value && limit.value ? Math.ceil(total.value / limit.value) : 1
+);
 
-/* ---------- sync کردن فیلترها با آدرس ---------- */
-
+/* ---------- هندل کردن کوئری آدرس (sync با URL) ---------- */
 const updateQuery = (extra: Record<string, any> = {}) => {
   const query: Record<string, any> = {
     ...route.query,
-    query: localFilters.query || undefined,
-    maxPrice: localFilters.maxPrice || undefined,
-    companyName: localFilters.companyName || undefined,
-    sort: localFilters.sort || undefined,
-    page: extra.page ?? 1, // هر بار فیلتر عوض شد برگرد صفحه ۱
+    page: extra.page ?? 1, // وقتی فیلتر عوض شود، برگرد صفحه ۱
     limit: limit.value,
+    sort: sortOption.value || undefined,
   };
 
-  // پاک کردن undefinedها
+  // مَپ کردن فیلترها به Swagger
+  if (lastFilters.value.price != null) query.maxPrice = lastFilters.value.price;
+  else delete query.maxPrice;
+
+  if (lastFilters.value.brand) query.companyName = lastFilters.value.brand;
+  else delete query.companyName;
+
+  if (lastFilters.value.category) {
+    // اگر بک‌اند انتظار آرایه دارد، با همین اسم یک‌تایی هم مشکلی ندارد
+    query.categoryIds = lastFilters.value.category;
+  } else {
+    delete query.categoryIds;
+  }
+
+  // پاک کردن undefined / خالی
   Object.keys(query).forEach((key) => {
-    if (query[key] === undefined || query[key] === null || query[key] === "") {
+    const v = query[key];
+    if (v === undefined || v === null || v === "") {
       delete query[key];
     }
   });
@@ -194,8 +185,30 @@ const updateQuery = (extra: Record<string, any> = {}) => {
   router.replace({ query });
 };
 
-const applyFilters = () => {
+/* ---------- رویدادهای UI ---------- */
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+// وقتی کاربر روی "✅ اعمال فیلترها" در FilterSidebar کلیک می‌کند
+const onFiltersFromSidebar = (filters: {
+  price?: number;
+  brand?: string;
+  category?: string;
+}) => {
+  lastFilters.value = {
+    price: filters.price ?? null,
+    brand: filters.brand ?? "",
+    category: filters.category ?? "",
+  };
+  isSidebarOpen.value = false;
   updateQuery();
+};
+
+// وقتی sort عوض می‌شود (بسته به API کامپوننت SortFilter خودت)
+const onSortChange = (value: string) => {
+  sortOption.value = value;
+  updateQuery({ page: page.value }); // فقط sort عوض شده، صفحه را حفظ کن
 };
 
 const changePage = (newPage: number) => {
