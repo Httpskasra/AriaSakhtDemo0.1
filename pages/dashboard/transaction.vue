@@ -137,7 +137,7 @@ const fetchTransactions = async () => {
   error.value = null;
   try {
     const { $axios } = useNuxtApp();
-    const response = await $axios.get("/api/transaction");
+    const response = await $axios.get("/transaction");
     data.value = response.data || [];
   } catch (err) {
     error.value = err;
@@ -148,7 +148,6 @@ const fetchTransactions = async () => {
 };
 
 // تابع بروزرسانی
-
 
 // در هنگام mount، داده‌ها را دریافت کن
 onMounted(() => {
