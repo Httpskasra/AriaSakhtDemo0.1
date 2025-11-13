@@ -654,7 +654,7 @@ async function saveProduct() {
       await $axios.patch(`/products/${selectedId.value}`, payload);
     } else {
       // برای ایجاد محصول جدید، companyId را از /me بگیر
-      const meResponse = await $axios.get<UserMe>("/me");
+      const meResponse = await $axios.get<UserMe>("/auth/me");
       const userData = meResponse.data;
 
       // companyId را از permissions بگیر (برای محصولات)
