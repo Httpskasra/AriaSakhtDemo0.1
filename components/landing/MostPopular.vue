@@ -9,13 +9,14 @@
       </template>
 
       <template v-else>
-        <div
+        <NuxtLink
+          :to="`/products/${product.id}`"
           class="product"
           v-for="product in products"
           :key="product.id || product.name">
           <img :src="product.image" :alt="product.name" />
           <p>{{ product.name }}</p>
-        </div>
+        </NuxtLink>
       </template>
     </div>
   </section>
@@ -39,7 +40,7 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 
-const products = ref<Array<{ id?: string; name: string; image?: string }>>([]);
+const products = ref<Array<{ id: string; name: string; image?: string }>>([]);
 const loading = ref(true);
 
 const nuxtApp = useNuxtApp() as any;
@@ -64,10 +65,11 @@ async function loadTopSales() {
       .map((r) => {
         const d: ProductDetail | null = r.data;
         if (!d) return null;
-        const image = (d.images && d.images.length && d.images[0].url) || "";
+        const image =
+          (d.images && d.images.length && d.images[0].url && d.id) || "";
         return { id: r.id, name: d.name || "بدون نام", image };
       })
-      .filter(Boolean) as Array<{ id?: string; name: string; image?: string }>;
+      .filter(Boolean) as Array<{ id: string; name: string; image?: string }>;
   } catch (e) {
     // silent fail: keep static fallback UI
     console.error("Failed to load top sales", e);

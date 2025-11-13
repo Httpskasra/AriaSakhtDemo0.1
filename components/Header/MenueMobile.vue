@@ -50,7 +50,7 @@
         >
       </li>
       <li>
-        <NuxtLink to="/">
+        <div>
           <nav class="mobile-menu">
             <!-- آیتم اصلی که والدها را باز می‌کند -->
             <button
@@ -82,7 +82,7 @@
               </div>
             </transition>
           </nav>
-        </NuxtLink>
+        </div>
       </li>
       <li>
         <NuxtLink to="/contact">
@@ -315,7 +315,7 @@ ul {
   justify-content: space-between;
 }
 li {
-  padding: 15px 0;
+  padding: 5px 0;
 }
 li a {
   text-align: right;
@@ -326,6 +326,9 @@ li a {
   text-decoration: none;
   font-size: 14px;
   padding: 10px 0;
+}
+li div {
+  font-size: 14px;
 }
 svg {
   margin-left: 13px;

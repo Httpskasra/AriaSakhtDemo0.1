@@ -88,6 +88,7 @@ const hasChildren = computed(
   padding: 12px 16px;
   font-weight: 600;
   cursor: pointer;
+  font-size: 12px;
 }
 .parent-btn .chev {
   transition: transform 0.18s;
@@ -118,6 +119,7 @@ const hasChildren = computed(
   color: inherit;
   display: block;
   padding: 6px 0;
+  font-size: 12px;
 }
 .child-link:hover {
   text-decoration: underline;
