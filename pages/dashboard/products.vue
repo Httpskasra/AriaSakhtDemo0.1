@@ -599,7 +599,7 @@ const filteredProducts = computed(() =>
 async function fetchProducts() {
   if (!canRead) return;
   try {
-    const { data } = await $axios.get("/products");
+    const { data } = await $axios.get("/products/admin/all-products");
     // assume API returns array
     products.value = data;
   } catch (e) {
