@@ -184,22 +184,19 @@
             <div>
               <label class="block text-sm font-medium mb-1">تصاویر</label>
               <div class="space-y-3">
-                <input
-                  type="file"
-                  multiple
-                  @change="onImageFilesSelected"
-                  @click="uploadSelectedImages" />
+                <input type="file" multiple @change="handleImageSelection" />
                 <div
                   v-if="imageFiles.length"
                   class="flex items-center gap-2 text-sm">
                   <span>{{ imageFiles.length }} فایل انتخاب شد.</span>
                   <button
+                    v-if="!uploading"
                     type="button"
                     class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                    :disabled="uploading"
                     @click="uploadSelectedImages">
-                    {{ uploading ? "در حال آپلود..." : "آپلود تصاویر" }}
+                    آپلود تصاویر
                   </button>
+                  <span v-else class="text-blue-600">در حال آپلود...</span>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div
@@ -213,7 +210,12 @@
                     <button
                       type="button"
                       class="absolute top-1 right-1 text-xs bg-white/80 px-2 py-1 rounded"
-                      @click="form.images.splice(i, 1)">
+                      @click="
+                        () => {
+                          form.images.splice(i, 1);
+                          if (form.imagesMeta) form.imagesMeta.splice(i, 1);
+                        }
+                      ">
                       حذف
                     </button>
                   </div>
@@ -475,6 +477,10 @@ function onImageFilesSelected(e: Event) {
   imageFiles.value = Array.from(target.files || []);
 }
 
+function handleImageSelection(e: Event) {
+  onImageFilesSelected(e);
+}
+
 async function uploadSelectedImages() {
   if (!imageFiles.value.length) return;
 
@@ -654,19 +660,41 @@ async function saveProduct() {
     if (key && value) form.value.attributes[key] = value;
   });
 
+  // تهیه payload تمیز شده (فقط فیلدهای مجاز)
+  const cleanPayload = {
+    name: form.value.name,
+    slug: form.value.slug,
+    sku: form.value.sku,
+    basePrice: form.value.basePrice,
+    categories: Array.isArray(form.value.categories)
+      ? form.value.categories.filter((c) => typeof c === "string")
+      : [],
+    description: form.value.description,
+    stock: {
+      quantity: form.value.stock?.quantity ?? 0,
+    },
+    variants: form.value.variants || [],
+    attributes: form.value.attributes || {},
+    tags: form.value.tags || [],
+    images: form.value.images || [],
+    imagesMeta: form.value.imagesMeta || [],
+    status: form.value.status,
+  };
+
   try {
     if (editMode.value && selectedId.value) {
-      const payload = { ...form.value };
-      await $axios.patch(`/products/${selectedId.value}`, payload);
+      await $axios.patch(`/products/${selectedId.value}`, cleanPayload);
     } else {
       // برای ایجاد محصول جدید
-      const payload = { ...form.value };
-      await $axios.post("/products", payload);
+      await $axios.post("/products", cleanPayload);
     }
     await fetchProducts();
     closeModal();
-  } catch (e) {
+  } catch (e: any) {
     console.error("خطا در ذخیره محصول:", e);
+    const errorMsg =
+      e?.response?.data?.message?.join(", ") || e?.message || "خطای نامشخص";
+    alert("خطا: " + errorMsg);
   }
 }
 
