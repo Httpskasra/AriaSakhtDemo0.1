@@ -507,7 +507,7 @@ async function uploadSelectedImages() {
         const file = imageFiles.value[index];
         if (!file) return;
 
-        return fetch(item.presignedUrl, {
+        return fetch(item.publicUrl, {
           method: "PUT",
           body: file,
           headers: {
