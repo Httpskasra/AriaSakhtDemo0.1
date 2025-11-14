@@ -450,6 +450,7 @@ const categoriesLoading = ref(false);
 // Image upload state
 const imageFiles = ref<File[]>([]);
 const uploading = ref(false);
+const imageFilesMetadata = ref<ImageMeta[]>([]);
 
 onMounted(() => {
   fetchProducts();
@@ -507,7 +508,7 @@ async function uploadSelectedImages() {
         const file = imageFiles.value[index];
         if (!file) return;
 
-        return fetch(item.publicUrl, {
+        return fetch(item.presignedUrl, {
           method: "PUT",
           body: file,
           headers: {
@@ -521,9 +522,10 @@ async function uploadSelectedImages() {
       })
     );
 
-    // 4) ثبت URLهای عمومی در فرم محصول
+    // 4) ثبت URLهای عمومی و متادیتا در فرم محصول
     const newImages = items.map((item) => ({ url: item.publicUrl }));
     form.value.images = [...form.value.images, ...newImages];
+    form.value.imagesMeta = [...(form.value.imagesMeta || []), ...filesMeta];
 
     // اگر نخواستی دوباره لیست فایل‌ها را نگه داری:
     imageFiles.value = [];
@@ -534,7 +536,9 @@ async function uploadSelectedImages() {
   }
 }
 
-const form = ref<Product>({
+type ProductForm = Product & { imagesMeta?: ImageMeta[] };
+
+const form = ref<ProductForm>({
   name: "",
   slug: "",
   sku: "",
@@ -547,6 +551,7 @@ const form = ref<Product>({
   attributes: {},
   tags: [],
   images: [],
+  imagesMeta: [],
   status: "draft",
 });
 
@@ -629,6 +634,7 @@ function openModal(product: Product | null = null) {
       attributes: {},
       tags: [],
       images: [],
+      imagesMeta: [],
       status: "draft",
     };
   }
@@ -653,21 +659,7 @@ async function saveProduct() {
       const payload = { ...form.value };
       await $axios.patch(`/products/${selectedId.value}`, payload);
     } else {
-      // برای ایجاد محصول جدید، companyId را از /me بگیر
-      const meResponse = await $axios.get<UserMe>("/auth/me");
-      const userData = meResponse.data;
-
-      // companyId را از permissions بگیر (برای محصولات)
-      const productPermission = userData.permissions.find(
-        (p) => p.resource === "products"
-      );
-      const companyId = productPermission?.companyId;
-
-      if (!companyId) {
-        throw new Error("companyId برای این کاربر یافت نشد");
-      }
-
-      // const payload = { ...form.value, companyId };
+      // برای ایجاد محصول جدید
       const payload = { ...form.value };
       await $axios.post("/products", payload);
     }
