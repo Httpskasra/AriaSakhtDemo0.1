@@ -121,8 +121,6 @@ span {
   background-color: #fff;
   border-radius: 15px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  /* width: 100%;
-  height: 100%; */
   width: 210px;
   height: 315px;
   position: relative;
@@ -130,7 +128,7 @@ span {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-
+  flex-shrink: 0;
   padding: 10px;
 }
 .header {

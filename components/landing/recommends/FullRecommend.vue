@@ -13,12 +13,11 @@
       @touchstart.passive="onTouchStart"
       @touchmove.passive="onTouchMove"
       @touchend="onTouchEnd">
-      <template v-if="products && products.length">
-        <SingleProduct
-          v-for="p in products"
-          :key="getId(p)"
-          :productId="String(getId(p))" />
-      </template>
+      <SingleProduct
+        v-if="products && products.length"
+        v-for="p in products"
+        :key="getId(p)"
+        :productId="String(getId(p))" />
       <template v-else>
         <SingleProduct productId="1" />
         <SingleProduct productId="1" />
@@ -132,17 +131,20 @@ function getId(p: any) {
 }
 .products {
   margin: auto;
+  width: 100%;
   flex-basis: 60%;
   display: flex;
-  justify-content: space-evenly;
-  align-items: center;
+  /* flex-wrap: wrap; */
+  justify-content: center;
+  align-items: flex-start;
   position: relative;
   bottom: 20px;
   flex: 1;
   overflow-x: auto;
-  overflow-y: hidden;
+  /* overflow-y: auto; */
   padding: 10px 0;
   cursor: grab;
+  gap: 20px;
 }
 
 @media (max-width: 767px) {

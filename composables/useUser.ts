@@ -3,7 +3,7 @@ import { useNuxtApp } from "#app";
 
 export const useUser = () => {
   const user = useState<User | null>("user", () => null);
-  const { $axios } = useNuxtApp();
+  
 
   const setUser = (data: User) => {
     user.value = data;
@@ -20,6 +20,7 @@ export const useUser = () => {
     }
 
     try {
+      const { $axios } = useNuxtApp();
       const response = await $axios.get<User>("/auth/me");
       setUser(response.data);
     } catch (err) {
