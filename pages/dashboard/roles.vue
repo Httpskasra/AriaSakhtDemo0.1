@@ -188,6 +188,7 @@ const resourceOptions = [
   { value: Resource.USERS, label: "کاربران" },
   { value: Resource.WALLETS, label: "کیف پول" },
   { value: Resource.PROFILE, label: "پروفایل" },
+  { value: Resource.PRODUCT_STATUS, label: "وضعیت محصول" },
 ];
 
 type Role = {
