@@ -661,7 +661,7 @@ async function saveProduct() {
   });
 
   // تهیه payload تمیز شده (فقط فیلدهای مجاز)
-  const cleanPayload = {
+  const cleanPayload: any = {
     name: form.value.name,
     slug: form.value.slug,
     sku: form.value.sku,
@@ -676,10 +676,16 @@ async function saveProduct() {
     variants: form.value.variants || [],
     attributes: form.value.attributes || {},
     tags: form.value.tags || [],
-    images: form.value.images || [],
-    imagesMeta: form.value.imagesMeta || [],
     status: form.value.status,
   };
+
+  // فقط تصاویر و imagesMeta را شامل کن اگر خالی نباشند
+  if (form.value.images && form.value.images.length > 0) {
+    cleanPayload.images = form.value.images;
+  }
+  if (form.value.imagesMeta && form.value.imagesMeta.length > 0) {
+    cleanPayload.imagesMeta = form.value.imagesMeta;
+  }
 
   try {
     if (editMode.value && selectedId.value) {
