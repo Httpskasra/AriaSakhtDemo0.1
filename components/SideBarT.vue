@@ -18,7 +18,9 @@
             alt="" />
         </div>
         <div class="title">
-          <span>{{ resourceLabels[resource] }}</span>
+          <span v-if="resourceLabels[resource]">{{
+            resourceLabels[resource]
+          }}</span>
         </div>
       </NuxtLink>
 
@@ -74,6 +76,7 @@ const resourceLabels: Record<string, string> = {
   [Resource.USERS]: "کاربران",
   [Resource.WALLETS]: "کیف پول",
   [Resource.PROFILE]: "پروفایل",
+  [Resource.PRODUCT_STATUS]: "وضعیت محصول",
 };
 
 const { $axios } = useNuxtApp();

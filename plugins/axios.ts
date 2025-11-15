@@ -39,10 +39,21 @@ export default defineNuxtPlugin((nuxtApp) => {
       ) {
         originalRequest._retry = true;
         try {
+          const refreshToken = authStore.getRefreshToken();
+
+          // اگر refresh token موجود نیست، کاربر را خارج کن
+          if (!refreshToken) {
+            authStore.clearTokens();
+            if (process.client) {
+              window.location.href = "/";
+            }
+            return Promise.reject(error);
+          }
+
           const { data } = await axios.post(
             `${config.public.apiBase}/auth/refresh`,
             {
-              refresh_token: authStore.getRefreshToken(),
+              refresh_token: refreshToken,
             }
           );
 
@@ -53,7 +64,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch (refreshError) {
           console.error("Refresh token failed:", refreshError);
           authStore.clearTokens();
-          navigateTo("/");
+
+          // استفاده از window.location به جای navigateTo
+          if (process.client) {
+            window.location.href = "/";
+          }
+
           return Promise.reject(refreshError);
         }
       }

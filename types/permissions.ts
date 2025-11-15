@@ -24,6 +24,7 @@ export enum Resource {
   USERS = "users",
   WALLETS = "wallets",
   PROFILE = "profile",
+  PRODUCT_STATUS = "product-status",
   ALL = "all",
 }
 
