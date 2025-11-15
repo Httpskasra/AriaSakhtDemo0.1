@@ -495,16 +495,20 @@ async function uploadSelectedImages() {
     // 1) ساخت متادیتا برای هر فایل طبق ImageMetaDto
     const filesMeta: ImageMeta[] = imageFiles.value.map((file) => ({
       filename: file.name,
-      contentType: file.type || "application/octet-stream",
+      contentType: file.type || "image/jpeg",
       size: file.size,
     }));
 
     // 2) درخواست presign به بک‌اند طبق /api/images/presign
-    const { data: presignRes } = await $axios.post<{
+    //    فرض بر این‌ست که $axios مشخص‌شده به baseURL /api نرود
+    const presignRes = await $fetch<{
       items: PresignItem[];
-    }>("/images/presign", {
-      type: "product",
-      files: filesMeta,
+    }>("/api/images/presign", {
+      method: "POST",
+      body: {
+        type: "product",
+        files: filesMeta,
+      },
     });
 
     const items = presignRes?.items || [];
@@ -512,18 +516,18 @@ async function uploadSelectedImages() {
       throw new Error("هیچ لینک آپلودی از سرور دریافت نشد.");
     }
 
-    // 3) آپلود واقعی هر فایل به presignedUrl
-    // فرض می‌کنیم ترتیب items با files یکی است
+    // 3) آپلود واقعی هر فایل به presignedUrl (معمولا S3)
+    //    فرض می‌کنیم ترتیب items با files یکی است
     await Promise.all(
       items.map((item, index) => {
         const file = imageFiles.value[index];
-        if (!file) return;
+        if (!file) return Promise.resolve();
 
         return fetch(item.presignedUrl, {
           method: "PUT",
           body: file,
           headers: {
-            "Content-Type": file.type || "application/octet-stream",
+            "Content-Type": file.type || "image/jpeg",
           },
         }).then((res) => {
           if (!res.ok) {
@@ -535,8 +539,17 @@ async function uploadSelectedImages() {
 
     // 4) ثبت URLهای عمومی و متادیتا در فرم محصول
     const newImages = items.map((item) => ({ url: item.publicUrl }));
+    const newImagesMeta = items.map((item) => ({
+      filename: item.filename,
+      contentType: item.contentType,
+      size: filesMeta.find((m) => m.filename === item.filename)?.size || 0,
+    }));
+
     form.value.images = [...form.value.images, ...newImages];
-    form.value.imagesMeta = [...(form.value.imagesMeta || []), ...filesMeta];
+    form.value.imagesMeta = [
+      ...(form.value.imagesMeta || []),
+      ...newImagesMeta,
+    ];
 
     // پاکسازی فایل‌های انتخاب‌شده و reset کردن input
     imageFiles.value = [];
@@ -545,6 +558,9 @@ async function uploadSelectedImages() {
     }
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
+    alert(
+      "خطا در آپلود تصاویر: " + (e instanceof Error ? e.message : String(e))
+    );
   } finally {
     uploading.value = false;
   }
@@ -672,7 +688,7 @@ async function saveProduct() {
     if (key && value) form.value.attributes[key] = value;
   });
 
-  // تهیه payload تمیز شده (فقط فیلدهای مجاز)
+  // تهیه payload طبق CreateProductDto / UpdateProductDto
   const cleanPayload: any = {
     name: form.value.name,
     slug: form.value.slug,
@@ -681,17 +697,17 @@ async function saveProduct() {
     categories: Array.isArray(form.value.categories)
       ? form.value.categories.filter((c) => typeof c === "string")
       : [],
-    description: form.value.description,
+    description: form.value.description || undefined,
     stock: {
       quantity: form.value.stock?.quantity ?? 0,
     },
-    variants: form.value.variants || [],
-    attributes: form.value.attributes || {},
-    tags: form.value.tags || [],
+    variants: form.value.variants?.length ? form.value.variants : undefined,
+    attributes: form.value.attributes || undefined,
+    tags: form.value.tags?.length ? form.value.tags : undefined,
     status: form.value.status,
   };
 
-  // فقط تصاویر و imagesMeta را شامل کن اگر خالی نباشند
+  // شامل کردن images و imagesMeta اگر خالی نباشند
   if (form.value.images && form.value.images.length > 0) {
     cleanPayload.images = form.value.images;
   }
@@ -703,7 +719,7 @@ async function saveProduct() {
     if (editMode.value && selectedId.value) {
       await $axios.patch(`/products/${selectedId.value}`, cleanPayload);
     } else {
-      // برای ایجاد محصول جدید
+      // ایجاد محصول جدید
       await $axios.post("/products", cleanPayload);
     }
     await fetchProducts();
