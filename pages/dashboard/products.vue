@@ -184,7 +184,11 @@
             <div>
               <label class="block text-sm font-medium mb-1">تصاویر</label>
               <div class="space-y-3">
-                <input type="file" multiple @change="handleImageSelection" />
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  multiple
+                  @change="handleImageSelection" />
                 <div
                   v-if="imageFiles.length"
                   class="flex items-center gap-2 text-sm">
@@ -450,6 +454,7 @@ const categoryOptions = ref<{ _id: string; name: string }[]>([]);
 const categoriesLoading = ref(false);
 
 // Image upload state
+const fileInputRef = ref<HTMLInputElement | null>(null);
 const imageFiles = ref<File[]>([]);
 const uploading = ref(false);
 const imageFilesMetadata = ref<ImageMeta[]>([]);
@@ -533,8 +538,11 @@ async function uploadSelectedImages() {
     form.value.images = [...form.value.images, ...newImages];
     form.value.imagesMeta = [...(form.value.imagesMeta || []), ...filesMeta];
 
-    // اگر نخواستی دوباره لیست فایل‌ها را نگه داری:
+    // پاکسازی فایل‌های انتخاب‌شده و reset کردن input
     imageFiles.value = [];
+    if (fileInputRef.value) {
+      fileInputRef.value.value = "";
+    }
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
   } finally {
@@ -649,6 +657,10 @@ function openModal(product: Product | null = null) {
 
 function closeModal() {
   showModal.value = false;
+  imageFiles.value = [];
+  if (fileInputRef.value) {
+    fileInputRef.value.value = "";
+  }
 }
 
 async function saveProduct() {
