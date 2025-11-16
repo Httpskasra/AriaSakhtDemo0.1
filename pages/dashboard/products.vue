@@ -98,9 +98,9 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-1"
-                  >نامک (slug)</label
-                >
+                <label class="block text-sm font-medium mb-1">
+                  نامک (slug)
+                </label>
                 <input
                   v-model="form.slug"
                   type="text"
@@ -124,12 +124,23 @@
                   class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
 
+              <div>
+                <label class="block text-sm font-medium mb-1">تخفیف (%)</label>
+                <input
+                  v-model.number="form.discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+
               <!-- <div>
                 <label class="block text-sm font-medium mb-1">شناسه شرکت</label>
                 <input
                   v-model="form.companyId"
                   type="text"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr" />
+                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr"
+                />
               </div> -->
 
               <div>
@@ -172,7 +183,7 @@
 
             <!-- برچسب‌ها -->
             <div>
-              <label class="block text-sm font-medium mb-1">برچسب‌ها</label>
+              <label class="block text-sm font-medium mb-1"> برچسب‌ها </label>
               <input
                 v-model="tagsInput"
                 @blur="syncTagsFromInput"
@@ -180,15 +191,20 @@
                 class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
 
-            <!-- تصاویر -->
+            <!-- تصاویر (Choose + Upload → images / imagesMeta) -->
             <div>
               <label class="block text-sm font-medium mb-1">تصاویر</label>
               <div class="space-y-3">
+                <!-- Choose image(s) -->
                 <input
                   ref="fileInputRef"
                   type="file"
                   multiple
-                  @change="handleImageSelection" />
+                  accept="image/*"
+                  @change="handleImageSelection"
+                  class="block text-sm text-gray-600" />
+
+                <!-- Upload button / state -->
                 <div
                   v-if="imageFiles.length"
                   class="flex items-center gap-2 text-sm">
@@ -202,6 +218,8 @@
                   </button>
                   <span v-else class="text-blue-600">در حال آپلود...</span>
                 </div>
+
+                <!-- Preview of form.images -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div
                     v-for="(img, i) in form.images"
@@ -321,32 +339,6 @@
               </div>
             </div>
 
-            <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium mb-1"
-                  >امتیاز (۰ تا ۵)</label
-                >
-                <input
-                  v-model.number="form.rating"
-                  type="number"
-                  min="0"
-                  max="5"
-                  step="0.1"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium mb-1">وضعیت</label>
-                <select
-                  v-model="form.status"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="draft">پیش‌نویس</option>
-                  <option value="active">فعال</option>
-                  <option value="inactive">غیرفعال</option>
-                  <option value="archived">آرشیو</option>
-                </select>
-              </div>
-            </div> -->
-
             <div class="flex items-center justify-end gap-2">
               <button
                 type="button"
@@ -368,21 +360,24 @@
 </template>
 
 <script setup lang="ts">
-import { tr } from "@nuxt/ui/runtime/locale/index.js";
 import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import dashboardAuth from "~/middleware/dashboard-auth";
+
 useHead({
   title: " آریاساخت | داشبورد | محصولات ",
 });
+
 definePageMeta({
   middleware: dashboardAuth,
 });
+
 type VariantOption = { value: string; priceModifier: number };
 type Variant = { name: string; options: VariantOption[] };
 type ImageItem = { url: string };
+
 type ImageMeta = {
   filename: string;
   contentType: string;
@@ -395,12 +390,14 @@ type PresignItem = {
   presignedUrl: string;
   publicUrl: string;
 };
+
 type Product = {
   _id?: string;
   name: string;
   slug: string;
   sku: string;
   basePrice: number;
+  discount?: number;
   companyId?: string;
   categories: string[];
   description: string;
@@ -409,26 +406,8 @@ type Product = {
   attributes: Record<string, string>;
   tags: string[];
   images: ImageItem[];
+  imagesMeta?: ImageMeta[];
   status: "draft" | "active" | "inactive" | "archived";
-};
-
-type UserMe = {
-  userId: string;
-  phoneNumber: string;
-  permissions: Array<{
-    resource: string;
-    actions: string[];
-    companyId?: string;
-    _id: string;
-  }>;
-  profile: {
-    phoneNumber: string;
-    nationalId: string;
-    firstName: string;
-    lastName: string;
-    address: string;
-    walletId: string;
-  };
 };
 
 const search = ref("");
@@ -436,12 +415,6 @@ const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
 const products = ref<Product[]>([]);
-// const { canCreate, canRead, canUpdate, canDelete } = {
-//   canRead: true,
-//   canDelete: true,
-//   canCreate: true,
-//   canUpdate: true,
-// };
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.PRODUCTS
@@ -449,15 +422,36 @@ const { canCreate, canRead, canUpdate, canDelete } = useAccess(
 
 const { $axios } = useNuxtApp();
 
-// Categories (fetched from /categories)
+// Categories
 const categoryOptions = ref<{ _id: string; name: string }[]>([]);
 const categoriesLoading = ref(false);
 
-// Image upload state
+// Image upload state (Choose → Upload → images / imagesMeta)
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const imageFiles = ref<File[]>([]);
 const uploading = ref(false);
-const imageFilesMetadata = ref<ImageMeta[]>([]);
+
+// فرم محصول
+const form = ref<Product>({
+  name: "",
+  slug: "",
+  sku: "",
+  basePrice: 0,
+  discount: 0,
+  categories: [],
+  description: "",
+  stock: { quantity: 0 },
+  variants: [],
+  attributes: {},
+  tags: [],
+  images: [],
+  imagesMeta: [],
+  status: "draft",
+});
+
+// helpers
+const tagsInput = ref("");
+const attributesPairs = ref<{ key: string; value: string }[]>([]);
 
 onMounted(() => {
   fetchProducts();
@@ -468,7 +462,6 @@ async function fetchCategories() {
   try {
     categoriesLoading.value = true;
     const { data } = await $axios.get("/categories");
-    // Expecting array of { _id, name, ... }
     categoryOptions.value = Array.isArray(data) ? data : data?.items || [];
   } catch (e) {
     console.error("خطا در دریافت دسته‌بندی‌ها:", e);
@@ -477,30 +470,24 @@ async function fetchCategories() {
   }
 }
 
-function onImageFilesSelected(e: Event) {
+function handleImageSelection(e: Event) {
   const target = e.target as HTMLInputElement;
   imageFiles.value = Array.from(target.files || []);
 }
 
-function handleImageSelection(e: Event) {
-  onImageFilesSelected(e);
-}
-
+// uploadSelectedImages → POST /images/presign → PUT presignedUrl → set images + imagesMeta
 async function uploadSelectedImages() {
   if (!imageFiles.value.length) return;
 
   try {
     uploading.value = true;
 
-    // 1) ساخت متادیتا برای هر فایل طبق ImageMetaDto
     const filesMeta: ImageMeta[] = imageFiles.value.map((file) => ({
       filename: file.name,
       contentType: file.type || "image/jpeg",
       size: file.size,
     }));
 
-    // 2) درخواست presign به بک‌اند طبق /api/images/presign
-    //    فرض بر این‌ست که $axios مشخص‌شده به baseURL /api نرود
     const presignRes = await $fetch<{
       items: PresignItem[];
     }>("/api/images/presign", {
@@ -516,8 +503,7 @@ async function uploadSelectedImages() {
       throw new Error("هیچ لینک آپلودی از سرور دریافت نشد.");
     }
 
-    // 3) آپلود واقعی هر فایل به presignedUrl (معمولا S3)
-    //    فرض می‌کنیم ترتیب items با files یکی است
+    // upload each file to its presignedUrl
     await Promise.all(
       items.map((item, index) => {
         const file = imageFiles.value[index];
@@ -537,12 +523,15 @@ async function uploadSelectedImages() {
       })
     );
 
-    // 4) ثبت URLهای عمومی و متادیتا در فرم محصول
-    const newImages = items.map((item) => ({ url: item.publicUrl }));
-    const newImagesMeta = items.map((item) => ({
+    // set images & imagesMeta on form
+    const newImages: ImageItem[] = items.map((item) => ({
+      url: item.publicUrl,
+    }));
+
+    const newImagesMeta: ImageMeta[] = items.map((item) => ({
       filename: item.filename,
       contentType: item.contentType,
-      size: filesMeta.find((m) => m.filename === item.filename)?.size || 0,
+      size: filesMeta.find((m) => m.filename === item.filename)?.size ?? 0,
     }));
 
     form.value.images = [...form.value.images, ...newImages];
@@ -551,7 +540,6 @@ async function uploadSelectedImages() {
       ...newImagesMeta,
     ];
 
-    // پاکسازی فایل‌های انتخاب‌شده و reset کردن input
     imageFiles.value = [];
     if (fileInputRef.value) {
       fileInputRef.value.value = "";
@@ -566,35 +554,8 @@ async function uploadSelectedImages() {
   }
 }
 
-type ProductForm = Product & { imagesMeta?: ImageMeta[] };
-
-const form = ref<ProductForm>({
-  name: "",
-  slug: "",
-  sku: "",
-  basePrice: 0,
-  // companyId: "",
-  categories: [],
-  description: "",
-  stock: { quantity: 0 },
-  variants: [],
-  attributes: {},
-  tags: [],
-  images: [],
-  imagesMeta: [],
-  status: "draft",
-});
-
-// helpers for chip-like inputs
-const categoriesInput = ref("");
-const tagsInput = ref("");
-
-const attributesPairs = ref<{ key: string; value: string }[]>([]);
-
 watch(showModal, (val) => {
   if (val) {
-    // sync helpers when opening
-    categoriesInput.value = form.value.categories?.join(", ") ?? "";
     tagsInput.value = form.value.tags?.join(", ") ?? "";
     attributesPairs.value = Object.entries(form.value.attributes || {}).map(
       ([k, v]) => ({ key: k, value: v })
@@ -602,12 +563,6 @@ watch(showModal, (val) => {
   }
 });
 
-function syncCategoriesFromInput() {
-  form.value.categories = categoriesInput.value
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
 function syncTagsFromInput() {
   form.value.tags = tagsInput.value
     .split(",")
@@ -635,7 +590,6 @@ async function fetchProducts() {
   if (!canRead) return;
   try {
     const { data } = await $axios.get("/products/admin/all-products");
-    // assume API returns array
     products.value = data;
   } catch (e) {
     console.error("خطا در دریافت محصولات:", e);
@@ -647,7 +601,12 @@ function openModal(product: Product | null = null) {
     if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
     editMode.value = true;
     selectedId.value = product._id || null;
-    form.value = JSON.parse(JSON.stringify(product));
+    form.value = {
+      ...product,
+      images: product.images || [],
+      imagesMeta: product.imagesMeta || [],
+      discount: product.discount ?? 0,
+    };
   } else {
     if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
     editMode.value = false;
@@ -657,6 +616,7 @@ function openModal(product: Product | null = null) {
       slug: "",
       sku: "",
       basePrice: 0,
+      discount: 0,
       categories: [],
       description: "",
       stock: { quantity: 0 },
@@ -680,34 +640,36 @@ function closeModal() {
 }
 
 async function saveProduct() {
-  // sync helper inputs back (tags only)
+  // sync helpers
   syncTagsFromInput();
-  // attributes from pairs
   form.value.attributes = {};
   attributesPairs.value.forEach(({ key, value }) => {
     if (key && value) form.value.attributes[key] = value;
   });
 
-  // تهیه payload طبق CreateProductDto / UpdateProductDto
   const cleanPayload: any = {
     name: form.value.name,
     slug: form.value.slug,
     sku: form.value.sku,
-    basePrice: form.value.basePrice,
+    basePrice: Number(form.value.basePrice) || 0,
+    discount:
+      form.value.discount !== undefined ? Number(form.value.discount) : 0,
     categories: Array.isArray(form.value.categories)
       ? form.value.categories.filter((c) => typeof c === "string")
       : [],
     description: form.value.description || undefined,
     stock: {
-      quantity: form.value.stock?.quantity ?? 0,
+      quantity: Number(form.value.stock?.quantity) || 0,
     },
     variants: form.value.variants?.length ? form.value.variants : undefined,
-    attributes: form.value.attributes || undefined,
+    attributes: Object.keys(form.value.attributes || {}).length
+      ? form.value.attributes
+      : undefined,
     tags: form.value.tags?.length ? form.value.tags : undefined,
     status: form.value.status,
   };
 
-  // شامل کردن images و imagesMeta اگر خالی نباشند
+  // images + imagesMeta طبق Swagger
   if (form.value.images && form.value.images.length > 0) {
     cleanPayload.images = form.value.images;
   }
@@ -719,7 +681,6 @@ async function saveProduct() {
     if (editMode.value && selectedId.value) {
       await $axios.patch(`/products/${selectedId.value}`, cleanPayload);
     } else {
-      // ایجاد محصول جدید
       await $axios.post("/products", cleanPayload);
     }
     await fetchProducts();
@@ -765,8 +726,6 @@ function numberFormat(n?: number) {
   width: 50px;
   height: 50px;
 }
-
-/* removed @apply-based rules; utilities moved inline in template */
 .ltr {
   direction: ltr;
 }

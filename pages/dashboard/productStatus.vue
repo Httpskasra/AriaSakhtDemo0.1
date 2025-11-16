@@ -3,7 +3,7 @@
     <div class="container">
       <div class="title">
         <h1>وضعیت محصولات</h1>
-        <img src="/adminIcon/products.png" alt="" />
+        <img src="/icons/product-delivered" alt="" />
       </div>
 
       <div
