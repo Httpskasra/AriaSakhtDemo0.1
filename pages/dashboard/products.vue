@@ -476,54 +476,68 @@ function handleImageSelection(e: Event) {
 }
 
 // uploadSelectedImages → POST /images/presign → PUT presignedUrl → set images + imagesMeta
+// uploadSelectedImages → POST /images/presign → PUT presignedUrl → set images + imagesMeta
 async function uploadSelectedImages() {
   if (!imageFiles.value.length) return;
 
   try {
     uploading.value = true;
 
+    // 1) ساخت متادیتا برای هر فایل طبق ImageMetaDto (همونی که به بک‌اند می‌فرستیم)
     const filesMeta: ImageMeta[] = imageFiles.value.map((file) => ({
       filename: file.name,
       contentType: file.type || "image/jpeg",
       size: file.size,
     }));
 
-    const presignRes = await $fetch<{
-      items: PresignItem[];
-    }>("/api/images/presign", {
-      method: "POST",
-      body: {
-        type: "product",
-        files: filesMeta,
-      },
-    });
+    // 2) گرفتن presignedUrlها از بک‌اند
+    const presignRes = await $fetch<{ items: PresignItem[] }>(
+      "/api/images/presign",
+      {
+        method: "POST",
+        body: {
+          type: "product",
+          files: filesMeta,
+        },
+      }
+    );
 
     const items = presignRes?.items || [];
     if (!items.length) {
       throw new Error("هیچ لینک آپلودی از سرور دریافت نشد.");
     }
 
-    // upload each file to its presignedUrl
-    await Promise.all(
-      items.map((item, index) => {
-        const file = imageFiles.value[index];
-        if (!file) return Promise.resolve();
+    console.log("presign items:", items);
 
-        return fetch(item.presignedUrl, {
-          method: "POST",
+    // 3) آپلود واقعی هر فایل به presignedUrl (معمولا S3)
+    //    این‌جا حتما با همون contentType امضاشده در presign می‌فرستیم
+    await Promise.all(
+      items.map(async (item, index) => {
+        const file = imageFiles.value[index];
+        if (!file) return;
+
+        console.log("uploading to:", item.presignedUrl);
+
+        const res = await fetch(item.presignedUrl, {
+          method: "PUT",
           body: file,
           headers: {
-            "Content-Type": file.type || "image/jpeg",
+            // خیلی مهم: همون contentType برگشتی از presign
+            "Content-Type": item.contentType || file.type || "image/jpeg",
           },
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error("آپلود فایل ناموفق بود: " + item.filename);
-          }
         });
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          console.error("upload failed:", res.status, text);
+          throw new Error(
+            `آپلود فایل ناموفق بود (${item.filename}) - status ${res.status}`
+          );
+        }
       })
     );
 
-    // set images & imagesMeta on form
+    // 4) ست کردن images و imagesMeta روی فرم طبق Swagger
     const newImages: ImageItem[] = items.map((item) => ({
       url: item.publicUrl,
     }));
@@ -540,10 +554,13 @@ async function uploadSelectedImages() {
       ...newImagesMeta,
     ];
 
+    // پاک‌سازی input انتخاب فایل
     imageFiles.value = [];
     if (fileInputRef.value) {
       fileInputRef.value.value = "";
     }
+
+    console.log("upload done, images:", form.value.images);
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
     alert(
