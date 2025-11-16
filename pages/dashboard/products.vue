@@ -510,7 +510,7 @@ async function uploadSelectedImages() {
         if (!file) return Promise.resolve();
 
         return fetch(item.presignedUrl, {
-          method: "PUT",
+          method: "POST",
           body: file,
           headers: {
             "Content-Type": file.type || "image/jpeg",
