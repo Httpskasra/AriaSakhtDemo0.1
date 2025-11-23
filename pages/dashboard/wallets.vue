@@ -324,7 +324,7 @@ const creditWallet = async () => {
     creditLoading.value = true;
     await $axios.post("/wallets/credit", {
       amount: creditForm.value.amount,
-      description: creditForm.value.description,
+      
     });
     await fetchWallet();
     await fetchTransactions();

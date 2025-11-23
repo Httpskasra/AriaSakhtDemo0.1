@@ -421,7 +421,7 @@ function selectedCompanyNameForResource(resource: Resource) {
 
 onMounted(async () => {
   try {
-    const { data } = await axios.get("/me");
+    const { data } = await axios.get("/auth/me");
     const id = data?.userId || data?.id || data?._id || null;
     meUserId.value = id ? String(id) : null;
   } catch (err) {
