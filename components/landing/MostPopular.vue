@@ -1,20 +1,27 @@
 <template>
   <section class="most-popular">
     <h3>پر فروش ترین ها</h3>
+
     <div class="products">
+      <!-- حالت لودینگ -->
       <template v-if="loading">
         <div class="product" v-for="n in 6" :key="'skeleton-' + n">
           <p>...</p>
         </div>
       </template>
 
+      <!-- حالت نرمال -->
       <template v-else>
         <NuxtLink
+          v-for="product in normalizedProducts"
+          :key="product.id || product.name"
           :to="`/products/${product.id}`"
-          class="product"
-          v-for="product in products"
-          :key="product.id || product.name">
-          <img :src="product.image" :alt="product.name" />
+          class="product">
+          <img
+            v-if="product.images && product.images.length"
+            :src="product.images[0].url"
+            :alt="product.name" />
+
           <p>{{ product.name }}</p>
         </NuxtLink>
       </template>
@@ -23,77 +30,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed } from "vue";
 
-type TopSale = { id: string; name?: string; sales?: number };
-type ProductDetail = {
-  id?: string;
+type ProductImage = { url: string };
+type Product = {
+  id: string;
   name: string;
-  images?: Array<{ url?: string }>;
-  slug?: string;
+  images?: ProductImage[];
 };
 
 const props = defineProps<{
   products?: Array<
-    { id?: string; name?: string; image?: string } | string | number
+    | {
+        id?: string;
+        name?: string;
+        images?: ProductImage[];
+      }
+    | string
+    | number
   >;
   loading?: boolean;
 }>();
 
-const products = ref<Array<{ id: string; name: string; image?: string }>>([]);
-const loading = ref(true);
+/**
+ * این computed میاد props.products رو تمیز و نرمال می‌کنه
+ * که مطمئن باشیم همیشه id / name / images داریم
+ */
+const normalizedProducts = computed<Product[]>(() => {
+  if (!props.products || !props.products.length) return [];
 
-const nuxtApp = useNuxtApp() as any;
-const axios = nuxtApp.$axios as any;
+  return props.products
+    .map((p: any) => {
+      if (!p) return null;
+      if (typeof p === "string" || typeof p === "number") return null;
 
-async function loadTopSales() {
-  try {
-    const { data } = await axios.get("/products/top-sales?limit=5");
-    const topSales: TopSale[] = data || [];
-
-    // Fetch product details in parallel
-    const requests = topSales.map((t) =>
-      axios
-        .get(`/products/${t.id}`)
-        .then((r: any) => ({ id: t.id, data: r.data }))
-        .catch(() => ({ id: t.id, data: null }))
-    );
-
-    const results = await Promise.all(requests);
-
-    products.value = results
-      .map((r) => {
-        const d: ProductDetail | null = r.data;
-        if (!d) return null;
-        const image =
-          (d.images && d.images.length && d.images[0].url && d.id) || "";
-        return { id: r.id, name: d.name || "بدون نام", image };
-      })
-      .filter(Boolean) as Array<{ id: string; name: string; image?: string }>;
-  } catch (e) {
-    // silent fail: keep static fallback UI
-    console.error("Failed to load top sales", e);
-  } finally {
-    loading.value = false;
-  }
-}
-
-onMounted(() => {
-  if (props.products && props.products.length) {
-    // use provided products prop
-    products.value = (props.products as any)
-      .map((p: any) => {
-        if (!p) return null;
-        if (typeof p === "string" || typeof p === "number")
-          return { id: String(p), name: "", image: "" };
-        return { id: p.id, name: p.name || "", image: p.image || "" };
-      })
-      .filter(Boolean) as any;
-    loading.value = !!props.loading;
-  } else {
-    loadTopSales();
-  }
+      return {
+        id: p.id || p._id || "",
+        name: p.name || "بدون نام",
+        images: p.images || [],
+      } as Product;
+    })
+    .filter(Boolean) as Product[];
 });
+
+const loading = computed(() => !!props.loading);
 </script>
 
 <style scoped>

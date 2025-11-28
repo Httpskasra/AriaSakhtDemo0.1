@@ -14,11 +14,13 @@
       @touchmove.passive="onTouchMove"
       @touchend="onTouchEnd">
       <SingleProduct
-        v-if="products && products.length"
-        v-for="p in products"
+        v-if="normalizedProducts && normalizedProducts.length"
+        v-for="p in normalizedProducts"
         :key="getId(p)"
-        :productId="String(getId(p))" />
+        :productId="String(getId(p))"
+        :product="p" />
       <template v-else>
+        <!-- <SingleProduct productId="1" />
         <SingleProduct productId="1" />
         <SingleProduct productId="1" />
         <SingleProduct productId="1" />
@@ -27,8 +29,8 @@
         <SingleProduct productId="1" />
         <SingleProduct productId="1" />
         <SingleProduct productId="1" />
-        <SingleProduct productId="1" />
-        <SingleProduct productId="1" />
+        <SingleProduct productId="1" /> -->
+        no no
       </template>
     </div>
   </section>
@@ -36,8 +38,47 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-defineProps<{ products?: Array<{ id?: string | number } | string | number> }>();
+type ProductImage = { url: string };
+type Product = {
+  id: string;
+  name: string;
+  images?: ProductImage[];
+};
 
+const props = defineProps<{
+  products?: Array<
+    | {
+        id?: string;
+        name?: string;
+        images?: ProductImage[];
+      }
+    | string
+    | number
+  >;
+  loading?: boolean;
+}>();
+
+/**
+ * این computed میاد props.products رو تمیز و نرمال می‌کنه
+ * که مطمئن باشیم همیشه id / name / images داریم
+ */
+const normalizedProducts = computed<Product[]>(() => {
+  if (!props.products || !props.products.length) return [];
+
+  return props.products
+    .map((p: any) => {
+      if (!p) return null;
+      if (typeof p === "string" || typeof p === "number") return null;
+
+      return {
+        ...p,
+        id: p.id || p._id || "",
+      } as Product;
+    })
+    .filter(Boolean) as Product[];
+});
+
+const loading = computed(() => !!props.loading);
 const productsRef = ref(null as null | HTMLElement);
 const isDown = ref(false);
 const startX = ref(0);

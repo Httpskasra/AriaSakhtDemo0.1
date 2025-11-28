@@ -10,13 +10,13 @@
       <br />
       <PopularCategory />
       <br />
-      <FullRecommend :products="offers" />
+      <FullRecommend :products="offers" :loading="loadingOffers" />
       <br />
-      <FullRecommend :products="products" />
+      <FullRecommend :products="products" :loading="loadingProducts" />
       <br />
-      <Usefuls :products="products" />
+      <Usefuls :products="products" :loading="loadingProducts" />
       <br />
-      <FullRecommend :products="offers" />
+      <FullRecommend :products="offers" :loading="loadingOffers" />
       <br />
       <!-- <Blog /> -->
       <br />
@@ -43,21 +43,24 @@ const loadingTopSales = ref(true);
 const loadingProducts = ref(true);
 
 const nuxtApp = useNuxtApp() as any;
-const axios = nuxtApp.$axios as any;
+const { $axios } = useNuxtApp();
 
 async function loadLists() {
   try {
-    const offset = 0;
-    const limit = 10;
+    // const offset = 0;
+    let page = 1;
+    let limit = 10;
     const [pRes, oRes, tRes] = await Promise.all([
-      axios
-        .get("/products", { params: { offset, limit } })
+      $axios
+        .get("/products", { params: { page, limit } })
         .catch((e: any) => ({ data: [] })),
-      axios
-        .get("/products/offers", { params: { offset, limit } })
+      $axios
+        // .get("/products", { params: { page, limit } })
+        .get("/products/offers", { params: { page, limit } })
         .catch((e: any) => ({ data: [] })),
-      axios
-        .get("/products/top-sales", { params: { offset, limit } })
+      $axios
+        .get("/products/top-sales", { params: { page, limit } })
+        // .get("/products", { params: { page, limit } })
         .catch((e: any) => ({ data: [] })),
     ]);
 

@@ -16,10 +16,10 @@
       </svg>
       <div class="notif"><span>ویژه</span></div>
     </div>
-    <img src="/products/ajor.jpg" alt="" />
+    <img v-if="imageUrl" :src="imageUrl" :alt="productName" />
     <div class="discription">
-      <span class="cat">مصالح ساختمانی</span>
-      <h4>یک عدد آجر فرد اعلاء</h4>
+      <span class="cat">{{ product?.categories[0] }}</span>
+      <h4>{{ productName }}</h4>
       <div class="rate">
         <!-- <Raiting :size="raitingSize" /> -->
         <!-- <span>(4.0)</span> -->
@@ -47,12 +47,14 @@
             d="M11.6445 15.6666H7.89453C7.58703 15.6666 7.33203 15.44 7.33203 15.1666V13.5C7.33203 12.1 8.19453 11.3333 9.76953 11.3333C11.3445 11.3333 12.207 12.1 12.207 13.5V15.1666C12.207 15.44 11.952 15.6666 11.6445 15.6666ZM8.45703 14.6666H11.082V13.5C11.082 12.66 10.7145 12.3333 9.76953 12.3333C8.82453 12.3333 8.45703 12.66 8.45703 13.5V14.6666Z"
             fill="#253D4E" />
         </svg>
-        <span class="comp"> شرکت ثالث</span>
+        <span class="comp"> {{ companyName }}</span>
       </div>
     </div>
     <div class="footer">
       <span class="old-price"><del>1.500.000</del></span>
-      <span class="price">1.600.000 <span class="toman">تومان</span></span>
+      <span class="price"
+        >{{ displayPrice }}<span class="toman">تومان</span></span
+      >
       <!-- <button>
         مشاهده
         <svg
@@ -85,9 +87,74 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  productId: string;
+import { computed } from "vue";
+import Categories from "~/pages/dashboard/categories.vue";
+
+type ProductImage = { url?: string };
+type Company = { name?: string };
+type Stock = { quantity?: number };
+
+type Product = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  slug?: string;
+  sku?: string;
+  basePrice?: number;
+  finalPrice?: number;
+  companyId?: Company;
+  images?: ProductImage[];
+  stock?: Stock;
+  categories: string[];
+  // بقیه‌ی فیلدها هم اگر خواستی بعداً اضافه کن
+  [key: string]: any;
+};
+
+const props = defineProps<{
+  productId?: string;
+  product?: Product;
 }>();
+
+// اگر productId نیامد، از product.id یا product._id استفاده می‌کنیم
+const productIdComputed = computed(() => {
+  if (props.productId) return props.productId;
+  if (props.product?.id) return String(props.product.id);
+  if ((props.product as any)?._id) return String((props.product as any)._id);
+  return "";
+});
+
+const productName = computed(() => {
+  return props.product?.name || "بدون نام";
+});
+
+const imageUrl = computed(() => {
+  const imgs = props.product?.images;
+  if (imgs && imgs.length && imgs[0].url) {
+    return imgs[0].url;
+  }
+  return "";
+});
+
+// قیمت: اگر finalPrice بود از آن، وگرنه fallback به basePrice
+const displayPrice = computed(() => {
+  const p = props.product;
+  if (!p) return 0;
+  if (typeof p.finalPrice === "number") return p.finalPrice;
+  if (typeof p.basePrice === "number") return p.basePrice;
+  return 0;
+});
+
+const companyName = computed(() => {
+  return props.product?.companyId?.name || "";
+});
+
+const stockQuantity = computed<number | null>(() => {
+  if (!props.product?.stock) return null;
+  if (typeof props.product.stock.quantity === "number") {
+    return props.product.stock.quantity;
+  }
+  return null;
+});
 const isMobile = ref(false);
 
 const checkMobile = () => {
