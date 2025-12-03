@@ -21,9 +21,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref } from "vue";
 import type { Product } from "~/types/product";
+
 type content = "info" | "rules" | "comments";
 const show = ref<content>("info");
+
 const props = defineProps<{
   data: Product;
 }>();

@@ -14,11 +14,11 @@
           stroke-linecap="round"
           stroke-linejoin="round" />
       </svg>
-      <div class="notif"><span>ویژه</span></div>
+      <div class="notif" v-if="product?.discount"><span>ویژه</span></div>
     </div>
     <img v-if="imageUrl" :src="imageUrl" :alt="productName" />
     <div class="discription">
-      <span class="cat">{{ product?.categories[0] }}</span>
+      <!-- <span class="cat">{{ product?.categories[0] }}</span> -->
       <h4>{{ productName }}</h4>
       <div class="rate">
         <!-- <Raiting :size="raitingSize" /> -->
@@ -51,10 +51,20 @@
       </div>
     </div>
     <div class="footer">
-      <span class="old-price"><del>1.500.000</del></span>
-      <span class="price"
-        >{{ displayPrice }}<span class="toman">تومان</span></span
+      <template v-if="product && product.discount > 0">
+        <span class="old-price"
+          ><del>{{ displayPrice }}</del></span
+        >
+        <span class="price"
+          >{{ displayPrice / product.discount
+          }}<span class="toman">تومان</span></span
+        ></template
       >
+      <template v-else>
+        <span class="price"
+          >{{ displayPrice }}<span class="toman">تومان</span></span
+        >
+      </template>
       <!-- <button>
         مشاهده
         <svg
@@ -101,7 +111,8 @@ type Product = {
   slug?: string;
   sku?: string;
   basePrice?: number;
-  finalPrice?: number;
+  discount: number;
+  // finalPrice?: number;
   companyId?: Company;
   images?: ProductImage[];
   stock?: Stock;

@@ -20,10 +20,14 @@ export function useProductById(id: string | Ref<string> | ComputedRef<string>) {
     try {
       const response = await getProductById(currentId); // فراخوانی سرویس
       data.value = response.data; // ذخیره داده محصول
+      console.log("محصول بارگذاری شد:", data.value);
     } catch (err: any) {
       error.value =
-        err.response?.data?.message || err.message || "خطایی رخ داده است."; // مدیریت خطا
+        err.response?.data?.message ||
+        err.message ||
+        "خطایی در بارگذاری محصول رخ داده است."; // مدیریت خطا
       data.value = null;
+      console.error("خطا در دریافت محصول:", err);
     } finally {
       loading.value = false; // پایان بارگذاری
     }

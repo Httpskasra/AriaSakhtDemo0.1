@@ -36,3 +36,33 @@ export interface Product {
   }>;
   rating?: number;
 }
+
+export interface CartItemDto {
+  productId: string;
+  quantity: number;
+  variantId?: string;
+  selectedOptions?: Record<string, string>;
+}
+
+export interface Cart {
+  id: string;
+  userId: string;
+  items: Array<{
+    productId: string;
+    quantity: number;
+    price: number;
+    variantId?: string;
+  }>;
+  status: "active" | "abandoned" | "completed";
+  totalPrice: number;
+  totalQuantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Discount {
+  code: string;
+  percentage?: number;
+  amount?: number;
+  expiresAt?: string;
+}

@@ -1,12 +1,20 @@
 <template>
   <div class="container-img">
     <div class="main">
-      <img :src="data.image" alt="" />
+      <img
+        :src="mainImage"
+        :alt="data.name || 'تصویر محصول'"
+        class="main-img" />
     </div>
     <div class="sub">
-      <img src="/products/ajor.jpg" alt="" />
-      <img src="/products/ajor.jpg" alt="" />
-      <img src="/products/ajor.jpg" alt="" />
+      <img
+        v-for="(image, index) in images"
+        :key="index"
+        :src="image"
+        :alt="`${data.name} - تصویر ${index + 1}`"
+        @click="mainImage = image"
+        class="thumb"
+        :class="{ active: mainImage === image }" />
     </div>
     <button class="prev">
       <svg
@@ -14,12 +22,10 @@
         height="34"
         viewBox="0 0 21 34"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+        xmlns="http://www.w3.org/2000/svg">
         <path
           d="M20.7453 33.688L0.13725 20.632V13.912L20.7453 0.919998V8.728L6.47325 17.304L20.7453 25.944V33.688Z"
-          fill="#666666"
-        />
+          fill="#666666" />
       </svg>
     </button>
     <button class="next">
@@ -28,22 +34,45 @@
         height="34"
         viewBox="0 0 21 34"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+        xmlns="http://www.w3.org/2000/svg">
         <path
           d="M0.254749 33.688L20.8627 20.632V13.912L0.254749 0.919998V8.728L14.5267 17.304L0.254749 25.944V33.688Z"
-          fill="#666666"
-        />
+          fill="#666666" />
       </svg>
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import type { Product } from "~/types/product";
+
 const props = defineProps<{
   data: Product;
 }>();
+
+// عکس اصلی نمایش داده شده
+const mainImage = ref<string>("");
+
+// تمام عکس‌ها
+const images = computed(() => {
+  return props.data.images && props.data.images.length > 0
+    ? props.data.images
+    : ["/products/ajor.jpg"]; // عکس پیش‌فرض
+});
+
+// تنظیم عکس اول به عنوان عکس اصلی
+watch(
+  () => images.value,
+  (newImages) => {
+    if (newImages && newImages.length > 0 && !mainImage.value) {
+      mainImage.value = newImages[0];
+    }
+  },
+  { immediate: true }
+);
+
+import { watch } from "vue";
 </script>
 <style scoped>
 .container-img {
@@ -78,9 +107,18 @@ const props = defineProps<{
   width: 100px;
   height: 75px;
   border-right: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: opacity 0.3s;
 }
 .sub img:first-child {
   border: none;
+}
+.sub img.active {
+  border: 2px solid #0066cc;
+  opacity: 1;
+}
+.sub img:hover {
+  opacity: 0.7;
 }
 button {
   position: absolute;

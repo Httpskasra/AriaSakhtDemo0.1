@@ -1,77 +1,114 @@
 <template>
   <div class="container-future-demo">
-    <ul>
-      <li><span class="title">قیمت</span> <span class="val">1234</span></li>
-      <li><span class="title">قیمت</span> <span class="val">123asd4</span></li>
-      <li>
-        <span class="title">قیمت</span> <span class="val">1asdasda234</span>
-      </li>
-      <li><span class="title">قیمت</span> <span class="val">1asda234</span></li>
-      <li>
-        <span class="title">قیمت</span> <span class="val">12sdasdasd34</span>
+    <ul v-if="attributes && Object.keys(attributes).length > 0">
+      <li v-for="(value, key) in limitedAttributes" :key="key">
+        <span class="title">{{ key }}</span>
+        <span class="val">{{ value }}</span>
       </li>
     </ul>
+    <div v-else class="no-attributes">
+      <p>ویژگی‌ای برای این محصول تعریف نشده است</p>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+
+const props = defineProps<{
+  attributes?: Record<string, string | number>;
+}>();
+
+const limitedAttributes = computed(() => {
+  if (!props.attributes) return {};
+  const entries = Object.entries(props.attributes).slice(0, 6);
+  return Object.fromEntries(entries);
+});
+</script>
 <style scoped>
 .container-future-demo {
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  width: 450px;
-  height: 280px;
-  position: relative;
-  padding: 15px;
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+  margin: auto;
 }
+
+.no-attributes {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+}
+
+.no-attributes p {
+  font-family: "iran-yekan-Light";
+  font-size: 14px;
+}
+
 ul {
-  display: flex;
-  flex-wrap: wrap;
-  height: 80%;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
 }
+
 li {
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  margin: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 15px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 70px;
+  gap: 8px;
   border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: all 0.3s;
 }
-span {
-  font-size: 16px;
-  font-family: "iran-yekan-num-DemiBold";
+
+li:hover {
+  border-color: #0066cc;
+  background-color: #f0f5ff;
+  transform: translateY(-2px);
 }
-span.title {
-  color: #666666;
-}
-.see-more {
+
+.title {
+  color: #666;
   font-family: "iran-yekan-DemiBold";
-  color: #666666;
-  cursor: pointer;
-  position: absolute;
-  bottom: 10px;
-  right: 160px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
 }
+
+.val {
+  color: #0066cc;
+  font-family: "iran-yekan-num-DemiBold";
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}
+
 @media (max-width: 767px) {
   .container-future-demo {
-    top: 120px;
-    width: 80%;
-    height: 210px;
-    margin: auto;
+    width: 90%;
+    padding: 15px;
   }
+
   ul {
-    width: 100%;
-    height: 80%;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
   }
+
   li {
-    padding: 0 12px;
-    margin: 15px;
+    padding: 10px;
   }
-  span {
-    font-size: 8px;
+
+  .title {
+    font-size: 11px;
+  }
+
+  .val {
+    font-size: 12px;
   }
 }
 </style>
