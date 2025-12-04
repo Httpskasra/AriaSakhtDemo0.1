@@ -58,7 +58,7 @@ const mainImage = ref<string>("");
 const images = computed(() => {
   return props.data.images && props.data.images.length > 0
     ? props.data.images
-    : ["/products/ajor.jpg"]; // عکس پیش‌فرض
+    : [""]; // عکس پیش‌فرض
 });
 
 // تنظیم عکس اول به عنوان عکس اصلی
