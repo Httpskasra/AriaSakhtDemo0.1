@@ -23,7 +23,7 @@
     </div>
 
     <div class="w-[370px]">
-      <SearchBar />
+      <SearchBarProduct />
     </div>
     <div class="w-[100px]">
       <LoginBtn @click="isOpen = !isOpen" :isLogin="isLogin" />

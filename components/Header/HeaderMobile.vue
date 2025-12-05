@@ -24,7 +24,7 @@
           stroke-linecap="round" />
       </svg>
     </button>
-    <div class="search"><SearchBar /></div>
+    <div class="search"><SearchBarProduct /></div>
     <NuxtLink to="/" class="logo" :class="{ scrolled: isScrolled }">
       <img src="/logo/logo.png" alt="logo" />
     </NuxtLink>

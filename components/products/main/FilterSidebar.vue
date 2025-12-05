@@ -19,11 +19,11 @@
       >
       <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
         <span>0</span>
-        <span>{{ filters.price.toLocaleString() }} تومان</span>
+        <span>{{ filters.maxPrice.toLocaleString() }} تومان</span>
         <span>1,000,000</span>
       </div>
       <input
-        v-model.number="filters.price"
+        v-model.number="filters.maxPrice"
         type="range"
         min="0"
         max="1000000"
@@ -31,17 +31,24 @@
         class="w-full accent-blue-600 cursor-pointer" />
     </div>
 
-    <!-- Brand Filter -->
+    <!-- Brand Filter (Companies) -->
     <div class="mb-6">
       <label class="block text-sm font-medium mb-2 text-gray-700">برند</label>
       <select
-        v-model="filters.brand"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        v-model="filters.companyName"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        :disabled="companiesLoading">
         <option value="">همه برندها</option>
-        <option value="برند A">برند A</option>
-        <option value="برند B">برند B</option>
-        <option value="برند C">برند C</option>
+        <option
+          v-for="company in companies"
+          :key="company._id"
+          :value="company.name">
+          {{ company.name }}
+        </option>
       </select>
+      <p v-if="companiesLoading" class="text-xs text-gray-500 mt-1">
+        در حال بارگذاری...
+      </p>
     </div>
 
     <!-- Category Filter -->
@@ -49,14 +56,28 @@
       <label class="block text-sm font-medium mb-2 text-gray-700"
         >دسته‌بندی</label
       >
-      <select
-        v-model="filters.category"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-        <option value="">همه دسته‌ها</option>
-        <option value="الکترونیک">الکترونیک</option>
-        <option value="پوشاک">پوشاک</option>
-        <option value="لوازم خانگی">لوازم خانگی</option>
-      </select>
+      <div class="space-y-2">
+        <div v-if="categoriesLoading" class="text-xs text-gray-500">
+          در حال بارگذاری...
+        </div>
+        <div
+          v-else
+          v-for="category in categories"
+          :key="category._id"
+          class="flex items-center">
+          <input
+            type="checkbox"
+            :id="'cat-' + category._id"
+            :value="category._id"
+            v-model="filters.categoryIds"
+            class="w-4 h-4 rounded accent-blue-600" />
+          <label
+            :for="'cat-' + category._id"
+            class="mr-2 text-sm text-gray-700 cursor-pointer">
+            {{ category.name }}
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Apply Button -->
@@ -68,23 +89,94 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+
+interface Category {
+  _id: string;
+  name: string;
+  slug?: string;
+}
+
+interface Company {
+  _id: string;
+  name: string;
+}
 
 const filters = ref({
-  price: 500000,
-  brand: "",
-  category: "",
+  maxPrice: 500000,
+  companyName: "",
+  categoryIds: [] as string[],
 });
 
-const emit = defineEmits(["apply-filters"]);
+const categories = ref<Category[]>([]);
+const companies = ref<Company[]>([]);
+const categoriesLoading = ref(false);
+const companiesLoading = ref(false);
+
+const emit = defineEmits<{
+  "apply-filters": [
+    filters: {
+      maxPrice?: number;
+      companyName?: string;
+      categoryIds?: string[];
+    }
+  ];
+}>();
+
+onMounted(async () => {
+  await fetchCategories();
+  await fetchCompanies();
+});
+
+const fetchCategories = async () => {
+  try {
+    categoriesLoading.value = true;
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get("/categories");
+    categories.value = response.data.data || response.data || [];
+  } catch (error) {
+    console.error("خطا در دریافت دسته‌بندی‌ها:", error);
+  } finally {
+    categoriesLoading.value = false;
+  }
+};
+
+const fetchCompanies = async () => {
+  try {
+    companiesLoading.value = true;
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get("/companies");
+    companies.value = response.data.data || response.data || [];
+  } catch (error) {
+    console.error("خطا در دریافت برندها:", error);
+  } finally {
+    companiesLoading.value = false;
+  }
+};
 
 const applyFilters = () => {
-  emit("apply-filters", { ...filters.value });
+  const filtersToEmit = {
+    maxPrice: filters.value.maxPrice,
+    companyName: filters.value.companyName || undefined,
+    categoryIds:
+      filters.value.categoryIds.length > 0
+        ? filters.value.categoryIds
+        : undefined,
+  };
+
+  // حذف مقادیر undefined
+  Object.keys(filtersToEmit).forEach(
+    (key) =>
+      filtersToEmit[key as keyof typeof filtersToEmit] === undefined &&
+      delete filtersToEmit[key as keyof typeof filtersToEmit]
+  );
+
+  emit("apply-filters", filtersToEmit);
 };
 
 const closeSidebar = () => {
-  emit("apply-filters", { ...filters.value });
+  applyFilters();
 };
 </script>
 
