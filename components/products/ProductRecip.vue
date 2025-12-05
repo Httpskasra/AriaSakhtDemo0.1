@@ -5,67 +5,100 @@
     </div>
     <ul>
       <li v-if="data.sku">
-        <span class="title">کد محصول</span> 
+        <span class="title">کد محصول</span>
         <span class="val">{{ data.sku }}</span>
       </li>
       <li v-if="data.basePrice">
-        <span class="title">قیمت پایه</span> 
+        <span class="title">قیمت پایه</span>
         <span class="val">{{ formatPrice(data.basePrice) }}</span>
       </li>
       <li v-if="data.discount">
-        <span class="title">تخفیف</span> 
+        <span class="title">تخفیف</span>
         <span class="val discount">{{ data.discount }}%</span>
       </li>
       <li v-if="data.stock?.available !== undefined">
-        <span class="title">موجودی</span> 
-        <span class="val" :class="data.stock.available > 0 ? 'available' : 'unavailable'">
+        <span class="title">موجودی</span>
+        <span
+          class="val"
+          :class="data.stock.available > 0 ? 'available' : 'unavailable'">
           {{ data.stock.available }} عدد
         </span>
       </li>
-      <li v-if="data.categories && data.categories.length > 0">
-        <span class="title">دسته‌بندی</span> 
-        <span class="val">{{ data.categories.join(', ') }}</span>
+      <li v-if="getCategoryNames.length > 0">
+        <span class="title">دسته‌بندی</span>
+        <span class="val">{{ getCategoryNames.join(", ") }}</span>
       </li>
       <li v-if="data.status">
-        <span class="title">وضعیت</span> 
+        <span class="title">وضعیت</span>
         <span class="val status" :class="data.status">{{ statusLabel }}</span>
       </li>
     </ul>
-    <button class="sub" @click="copyProductLink">
-      کپی لینک محصول
-    </button>
+    <button class="sub" @click="copyProductLink">کپی لینک محصول</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Product } from "~/types/product";
+import { computed, ref, onMounted } from "vue";
 
 const props = defineProps<{
   data: Product;
 }>();
 
+interface Category {
+  _id?: string;
+  name: string;
+  slug?: string;
+}
+
+const categories = ref<Category[]>([]);
+
+onMounted(async () => {
+  try {
+    const { $axios } = useNuxtApp();
+    const response = await $axios.get("/categories");
+
+    if (Array.isArray(response.data)) {
+      categories.value = response.data;
+    } else if (response.data && Array.isArray(response.data.data)) {
+      categories.value = response.data.data;
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+});
+
+const getCategoryNames = computed(() => {
+  if (!props.data.categories || props.data.categories.length === 0) {
+    return [];
+  }
+
+  return props.data.categories.map((catId: string) => {
+    const category = categories.value.find((cat) => cat._id === catId);
+    return category?.name || catId;
+  });
+});
+
 const statusLabel = computed(() => {
   const statuses: Record<string, string> = {
-    active: 'فعال',
-    inactive: 'غیرفعال',
-    draft: 'پیش‌نویس',
-    archived: 'بایگانی‌شده'
+    active: "فعال",
+    inactive: "غیرفعال",
+    draft: "پیش‌نویس",
+    archived: "بایگانی‌شده",
   };
-  return statuses[props.data.status || 'inactive'] || props.data.status || '-';
+  return statuses[props.data.status || "inactive"] || props.data.status || "-";
 });
 
 const formatPrice = (price: number) => {
-  return price.toLocaleString('fa-IR') + ' ت';
+  return price.toLocaleString("fa-IR") + " ت";
 };
 
 const copyProductLink = () => {
   const productLink = `${window.location.origin}/products/${props.data.id}`;
   navigator.clipboard.writeText(productLink).then(() => {
-    alert('لینک محصول کپی شد!');
+    alert("لینک محصول کپی شد!");
   });
 };
-
-import { computed } from 'vue';
 </script>
 <style scoped>
 .container-recip {

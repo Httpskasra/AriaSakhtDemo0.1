@@ -21,12 +21,14 @@ export interface Product {
   }>;
   attributes?: Record<string, string | number>;
   tags?: string[];
-  images: string[];
-  imagesMeta?: Array<{
-    url: string;
-    alt?: string;
-    order?: number;
-  }>;
+  images?: Array<
+    | string
+    | {
+        url: string;
+        alt?: string;
+        order?: number;
+      }
+  >;
   status?: "active" | "inactive" | "draft" | "archived";
   companiesId?: string[];
   subcategory?: string;
@@ -36,7 +38,9 @@ export interface Product {
   }>;
   rating?: number;
 }
-
+export type productImage = {
+  url: string;
+};
 export interface CartItemDto {
   productId: string;
   quantity: number;
