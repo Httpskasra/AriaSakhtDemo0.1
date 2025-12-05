@@ -89,9 +89,9 @@ const handleAddToCart = async (item: any) => {
     await $axios.post("/carts/items", {
       productId: route.params.id,
       quantity: item.quantity || 1,
-      priceAtAdd: data.value?.basePrice || 0,
-      companyId: data.value?.companyId,
-      variantId: item.selectedVariant?.variantId,
+      priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+      companyId: item.companyId || data.value?.companyId,
+      variantId: item.variantId,
       selectedVariant: item.selectedVariant,
     });
 

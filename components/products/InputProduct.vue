@@ -90,7 +90,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   "add-to-cart": [
-    item: { productId: string; quantity: number; variantId?: string }
+    item: {
+      productId: string;
+      quantity: number;
+      variantId?: string;
+      companyId?: string;
+      priceAtAdd?: number;
+    }
   ];
 }>();
 
@@ -117,8 +123,8 @@ const originalPrice = computed(() => {
 });
 
 const stockStatus = computed(() => {
-  if (!props.data.stock?.available) return "out-of-stock";
-  if (props.data.stock.available < 5) return "low-stock";
+  if (!props.data.stock?.quantity) return "out-of-stock";
+  if (props.data.stock.quantity < 5) return "low-stock";
   return "in-stock";
 });
 
@@ -140,6 +146,8 @@ const submitForm = async () => {
     variantId: selectedVariant.value
       ? String(selectedVariant.value)
       : undefined,
+    companyId: props.data.companyId,
+    priceAtAdd: props.data.basePrice,
   };
 
   addingToCart.value = true;

@@ -207,7 +207,7 @@ async function addToCart(
   priceAtAdd?: number
 ) {
   try {
-    await $axios.post(`/carts/items/${productId}`, {
+    await $axios.post("/carts/items", {
       productId,
       quantity,
       variantId,
@@ -228,7 +228,7 @@ async function addToCart(
 
 async function updateQuantity(item: CartItem) {
   try {
-    await $axios.post(`/carts/items/${item.productId}`, {
+    await $axios.post("/carts/items", {
       productId: item.productId,
       quantity: item.quantity,
       variantId: item.variantId,
