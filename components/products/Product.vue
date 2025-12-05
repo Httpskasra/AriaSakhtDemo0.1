@@ -47,14 +47,14 @@ const props = defineProps<{
 }>();
 
 const stockStatusClass = computed(() => {
-  if (!props.data.stock?.available) return "out-of-stock";
-  if (props.data.stock.available < 5) return "low-stock";
+  if (!props.data.stock?.quantity) return "out-of-stock";
+  if (props.data.stock.quantity < 5) return "low-stock";
   return "in-stock";
 });
 
 const stockStatusLabel = computed(() => {
-  if (!props.data.stock?.available) return "⛔ ناموجود";
-  if (props.data.stock.available < 5) return "⚠️ تنها چند عدد باقی‌مانده";
+  if (!props.data.stock?.quantity) return "⛔ ناموجود";
+  if (props.data.stock.quantity < 5) return "⚠️ تنها چند عدد باقی‌مانده";
   return "✅ موجود";
 });
 </script>

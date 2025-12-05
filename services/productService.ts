@@ -60,7 +60,7 @@ export const searchByPriceAndCompany = async (params: {
 /* ================== Advanced Search ================== */
 
 export interface AdvancedSearchParams {
-  query?: string; // متن جستجو
+  query?: string; // متن جستجو (کوئری جستجو)
   maxPrice?: number; // حداکثر قیمت
   companyName?: string; // نام شرکت
   categoryIds?: string[]; // آرایه categoryIds
@@ -69,15 +69,29 @@ export interface AdvancedSearchParams {
   sort?: string; // مثال: "basePrice:desc"
 }
 
+/**
+ * Advanced search for products matching Swagger specification
+ * Parameters are properly serialized for query string compatibility
+ */
 export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
   const $axios = useApi();
+
+  // Filter out undefined values
+  const cleanParams: Record<string, any> = {};
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      cleanParams[key] = value;
+    }
+  });
 
   return await $axios.get<PaginatedResponse<Product>>(
     "/products/advanced-search",
     {
-      params,
-      // اگر بک‌اندت روی شکل آرایه حساس است، این را کاستوم کن
-      // paramsSerializer: { indexes: false },
+      params: cleanParams,
+      paramsSerializer: {
+        indexes: false, // برای آرایه‌های categoryIds
+      },
     }
   );
 };

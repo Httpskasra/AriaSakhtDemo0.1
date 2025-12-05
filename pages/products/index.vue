@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "#app";
 import type { Product } from "~/types/product";
 import {
@@ -94,44 +94,39 @@ const router = useRouter();
 
 /* ---------- وضعیت UI ---------- */
 const isSidebarOpen = ref(false);
-const sortOption = ref<string>((route.query.sort as string) || "");
 
-/* ---------- صفحه و limit از روی query ---------- */
+/* ---------- محاسبه مقادیر از query string ---------- */
 const page = computed(() => Number(route.query.page || 1));
 const limit = computed(() => Number(route.query.limit || 12));
-
-/* ---------- آخرین فیلترهای اعمال‌شده (از سایدبار) ---------- */
-const lastFilters = ref<{
-  price: number | null;
-  brand: string;
-  category: string;
-}>({
-  // این‌ها را از query هم سینک می‌کنیم تا رفرش صفحه خراب نشود
-  price: route.query.maxPrice ? Number(route.query.maxPrice) : null,
-  brand: (route.query.companyName as string) || "",
-  // اگر بک‌اند categoryIds دارد، ما فعلاً فقط اولین مقدار را می‌خوانیم
-  category: Array.isArray(route.query.categoryIds)
-    ? (route.query.categoryIds[0] as string) || ""
-    : (route.query.categoryIds as string) || "",
+const sortOption = computed(() => (route.query.sort as string) || "");
+const searchQuery = computed(() => (route.query.query as string) || "");
+const maxPrice = computed(() =>
+  route.query.maxPrice ? Number(route.query.maxPrice) : undefined
+);
+const companyName = computed(() => (route.query.companyName as string) || "");
+const categoryIds = computed(() => {
+  const cat = route.query.categoryIds;
+  if (Array.isArray(cat)) return cat as string[];
+  return cat ? [cat as string] : [];
 });
 
 /* ---------- ساخت پارامتر برای advanced-search ---------- */
-const buildParams = (): AdvancedSearchParams => ({
-  maxPrice:
-    typeof lastFilters.value.price === "number"
-      ? lastFilters.value.price
-      : undefined,
-  companyName: lastFilters.value.brand || undefined,
-  categoryIds: lastFilters.value.category
-    ? [lastFilters.value.category]
-    : undefined,
-  sort: sortOption.value || undefined,
-  page: page.value,
-  limit: limit.value,
-});
+const buildParams = (): AdvancedSearchParams => {
+  const params: AdvancedSearchParams = {
+    page: page.value,
+    limit: limit.value,
+  };
+
+  if (searchQuery.value) params.query = searchQuery.value;
+  if (maxPrice.value) params.maxPrice = maxPrice.value;
+  if (companyName.value) params.companyName = companyName.value;
+  if (categoryIds.value.length > 0) params.categoryIds = categoryIds.value;
+  if (sortOption.value) params.sort = sortOption.value;
+
+  return params;
+};
 
 /* ---------- گرفتن داده از بک‌اند با useAsyncData ---------- */
-
 const { data, pending, error, refresh } = await useAsyncData<
   PaginatedResponse<Product>
 >(
@@ -141,7 +136,7 @@ const { data, pending, error, refresh } = await useAsyncData<
     return response.data;
   },
   {
-    watch: [() => route.query], // هر بار query عوض بشه، دوباره لود
+    watch: [page, searchQuery, maxPrice, companyName, categoryIds, sortOption],
   }
 );
 
@@ -151,36 +146,50 @@ const totalPages = computed(() =>
   total.value && limit.value ? Math.ceil(total.value / limit.value) : 1
 );
 
-/* ---------- هندل کردن کوئری آدرس (sync با URL) ---------- */
-const updateQuery = (extra: Record<string, any> = {}) => {
-  const query: Record<string, any> = {
-    ...route.query,
-    page: extra.page ?? 1, // وقتی فیلتر عوض شود، برگرد صفحه ۱
-    limit: limit.value,
-    sort: sortOption.value || undefined,
-  };
+/* ---------- تابع برای آپدیت query string ---------- */
+const updateQueryString = (newParams: Record<string, any> = {}) => {
+  const query: Record<string, any> = {};
 
-  // مَپ کردن فیلترها به Swagger
-  if (lastFilters.value.price != null) query.maxPrice = lastFilters.value.price;
-  else delete query.maxPrice;
-
-  if (lastFilters.value.brand) query.companyName = lastFilters.value.brand;
-  else delete query.companyName;
-
-  if (lastFilters.value.category) {
-    // اگر بک‌اند انتظار آرایه دارد، با همین اسم یک‌تایی هم مشکلی ندارد
-    query.categoryIds = lastFilters.value.category;
-  } else {
-    delete query.categoryIds;
+  // جستجو
+  if (newParams.query !== undefined) {
+    if (newParams.query) query.query = newParams.query;
+  } else if (searchQuery.value) {
+    query.query = searchQuery.value;
   }
 
-  // پاک کردن undefined / خالی
-  Object.keys(query).forEach((key) => {
-    const v = query[key];
-    if (v === undefined || v === null || v === "") {
-      delete query[key];
+  // قیمت
+  if (newParams.maxPrice !== undefined) {
+    if (newParams.maxPrice) query.maxPrice = newParams.maxPrice;
+  } else if (maxPrice.value) {
+    query.maxPrice = maxPrice.value;
+  }
+
+  // شرکت
+  if (newParams.companyName !== undefined) {
+    if (newParams.companyName) query.companyName = newParams.companyName;
+  } else if (companyName.value) {
+    query.companyName = companyName.value;
+  }
+
+  // دسته‌بندی
+  if (newParams.categoryIds !== undefined) {
+    if (newParams.categoryIds && newParams.categoryIds.length > 0) {
+      query.categoryIds = newParams.categoryIds;
     }
-  });
+  } else if (categoryIds.value.length > 0) {
+    query.categoryIds = categoryIds.value;
+  }
+
+  // سورت
+  if (newParams.sort !== undefined) {
+    if (newParams.sort) query.sort = newParams.sort;
+  } else if (sortOption.value) {
+    query.sort = sortOption.value;
+  }
+
+  // صفحه (پیش‌فرض صفحه 1 هنگام تغییر فیلترها)
+  query.page = newParams.page ?? 1;
+  query.limit = limit.value;
 
   router.replace({ query });
 };
@@ -190,33 +199,33 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
+// وقتی کاربر جستجو انجام دهد
+const onSearch = (query: string) => {
+  updateQueryString({ query, page: 1 });
+};
+
 // وقتی کاربر روی "✅ اعمال فیلترها" در FilterSidebar کلیک می‌کند
 const onFiltersFromSidebar = (filters: {
   price?: number;
   brand?: string;
   category?: string;
 }) => {
-  lastFilters.value = {
-    price: filters.price ?? null,
-    brand: filters.brand ?? "",
-    category: filters.category ?? "",
-  };
   isSidebarOpen.value = false;
-  updateQuery();
-};
-
-// وقتی sort عوض می‌شود (بسته به API کامپوننت SortFilter خودت)
-const onSortChange = (value: string) => {
-  sortOption.value = value;
-  updateQuery({ page: page.value }); // فقط sort عوض شده، صفحه را حفظ کن
-};
-
-const changePage = (newPage: number) => {
-  router.replace({
-    query: {
-      ...route.query,
-      page: newPage,
-    },
+  updateQueryString({
+    maxPrice: filters.price,
+    companyName: filters.brand,
+    categoryIds: filters.category ? [filters.category] : [],
+    page: 1,
   });
+};
+
+// وقتی sort عوض می‌شود
+const onSortChange = (value: string) => {
+  updateQueryString({ sort: value, page: 1 });
+};
+
+// تغییر صفحه
+const changePage = (newPage: number) => {
+  updateQueryString({ page: newPage });
 };
 </script>

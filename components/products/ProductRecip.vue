@@ -16,12 +16,12 @@
         <span class="title">تخفیف</span>
         <span class="val discount">{{ data.discount }}%</span>
       </li>
-      <li v-if="data.stock?.available !== undefined">
+      <li v-if="data.stock?.quantity !== undefined">
         <span class="title">موجودی</span>
         <span
           class="val"
-          :class="data.stock.available > 0 ? 'available' : 'unavailable'">
-          {{ data.stock.available }} عدد
+          :class="data.stock.quantity > 0 ? 'available' : 'unavailable'">
+          {{ data.stock.quantity }} عدد
         </span>
       </li>
       <li v-if="getCategoryNames.length > 0">
