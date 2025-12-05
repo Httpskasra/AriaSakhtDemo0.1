@@ -8,113 +8,194 @@
     </div>
 
     <div class="space-y-4" dir="rtl">
-      <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-        <SearchBar v-model="search" :dark="true" />
-        <button
-          v-if="canCreate"
-          @click="openModal()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-          + افزودن
-        </button>
+      <!-- Orders List (Step 1) -->
+      <div v-if="!selectedOrder" class="space-y-4">
+        <div
+          class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
+          <SearchBar v-model="searchOrders" :dark="true" />
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-gray-600">
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    شناسه سفارش
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    تاریخ
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    مبلغ کل
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    وضعیت
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    عملیات
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-800">
+                <tr
+                  v-for="(order, idx) in filteredOrders"
+                  :key="order._id || idx"
+                  class="hover:bg-gray-50 border-b border-gray-100">
+                  <td class="px-4 py-3 font-medium text-gray-800 ltr">
+                    {{ order._id?.substring(0, 8) || "—" }}
+                  </td>
+                  <td class="px-4 py-3 text-gray-700">
+                    {{ formatDate(order.createdAt) }}
+                  </td>
+                  <td class="px-4 py-3">
+                    {{ numberFormat(order.totalAmount) }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="px-2 py-1 rounded text-xs"
+                      :class="orderStatusClass(order.status)">
+                      {{ orderStatusText(order.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      @click="selectOrder(order)"
+                      class="px-2 py-1 rounded text-xs bg-blue-500 text-white hover:bg-blue-600 transition">
+                      مشاهده حمل‌ونقل
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="filteredOrders.length === 0">
+                  <td colspan="5" class="text-center px-4 py-6 text-gray-500">
+                    سفارشی یافت نشد
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="bg-gray-50 text-gray-600">
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  شناسه سفارش
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  تاریخ
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  آدرس تحویل
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  مبلغ
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  وضعیت
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100 w-40">
-                  عملیات
-                </th>
-              </tr>
-            </thead>
-            <tbody class="text-gray-800">
-              <tr
-                v-for="(transporting, idx) in filteredTransportings"
-                :key="transporting._id || idx"
-                class="hover:bg-gray-50 border-b border-gray-100">
-                <td class="px-4 py-3 font-medium text-gray-800 ltr">
-                  {{ transporting.orderId?.substring(0, 8) || "—" }}
-                </td>
-                <td class="px-4 py-3 text-gray-700">
-                  {{ formatDate(transporting.createdAt) }}
-                </td>
-                <td class="px-4 py-3 text-gray-700 truncate max-w-[200px]">
-                  {{ transporting.deliveryAddress || "—" }}
-                </td>
-                <td class="px-4 py-3">
-                  {{ numberFormat(transporting.cost) }}
-                </td>
-                <td class="px-4 py-3">
-                  <select
-                    v-if="canUpdate"
-                    :value="transporting.status"
-                    @change="(e) => updateStatus(transporting, (e.target as HTMLSelectElement).value as any)"
-                    class="px-2 py-1 rounded text-xs border border-gray-300"
-                    :class="statusClass(transporting.status)"
-                    :disabled="statusLoading[transporting._id || '']">
-                    <option value="pending">درحال‌انتظار</option>
-                    <option value="in_transit">درحال‌حمل</option>
-                    <option value="delivered">تحویل‌شده</option>
-                    <option value="cancelled">لغو‌شده</option>
-                  </select>
-                  <span
-                    v-else
-                    class="px-2 py-1 rounded text-xs"
-                    :class="statusClass(transporting.status)">
-                    {{ statusText(transporting.status) }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 flex gap-2">
-                  <button
-                    v-if="canUpdate && statusLoading[transporting._id || '']"
-                    disabled
-                    class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-600 cursor-not-allowed">
-                    درحال‌بروزرسانی...
-                  </button>
-                  <button
-                    v-if="canUpdate && !statusLoading[transporting._id || '']"
-                    @click="openModal(transporting)"
-                    class="px-2 py-1 rounded text-xs bg-yellow-400 text-gray-800 hover:bg-yellow-500 transition">
-                    ویرایش
-                  </button>
-                  <button
-                    v-if="canDelete"
-                    @click="deleteTransporting(transporting)"
-                    class="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition">
-                    حذف
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="filteredTransportings.length === 0">
-                <td colspan="6" class="text-center px-4 py-6 text-gray-500">
-                  رکوردی یافت نشد
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- Transportings for Selected Order (Step 2) -->
+      <div v-else class="space-y-4">
+        <div class="flex items-center gap-3 mb-4">
+          <button
+            @click="selectedOrder = null"
+            class="px-3 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 text-sm transition">
+            ← بازگشت به سفارش‌ها
+          </button>
+          <span class="text-sm font-medium">
+            سفارش: {{ selectedOrder._id?.substring(0, 8) }}
+          </span>
+        </div>
+
+        <div
+          class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
+          <SearchBar v-model="searchTransportings" :dark="true" />
+          <button
+            v-if="canCreate"
+            @click="openModal()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+            + افزودن
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-gray-600">
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    تاریخ
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    آدرس تحویل
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    مبلغ
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                    وضعیت
+                  </th>
+                  <th
+                    class="text-right font-medium px-4 py-3 border-b border-gray-100 w-40">
+                    عملیات
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-800">
+                <tr
+                  v-for="(transporting, idx) in filteredTransportings"
+                  :key="transporting._id || idx"
+                  class="hover:bg-gray-50 border-b border-gray-100">
+                  <td class="px-4 py-3 text-gray-700">
+                    {{ formatDate(transporting.createdAt) }}
+                  </td>
+                  <td class="px-4 py-3 text-gray-700 truncate max-w-[200px]">
+                    {{ transporting.deliveryAddress || "—" }}
+                  </td>
+                  <td class="px-4 py-3">
+                    {{ numberFormat(transporting.cost) }}
+                  </td>
+                  <td class="px-4 py-3">
+                    <select
+                      v-if="canUpdate"
+                      :value="transporting.status"
+                      @change="(e) => updateStatus(transporting, (e.target as HTMLSelectElement).value as any)"
+                      class="px-2 py-1 rounded text-xs border border-gray-300"
+                      :class="statusClass(transporting.status)"
+                      :disabled="statusLoading[transporting._id || '']">
+                      <option value="pending">درحال‌انتظار</option>
+                      <option value="in_transit">درحال‌حمل</option>
+                      <option value="delivered">تحویل‌شده</option>
+                      <option value="cancelled">لغو‌شده</option>
+                    </select>
+                    <span
+                      v-else
+                      class="px-2 py-1 rounded text-xs"
+                      :class="statusClass(transporting.status)">
+                      {{ statusText(transporting.status) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 flex gap-2">
+                    <button
+                      v-if="canUpdate && statusLoading[transporting._id || '']"
+                      disabled
+                      class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-600 cursor-not-allowed">
+                      درحال‌بروزرسانی...
+                    </button>
+                    <button
+                      v-if="canUpdate && !statusLoading[transporting._id || '']"
+                      @click="openModal(transporting)"
+                      class="px-2 py-1 rounded text-xs bg-yellow-400 text-gray-800 hover:bg-yellow-500 transition">
+                      ویرایش
+                    </button>
+                    <button
+                      v-if="canDelete"
+                      @click="deleteTransporting(transporting)"
+                      class="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition">
+                      حذف
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="filteredTransportings.length === 0">
+                  <td colspan="5" class="text-center px-4 py-6 text-gray-500">
+                    حمل‌ونقلی برای این سفارش یافت نشد
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -125,18 +206,6 @@
         </h2>
 
         <form class="space-y-5" @submit.prevent="saveTransporting">
-          <!-- Order ID -->
-          <div>
-            <label class="block text-sm font-medium mb-1">شناسه سفارش</label>
-            <input
-              v-model="form.orderId"
-              type="text"
-              :disabled="editMode"
-              placeholder="شناسه سفارش"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-              required />
-          </div>
-
           <!-- Delivery Address -->
           <div>
             <label class="block text-sm font-medium mb-1">آدرس تحویل</label>
@@ -206,6 +275,14 @@ definePageMeta({
   middleware: dashboardAuth,
 });
 
+// Types
+type Order = {
+  _id?: string;
+  createdAt?: string;
+  totalAmount: number;
+  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
+};
+
 type Transporting = {
   _id?: string;
   orderId: string;
@@ -215,14 +292,19 @@ type Transporting = {
   createdAt?: string;
 };
 
+// Permissions
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.TRANSPORTING
 );
 
 const { $axios } = useNuxtApp();
 
+// Orders and Transportings
+const orders = ref<Order[]>([]);
 const transportings = ref<Transporting[]>([]);
-const search = ref("");
+const selectedOrder = ref<Order | null>(null);
+const searchOrders = ref("");
+const searchTransportings = ref("");
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -236,6 +318,7 @@ const form = ref<Transporting>({
 
 const statusLoading = ref<Record<string, boolean>>({});
 
+// Helper functions
 function statusText(status: string) {
   const statusMap: Record<string, string> = {
     pending: "درحال‌انتظار",
@@ -256,6 +339,28 @@ function statusClass(status: string) {
   return classMap[status] || "bg-gray-100 text-gray-800";
 }
 
+function orderStatusText(status: string) {
+  const statusMap: Record<string, string> = {
+    pending: "درحال‌انتظار",
+    paid: "پرداخت‌شده",
+    shipped: "ارسال‌شده",
+    delivered: "تحویل‌شده",
+    cancelled: "لغو‌شده",
+  };
+  return statusMap[status] || status;
+}
+
+function orderStatusClass(status: string) {
+  const classMap: Record<string, string> = {
+    pending: "bg-yellow-100 text-yellow-800",
+    paid: "bg-blue-100 text-blue-800",
+    shipped: "bg-purple-100 text-purple-800",
+    delivered: "bg-green-100 text-green-800",
+    cancelled: "bg-red-100 text-red-800",
+  };
+  return classMap[status] || "bg-gray-100 text-gray-800";
+}
+
 function formatDate(dateString?: string) {
   if (!dateString) return "—";
   return new Date(dateString).toLocaleDateString("fa-IR");
@@ -266,13 +371,38 @@ function numberFormat(n?: number) {
   return n.toLocaleString("fa-IR");
 }
 
-const filteredTransportings = computed(() =>
-  transportings.value.filter(
-    (t) =>
-      t.orderId.toLowerCase().includes(search.value.toLowerCase()) ||
-      t.deliveryAddress.toLowerCase().includes(search.value.toLowerCase())
+// Filtered lists
+const filteredOrders = computed(() =>
+  orders.value.filter((o) =>
+    (o._id || "").toLowerCase().includes(searchOrders.value.toLowerCase())
   )
 );
+
+const filteredTransportings = computed(() => {
+  if (!selectedOrder.value) return [];
+  return transportings.value.filter(
+    (t) =>
+      t.orderId === selectedOrder.value?._id &&
+      (t.deliveryAddress
+        .toLowerCase()
+        .includes(searchTransportings.value.toLowerCase()) ||
+        t.status
+          .toLowerCase()
+          .includes(searchTransportings.value.toLowerCase()))
+  );
+});
+
+// API calls
+async function fetchOrders() {
+  if (!canRead) return;
+  try {
+    const { data } = await $axios.get("/orders");
+    orders.value = Array.isArray(data) ? data : data?.items || [];
+  } catch (err) {
+    console.error("خطا در دریافت سفارش‌ها:", err);
+    orders.value = [];
+  }
+}
 
 async function fetchTransportings() {
   if (!canRead) return;
@@ -283,6 +413,11 @@ async function fetchTransportings() {
     console.error("خطا در دریافت حمل‌ونقل‌ها:", err);
     transportings.value = [];
   }
+}
+
+function selectOrder(order: Order) {
+  selectedOrder.value = order;
+  searchTransportings.value = "";
 }
 
 async function updateStatus(
@@ -300,13 +435,11 @@ async function updateStatus(
 
   try {
     statusLoading.value[transporting._id] = true;
-    // Use the appropriate endpoint based on the status
     if (newStatus === "delivered") {
       await $axios.patch(`/transportings/${transporting._id}/delivered`);
     } else if (newStatus === "cancelled") {
       await $axios.patch(`/transportings/${transporting._id}/cancel`);
     } else {
-      // For other statuses, try a generic update endpoint (adjust based on API)
       await $axios.patch(`/transportings/${transporting._id}`, {
         status: newStatus,
       });
@@ -321,6 +454,8 @@ async function updateStatus(
 }
 
 function openModal(transporting: Transporting | null = null) {
+  if (!selectedOrder.value) return alert("لطفا ابتدا یک سفارش انتخاب کنید!");
+
   if (transporting) {
     if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
     editMode.value = true;
@@ -331,7 +466,7 @@ function openModal(transporting: Transporting | null = null) {
     editMode.value = false;
     selectedId.value = null;
     form.value = {
-      orderId: "",
+      orderId: selectedOrder.value._id || "",
       deliveryAddress: "",
       cost: 0,
       status: "pending",
@@ -377,6 +512,7 @@ async function deleteTransporting(transporting: Transporting) {
 }
 
 onMounted(() => {
+  fetchOrders();
   fetchTransportings();
 });
 </script>

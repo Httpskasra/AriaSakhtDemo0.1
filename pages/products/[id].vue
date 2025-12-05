@@ -83,13 +83,27 @@ const retryFetch = () => {
 // مدیریت اضافه کردن به سبد خریدیت
 const handleAddToCart = async (item: any) => {
   try {
-    // این قسمت بعدا با حقیقی سرویس سبد خریدی متصل خواهد شد
-    successMessage.value = "محصول به سبد خریدی افزوده شد";
+    const { $axios } = useNuxtApp();
+
+    // ارسال درخواست اضافه کردن به سبد
+    await $axios.post("/carts/items", {
+      productId: route.params.id,
+      quantity: item.quantity || 1,
+      variantId: item.selectedVariant?.variantId,
+      selectedVariant: item.selectedVariant,
+    });
+
+    successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
     setTimeout(() => {
       successMessage.value = null;
     }, 3000);
-  } catch (err) {
+  } catch (err: any) {
     console.error("خطا در افزودن به سبد خریدی:", err);
+    successMessage.value =
+      "❌ خطا: " + (err?.response?.data?.message || "نتوانست محصول اضافه شود");
+    setTimeout(() => {
+      successMessage.value = null;
+    }, 3000);
   }
 };
 </script>

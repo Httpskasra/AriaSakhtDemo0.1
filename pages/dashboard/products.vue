@@ -26,7 +26,7 @@
               <th class="p-3 text-right">SKU</th>
               <th class="p-3 text-right">قیمت پایه</th>
               <th class="p-3 text-right">موجودی</th>
-              <th class="p-3 text-right">شرکت</th>
+              <!-- <th class="p-3 text-right">شرکت</th> -->
               <th class="p-3 text-right">وضعیت</th>
               <th class="p-3 text-right">اقدامات</th>
             </tr>
@@ -47,7 +47,7 @@
               <td class="p-3">{{ numberFormat(product.basePrice) }}</td>
               <td class="p-3">{{ product.stock?.quantity ?? 0 }}</td>
               <!-- <td class="p-3 ltr text-xs">{{ product.companyId }}</td> -->
-              <td class="p-3 ltr text-xs">ID</td>
+              <!-- <td class="p-3 ltr text-xs">ID</td> -->
               <td class="p-3">
                 <span
                   class="px-2 py-1 rounded text-xs"
