@@ -38,7 +38,7 @@
         v-model="filters.companyName"
         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         :disabled="companiesLoading">
-        <option value="">همه برندها</option>
+        <option value=" ">همه برندها</option>
         <option
           v-for="company in companies"
           :key="company._id"
@@ -156,21 +156,12 @@ const fetchCompanies = async () => {
 };
 
 const applyFilters = () => {
-  const filtersToEmit = {
+  // اگر categoryIds خالی است، باید خالی ارسال شود تا از query حذف شود
+  const filtersToEmit: any = {
     maxPrice: filters.value.maxPrice,
-    companyName: filters.value.companyName || undefined,
-    categoryIds:
-      filters.value.categoryIds.length > 0
-        ? filters.value.categoryIds
-        : undefined,
+    companyName: filters.value.companyName || "",
+    categoryIds: filters.value.categoryIds, // حتی اگر خالی باشد
   };
-
-  // حذف مقادیر undefined
-  Object.keys(filtersToEmit).forEach(
-    (key) =>
-      filtersToEmit[key as keyof typeof filtersToEmit] === undefined &&
-      delete filtersToEmit[key as keyof typeof filtersToEmit]
-  );
 
   emit("apply-filters", filtersToEmit);
 };

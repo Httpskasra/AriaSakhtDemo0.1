@@ -4,7 +4,8 @@
       <SingleProduct
         v-for="product in products"
         :key="product.id"
-        :productId="product.id" />
+        :productId="product._id"
+        :product="product" />
     </div>
   </div>
 </template>

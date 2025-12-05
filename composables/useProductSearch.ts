@@ -67,12 +67,19 @@ export const useProductSearch = () => {
       query.companyName = companyName.value;
     }
 
-    // دسته‌بندی
+    // دسته‌بندی - اگر خالی است، حذف کن
     if (newParams.categoryIds !== undefined) {
-      if (newParams.categoryIds && newParams.categoryIds.length > 0) {
+      // اگر آرایه خالی است، نگنجش در query
+      if (
+        newParams.categoryIds &&
+        Array.isArray(newParams.categoryIds) &&
+        newParams.categoryIds.length > 0
+      ) {
         query.categoryIds = newParams.categoryIds;
       }
+      // اگر undefined یا null است، حذف کن (قبلا هم وجود نداشته)
     } else if (categoryIds.value.length > 0) {
+      // اگر newParams تعریف نشده، از قیمت قدیم استفاده کن
       query.categoryIds = categoryIds.value;
     }
 

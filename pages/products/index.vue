@@ -25,20 +25,27 @@ const {
 const isSidebarOpen = ref(false);
 
 /* ---------- گرفتن داده از بک‌اند با useAsyncData ---------- */
-const { data, pending, error, refresh } = await useAsyncData<
-  PaginatedResponse<Product>
->(
+const { data, pending, error } = await useAsyncData<PaginatedResponse<Product>>(
   "products-advanced-search",
   async () => {
     const response = await advancedSearchProducts(buildParams());
     return response.data;
   },
   {
-    watch: [page, searchQuery, maxPrice, companyName, categoryIds, sortOption],
+    watch: [
+      page,
+      limit,
+      searchQuery,
+      maxPrice,
+      companyName,
+      categoryIds,
+      sortOption,
+    ],
   }
 );
 
 const products = computed<Product[]>(() => data.value?.items ?? []);
+
 const total = computed<number>(() => data.value?.total ?? 0);
 const totalPages = computed(() =>
   total.value && limit.value ? Math.ceil(total.value / limit.value) : 1

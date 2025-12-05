@@ -72,6 +72,9 @@ export interface AdvancedSearchParams {
 /**
  * Advanced search for products matching Swagger specification
  * Parameters are properly serialized for query string compatibility
+ *
+ * مسئله: API فقط آرایه برمی‌گردونه نه PaginatedResponse
+ * راه‌حل: تبدیل به PaginatedResponse و pagination client-side
  */
 export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
   const $axios = useApi();
@@ -85,15 +88,79 @@ export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
     }
   });
 
-  return await $axios.get<PaginatedResponse<Product>>(
-    "/products/advanced-search",
-    {
+  try {
+    const response = await $axios.get<any>("/products/advanced-search", {
       params: cleanParams,
       paramsSerializer: {
-        indexes: false, // برای آرایه‌های categoryIds
+        serialize: (params: Record<string, any>) => {
+          const queryParts: string[] = [];
+
+          Object.entries(params).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              // برای آرایه‌ها: categoryIds[]=id1&categoryIds[]=id2
+              value.forEach((item) => {
+                queryParts.push(
+                  `${encodeURIComponent(key)}=${encodeURIComponent(item)}`
+                );
+              });
+            } else if (value !== undefined && value !== null && value !== "") {
+              // برای مقادیر عادی
+              queryParts.push(
+                `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+              );
+            }
+          });
+
+          return queryParts.join("&");
+        },
       },
+    });
+
+    let items: Product[] = [];
+    let total = 0;
+
+    // اگر response یک آرایه ساده است
+    if (Array.isArray(response.data)) {
+      items = response.data;
+      total = items.length;
     }
-  );
+    // اگر response یک object است
+    else if (response.data?.items) {
+      items = response.data.items;
+      total = response.data.total;
+    }
+    // fallback
+    else {
+      items = [];
+      total = 0;
+    }
+
+    // انجام pagination client-side
+    const page = cleanParams.page || 1;
+    const limit = cleanParams.limit || 12;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedItems = items.slice(startIndex, endIndex);
+
+    return {
+      data: {
+        items: paginatedItems,
+        total: total,
+        page: page,
+        limit: limit,
+      },
+    };
+  } catch (error) {
+    console.error("خطا در advanced search:", error);
+    return {
+      data: {
+        items: [],
+        total: 0,
+        page: cleanParams.page || 1,
+        limit: cleanParams.limit || 12,
+      },
+    };
+  }
 };
 
 /* ================== Top sales & offers ================== */
