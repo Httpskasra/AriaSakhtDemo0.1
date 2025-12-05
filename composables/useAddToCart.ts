@@ -21,6 +21,8 @@ export const useAddToCart = () => {
         quantity: cartItem.quantity || 1,
         variantId: cartItem.variantId,
         selectedVariant: cartItem.selectedVariant,
+        companyId: cartItem.companyId,
+        priceAtAdd: cartItem.priceAtAdd,
       });
       success.value = true;
       console.log("محصول به سبد خریدی افزوده شد:", response.data);

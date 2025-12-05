@@ -115,7 +115,7 @@ useHead({
 });
 
 // Types
-type CartItem = {
+interface CartItem {
   productId: string;
   productName: string;
   sku: string;
@@ -123,7 +123,9 @@ type CartItem = {
   quantity: number;
   variantId?: string;
   selectedVariant?: Record<string, string>;
-};
+  companyId?: string;
+  priceAtAdd?: number;
+}
 
 // State
 const { $axios } = useNuxtApp();
@@ -181,6 +183,8 @@ async function fetchCart() {
         quantity: item.quantity,
         variantId: item.variantId,
         selectedVariant: item.selectedVariant,
+        companyId: item.companyId || item.product?.companyId,
+        priceAtAdd: item.priceAtAdd || item.price || item.product?.basePrice,
       }));
     } else {
       cartItems.value = [];
@@ -198,14 +202,18 @@ async function addToCart(
   productId: string,
   quantity: number,
   variantId?: string,
-  selectedVariant?: Record<string, string>
+  selectedVariant?: Record<string, string>,
+  companyId?: string,
+  priceAtAdd?: number
 ) {
   try {
-    await $axios.post("/carts/items", {
+    await $axios.post(`/carts/items/${productId}`, {
       productId,
       quantity,
       variantId,
       selectedVariant,
+      companyId,
+      priceAtAdd,
     });
     await fetchCart();
     showNotification("محصول به سبد افزوده شد", "success");
@@ -220,11 +228,13 @@ async function addToCart(
 
 async function updateQuantity(item: CartItem) {
   try {
-    await $axios.post("/carts/items", {
+    await $axios.post(`/carts/items/${item.productId}`, {
       productId: item.productId,
       quantity: item.quantity,
       variantId: item.variantId,
       selectedVariant: item.selectedVariant,
+      companyId: item.companyId,
+      priceAtAdd: item.priceAtAdd,
     });
     await fetchCart();
     showNotification("سبد به‌روزرسانی شد", "success");

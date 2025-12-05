@@ -89,6 +89,8 @@ const handleAddToCart = async (item: any) => {
     await $axios.post("/carts/items", {
       productId: route.params.id,
       quantity: item.quantity || 1,
+      priceAtAdd: data.value?.basePrice || 0,
+      companyId: data.value?.companyId,
       variantId: item.selectedVariant?.variantId,
       selectedVariant: item.selectedVariant,
     });
@@ -99,8 +101,12 @@ const handleAddToCart = async (item: any) => {
     }, 3000);
   } catch (err: any) {
     console.error("خطا در افزودن به سبد خریدی:", err);
-    successMessage.value =
-      "❌ خطا: " + (err?.response?.data?.message || "نتوانست محصول اضافه شود");
+    const errorMsg =
+      err?.response?.data?.message ||
+      (Array.isArray(err?.response?.data?.message)
+        ? err?.response?.data?.message[0]
+        : "نتوانست محصول اضافه شود");
+    successMessage.value = "❌ خطا: " + errorMsg;
     setTimeout(() => {
       successMessage.value = null;
     }, 3000);

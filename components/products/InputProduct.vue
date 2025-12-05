@@ -50,7 +50,7 @@
           v-model.number="quantity"
           type="number"
           min="1"
-          :max="data.stock?.available || 1"
+          :max="data.stock?.quantity || 1"
           class="quantity-input" />
       </label>
 
@@ -58,7 +58,7 @@
       <div class="stock-info">
         <span class="stock-label">موجودی:</span>
         <span class="stock-value" :class="stockStatus">
-          {{ data.stock?.available || 0 }} عدد
+          {{ data.stock?.quantity || 0 }} عدد
         </span>
       </div>
 
@@ -67,7 +67,7 @@
         <button
           type="submit"
           class="add-to-cart-btn"
-          :disabled="data.stock?.available === 0 || addingToCart"
+          :disabled="data.stock?.quantity === 0 || addingToCart"
           @click="submitForm">
           {{ addingToCart ? "در حال افزودن..." : "اضافه کردن به سبد خریدی" }}
         </button>

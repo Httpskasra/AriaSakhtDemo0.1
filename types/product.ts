@@ -8,7 +8,7 @@ export interface Product {
   categories: string[];
   description: string;
   stock: {
-    available: number;
+    quantity: number;
     reserved?: number;
     total?: number;
   };
@@ -20,6 +20,7 @@ export interface Product {
     stock?: number;
   }>;
   attributes?: Record<string, string | number>;
+  companyId: string;
   tags?: string[];
   images?: Array<
     | string
@@ -46,6 +47,8 @@ export interface CartItemDto {
   quantity: number;
   variantId?: string;
   selectedOptions?: Record<string, string>;
+  companyId?: string;
+  priceAtAdd?: number;
 }
 
 export interface Cart {
