@@ -9,6 +9,10 @@ export const useAddToCart = () => {
 
   /**
    * اضافه کردن محصول به سبد خریدی
+   * فرآیند:
+   * 1. ابتدا درخواست /carts/active برای چک کردن وجود کارت فعال
+   * 2. اگر کارت فعال نبود، درخواست POST /carts برای ایجاد کارت جدید
+   * 3. سپس درخواست POST /carts/items برای افزودن آیتم
    */
   const addProductToCart = async (cartItem: CartItemDto) => {
     loading.value = true;
@@ -16,6 +20,26 @@ export const useAddToCart = () => {
     success.value = false;
 
     try {
+      // مرحله 1: چک کردن وجود کارت فعال
+      let activeCartExists = false;
+      try {
+        const activeCartResponse = await $axios.get("/carts/active");
+        activeCartExists =
+          activeCartResponse.data &&
+          Object.keys(activeCartResponse.data).length > 0;
+        console.log("کارت فعال موجود است:", activeCartExists);
+      } catch (err: any) {
+        console.log("کارت فعالی یافت نشد، باید کارت جدید ایجاد کنیم");
+        activeCartExists = false;
+      }
+
+      // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
+      if (!activeCartExists) {
+        console.log("کارت جدید ایجاد می‌شود...");
+        await $axios.post("/carts", {});
+      }
+
+      // مرحله 3: افزودن آیتم به سبد
       const response = await $axios.post("/carts/items", {
         productId: cartItem.productId,
         quantity: cartItem.quantity || 1,

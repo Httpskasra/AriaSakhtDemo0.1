@@ -85,7 +85,23 @@ const handleAddToCart = async (item: any) => {
   try {
     const { $axios } = useNuxtApp();
 
-    // ارسال درخواست اضافه کردن به سبد
+    // مرحله 1: چک کردن وجود کارت فعال
+    let activeCartExists = false;
+    try {
+      const activeCartResponse = await $axios.get("/carts/active");
+      activeCartExists =
+        activeCartResponse.data &&
+        Object.keys(activeCartResponse.data).length > 0;
+    } catch (err: any) {
+      activeCartExists = false;
+    }
+
+    // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
+    if (!activeCartExists) {
+      await $axios.post("/carts", {});
+    }
+
+    // مرحله 3: افزودن آیتم به سبد
     await $axios.post("/carts/items", {
       productId: route.params.id,
       quantity: item.quantity || 1,
