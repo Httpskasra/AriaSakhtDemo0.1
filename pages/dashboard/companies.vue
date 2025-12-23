@@ -33,26 +33,32 @@
                   نام
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   ایمیل
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   تلفن
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   شماره ثبت
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   آدرس
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   وضعیت
                 </th>
                 <th
+                  v-if="canCreate && canUpdate"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100 w-40">
                   عملیات
                 </th>
@@ -73,16 +79,24 @@
                 <td class="px-4 py-3 font-medium text-gray-800">
                   {{ company.name }}
                 </td>
-                <td class="px-4 py-3 text-gray-700">
+                <td
+                  class="px-4 py-3 text-gray-700"
+                  v-if="canCreate && canUpdate">
                   {{ company.email }}
                 </td>
-                <td class="px-4 py-3 text-gray-700">
+                <td
+                  class="px-4 py-3 text-gray-700"
+                  v-if="canCreate && canUpdate">
                   {{ company.phone }}
                 </td>
-                <td class="px-4 py-3 text-gray-700">
+                <td
+                  class="px-4 py-3 text-gray-700"
+                  v-if="canCreate && canUpdate">
                   {{ company.registrationNumber }}
                 </td>
-                <td class="px-4 py-3 text-gray-700 truncate max-w-[150px]">
+                <td
+                  class="px-4 py-3 text-gray-700 truncate max-w-[150px]"
+                  v-if="canCreate && canUpdate">
                   {{ company.address || "—" }}
                 </td>
                 <td class="px-4 py-3">
