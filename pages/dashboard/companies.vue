@@ -242,15 +242,15 @@ useHead({
 // });
 
 // // دسترسی‌ها
-// const { canCreate, canRead, canUpdate, canDelete } = useAccess(
-//   Resource.COMPANIES
-// );
-const { canCreate, canRead, canUpdate, canDelete } = {
-  canCreate: true,
-  canDelete: true,
-  canRead: true,
-  canUpdate: true,
-};
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+  Resource.COMPANIES
+);
+// const { canCreate, canRead, canUpdate, canDelete } = {
+//   canCreate: true,
+//   canDelete: true,
+//   canRead: true,
+//   canUpdate: true,
+// };
 // نوع شرکت
 type Company = {
   _id?: string; // changed from id to _id
