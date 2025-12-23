@@ -60,18 +60,9 @@ watch(route, (newRoute) => {
 });
 
 const { getResources } = usePermissions();
-const { user } = useUser();
-
-const availableResources = computed(() => {
-  const resources = getResources();
-  const permissions = user.value?.permissions ?? [];
-
-  // فیلتر کردن منابعی که source برابر با 'rating' است (فقط در سایدبار)
-  return resources.filter((resource) => {
-    const permission = permissions.find((p) => p.resource === resource);
-    return permission?.source !== "rating";
-  });
-});
+const availableResources = computed(() =>
+  getResources().filter((resource) => resourceLabels[resource])
+);
 
 const resourceLabels: Record<string, string> = {
   [Resource.CARTS]: "سبدها",

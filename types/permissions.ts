@@ -25,6 +25,7 @@ export enum Resource {
   WALLETS = "wallets",
   PROFILE = "profile",
   PRODUCT_STATUS = "product_status",
+  RATINGS = "ratings",
   ALL = "all",
 }
 
@@ -32,7 +33,6 @@ export type Permission = {
   resource: Resource;
   actions: Action[];
   companyId?: string; // only for Resource.PRODUCTS
-  source?: string; // optional source field
 };
 
 export type User = {
