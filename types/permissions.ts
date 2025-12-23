@@ -32,6 +32,7 @@ export type Permission = {
   resource: Resource;
   actions: Action[];
   companyId?: string; // only for Resource.PRODUCTS
+  source?: string; // optional source field
 };
 
 export type User = {
