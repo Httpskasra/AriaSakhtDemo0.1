@@ -1,8 +1,10 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { CartItemDto } from "~/types/product";
+import { useUser } from "~/composables/useUser";
 
 export const useAddToCart = () => {
   const { $axios } = useNuxtApp();
+  const { user } = useUser();
   const loading = ref(false);
   const error = ref<string | null>(null);
   const success = ref(false);
@@ -20,6 +22,11 @@ export const useAddToCart = () => {
     success.value = false;
 
     try {
+      // بررسی احراز هویت
+      if (!user.value?.userId) {
+        throw new Error("لطفا وارد سایت شوید");
+      }
+
       // مرحله 1: چک کردن وجود کارت فعال
       let activeCartExists = false;
       try {
@@ -36,11 +43,14 @@ export const useAddToCart = () => {
       // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
       if (!activeCartExists) {
         //console.log("کارت جدید ایجاد می‌شود...");
-        await $axios.post("/carts", {});
+        await $axios.post("/carts", {
+          userId: user.value.userId,
+        });
       }
 
       // مرحله 3: افزودن آیتم به سبد
       const response = await $axios.post("/carts/items", {
+        userId: user.value.userId,
         productId: cartItem.productId,
         quantity: cartItem.quantity || 1,
         variantId: cartItem.variantId,

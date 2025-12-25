@@ -44,6 +44,7 @@ export type productImage = {
   url: string;
 };
 export interface CartItemDto {
+  userId: string | number;
   productId: string;
   quantity: number;
   variantId?: string;

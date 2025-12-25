@@ -66,10 +66,12 @@ import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import type { Product } from "~/types/product";
 import { useProductById } from "~/composables/useGetProductByID";
+import { useUser } from "~/composables/useUser";
 import RelatedProducts from "~/components/products/info/RelatedProducts.vue";
 
 const route = useRoute();
 const successMessage = ref<string | null>(null);
+const { user } = useUser();
 
 // دریافت اطلاعات محصول
 const { data, loading, error, fetchProduct } = useProductById(
@@ -86,9 +88,19 @@ const handleAddToCart = async (item: any) => {
   try {
     const { $axios } = useNuxtApp();
 
+    // بررسی احراز هویت
+    if (!user.value?.userId) {
+      successMessage.value = "❌ خطا: لطفا وارد سایت شوید";
+      setTimeout(() => {
+        successMessage.value = null;
+      }, 3000);
+      return;
+    }
+
     // مرحله 1: سعی کردن برای افزودن آیتم به سبد
     try {
       await $axios.post("/carts/items", {
+        userId: user.value.userId,
         productId: route.params.id,
         quantity: item.quantity || 1,
         priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
@@ -104,10 +116,13 @@ const handleAddToCart = async (item: any) => {
     } catch (err: any) {
       // مرحله 2: اگر خطا داد، کارت جدید ایجاد کن
       if (err?.response?.status) {
-        await $axios.post("/carts", {});
+        await $axios.post("/carts", {
+          userId: user.value.userId,
+        });
 
         // مرحله 3: دوباره سعی کردن برای افزودن آیتم
         await $axios.post("/carts/items", {
+          userId: user.value.userId,
           productId: route.params.id,
           quantity: item.quantity || 1,
           priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,

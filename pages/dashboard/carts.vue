@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import dashboardAuth from "~/middleware/dashboard-auth";
+import { useUser } from "~/composables/useUser";
 
 definePageMeta({
   middleware: dashboardAuth,
@@ -120,6 +121,9 @@ definePageMeta({
 useHead({
   title: " آریاساخت | داشبورد | سبد خرید",
 });
+
+// Get user data
+const { user } = useUser();
 
 // Types
 interface CartItem {
@@ -237,8 +241,14 @@ async function addToCart(
   priceAtAdd?: number
 ) {
   try {
+    if (!user.value?.userId) {
+      showNotification("لطفا وارد سایت شوید", "error");
+      return;
+    }
+
     // افزودن آیتم به سبد
     await $axios.post("/carts/items", {
+      userId: user.value.userId,
       productId,
       quantity,
       variantId,
@@ -259,8 +269,14 @@ async function addToCart(
 
 async function updateQuantity(item: CartItem) {
   try {
+    if (!user.value?.userId) {
+      showNotification("لطفا وارد سایت شوید", "error");
+      return;
+    }
+
     // به‌روزرسانی تعداد محصول
     await $axios.post("/carts/items", {
+      userId: user.value.userId,
       productId: item.productId,
       quantity: item.quantity,
       variantId: item.variantId,
