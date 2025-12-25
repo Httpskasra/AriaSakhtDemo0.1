@@ -38,6 +38,18 @@ const menueType = ref<MenuType>({
   height: 280px;
   width: 100%;
 }
+
+/* Tablet - بهمان شکل موبایل */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .main-container {
+    width: 100%;
+    top: 70px;
+    right: 0;
+    bottom: 0;
+  }
+}
+
+/* Mobile */
 @media (max-width: 767px) {
   .main-container {
     width: 100%;

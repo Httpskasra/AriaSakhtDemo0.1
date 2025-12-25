@@ -184,4 +184,29 @@ const handleLogOut = async () => {
     font-size: 12px;
   }
 }
+
+/* Tablet - بهمان شکل موبایل */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    font-family: "iran-yekan-Bold";
+    color: var(--blue-dark);
+    position: fixed;
+    top: 70px;
+    right: -500px;
+    width: 50%;
+    height: 83vh;
+    background-color: #fff;
+    z-index: 999;
+    transition: 0.5s;
+  }
+  .container.open {
+    right: 0px;
+  }
+  .item {
+    width: 80%;
+  }
+  .item .title {
+    font-size: 12px;
+  }
+}
 </style>

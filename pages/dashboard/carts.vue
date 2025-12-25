@@ -26,6 +26,13 @@
             <div class="item-info">
               <h3>{{ item.productName }}</h3>
               <p class="sku">SKU: {{ item.sku }}</p>
+              <p v-if="item.selectedVariant" class="variant">
+                {{ item.selectedVariant.name }}:
+                {{ item.selectedVariant.value }}
+              </p>
+              <p v-if="item.companyName" class="company">
+                شرکت: {{ item.companyName }}
+              </p>
               <p class="quantity">تعداد: {{ item.quantity }}</p>
             </div>
             <div class="item-price">
@@ -124,7 +131,12 @@ interface CartItem {
   variantId?: string;
   selectedVariant?: Record<string, string>;
   companyId?: string;
+  companyName?: string;
   priceAtAdd?: number;
+  discount?: {
+    type: string;
+    value: number;
+  };
 }
 
 // State
@@ -192,17 +204,33 @@ async function fetchCart() {
     const { data } = await $axios.get("/carts/populated");
     // Map API response to CartItem format
     if (data.items && Array.isArray(data.items)) {
-      cartItems.value = data.items.map((item: any) => ({
-        productId: item.productId || item.product?._id,
-        productName: item.productName || item.product?.name,
-        sku: item.sku || item.product?.sku,
-        price: item.price || item.product?.basePrice,
-        quantity: item.quantity,
-        variantId: item.variantId,
-        selectedVariant: item.selectedVariant,
-        companyId: item.companyId || item.product?.companyId,
-        priceAtAdd: item.priceAtAdd || item.price || item.product?.basePrice,
-      }));
+      cartItems.value = data.items
+        .filter((item: any) => item.productId) // فقط items با productId معتبر
+        .map((item: any) => {
+          // productId می‌تواند رشته یا object باشد
+          const productObj =
+            typeof item.productId === "object" ? item.productId : null;
+          const companyObj =
+            typeof item.companyId === "object" ? item.companyId : null;
+
+          return {
+            productId: productObj?._id || item.productId,
+            productName: productObj?.name || "محصول نامشخص",
+            sku: productObj?.sku || "-",
+            price:
+              item.priceAtAdd ||
+              productObj?.finalPrice ||
+              productObj?.basePrice ||
+              0,
+            quantity: item.quantity,
+            variantId: item.variant?.name,
+            selectedVariant: item.variant,
+            companyId: companyObj?._id || item.companyId,
+            companyName: companyObj?.name,
+            priceAtAdd: item.priceAtAdd,
+            discount: item.discount,
+          };
+        });
     } else {
       cartItems.value = [];
     }
@@ -443,7 +471,9 @@ defineExpose({
 }
 
 .item-info .sku,
-.item-info .quantity {
+.item-info .quantity,
+.item-info .variant,
+.item-info .company {
   margin: 4px 0;
   font-size: 13px;
   color: var(--gray-600);

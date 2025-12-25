@@ -126,11 +126,17 @@ const handleAddToCart = async (item: any) => {
     }
   } catch (err: any) {
     console.error("خطا در افزودن به سبد خریدی:", err);
-    const errorMsg =
+    let errorMsg =
       err?.response?.data?.message ||
       (Array.isArray(err?.response?.data?.message)
         ? err?.response?.data?.message[0]
         : "نتوانست محصول اضافه شود");
+
+    // بررسی خطای توکن احراز هویت
+    if (errorMsg === "Missing authorization token") {
+      errorMsg = "لطفا وارد سایت شوید";
+    }
+
     successMessage.value = "❌ خطا: " + errorMsg;
     setTimeout(() => {
       successMessage.value = null;

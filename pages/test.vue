@@ -1,29 +1,31 @@
 <template>
-  <NuxtLink :to="`/products/${productIdComputed}`" class="single-product">
-    <!-- عکس محصول -->
-    <div class="image-wrapper">
-      <img v-if="imageUrl" :src="imageUrl" :alt="productName" />
-      <div v-else class="image-placeholder">بدون تصویر</div>
-    </div>
+  <NuxtLayout name="dashboard">
+    <NuxtLink :to="`/products/${productIdComputed}`" class="single-product">
+      <!-- عکس محصول -->
+      <div class="image-wrapper">
+        <img v-if="imageUrl" :src="imageUrl" :alt="productName" />
+        <div v-else class="image-placeholder">بدون تصویر</div>
+      </div>
 
-    <!-- نام محصول -->
-    <p class="product-name">
-      {{ productName }}
-    </p>
+      <!-- نام محصول -->
+      <p class="product-name">
+        {{ productName }}
+      </p>
 
-    <!-- شرکت / برند (اگر موجود بود) -->
-    <p v-if="companyName" class="product-company">
-      {{ companyName }}
-    </p>
+      <!-- شرکت / برند (اگر موجود بود) -->
+      <p v-if="companyName" class="product-company">
+        {{ companyName }}
+      </p>
 
-    <!-- قیمت -->
-    <p class="product-price">{{ displayPrice }} تومان</p>
+      <!-- قیمت -->
+      <p class="product-price">{{ displayPrice }} تومان</p>
 
-    <!-- موجودی (اختیاری) -->
-    <p v-if="stockQuantity !== null" class="product-stock">
-      موجودی: {{ stockQuantity }}
-    </p>
-  </NuxtLink>
+      <!-- موجودی (اختیاری) -->
+      <p v-if="stockQuantity !== null" class="product-stock">
+        موجودی: {{ stockQuantity }}
+      </p>
+    </NuxtLink>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
