@@ -491,7 +491,7 @@ async function uploadSelectedImages() {
       formData.append("files", file);
     });
 
-    console.log("uploading files via POST /api/images/upload");
+    //console.log("uploading files via POST /api/images/upload");
 
     // آپلود مستقیم به endpoint
     const uploadRes = await $fetch<{ items: PresignItem[] }>(
@@ -507,7 +507,7 @@ async function uploadSelectedImages() {
       throw new Error("هیچ فایلی آپلود نشد.");
     }
 
-    console.log("upload response items:", items);
+    //console.log("upload response items:", items);
 
     // ست کردن images و imagesMeta روی فرم
     const newImages: ImageItem[] = items.map((item) => ({
@@ -532,7 +532,7 @@ async function uploadSelectedImages() {
       fileInputRef.value.value = "";
     }
 
-    console.log("upload done, images:", form.value.images);
+    //console.log("upload done, images:", form.value.images);
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
     alert(

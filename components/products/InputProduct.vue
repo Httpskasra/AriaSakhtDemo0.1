@@ -9,7 +9,8 @@
         </span>
       </div>
       <div class="discount-badge" v-if="data.discount">
-        {{ data.discount }}% تخفیف
+        <span>{{ data.discount }}</span
+        >%
       </div>
     </div>
 
@@ -110,16 +111,16 @@ const addingToCart = ref(false);
 
 // Computed
 const formattedPrice = computed(() => {
-  if (!props.data.basePrice) return "0 ت";
+  if (!props.data.basePrice) return "0 تومان";
   const finalPrice = props.data.discount
     ? Math.round(props.data.basePrice * (1 - props.data.discount / 100))
     : props.data.basePrice;
-  return finalPrice.toLocaleString("fa-IR") + " ت";
+  return finalPrice.toLocaleString("fa-IR") + " تومان";
 });
 
 const originalPrice = computed(() => {
   if (!props.data.basePrice) return "";
-  return props.data.basePrice.toLocaleString("fa-IR") + " ت";
+  return props.data.basePrice.toLocaleString("fa-IR") + " تومان";
 });
 
 const stockStatus = computed(() => {
@@ -226,7 +227,7 @@ const addToWishlist = () => {
 .discount-badge {
   background-color: #ff4444;
   color: white;
-  padding: 5px 10px;
+  padding: 5px 5px;
   border-radius: 20px;
   font-size: 12px;
   font-family: "iran-yekan-num-DemiBold";
@@ -360,19 +361,46 @@ input:disabled {
 
 @media (max-width: 767px) {
   .container-form {
-    width: 90%;
+    width: 100%;
     height: auto;
-    margin: auto;
+    margin: 0;
     padding: 15px;
+  }
+
+  .product-info {
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .price-section {
+    flex: 1;
+    min-width: 170px;
+    gap: 5px;
+  }
+
+  .product-info span {
+    font-size: 14px;
+  }
+  .original-price {
+    font-size: 10px;
+  }
+  .discount-badge {
+    font-size: 10px;
+    padding: 8px 8px;
+    max-width: 40px;
+    white-space: nowrap;
   }
 
   label {
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 15px;
   }
 
   label span {
     min-width: auto;
+    margin-bottom: 8px;
   }
 
   input,
@@ -386,11 +414,36 @@ input:disabled {
 
   .buttons {
     flex-direction: column;
+    gap: 10px;
   }
 
   .add-to-cart-btn,
   .wishlist-btn {
     width: 100%;
+    padding: 12px;
+    height: auto;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-form {
+    padding: 12px;
+  }
+
+  label {
+    margin-bottom: 12px;
+  }
+
+  input,
+  select {
+    font-size: 16px;
+  }
+
+  .add-to-cart-btn,
+  .wishlist-btn {
+    min-height: 40px;
+    font-size: 14px;
   }
 }
 </style>

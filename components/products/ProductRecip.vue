@@ -224,49 +224,70 @@ button.sub:hover {
 
 @media (max-width: 767px) {
   .container-recip {
-    width: 90%;
+    width: 100%;
     height: auto;
-    display: flex;
-    flex-direction: column;
+    padding: 15px;
   }
 
-  .title,
+  .recip-header {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+  }
+
+  .recip-header h3 {
+    font-size: 16px;
+  }
+
+  ul {
+    height: auto;
+  }
+
+  li {
+    height: auto;
+    padding: 8px 0;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
   .val {
     font-size: 12px;
   }
 
   button.sub {
-    border-radius: 0;
-    width: calc(100% + 30px);
-    margin: 15px -15px -15px -15px;
+    width: 100%;
+    height: auto;
+    min-height: 40px;
     padding: 10px;
-    height: 40px;
+    margin: 15px 0 0 0;
+    border-radius: 6px;
+    font-size: 12px;
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 480px) {
   .container-recip {
-    width: 90%;
-    height: 270px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 0 10px;
+    padding: 10px;
   }
-  ul {
-    height: 70%;
+
+  .recip-header h3 {
+    font-size: 14px;
   }
+
   li {
-    height: 20px;
+    padding: 6px 0;
   }
+
   .title,
   .val {
-    font-size: 10px;
+    font-size: 11px;
   }
+
   button.sub {
-    width: 100%;
-    height: 30px;
-    font-size: 10px;
+    min-height: 36px;
+    padding: 8px;
+    font-size: 11px;
   }
 }
 </style>

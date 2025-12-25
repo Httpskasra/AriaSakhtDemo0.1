@@ -39,7 +39,7 @@ const props = defineProps<{
   background-color: #fff;
   border-radius: 8px;
   position: relative;
-  bottom: 70px;
+  bottom: 10px;
 }
 .header {
   width: 30%;
@@ -66,19 +66,21 @@ li.active {
 .content {
   /* background-color: red; */
   width: 100%;
+  height: 70%;
   margin: auto;
   margin-top: 50px;
-  height: 90%;
+  /* height: 90%; */
   overflow-y: scroll;
   position: relative;
-  background-color: #fff;
+  /* background-color: #fff; */
   /* background-color: red; */
 }
 @media (max-width: 767px) {
   .container {
     width: 100%;
     height: 60px;
-    margin-bottom: 500px;
+    /* margin-bottom: 500px; */
+    bottom: -20px;
   }
   .header {
     width: 80%;

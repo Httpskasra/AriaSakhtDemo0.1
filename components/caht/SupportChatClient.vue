@@ -4,21 +4,18 @@
     <button
       @click="toggleChat"
       class="fixed bottom-20 md:bottom-6 right-6 bg-blue-600 text-white rounded-full px-4 py-4 shadow-lg hover:bg-blue-700 transition-colors z-50"
-      aria-label="باز کردن چت پشتیبانی"
-    >
+      aria-label="باز کردن چت پشتیبانی">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="h-6 w-6"
         fill="none"
         viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
+        stroke="currentColor">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-4a2 2 0 012-2h10a2 2 0 012 2v4h-4M12 15v4m0 0h4m-4 0H8"
-        />
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-4a2 2 0 012-2h10a2 2 0 012 2v4h-4M12 15v4m0 0h4m-4 0H8" />
       </svg>
       <!-- <Icon name="ic:outline-support-agent" size="36px" /> -->
     </button>
@@ -26,12 +23,10 @@
     <!-- پنجره چت -->
     <div
       v-if="isChatOpen"
-      class="fixed bottom-28 md:bottom-20 right-6 w-80 bg-white rounded-lg shadow-xl z-50 border border-gray-200"
-    >
+      class="fixed bottom-28 md:bottom-20 right-6 w-80 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
       <!-- هدر چت -->
       <div
-        class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center"
-      >
+        class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
         <h3 class="text-lg font-semibold">پشتیبانی</h3>
         <button @click="toggleChat" class="text-white hover:text-gray-200">
           <svg
@@ -39,14 +34,12 @@
             class="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+            stroke="currentColor">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
+              d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -75,27 +68,23 @@
             v-model="message"
             type="text"
             placeholder="پیام خود را بنویسید..."
-            class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
+            class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" />
           <button
             type="submit"
             class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
             :disabled="!message.trim()"
-            aria-label="ارسال پیام"
-          >
+            aria-label="ارسال پیام">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+              stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
           </button>
         </form>
@@ -119,7 +108,7 @@ const toggleChat = () => {
 // تابع موقت برای ارسال پیام (برای طراحی)
 const sendMessage = () => {
   if (message.value.trim()) {
-    console.log("پیام:", message.value); // در آینده با API جایگزین می‌شود
+    //console.log("پیام:", message.value); // در آینده با API جایگزین می‌شود
     message.value = "";
   }
 };

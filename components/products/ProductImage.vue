@@ -142,15 +142,27 @@ button.prev {
 }
 @media (max-width: 767px) {
   .container-img {
-    width: 90%;
-    height: 350px;
-    margin: auto;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 15px;
+    bottom: auto;
+    position: static;
+    margin-right: 0;
   }
+
+  .main {
+    height: 250px;
+    width: 100%;
+  }
+
   button svg {
     width: 10px;
   }
+
   .sub img {
     width: 30%;
+    height: auto;
   }
 }
 </style>

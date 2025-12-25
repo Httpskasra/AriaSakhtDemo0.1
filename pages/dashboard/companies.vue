@@ -418,7 +418,7 @@ const saveCompany = async () => {
         // status: form.value.status,
         image: form.value.image,
       };
-      console.log("PATCH id:", selectedId.value); // برای دیباگ
+      //console.log("PATCH id:", selectedId.value); // برای دیباگ
       await $axios.patch(`/companies/${selectedId.value}`, cleanData);
     } else {
       await $axios.post("/companies", form.value);

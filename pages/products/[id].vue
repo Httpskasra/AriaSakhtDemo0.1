@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout>
+  <NuxtLayout name="default">
     <!-- حالت بارگذاری -->
     <div class="loading" v-if="loading">
       <SkeletonLoaderProduct />
@@ -38,9 +38,9 @@
       </div>
 
       <!-- محصولات پیشنهادی -->
-      <div class="recomend">
+      <!-- <div class="recomend">
         <FullRecommend />
-      </div>
+      </div> -->
 
       <!-- اطلاعات تفصیلی -->
       <div class="info" v-if="data.description">
@@ -50,7 +50,7 @@
       <!-- محصولات مشابه -->
       <div class="more-products">
         <h2>محصولات مشابه</h2>
-        <FullRecommend />
+        <RelatedProducts />
       </div>
     </div>
 
@@ -66,6 +66,7 @@ import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import type { Product } from "~/types/product";
 import { useProductById } from "~/composables/useGetProductByID";
+import RelatedProducts from "~/components/products/info/RelatedProducts.vue";
 
 const route = useRoute();
 const successMessage = ref<string | null>(null);
@@ -186,6 +187,7 @@ const handleAddToCart = async (item: any) => {
 .container {
   margin: auto;
   margin-top: 10px;
+  height: auto;
   width: 100%;
   padding: 0 20px;
 }
@@ -333,6 +335,8 @@ const handleAddToCart = async (item: any) => {
   }
 
   .info {
+    /* position: relative;
+    top: 180px; */
     height: auto;
     width: 100%;
   }
@@ -340,6 +344,7 @@ const handleAddToCart = async (item: any) => {
   .more-products {
     display: block;
     margin-top: 30px;
+    position: relative;
   }
 
   .error-box {

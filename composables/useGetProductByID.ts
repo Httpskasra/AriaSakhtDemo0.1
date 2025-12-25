@@ -20,7 +20,7 @@ export function useProductById(id: string | Ref<string> | ComputedRef<string>) {
     try {
       const response = await getProductById(currentId); // فراخوانی سرویس
       data.value = response.data; // ذخیره داده محصول
-      console.log("محصول بارگذاری شد:", data.value);
+      //console.log("محصول بارگذاری شد:", data.value);
     } catch (err: any) {
       error.value =
         err.response?.data?.message ||

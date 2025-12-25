@@ -274,7 +274,7 @@ const childrenMap = computed(() => {
 // رویداد وقتی کاربر روی یک فرزند تپ می‌کند
 function onChildClick(child: Category) {
   // این تابع را طبق نیازت تغییر بده: روت کردن، بستن منو و ...
-  console.log("child clicked", child);
+  //console.log("child clicked", child);
   // مثلا: router.push({ name: 'Category', params: { slug: child.slug } });
   // و سپس منو را ببند
   catsOpen.value = false;

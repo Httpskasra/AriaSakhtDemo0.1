@@ -2,9 +2,8 @@
   <div :class="['search-bar-container', { black: dark }]">
     <div class="search">
       <input
-        :value="modelValue"
+        v-model="searchInput"
         @keyup.enter="handleSearch"
-        @input="updateInput"
         type="text"
         class="search-input"
         :class="{ black: dark }"
@@ -15,51 +14,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter, useRoute } from "#app";
 
 const props = withDefaults(
   defineProps<{
     dark?: boolean;
-    modelValue?: string;
   }>(),
   {
     dark: false,
-    modelValue: "",
   }
 );
 
-const emit = defineEmits<{
-  "update:modelValue": [value: string];
-}>();
-
 const router = useRouter();
 const route = useRoute();
+const searchInput = ref("");
 
 const updateInput = (e: Event) => {
   const value = (e.target as HTMLInputElement).value;
-  emit("update:modelValue", value);
+  searchInput.value = value;
 };
 
-const handleSearch = () => {
-  const searchQuery = props.modelValue?.trim() || "";
+const handleSearch = async () => {
+  const searchQuery = searchInput.value?.trim() || "";
+
+  //console.log("🔍 Search triggered:", searchQuery);
 
   // فقط اگر کوئری خالی نباشد
   if (searchQuery) {
     // بررسی: آیا در صفحه products هستیم؟
     const isProductsPage = route.path.includes("/products");
 
+    //console.log("📍 Current path:", route.path);
+    //console.log("📍 Is products page:", isProductsPage);
+
     if (!isProductsPage) {
       // اگر در صفحه دیگری هستیم، به products برویم
-      router.push({
+      //console.log("➡️ Navigating to products with query:", searchQuery);
+      await router.push({
         path: "/products",
         query: { query: searchQuery, page: 1, limit: 12 },
       });
       // ریست کردن مقدار input
-      emit("update:modelValue", "");
+      searchInput.value = "";
     } else {
       // اگر در صفحه products هستیم، فقط کوئری را آپدیت کنید
-      router.push({
+      //console.log("🔄 Updating search on products page:", searchQuery);
+      await router.push({
         path: "/products",
         query: {
           ...route.query,
@@ -68,6 +69,8 @@ const handleSearch = () => {
         },
       });
     }
+  } else {
+    //console.log("⚠️ Empty search query");
   }
 };
 </script>

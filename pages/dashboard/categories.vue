@@ -223,7 +223,7 @@ const fetchCategories = async () => {
   try {
     const { data } = await $axios.get("/categories");
     categories.value = data;
-    console.log(data);
+    //console.log(data);
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
     categories.value = [];

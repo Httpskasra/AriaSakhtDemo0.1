@@ -27,15 +27,15 @@ export const useAddToCart = () => {
         activeCartExists =
           activeCartResponse.data &&
           Object.keys(activeCartResponse.data).length > 0;
-        console.log("کارت فعال موجود است:", activeCartExists);
+        //console.log("کارت فعال موجود است:", activeCartExists);
       } catch (err: any) {
-        console.log("کارت فعالی یافت نشد، باید کارت جدید ایجاد کنیم");
+        //console.log("کارت فعالی یافت نشد، باید کارت جدید ایجاد کنیم");
         activeCartExists = false;
       }
 
       // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
       if (!activeCartExists) {
-        console.log("کارت جدید ایجاد می‌شود...");
+        //console.log("کارت جدید ایجاد می‌شود...");
         await $axios.post("/carts", {});
       }
 
@@ -49,7 +49,7 @@ export const useAddToCart = () => {
         priceAtAdd: cartItem.priceAtAdd,
       });
       success.value = true;
-      console.log("محصول به سبد خریدی افزوده شد:", response.data);
+      //console.log("محصول به سبد خریدی افزوده شد:", response.data);
       return response.data;
     } catch (err: any) {
       error.value =

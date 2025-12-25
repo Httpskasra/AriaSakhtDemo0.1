@@ -132,7 +132,7 @@ const id = ref<string | null>(null);
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
   if (!canRead) return;
-  console.log("start fetching");
+  //console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
     const {
