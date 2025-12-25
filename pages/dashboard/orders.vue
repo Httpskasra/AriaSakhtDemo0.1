@@ -5,15 +5,18 @@
         <h1>سفارش ها</h1>
         <img src="/icons/orders.png" alt="" />
       </div>
-      <OrdersOrg />
+      <!-- <AdminOrdersOrg /> -->
+       <OrdersOrg/>
     </div>
   </NuxtLayout>
 </template>
 <script setup lang="ts">
 import dashboardAuth from "~/middleware/dashboard-auth";
+
 useHead({
   title: " آریاساخت | داشبورد | سفارش ها",
 });
+
 definePageMeta({
   middleware: dashboardAuth,
 });

@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout name="dashboard">
+  <NuxtLayout>
     <NuxtLink :to="`/products/${productIdComputed}`" class="single-product">
       <!-- عکس محصول -->
       <div class="image-wrapper">
@@ -25,6 +25,7 @@
         موجودی: {{ stockQuantity }}
       </p>
     </NuxtLink>
+    <AdminOrdersOrg />
   </NuxtLayout>
 </template>
 

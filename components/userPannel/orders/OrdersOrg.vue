@@ -48,63 +48,49 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, computed } from "vue";
+import type { Order, OrderStatus } from "@/services/orderService";
+import { listOrders } from "@/services/orderService";
 
-const { $axios } = useNuxtApp();
-const selectedTab = ref("completed");
-const orders = ref([]);
-const products = ref([]);
-const companies = ref([]);
+const selectedTab = ref<"completed" | "current" | "cancelled" | "returned">(
+  "completed"
+);
+const orders = ref<Order[]>([]);
+const loading = ref(false);
+const errorMsg = ref("");
 
-const completedOrders = ref([]);
-const currentOrders = ref([]);
-const cancelledOrders = ref([]);
-const returnedOrders = ref([]);
+// Filter orders by status
+const completedOrders = computed(() =>
+  orders.value.filter((o) => o.status === "delivered")
+);
+
+const currentOrders = computed(() =>
+  orders.value.filter((o) => ["pending", "paid", "shipped"].includes(o.status))
+);
+
+const cancelledOrders = computed(() =>
+  orders.value.filter((o) => o.status === "cancelled")
+);
+
+const returnedOrders = computed(() =>
+  orders.value.filter((o) => o.status === "refunded")
+);
 
 const fetchOrders = async () => {
-  const res = await $axios.get("/orders");
-  orders.value = res.data.items ? res.data.items : [];
-  // گرفتن اطلاعات محصولات و کمپانی‌ها
-  const productIds = [
-    ...new Set(orders.value.flatMap((o) => o.items.map((i) => i.productId))),
-  ];
-  const companyIds = [...new Set(orders.value.map((o) => o.companyId))];
-  const productsRes = await $axios.get("/products", {
-    params: { ids: productIds },
-  });
-  products.value = productsRes.data;
-  const companiesRes = await $axios.get("/companies", {
-    params: { ids: companyIds },
-  });
-  companies.value = companiesRes.data;
-  // ترکیب اطلاعات سفارش با محصول و کمپانی
-  const ordersWithDetails = orders.value.map((order) => {
-    return {
-      ...order,
-      products: order.items.map((item) => {
-        const product =
-          products.value.find((p) => p._id === item.productId) || {};
-        return {
-          ...product,
-          quantity: item.quantity,
-        };
-      }),
-      company: companies.value.find((c) => c._id === order.companyId) || {},
-    };
-  });
-  completedOrders.value = ordersWithDetails.filter(
-    (o) => o.status === "completed"
-  );
-  currentOrders.value = ordersWithDetails.filter(
-    (o) => o.status === "pending" || o.status === "current"
-  );
-  cancelledOrders.value = ordersWithDetails.filter(
-    (o) => o.status === "cancelled"
-  );
-  returnedOrders.value = ordersWithDetails.filter(
-    (o) => o.status === "returned"
-  );
+  loading.value = true;
+  errorMsg.value = "";
+  try {
+    const result = await listOrders();
+    orders.value = Array.isArray(result) ? result : result.items || [];
+  } catch (err: any) {
+    errorMsg.value =
+      err?.response?.data?.message || err?.message || "خطای نامشخص";
+    orders.value = [];
+    console.error("خطا در دریافت سفارش‌ها:", err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(() => {
