@@ -62,7 +62,7 @@ const toggleSidebar = () => {
     <div class="w-full mx-auto px-4 sm:px-8">
       <!-- نوار بالا: Sort + تعداد رکورد + دکمه باز کردن سایدبار در موبایل -->
       <div
-        class="flex justify-between items-center w-full md:w-1/2 mx-auto mb-4">
+        class="flex justify-between items-center w-full lg:w-1/2 mx-auto mb-4">
         <div class="flex items-center space-x-6 rtl:space-x-reverse">
           <!-- SortFilter -->
           <SortFilter
@@ -72,26 +72,26 @@ const toggleSidebar = () => {
         </div>
         <button
           @click="toggleSidebar"
-          class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">
+          class="lg:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">
           فیلترها
         </button>
       </div>
 
-      <div class="flex w-full flex-col md:flex-row relative">
+      <div class="flex w-full flex-col lg:flex-row relative">
         <!-- سایدبار فیلترها -->
-        <div class="md:w-1/3 lg:w-1/4 w-full md:static">
-          <!-- بک‌دراپ موبایل -->
+        <div class="lg:w-1/3 xl:w-1/4 w-full lg:static">
+          <!-- بک‌دراپ موبایل و تبلت -->
           <div
             v-if="isSidebarOpen"
-            class="fixed inset-0 bg-black/40 z-30 md:hidden"
+            class="fixed inset-0 bg-black/40 z-30 lg:hidden"
             @click="toggleSidebar"></div>
 
           <!-- خود سایدبار -->
           <div
-            class="fixed top-16 right-0 h-[calc(100vh-4rem)] w-80 bg-white z-40 transform transition-transform duration-300 md:static md:h-auto md:w-full md:transform-none md:z-auto shadow-md md:shadow-none"
+            class="fixed top-16 right-0 h-[calc(100vh-4rem)] w-80 z-40 transform transition-transform duration-300 lg:static lg:h-auto lg:w-full lg:transform-none lg:z-auto shadow-md lg:shadow-none"
             :class="{
               'translate-x-0': isSidebarOpen,
-              'translate-x-full md:translate-x-0': !isSidebarOpen,
+              'translate-x-full lg:translate-x-0': !isSidebarOpen,
             }">
             <FilterSidebar
               @apply-filters="
@@ -104,7 +104,7 @@ const toggleSidebar = () => {
         </div>
 
         <!-- لیست محصولات -->
-        <div class="pt-20 md:pt-0 flex-1 w-full mx-auto">
+        <div class="pt-20 lg:pt-0 flex-1 w-full mx-auto">
           <div v-if="pending" class="py-10 text-center text-gray-600">
             در حال بارگذاری محصولات...
           </div>
@@ -134,9 +134,9 @@ const toggleSidebar = () => {
             <div v-if="products.length">
               <ProductGrid :products="products" />
             </div>
-            <div v-else class="text-center py-8 text-gray-500">
+            <!-- <div v-else class="text-center py-8 text-gray-500">
               محصولی با این فیلترها یافت نشد.
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

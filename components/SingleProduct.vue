@@ -1,7 +1,7 @@
 <template>
   <NuxtLink :to="`/products/${productId}`" class="product">
     <div class="header">
-      <svg
+      <!-- <svg
         width="25"
         height="25"
         viewBox="0 0 25 25"
@@ -13,7 +13,7 @@
           stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round" />
-      </svg>
+      </svg> -->
       <div class="notif" v-if="product?.discount"><span>ویژه</span></div>
     </div>
     <img v-if="imageUrl" :src="imageUrl" :alt="productName" />
@@ -327,8 +327,8 @@ button svg {
     align-items: flex-start;
   }
   .product img {
-    width: 80px;
-    height: 80px;
+    width: 130px;
+    height: 150px;
   }
 
   .footer .price {

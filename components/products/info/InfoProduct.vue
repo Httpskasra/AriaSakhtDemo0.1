@@ -27,6 +27,15 @@ p {
   line-height: 38px;
   font-family: "iran-yekan-DemiBold";
 }
+@media (min-width: 768px) and (max-width: 1024px) {
+  p {
+    padding: 15px;
+    padding-top: 40px;
+    font-size: 14px;
+    line-height: 32px;
+  }
+}
+
 @media (max-width: 767px) {
   p {
     padding: 10px;

@@ -75,6 +75,28 @@ li.active {
   /* background-color: #fff; */
   /* background-color: red; */
 }
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    width: 95%;
+    height: 400px;
+    bottom: 5px;
+  }
+  .header {
+    width: 40%;
+    padding: 15px;
+  }
+  ul {
+    font-size: 13px;
+  }
+  li {
+    font-size: 12px;
+  }
+  .content {
+    height: 65%;
+    margin-top: 30px;
+  }
+}
+
 @media (max-width: 767px) {
   .container {
     width: 100%;

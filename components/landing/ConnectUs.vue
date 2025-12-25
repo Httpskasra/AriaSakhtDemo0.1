@@ -108,7 +108,85 @@ h2 {
   right: 150px;
 }
 
-/* --- Mobile Styles --- */
+/* --- Tablet Styles (768px - 1024px) --- */
+@media (min-width: 601px) and (max-width: 1024px) {
+  h2 {
+    margin-top: 15px;
+    font-size: 24px;
+  }
+  .container {
+    width: 100%;
+    margin: auto;
+    height: 240px;
+    min-height: 220px;
+    padding: 0;
+    border-radius: 0;
+  }
+  .container-main {
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding: 0;
+    gap: 20px;
+  }
+  .container-main img {
+    /* width: 110px;
+    height: 140px;
+    margin: 0;
+    bottom: 0;
+    right: 0;
+    position: static;
+    object-fit: contain;
+    z-index: 2; */
+    display: none;
+  }
+  .connect-us {
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    margin: 0 auto;
+    z-index: 2;
+  }
+  .connect-us h4 {
+    font-size: 18px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .connect-us form {
+    margin-top: 0;
+    left: 0;
+    align-items: center;
+    width: auto;
+    gap: 0 8px;
+    position: relative;
+    flex-direction: row;
+  }
+  .connect-us input {
+    width: 220px;
+    height: 48px;
+    padding: 10px;
+    font-size: 14px;
+  }
+  .connect-us button {
+    width: 90px;
+    height: 48px;
+    font-size: 14px;
+    right: 0;
+    margin-right: 0;
+    margin-left: 0;
+    position: relative;
+  }
+}
+
+/* --- Mobile Styles (600px and below) --- */
 @media (max-width: 600px) {
   h2 {
     margin-top: 20px;

@@ -1,5 +1,5 @@
 <template>
-  <p class="text-gray-600">{{ count }} محصول یافت شد</p>
+  <p class="text-gray-600 text-sm md:text-base">{{ count }} محصول یافت شد</p>
 </template>
 
 <script setup>

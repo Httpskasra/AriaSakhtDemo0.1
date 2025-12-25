@@ -13,8 +13,7 @@
         rows="10"
         cols="20"
         placeholder=" نقد و بررسی شما"
-        resize
-      ></textarea>
+        resize></textarea>
       <button>ثبت</button>
     </div>
   </div>
@@ -107,12 +106,51 @@ button {
   cursor: pointer;
   margin-top: 10px;
 }
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    height: 250px;
+    margin: 80px 0;
+  }
+  .mainPic {
+    width: 120px;
+  }
+  .first {
+    flex: 1;
+    margin-right: 10px;
+  }
+  .first h3 {
+    font-size: 16px;
+  }
+  .first input {
+    font-size: 12px;
+    padding: 10px;
+  }
+  .inner span {
+    font-size: 14px;
+  }
+  .sec {
+    flex: 1;
+  }
+  textarea {
+    width: 100%;
+    height: 150px;
+    font-size: 12px;
+  }
+  button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 767px) {
   .container {
     display: flex;
     flex-direction: column;
     position: relative;
-  
   }
   .mainPic {
     position: absolute;

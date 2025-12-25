@@ -86,36 +86,44 @@ const handleAddToCart = async (item: any) => {
   try {
     const { $axios } = useNuxtApp();
 
-    // مرحله 1: چک کردن وجود کارت فعال
-    let activeCartExists = false;
+    // مرحله 1: سعی کردن برای افزودن آیتم به سبد
     try {
-      const activeCartResponse = await $axios.get("/carts/active");
-      activeCartExists =
-        activeCartResponse.data &&
-        Object.keys(activeCartResponse.data).length > 0;
+      await $axios.post("/carts/items", {
+        productId: route.params.id,
+        quantity: item.quantity || 1,
+        priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+        companyId: item.companyId || data.value?.companyId,
+        variantId: item.variantId,
+        selectedVariant: item.selectedVariant,
+      });
+
+      successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
+      setTimeout(() => {
+        successMessage.value = null;
+      }, 3000);
     } catch (err: any) {
-      activeCartExists = false;
+      // مرحله 2: اگر خطا داد، کارت جدید ایجاد کن
+      if (err?.response?.status) {
+        await $axios.post("/carts", {});
+
+        // مرحله 3: دوباره سعی کردن برای افزودن آیتم
+        await $axios.post("/carts/items", {
+          productId: route.params.id,
+          quantity: item.quantity || 1,
+          priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+          companyId: item.companyId || data.value?.companyId,
+          variantId: item.variantId,
+          selectedVariant: item.selectedVariant,
+        });
+
+        successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
+        setTimeout(() => {
+          successMessage.value = null;
+        }, 3000);
+      } else {
+        throw err;
+      }
     }
-
-    // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
-    if (!activeCartExists) {
-      await $axios.post("/carts", {});
-    }
-
-    // مرحله 3: افزودن آیتم به سبد
-    await $axios.post("/carts/items", {
-      productId: route.params.id,
-      quantity: item.quantity || 1,
-      priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-      companyId: item.companyId || data.value?.companyId,
-      variantId: item.variantId,
-      selectedVariant: item.selectedVariant,
-    });
-
-    successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
-    setTimeout(() => {
-      successMessage.value = null;
-    }, 3000);
   } catch (err: any) {
     console.error("خطا در افزودن به سبد خریدی:", err);
     const errorMsg =

@@ -22,7 +22,7 @@ onMounted(async () => {
       // First keep only top-level categories (no parentId) and active ones,
       // then limit to 8 and map to names.
       const topLevel = (res.data as any[])
-        .filter((cat: any) =>  !cat.parentId)
+        .filter((cat: any) => !cat.parentId)
         .slice(0, 8)
         .map((cat: any) => cat.name ?? "");
       categories.value = topLevel;
@@ -195,6 +195,17 @@ onMounted(async () => {
     color: #222;
     font-weight: 600;
     transition: background 0.3s;
+  }
+}
+@media (max-width: 1024px) {
+  .item img {
+    height: 28px;
+    width: 28px;
+    margin-left: 4px;
+  }
+  .name {
+    font-size: 13px;
+    font-weight: 500;
   }
 }
 </style>

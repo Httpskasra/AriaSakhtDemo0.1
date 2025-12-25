@@ -4,8 +4,7 @@
       class="comment"
       v-for="comment in data.comments"
       :key="comment.sender"
-      :data="comment"
-    />
+      :data="comment" />
   </div>
 </template>
 <script setup lang="ts">
@@ -18,6 +17,22 @@ const props = defineProps<{
 .container {
   width: 100%;
 }
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    width: 100%;
+    margin-top: 30px;
+  }
+  .comment {
+    margin: 0px auto;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    position: relative;
+    margin-top: 12px;
+  }
+}
+
 @media (max-width: 767px) {
   .container {
     width: 100%;

@@ -7,7 +7,7 @@
       </h2>
       <button
         @click="closeSidebar"
-        class="md:hidden text-gray-500 hover:text-gray-700 transition">
+        class="xl:hidden text-gray-500 hover:text-gray-700 transition">
         ✕
       </button>
     </div>

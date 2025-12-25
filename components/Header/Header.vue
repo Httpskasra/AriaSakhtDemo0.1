@@ -46,4 +46,14 @@ const props = defineProps({
     visibility: visible;
   }
 }
+@media (min-width: 768px) and (max-width: 1024px) {
+  .header-desctop {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .header-mobile {
+    opacity: 1;
+    visibility: visible;
+  }
+}
 </style>
