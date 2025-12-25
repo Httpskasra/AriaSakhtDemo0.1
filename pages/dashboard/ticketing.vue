@@ -288,7 +288,7 @@ const addComment = async () => {
   submittingComment.value = true;
   try {
     const comment = await addTicketComment(selectedTicket.value.id, {
-      text: newComment.value,
+      content: newComment.value,
     });
     comments.value.push(comment);
     newComment.value = "";

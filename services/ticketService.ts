@@ -52,7 +52,9 @@ export interface TicketComment {
 }
 
 export interface CreateTicketCommentDto {
-  text: string;
+  content?: string;
+  text?: string;
+  comment?: string;
 }
 
 // ==== API calls ====
