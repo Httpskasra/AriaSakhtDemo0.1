@@ -99,7 +99,7 @@
                   v-if="canCreate && canUpdate">
                   {{ company.address || "—" }}
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3" v-if="canCreate && canUpdate">
                   <!-- Status badge + inline select for quick status change -->
                   <div class="flex items-center gap-2">
                     <span

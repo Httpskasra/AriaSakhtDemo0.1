@@ -46,17 +46,21 @@ const handleSearch = () => {
 
   // فقط اگر کوئری خالی نباشد
   if (searchQuery) {
-    // اگر در صفحه products نیستیم، به آنجا بروید
-    if (route.name !== "products") {
+    // بررسی: آیا در صفحه products هستیم؟
+    const isProductsPage = route.path.includes("/products");
+
+    if (!isProductsPage) {
+      // اگر در صفحه دیگری هستیم، به products برویم
       router.push({
-        name: "products",
+        path: "/products",
         query: { query: searchQuery, page: 1, limit: 12 },
       });
-      // ریست کردن مقدار input در صفحه دیگری
+      // ریست کردن مقدار input
       emit("update:modelValue", "");
     } else {
       // اگر در صفحه products هستیم، فقط کوئری را آپدیت کنید
-      router.replace({
+      router.push({
+        path: "/products",
         query: {
           ...route.query,
           query: searchQuery,
