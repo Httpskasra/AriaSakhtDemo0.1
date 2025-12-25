@@ -43,6 +43,18 @@ export interface TicketStatusResponseDto {
   status: TicketStatus;
 }
 
+export interface TicketComment {
+  id: string;
+  text: string;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateTicketCommentDto {
+  text: string;
+}
+
 // ==== API calls ====
 export async function createTicket(body: CreateTicketDto): Promise<Ticket> {
   const { $axios } = useNuxtApp();
@@ -103,4 +115,18 @@ export async function resolveTicket(
 ): Promise<void> {
   const { $axios } = useNuxtApp();
   await $axios.patch(`/api/tickets/${id}/resolve`, { refund });
+}
+export async function getTicketComments(id: string): Promise<TicketComment[]> {
+  const { $axios } = useNuxtApp();
+  const { data } = await $axios.get(`/tickets/${id}/comments`);
+  return data;
+}
+
+export async function addTicketComment(
+  id: string,
+  body: CreateTicketCommentDto
+): Promise<TicketComment> {
+  const { $axios } = useNuxtApp();
+  const { data } = await $axios.post(`/tickets/${id}/comments`, body);
+  return data;
 }
