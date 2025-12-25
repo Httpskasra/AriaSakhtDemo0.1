@@ -45,7 +45,7 @@ export interface TicketStatusResponseDto {
 
 export interface TicketComment {
   id: string;
-  text: string;
+  content: string;
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;

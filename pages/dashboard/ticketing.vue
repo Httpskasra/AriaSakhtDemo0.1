@@ -161,14 +161,14 @@
                   :key="comment.id"
                   class="comment">
                   <div class="comment-header">
-                    <span class="author">{{
+                    <!-- <span class="author">{{
                       comment.createdBy || "بدون نام"
-                    }}</span>
+                    }}</span> -->
                     <span class="time">{{
                       formatDate(comment.createdAt)
                     }}</span>
                   </div>
-                  <p class="comment-text">{{ comment.text }}</p>
+                  <p class="comment-text">{{ comment.content }}</p>
                 </div>
               </div>
 
