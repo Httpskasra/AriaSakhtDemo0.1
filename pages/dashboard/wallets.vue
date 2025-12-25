@@ -21,7 +21,7 @@
       <!-- Actions -->
       <div
         class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2 px-4">
-        <SearchBar v-model="search" :dark="true" />
+        <!-- <SearchBar v-model="search" :dark="true" /> -->
         <div class="flex gap-2">
           <button
             v-if="canCreate"
@@ -109,7 +109,7 @@
       <BaseModal v-if="showCreditModal" @close="closeCreditModal">
         <div class="w-full max-w-md mx-auto space-y-4" dir="rtl">
           <h2 class="text-lg font-bold">شارژ کیف پول</h2>
-          <form @submit.prevent="creditWallet" class="space-y-4">
+          <form @submit.prevent="creditWalletHandler" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1">مبلغ (تومان)</label>
               <input
@@ -127,6 +127,12 @@
               <textarea
                 v-model="creditForm.description"
                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div
+              v-if="errorMsg"
+              class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm">
+              {{ errorMsg }}
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
@@ -151,7 +157,7 @@
       <BaseModal v-if="showDebitModal" @close="closeDebitModal">
         <div class="w-full max-w-md mx-auto space-y-4" dir="rtl">
           <h2 class="text-lg font-bold">برداشت از کیف پول</h2>
-          <form @submit.prevent="debitWallet" class="space-y-4">
+          <form @submit.prevent="debitWalletHandler" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1">مبلغ (تومان)</label>
               <input
@@ -170,6 +176,12 @@
               <textarea
                 v-model="debitForm.description"
                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div
+              v-if="errorMsg"
+              class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded text-sm">
+              {{ errorMsg }}
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
@@ -197,7 +209,12 @@
 import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-
+import {
+  getWallet,
+  getTransactions,
+  creditWallet,
+  debitWallet,
+} from "~/services/walletService";
 useHead({
   title: " آریاساخت | داشبورد | کیف پول",
 });
@@ -207,12 +224,7 @@ definePageMeta({
 });
 
 // Permissions
-const { canCreate, canRead, canUpdate, canDelete } = {
-  canCreate: true,
-  canDelete: true,
-  canRead: true,
-  canUpdate: true,
-};
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.WALLETS);
 
 // Types
 type Wallet = {
@@ -239,6 +251,7 @@ const showCreditModal = ref(false);
 const showDebitModal = ref(false);
 const creditLoading = ref(false);
 const debitLoading = ref(false);
+const errorMsg = ref("");
 
 const creditForm = ref({
   amount: 0,
@@ -266,8 +279,8 @@ const filteredTransactions = computed(() =>
 const fetchWallet = async () => {
   if (!canRead) return;
   try {
-    const res = await $axios.get("/wallets");
-    wallet.value = res.data;
+    const result = await getWallet();
+    wallet.value = result;
   } catch (err) {
     console.warn("خطا در دریافت کیف پول:", err);
     wallet.value = null;
@@ -278,8 +291,8 @@ const fetchWallet = async () => {
 const fetchTransactions = async () => {
   if (!canRead) return;
   try {
-    const res = await $axios.get("/transaction");
-    transactions.value = res.data || [];
+    const result = await getTransactions();
+    transactions.value = result;
   } catch (err) {
     console.warn("خطا در دریافت تاریخچه تراکنش:", err);
     transactions.value = [];
@@ -296,59 +309,66 @@ const formatDate = (date: string | undefined) => {
 function openCreditModal() {
   if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
   creditForm.value = { amount: 0, description: "" };
+  errorMsg.value = "";
   showCreditModal.value = true;
 }
 
 function closeCreditModal() {
   showCreditModal.value = false;
+  errorMsg.value = "";
 }
 
 // Open debit modal
 function openDebitModal() {
   if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
   debitForm.value = { amount: 0, description: "" };
+  errorMsg.value = "";
   showDebitModal.value = true;
 }
 
 function closeDebitModal() {
   showDebitModal.value = false;
+  errorMsg.value = "";
 }
 
 // Credit wallet
-const creditWallet = async () => {
+const creditWalletHandler = async () => {
   if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
   if (creditForm.value.amount <= 0)
-    return alert("مبلغ باید بزرگتر از صفر باشد!");
+    return (errorMsg.value = "مبلغ باید بزرگتر از صفر باشد!");
 
   try {
     creditLoading.value = true;
-    await $axios.post("/wallets/credit", {
+    errorMsg.value = "";
+    await creditWallet({
       amount: creditForm.value.amount,
-      
+      description: creditForm.value.description,
     });
     await fetchWallet();
     await fetchTransactions();
     closeCreditModal();
     alert("کیف پول با موفقیت شارژ شد");
-  } catch (err) {
+  } catch (err: any) {
+    const message = err?.message || "خطا در شارژ کیف پول. دوباره تلاش کنید.";
+    errorMsg.value = message;
     console.error("خطا در شارژ کیف پول:", err);
-    alert("خطا در شارژ کیف پول. دوباره تلاش کنید.");
   } finally {
     creditLoading.value = false;
   }
 };
 
 // Debit wallet
-const debitWallet = async () => {
+const debitWalletHandler = async () => {
   if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
   if (debitForm.value.amount <= 0)
-    return alert("مبلغ باید بزرگتر از صفر باشد!");
+    return (errorMsg.value = "مبلغ باید بزرگتر از صفر باشد!");
   if ((wallet.value?.balance || 0) < debitForm.value.amount)
-    return alert("موجودی کافی نیست!");
+    return (errorMsg.value = "موجودی کافی نیست!");
 
   try {
     debitLoading.value = true;
-    await $axios.post("/wallets/debit", {
+    errorMsg.value = "";
+    await debitWallet({
       amount: debitForm.value.amount,
       description: debitForm.value.description,
     });
@@ -356,9 +376,10 @@ const debitWallet = async () => {
     await fetchTransactions();
     closeDebitModal();
     alert("برداشت با موفقیت انجام شد");
-  } catch (err) {
+  } catch (err: any) {
+    const message = err?.message || "خطا در برداشت. دوباره تلاش کنید.";
+    errorMsg.value = message;
     console.error("خطا در برداشت از کیف پول:", err);
-    alert("خطا در برداشت. دوباره تلاش کنید.");
   } finally {
     debitLoading.value = false;
   }

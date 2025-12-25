@@ -690,8 +690,7 @@ onMounted(fetchOrders);
   color: #9ca3af;
 }
 
-.details-content {
-}
+
 
 .details-header {
   border-bottom: 2px solid #e5e7eb;

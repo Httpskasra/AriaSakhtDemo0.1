@@ -8,7 +8,7 @@
       </div>
 
       <!-- Header: ساخت تیکت جدید از داخل مودال SupportHeader -->
-      <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" />
+      <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
 
       <!-- Filter + Search UI (همون استایل قبلی حفظ شده) -->
       <div class="fillter">
@@ -17,9 +17,9 @@
             <span>فیلتر</span>
           </button>
         </div>
-        <div class="search">
+        <!-- <div class="search">
           <SearchBar :dark="true" />
-        </div>
+        </div> -->
       </div>
 
       <!-- پنل فیلتر ساده -->
