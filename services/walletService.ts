@@ -22,18 +22,11 @@ export interface Transaction {
 
 export interface CreditWalletDto {
   amount: number;
-  description?: string;
 }
 
 export interface DebitWalletDto {
   amount: number;
-  description?: string;
 }
-
-// Generate unique localId
-const generateLocalId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
 
 // Get wallet info
 export async function getWallet(): Promise<Wallet | null> {
@@ -67,8 +60,6 @@ export async function creditWallet(
   try {
     const { data } = await $axios.post("/wallets/credit", {
       amount: payload.amount,
-      description: payload.description || "",
-      localId: generateLocalId(),
     });
     return data;
   } catch (err: any) {
@@ -87,8 +78,6 @@ export async function debitWallet(
   try {
     const { data } = await $axios.post("/wallets/debit", {
       amount: payload.amount,
-      description: payload.description || "",
-      localId: generateLocalId(),
     });
     return data;
   } catch (err: any) {

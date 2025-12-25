@@ -7,29 +7,34 @@
       @mouseover="setHoverRating(star)"
       @mouseleave="setHoverRating(0)"
       :class="{ active: star <= rating || star <= hoverRating }"
-      :style="{ fontSize: size }"
-    >
+      :style="{ fontSize: size }">
       ★
     </span>
   </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
-const prop = defineProps({
+
+const props = defineProps({
   size: {
     type: String,
-    default: "20px", // مقدار پیش‌فرض
+    default: "20px",
   },
 });
+
+const emit = defineEmits<{
+  rate: [value: number];
+}>();
 
 const rating = ref(0);
 const hoverRating = ref(0);
 
-const setRating = (value) => {
+const setRating = (value: number) => {
   rating.value = value;
+  emit("rate", value);
 };
 
-const setHoverRating = (value) => {
+const setHoverRating = (value: number) => {
   hoverRating.value = value;
 };
 </script>

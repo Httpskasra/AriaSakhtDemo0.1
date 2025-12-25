@@ -120,14 +120,14 @@
                 required />
             </div>
 
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium mb-1"
                 >شرح (اختیاری)</label
               >
               <textarea
                 v-model="creditForm.description"
                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
+            </div> -->
 
             <div
               v-if="errorMsg"
@@ -224,7 +224,9 @@ definePageMeta({
 });
 
 // Permissions
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.WALLETS);
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+  Resource.WALLETS
+);
 
 // Types
 type Wallet = {
@@ -342,7 +344,6 @@ const creditWalletHandler = async () => {
     errorMsg.value = "";
     await creditWallet({
       amount: creditForm.value.amount,
-      description: creditForm.value.description,
     });
     await fetchWallet();
     await fetchTransactions();
@@ -370,7 +371,6 @@ const debitWalletHandler = async () => {
     errorMsg.value = "";
     await debitWallet({
       amount: debitForm.value.amount,
-      description: debitForm.value.description,
     });
     await fetchWallet();
     await fetchTransactions();

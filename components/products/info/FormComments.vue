@@ -36,7 +36,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import type { Product } from "~/types/product";
 import { createRating } from "@/services/ratingService";
-// import Raiting from "./Raiting.vue";
+import Raiting from "~/components/userPannel/orders/Raiting.vue";
 
 const props = defineProps<{
   data: Product;
