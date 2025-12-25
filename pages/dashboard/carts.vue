@@ -184,24 +184,9 @@ function showNotification(message: string, type: "success" | "error") {
 async function fetchCart() {
   loading.value = true;
   try {
-    // مرحله 1: چک کردن وجود کارت فعال
-    let activeCartExists = false;
-    try {
-      const activeCartResponse = await $axios.get("/carts/active");
-      activeCartExists =
-        activeCartResponse.data &&
-        Object.keys(activeCartResponse.data).length > 0;
-    } catch (err: any) {
-      activeCartExists = false;
-    }
+    // دریافت کارت فعال
+    const { data } = await $axios.get("/carts/active");
 
-    // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
-    if (!activeCartExists) {
-      await $axios.post("/carts", {});
-    }
-
-    // مرحله 3: دریافت سبد پر‌شده
-    const { data } = await $axios.get("/carts/populated");
     // Map API response to CartItem format
     if (data.items && Array.isArray(data.items)) {
       cartItems.value = data.items
@@ -252,23 +237,7 @@ async function addToCart(
   priceAtAdd?: number
 ) {
   try {
-    // مرحله 1: چک کردن وجود کارت فعال
-    let activeCartExists = false;
-    try {
-      const activeCartResponse = await $axios.get("/carts/active");
-      activeCartExists =
-        activeCartResponse.data &&
-        Object.keys(activeCartResponse.data).length > 0;
-    } catch (err: any) {
-      activeCartExists = false;
-    }
-
-    // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
-    if (!activeCartExists) {
-      await $axios.post("/carts", {});
-    }
-
-    // مرحله 3: افزودن آیتم به سبد
+    // افزودن آیتم به سبد
     await $axios.post("/carts/items", {
       productId,
       quantity,
@@ -290,23 +259,7 @@ async function addToCart(
 
 async function updateQuantity(item: CartItem) {
   try {
-    // مرحله 1: چک کردن وجود کارت فعال
-    let activeCartExists = false;
-    try {
-      const activeCartResponse = await $axios.get("/carts/active");
-      activeCartExists =
-        activeCartResponse.data &&
-        Object.keys(activeCartResponse.data).length > 0;
-    } catch (err: any) {
-      activeCartExists = false;
-    }
-
-    // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
-    if (!activeCartExists) {
-      await $axios.post("/carts", {});
-    }
-
-    // مرحله 3: به‌روزرسانی تعداد محصول
+    // به‌روزرسانی تعداد محصول
     await $axios.post("/carts/items", {
       productId: item.productId,
       quantity: item.quantity,
