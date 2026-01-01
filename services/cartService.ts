@@ -33,9 +33,11 @@ export const getCartSummary = async () => {
 /**
  * ایجاد سبد خریدی جدید
  */
-export const createCart = async (cartData: { status: string }) => {
+export const createCart = async (
+  cartData: { status?: string; items?: any[] } = {}
+) => {
   const $axios = useApi();
-  return await $axios.post<Cart>("/carts", cartData);
+  return await $axios.post<Cart>("/carts", { items: [], ...cartData });
 };
 
 /**

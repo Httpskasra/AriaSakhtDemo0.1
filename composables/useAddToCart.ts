@@ -45,6 +45,7 @@ export const useAddToCart = () => {
         //console.log("کارت جدید ایجاد می‌شود...");
         await $axios.post("/carts", {
           userId: user.value.userId,
+          items: [],
         });
       }
 
