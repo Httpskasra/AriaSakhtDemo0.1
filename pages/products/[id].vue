@@ -124,30 +124,56 @@ const handleAddToCart = async (item: any) => {
     } catch (err: any) {
       // مرحله 2: اگر خطا داد، کارت جدید ایجاد کن
       if (err?.response?.status) {
-        await $axios.post("/carts", {
-          userId: user.value.userId,
-          items: [
-            {
-              productId: route.params.id,
-              quantity: item.quantity || 1,
-              priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-              companyId: item.companyId || data.value?.companyId,
-              variantId: item.variantId,
-              selectedVariant: item.selectedVariant,
-            },
-          ],
-        });
+        let shouldAddItem = false;
+        let activeCartExists = false;
 
-        // مرحله 3: دوباره سعی کردن برای افزودن آیتم
-        // await $axios.post("/carts/items", {
-        //   userId: user.value.userId,
-        //   productId: route.params.id,
-        //   quantity: item.quantity || 1,
-        //   priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-        //   companyId: item.companyId || data.value?.companyId,
-        //   variantId: item.variantId,
-        //   selectedVariant: item.selectedVariant,
-        // });
+        try {
+          const activeCartResponse = await $axios.get("/carts/active");
+          activeCartExists =
+            activeCartResponse.data &&
+            Object.keys(activeCartResponse.data).length > 0;
+        } catch (activeErr) {
+          activeCartExists = false;
+        }
+
+        if (activeCartExists) {
+          shouldAddItem = true;
+        } else {
+          try {
+            await $axios.post("/carts", {
+              userId: user.value.userId,
+              items: [
+                {
+                  productId: route.params.id,
+                  quantity: item.quantity || 1,
+                  priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+                  companyId: item.companyId || data.value?.companyId,
+                  variantId: item.variantId,
+                  selectedVariant: item.selectedVariant,
+                },
+              ],
+            });
+          } catch (createErr: any) {
+            const message = createErr?.response?.data?.message || "";
+            if (String(message).includes("duplicate key")) {
+              shouldAddItem = true;
+            } else {
+              throw createErr;
+            }
+          }
+        }
+
+        if (shouldAddItem) {
+          await $axios.post("/carts/items", {
+            userId: user.value.userId,
+            productId: route.params.id,
+            quantity: item.quantity || 1,
+            priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+            companyId: item.companyId || data.value?.companyId,
+            variantId: item.variantId,
+            selectedVariant: item.selectedVariant,
+          });
+        }
 
         successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
         setTimeout(() => {
@@ -407,3 +433,4 @@ const handleAddToCart = async (item: any) => {
   }
 }
 </style>
+
