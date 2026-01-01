@@ -78,9 +78,9 @@ const { data, loading, error, fetchProduct } = useProductById(
   computed(() => route.params.id as string)
 );
 
-onMounted(() => {
-  fetchUser();
-});
+// onMounted(() => {
+//   fetchUser();
+// });
 
 // تابع تلاش دوباره
 const retryFetch = () => {
@@ -433,4 +433,3 @@ const handleAddToCart = async (item: any) => {
   }
 }
 </style>
-

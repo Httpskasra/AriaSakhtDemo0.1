@@ -3,10 +3,10 @@
     <img class="mainPic" src="/productpage/communicaiton.png" alt="" />
     <div class="first">
       <h3>تجریه و نظرتان را با ما به اشتراک بگذارید</h3>
-      <input
+      <!-- <input
         v-model="form.title"
         type="text"
-        placeholder="عنوان نقد و بررسی شما" />
+        placeholder="عنوان نقد و بررسی شما" /> -->
       <div class="inner">
         <Raiting :size="raitingSize" @rate="form.rating = $event" />
         <span>میزان رضایت شما از 1تا5</span>
@@ -48,7 +48,7 @@ const errorMsg = ref("");
 const successMsg = ref("");
 
 const form = ref({
-  title: "",
+  // title: "",
   comment: "",
   rating: 0,
 });
@@ -70,10 +70,10 @@ const raitingSize = computed(() => (isMobile.value ? "18px" : "30px"));
 
 const submitReview = async () => {
   // بررسی validation
-  if (!form.value.title.trim()) {
-    errorMsg.value = "لطفا عنوان نقد و بررسی را وارد کنید";
-    return;
-  }
+  // if (!form.value.title.trim()) {
+  //   errorMsg.value = "لطفا عنوان نقد و بررسی را وارد کنید";
+  //   return;
+  // }
   if (!form.value.comment.trim()) {
     errorMsg.value = "لطفا متن نقد و بررسی را وارد کنید";
     return;
@@ -90,7 +90,7 @@ const submitReview = async () => {
   try {
     await createRating({
       productId: props.data.id || props.data._id || "",
-      title: form.value.title,
+      // title: form.value.title,
       comment: form.value.comment,
       rating: form.value.rating,
     });
@@ -99,7 +99,7 @@ const submitReview = async () => {
 
     // ریست فرم
     form.value = {
-      title: "",
+      // title: "",
       comment: "",
       rating: 0,
     };

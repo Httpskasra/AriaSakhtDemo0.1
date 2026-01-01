@@ -5,7 +5,7 @@ export type RatingStatus = "pending" | "approved" | "rejected";
 export interface CreateRatingDto {
   productId: string;
   rating: number; // 1-5
-  title: string;
+  // title: string;
   comment: string;
 }
 
