@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import type { Product } from "~/types/product";
 import { useProductById } from "~/composables/useGetProductByID";
@@ -71,12 +71,16 @@ import RelatedProducts from "~/components/products/info/RelatedProducts.vue";
 
 const route = useRoute();
 const successMessage = ref<string | null>(null);
-const { user } = useUser();
+const { user, fetchUser } = useUser();
 
 // دریافت اطلاعات محصول
 const { data, loading, error, fetchProduct } = useProductById(
   computed(() => route.params.id as string)
 );
+
+onMounted(() => {
+  fetchUser();
+});
 
 // تابع تلاش دوباره
 const retryFetch = () => {
@@ -89,6 +93,10 @@ const handleAddToCart = async (item: any) => {
     const { $axios } = useNuxtApp();
 
     // بررسی احراز هویت
+    if (!user.value?.userId) {
+      await fetchUser();
+    }
+
     if (!user.value?.userId) {
       successMessage.value = "❌ خطا: لطفا وارد سایت شوید";
       setTimeout(() => {
@@ -118,6 +126,7 @@ const handleAddToCart = async (item: any) => {
       if (err?.response?.status) {
         await $axios.post("/carts", {
           userId: user.value.userId,
+          items: [],
         });
 
         // مرحله 3: دوباره سعی کردن برای افزودن آیتم
@@ -389,3 +398,4 @@ const handleAddToCart = async (item: any) => {
   }
 }
 </style>
+

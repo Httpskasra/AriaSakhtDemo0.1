@@ -5,6 +5,14 @@ export const useUser = () => {
   const user = useState<User | null>("user", () => null);
   
 
+  const normalizeUser = (data: any): User => {
+    const rawId = data?.userId || data?.id || data?._id || "";
+    return {
+      ...data,
+      userId: rawId ? String(rawId) : "",
+    } as User;
+  };
+
   const setUser = (data: User) => {
     user.value = data;
   };
@@ -22,7 +30,7 @@ export const useUser = () => {
     try {
       const { $axios } = useNuxtApp();
       const response = await $axios.get<User>("/auth/me");
-      setUser(response.data);
+      setUser(normalizeUser(response.data));
     } catch (err) {
       console.error("Failed to fetch user:", err);
       clearUser();
