@@ -32,7 +32,7 @@ import { ref, onMounted } from "vue";
 
 useHead({
   // title: " صفحه اصلی | آریاساخت",
-  title: "27606250",
+  title: "65241387",
 });
 
 const offers = ref<Array<any>>([]);
