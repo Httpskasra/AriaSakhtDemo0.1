@@ -1,20 +1,13 @@
-<script setup lang="ts">
-// Common layout for the marketplace
-</script>
-
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-50">
-    <!-- Header Component (from components/Header/Header.vue) -->
+  <div class="min-h-screen flex flex-col">
     <Header />
-
-    <main class="flex-grow container mx-auto px-4 py-6">
+    <main class="flex-grow">
       <slot />
     </main>
-
-    <!-- Footer Component (from components/footer/Footer.vue) -->
     <Footer />
-    
-    <!-- Support Chat (from components/caht/SupportChatClient.vue) -->
-    <SupportChatClient />
   </div>
 </template>
+
+<script setup>
+// Main layout logic
+</script>

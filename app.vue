@@ -1,42 +1,18 @@
 <template>
-  <div class="app-container min-h-screen flex flex-col font-yekan">
-    <UApp>
-      <Header />
-      
-      <main class="flex-grow">
-        <NuxtPage />
-      </main>
-
-      <Footer />
-      
-      <!-- Persistent Support Chat if authenticated -->
-      <SupportChatClient v-if="isAuthenticated" />
-      
-      <UNotifications />
-    </UApp>
+  <div dir="rtl">
+    <NuxtLoadingIndicator color="#1673ff" :height="3" />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+    <UNotifications />
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted } from 'vue';
-import { useUser } from '~/composables/useUser';
-
-const { fetchUser, isAuthenticated } = useUser();
-
-// F3 - Ensure user state is hydrated on initial load regardless of route
-onMounted(async () => {
-  await fetchUser();
-});
+<script setup>
+// Global initialization and meta tags
+useHead({
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk} - تجاریس` : 'تجاریس - پلتفرم صنعتی بیست‌وبی';
+  }
+})
 </script>
-
-<style>
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.2s;
-}
-.page-enter-from,
-.page-leave-to {
-  opacity: 0;
-  filter: blur(1rem);
-}
-</style>

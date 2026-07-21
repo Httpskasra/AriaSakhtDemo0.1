@@ -1,67 +1,124 @@
 <script setup lang="ts">
-import { useUser } from "~/composables/useUser";
-import { formatPhoneForDisplay } from "~/utils/PhoneNumber";
+const { user, isAuthenticated } = useUser();
+const cartBump = useState('cart-bump');
 
-const { user, isUserLoading, isAuthenticated, clearUser } = useUser();
-const { setStep } = useAuthStep();
-
-const handleLogout = () => {
-  const authStore = useAuthStore();
-  authStore.clearTokens();
-  clearUser();
-};
+const navLinks = [
+  { label: 'صفحه اصلی', to: '/' },
+  { label: 'فروشگاه', to: '/products' },
+  { label: 'تأمین‌کنندگان', to: '/suppliers' },
+  { label: 'مجله صنعتی', to: '/blog' },
+];
 </script>
 
 <template>
-  <!-- Desktop Header: Optimized for screen widths 1024px and above -->
-  <header class="hidden lg:block w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between gap-8 h-20">
-      <!-- Logo -->
-      <NuxtLink to="/" class="shrink-0 flex items-center gap-2">
-        <NuxtImg src="https://picsum.photos/seed/tejaris-logo/120/40" width="120" height="40" alt="تجاریس" />
-      </NuxtLink>
-
-      <!-- Search Area -->
-      <div class="flex-1 max-w-2xl">
-        <SearchBar />
+  <div class="flex items-center justify-between gap-8">
+    <!-- Brand -->
+    <NuxtLink to="/" class="flex items-center gap-2 shrink-0">
+      <div class="w-10 h-10 bg-brand-blue rounded-brand flex items-center justify-center text-white shadow-lg">
+        <UIcon name="i-lucide-building-2" class="size-6" />
       </div>
+      <span class="text-2xl font-bold tracking-tight text-slate-900">تجاریس</span>
+    </NuxtLink>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-6 shrink-0 h-10">
-        <!-- Auth Loading Guard (Fixed F1) -->
-        <div v-if="isUserLoading" class="w-32 h-10 bg-gray-50 animate-pulse rounded-lg"></div>
+    <!-- Search (Centered & Powerful) -->
+    <div class="flex-1 max-w-2xl">
+      <SearchBar />
+    </div>
 
-        <template v-else>
-          <!-- User Profile Dropdown -->
-          <div v-if="isAuthenticated && user" class="flex items-center gap-4">
-            <UDropdownMenu :items="[
-              [{ label: 'پنل کاربری', icon: 'i-lucide-layout-dashboard', to: '/dashboard' }],
-              [{ label: 'سفارش‌های من', icon: 'i-lucide-shopping-bag', to: '/dashboard/orders' }],
-              [{ label: 'اعلان‌ها', icon: 'i-lucide-bell', to: '/dashboard/notifications' }],
-              [{ label: 'خروج', icon: 'i-lucide-log-out', color: 'error', onSelect: handleLogout }]
-            ]">
-              <UButton variant="ghost" color="neutral" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50">
-                <UAvatar src="https://picsum.photos/seed/user/32/32" size="sm" />
-                <div class="text-right hidden xl:block">
-                  <p class="text-xs font-bold text-gray-900 leading-none">{{ user.profile?.firstName || 'کاربر تجاریس' }}</p>
-                  <p class="text-[10px] text-gray-500 mt-1">{{ formatPhoneForDisplay(user.phoneNumber) }}</p>
-                </div>
-                <UIcon name="i-lucide-chevron-down" class="size-4 text-gray-400" />
-              </UButton>
-            </UDropdownMenu>
+    <!-- Actions -->
+    <div class="flex items-center gap-4 shrink-0 font-num">
+      <div class="h-10 w-px bg-slate-200 mx-2 hidden xl:block"></div>
 
-            <UButton to="/cart" color="neutral" variant="ghost" class="relative group">
-              <UIcon name="i-lucide-shopping-cart" class="size-6 text-gray-600 group-hover:text-primary-600" />
-              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">۳</span>
-            </UButton>
-          </div>
+      <!-- User -->
+      <NuxtLink v-if="isAuthenticated" to="/dashboard" class="flex items-center gap-2 group">
+        <UAvatar
+          :src="user?.profile?.avatar"
+          :alt="user?.profile?.firstName || 'User'"
+          size="sm"
+          class="ring-2 ring-transparent group-hover:ring-brand-blue transition-all"
+        />
+        <div class="hidden xl:block text-right">
+          <p class="text-xs text-slate-500 leading-none mb-1">خوش آمدید</p>
+          <p class="text-sm font-semibold text-slate-900 leading-none">
+            {{ user?.profile?.firstName || 'پنل کاربری' }}
+          </p>
+        </div>
+      </NuxtLink>
+      
+      <UButton
+        v-else
+        to="/auth/signin"
+        variant="ghost"
+        color="neutral"
+        class="font-semibold text-slate-700"
+      >
+        ورود | ثبت‌نام
+      </UButton>
 
-          <!-- Guest Login -->
-          <UButton v-else @click="setStep('signin')" color="primary" class="rounded-xl px-6 font-bold shadow-md shadow-primary-100">
-            ورود یا ثبت‌نام
-          </UButton>
-        </template>
+      <!-- Cart -->
+      <NuxtLink to="/cart" class="relative group">
+        <UButton
+          variant="soft"
+          color="neutral"
+          square
+          class="rounded-brand bg-slate-100 group-hover:bg-brand-blue/10 transition-all"
+        >
+          <UIcon name="i-lucide-shopping-cart" class="size-6 text-slate-700 group-hover:text-brand-blue" />
+        </UButton>
+        <transition name="scale">
+          <UBadge
+            v-if="cartBump"
+            :key="cartBump"
+            size="xs"
+            color="primary"
+            class="absolute -top-1 -right-1 ring-2 ring-white animate-bounce"
+          >
+            {{ cartBump }}
+          </UBadge>
+        </transition>
+      </NuxtLink>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Row -->
+  <nav class="mt-4 flex items-center gap-6">
+    <div class="relative group">
+      <UButton
+        color="primary"
+        variant="soft"
+        class="font-semibold gap-2"
+        icon="i-lucide-menu"
+      >
+        دسته‌بندی کالاها
+      </UButton>
+      <!-- Reusable Category Menu component could go here -->
+    </div>
+    
+    <div class="flex items-center gap-6">
+      <NuxtLink 
+        v-for="link in navLinks" 
+        :key="link.to"
+        :to="link.to"
+        class="text-sm font-medium text-slate-600 hover:text-brand-blue transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-0.5 after:bg-brand-blue hover:after:w-full after:transition-all"
+      >
+        {{ link.label }}
+      </NuxtLink>
+    </div>
+    
+    <div class="ms-auto flex items-center gap-4 text-sm text-slate-500">
+      <div class="flex items-center gap-1">
+        <UIcon name="i-lucide-phone-call" class="size-4" />
+        <span>۰۲۱ - ۴۵۶۷۸</span>
       </div>
     </div>
-  </header>
+  </nav>
 </template>
+
+<style scoped>
+.scale-enter-active, .scale-leave-active {
+  transition: transform 0.2s ease;
+}
+.scale-enter-from, .scale-leave-to {
+  transform: scale(0);
+}
+</style>

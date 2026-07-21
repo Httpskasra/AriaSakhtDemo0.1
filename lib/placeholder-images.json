@@ -5,5 +5,11 @@
   "category_tools": "https://picsum.photos/seed/tools/200/200",
   "product_placeholder": "https://picsum.photos/seed/prod/400/400",
   "banner_ad": "https://picsum.photos/seed/ad/600/300",
-  "industrial_bg": "https://picsum.photos/seed/ind/1920/600"
+  "industrial_bg": "https://picsum.photos/seed/ind/1920/600",
+  "blog_1": "https://picsum.photos/seed/blog1/600/400",
+  "blog_2": "https://picsum.photos/seed/blog2/600/400",
+  "blog_3": "https://picsum.photos/seed/blog3/600/400",
+  "user_1": "https://picsum.photos/seed/u1/100/100",
+  "user_2": "https://picsum.photos/seed/u2/100/100",
+  "user_3": "https://picsum.photos/seed/u3/100/100"
 }
