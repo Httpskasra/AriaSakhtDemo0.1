@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "../../components";
+@source "../../pages";
+@source "../../layouts";
+@source "../../composables";
+@source "../../plugins";
+@source "../../app.vue";
+@source "../../error.vue";
 
 :root {
   --color-primary: #1673ff;
