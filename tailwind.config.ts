@@ -12,12 +12,17 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        yekan: ['"iran-yekan-num-Regular"', "sans-serif"], // کلاس سفارشی
-        sans: ['"iran-yekan-num-Regular"', "sans-serif"], // جایگزین پیش‌فرض
+        yekan: ['"iran-yekan-num-Regular"', "sans-serif"],
+        sans: ['"iran-yekan-num-Regular"', "sans-serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/aspect-ratio'),
+    require('@tailwindcss/container-queries'),
+  ],
 };
 
 export default config;

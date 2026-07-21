@@ -1,96 +1,67 @@
 <template>
-  <NuxtLayout>
-    <div class="landing-container">
-      <br />
-      <Banners />
-      <br />
-      <!-- <PriceList /> -->
-      <br />
-      <MostPopular :products="topSales" :loading="loadingTopSales" />
-      <br />
-      <PopularCategory />
-      <br />
-      <FullRecommend :products="offers" :loading="loadingOffers" />
-      <br />
-      <FullRecommend :products="products" :loading="loadingProducts" />
-      <br />
-      <Usefuls :products="products" :loading="loadingProducts" />
-      <br />
-      <FullRecommend :products="offers" :loading="loadingOffers" />
-      <br />
-      <!-- <Blog /> -->
-      <br />
-      <br />
+  <div>
+    <!-- Hero Banner -->
+    <Banner />
 
-      <ConnectUs />
+    <!-- Main Content Container -->
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex flex-col lg:flex-row gap-8">
+        
+        <!-- Sidebar Filters -->
+        <aside class="w-full lg:w-1/4 hidden lg:block">
+          <FilterSidebar />
+          <div class="mt-8">
+            <Banners />
+          </div>
+        </aside>
+
+        <!-- Main Product Sections -->
+        <div class="w-full lg:w-3/4 space-y-12">
+          <!-- Top Categories -->
+          <section>
+            <PopularCategory />
+          </section>
+
+          <!-- Featured Offers -->
+          <section>
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800">پیشنهادات ویژه</h2>
+              <NuxtLink to="/products" class="text-green-600 hover:underline">مشاهده همه</NuxtLink>
+            </div>
+            <FullRecommend />
+          </section>
+
+          <!-- Most Popular Products -->
+          <section>
+            <MostPopular />
+          </section>
+
+          <!-- Middle Ad Banners -->
+          <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SingleBanner />
+            <SingleBanner />
+          </section>
+
+          <!-- Blog and News -->
+          <section>
+            <Blog />
+          </section>
+        </div>
+      </div>
     </div>
-  </NuxtLayout>
+
+    <!-- Bottom Marketing Sections -->
+    <Usefuls />
+    <ConnectUs />
+  </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
-
+<script setup>
+// Tejaris Landing Page
 useHead({
-  // title: " صفحه اصلی | آریاساخت",
-  title: "65241387",
-});
-
-const offers = ref<Array<any>>([]);
-const topSales = ref<Array<any>>([]);
-const products = ref<Array<any>>([]);
-
-const loadingOffers = ref(true);
-const loadingTopSales = ref(true);
-const loadingProducts = ref(true);
-
-const nuxtApp = useNuxtApp() as any;
-const { $axios } = useNuxtApp();
-
-async function loadLists() {
-  try {
-    // const offset = 0;
-    let page = 1;
-    let limit = 10;
-    const [pRes, oRes, tRes] = await Promise.all([
-      $axios
-        .get("/products", { params: { page, limit } })
-        .catch((e: any) => ({ data: [] })),
-      $axios
-        // .get("/products", { params: { page, limit } })
-        .get("/products/offers", { params: { page, limit } })
-        .catch((e: any) => ({ data: [] })),
-      $axios
-        .get("/products/top-sales", { params: { page, limit } })
-        // .get("/products", { params: { page, limit } })
-        .catch((e: any) => ({ data: [] })),
-    ]);
-
-    products.value = pRes.data || [];
-    offers.value = oRes.data || [];
-    topSales.value = tRes.data || [];
-  } catch (e) {
-    // keep arrays empty on failure
-    console.error("Failed to load landing lists", e);
-  } finally {
-    loadingOffers.value = false;
-    loadingTopSales.value = false;
-    loadingProducts.value = false;
-  }
-}
-
-onMounted(() => {
-  loadLists();
-});
+  title: 'تجاریس - بازار آنلاین تجهیزات صنعتی',
+  meta: [
+    { name: 'description', content: 'مرکز خرید و فروش کالاها و خدمات صنعتی، ساختمانی و ابزارآلات در سراسر ایران' }
+  ]
+})
 </script>
-
-<style scoped>
-@media (max-width: 767px) {
-  .landing-container {
-    width: 100%;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-}
-</style>

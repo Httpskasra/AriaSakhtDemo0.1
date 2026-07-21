@@ -1,46 +1,20 @@
-<template>
-  <div>
-    <Banner class="banner" :isScrolled="isScrolled" />
-    <Header
-      :isScrolled="isScrolled"
-      class="header"
-      :menuType="menueType.role" />
-    <div
-      class="w-full mx-auto h-full"
-      :class="isScrolled ? 'relative bottom-15' : 'p-0'">
-      <slot />
-    </div>
+<script setup lang="ts">
+// Common layout for the marketplace
+</script>
 
+<template>
+  <div class="min-h-screen flex flex-col bg-gray-50">
+    <!-- Header Component (from components/Header/Header.vue) -->
+    <Header />
+
+    <main class="flex-grow container mx-auto px-4 py-6">
+      <slot />
+    </main>
+
+    <!-- Footer Component (from components/footer/Footer.vue) -->
     <Footer />
+    
+    <!-- Support Chat (from components/caht/SupportChatClient.vue) -->
+    <SupportChatClient />
   </div>
 </template>
-
-<script setup lang="ts">
-import type { MenuType } from "~/types/menu";
-import { useRoute } from "vue-router"; // یا در Nuxt از useRoute استفاده کنید
-import { ref, computed, onMounted } from "vue";
-const route = useRoute();
-const menueType = ref<MenuType>({
-  role: "default",
-});
-const isScrolled = ref(false);
-
-// بررسی اینکه آیا صفحه فعلی صفحه اصلی است
-const isHomePage = computed(() => route.path === "/");
-
-onMounted(() => {
-  // اگر صفحه اصلی باشد، رفتار پویا برای اسکرول اعمال شود
-  if (isHomePage.value) {
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 100) {
-        isScrolled.value = true;
-      } else {
-        isScrolled.value = false;
-      }
-    });
-  } else {
-    // در صفحات دیگر، isScrolled همیشه true باشد
-    isScrolled.value = true;
-  }
-});
-</script>

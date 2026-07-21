@@ -1,21 +1,27 @@
 <template>
-  <div id="app">
-    <div class="main-content">
-      <!-- <NuxtLoadingIndicator /> -->
+  <div class="min-h-screen bg-gray-50 flex flex-col">
+    <Header />
+    <main class="flex-grow">
       <NuxtPage />
-    </div>
+    </main>
+    <Footer />
+    <UNotifications />
+    <SupportChatClient />
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+// Main application layout assembly
+</script>
 
-<style scoped>
-#app {
-  display: flex;
-  flex-direction: column;
+<style>
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.2s;
 }
-
-.main-content {
-  margin-top: 190px; /* Adjust this value based on the combined height of the banner and navigation */
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  filter: blur(1rem);
 }
 </style>

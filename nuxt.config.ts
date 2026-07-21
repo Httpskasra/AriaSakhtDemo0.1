@@ -1,21 +1,41 @@
 import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
-  // @ts-ignore
-  server: {
-    host: "0.0.0.0",
-    port: 3000,
+  ssr: true,
+  devtools: { enabled: false },
+
+  experimental: {
+    appManifest: false,
+    payloadExtraction: false
   },
-  compatibilityDate: "2025-05-15",
-  devtools: { enabled: true },
+
+  nitro: {
+    compressPublicAssets: true,
+    timing: true
+  },
+
   vite: {
     ssr: {
-      noExternal: ["axios", "form-data"],
+      noExternal: ["axios", "form-data", "@nuxt/ui", "@nuxt/icon", "vue"],
     },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true
+      },
+      chunkSizeWarningLimit: 2000
+    },
+    optimizeDeps: {
+      include: ['vue', '@nuxt/ui']
+    }
   },
+
+  build: {
+    transpile: ["vue", "@nuxt/ui", "@nuxt/icon", "ofetch", "hookable"]
+  },
+
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE_URL || "https://tejaris.ir/api",
+      apiBase: process.env.API_BASE_URL || "http://localhost:3001/api",
     },
   },
 
@@ -25,20 +45,29 @@ export default defineNuxtConfig({
   components: [
     {
       path: "~/components",
-      pathPrefix: false,
+      pathPrefix: false
     },
   ],
 
-  app: {
-    head: {
-      link: [{ rel: "icon", type: "image/png", href: "/logo/logo.png" }],
-      script: [
-        {
-          type: "text/javascript",
-          innerHTML: `!function(){var i="GFQj9A",a=window,d=document;function g(){var g=d.createElement("script"),s="https://www.goftino.com/widget/"+i,l=localStorage.getItem("goftino_"+i);g.async=!0,g.src=l?s+"?o="+l:s;d.getElementsByTagName("head")[0].appendChild(g);}"complete"===d.readyState?g():a.attachEvent?a.attachEvent("onload",g):a.addEventListener("load",g,!1);}();`,
-          tagPosition: "bodyClose",
-        },
-      ],
-    },
+  colorMode: {
+    preference: 'light'
   },
+
+  app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
+    head: {
+      htmlAttrs: {
+        dir: 'rtl',
+        lang: 'fa'
+      },
+      title: 'تجاریس - پلتفرم صنعتی بیست‌وبی',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'مرکز مبادلات کالا و خدمات صنعتی کشور' }
+      ]
+    }
+  },
+
+  compatibilityDate: "2026-07-21"
 });
