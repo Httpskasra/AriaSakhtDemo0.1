@@ -1,17 +1,14 @@
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useRoute, useRouter } from "#app";
 import {
-  advancedSearchProducts,
   type AdvancedSearchParams,
-  type PaginatedResponse,
 } from "~/services/productService";
-import type { Product } from "~/types/product";
 
 export const useProductSearch = () => {
   const route = useRoute();
   const router = useRouter();
 
-  /* ---------- محاسبه مقادیر از query string ---------- */
+  /* ---------- Derived values from query string ---------- */
   const page = computed(() => Number(route.query.page || 1));
   const limit = computed(() => Number(route.query.limit || 12));
   const sortOption = computed(() => (route.query.sort as string) || "");
@@ -26,7 +23,7 @@ export const useProductSearch = () => {
     return cat ? [cat as string] : [];
   });
 
-  /* ---------- ساخت پارامتر برای advanced-search ---------- */
+  /* ---------- Build parameters for API call ---------- */
   const buildParams = (): AdvancedSearchParams => {
     const params: AdvancedSearchParams = {
       page: page.value,
@@ -42,62 +39,31 @@ export const useProductSearch = () => {
     return params;
   };
 
-  /* ---------- تابع برای آپدیت query string ---------- */
+  /* ---------- Update query string while preserving existing values ---------- */
   const updateQueryString = (newParams: Record<string, any> = {}) => {
-    const query: Record<string, any> = {};
+    // Start with a clean slate of current query values
+    const query: Record<string, any> = { ...route.query };
 
-    // جستجو
-    if (newParams.query !== undefined) {
-      if (newParams.query) query.query = newParams.query;
-    } else if (searchQuery.value) {
-      query.query = searchQuery.value;
-    }
-
-    // قیمت
-    if (newParams.maxPrice !== undefined) {
-      if (newParams.maxPrice) query.maxPrice = newParams.maxPrice;
-    } else if (maxPrice.value) {
-      query.maxPrice = maxPrice.value;
-    }
-
-    // شرکت
-    if (newParams.companyName !== undefined) {
-      if (newParams.companyName) query.companyName = newParams.companyName;
-    } else if (companyName.value) {
-      query.companyName = companyName.value;
-    }
-
-    // دسته‌بندی - اگر خالی است، حذف کن
-    if (newParams.categoryIds !== undefined) {
-      // اگر آرایه خالی است، نگنجش در query
-      if (
-        newParams.categoryIds &&
-        Array.isArray(newParams.categoryIds) &&
-        newParams.categoryIds.length > 0
-      ) {
-        query.categoryIds = newParams.categoryIds;
+    // Explicitly handle each field to allow clearing or updating
+    const updateField = (key: string) => {
+      if (newParams[key] !== undefined) {
+        if (newParams[key] === null || newParams[key] === "" || (Array.isArray(newParams[key]) && newParams[key].length === 0)) {
+          delete query[key];
+        } else {
+          query[key] = newParams[key];
+        }
       }
-      // اگر undefined یا null است، حذف کن (قبلا هم وجود نداشته)
-    } else if (categoryIds.value.length > 0) {
-      // اگر newParams تعریف نشده، از قیمت قدیم استفاده کن
-      query.categoryIds = categoryIds.value;
-    }
+    };
 
-    // سورت
-    if (newParams.sort !== undefined) {
-      if (newParams.sort) query.sort = newParams.sort;
-    } else if (sortOption.value) {
-      query.sort = sortOption.value;
-    }
+    ['query', 'maxPrice', 'companyName', 'categoryIds', 'sort'].forEach(updateField);
 
-    // صفحه (پیش‌فرض صفحه 1 هنگام تغییر فیلترها)
+    // Reset to page 1 if any filter changed, unless page is explicitly provided
     query.page = newParams.page ?? 1;
-    query.limit = limit.value;
+    query.limit = newParams.limit ?? limit.value;
 
     router.replace({ query });
   };
 
-  /* ---------- رویدادهای جستجو ---------- */
   const onFiltersFromSidebar = (filters: {
     maxPrice?: number;
     companyName?: string;
@@ -107,12 +73,11 @@ export const useProductSearch = () => {
       maxPrice: filters.maxPrice,
       companyName: filters.companyName,
       categoryIds: filters.categoryIds,
-      page: 1,
     });
   };
 
   const onSortChange = (value: string) => {
-    updateQueryString({ sort: value, page: 1 });
+    updateQueryString({ sort: value });
   };
 
   const changePage = (newPage: number) => {

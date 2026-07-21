@@ -5,6 +5,7 @@ import { useUser } from "~/composables/useUser";
 export const useAddToCart = () => {
   const { $axios } = useNuxtApp();
   const { user } = useUser();
+  const toast = useToast();
   const loading = ref(false);
   const error = ref<string | null>(null);
   const success = ref(false);
@@ -34,15 +35,12 @@ export const useAddToCart = () => {
         activeCartExists =
           activeCartResponse.data &&
           Object.keys(activeCartResponse.data).length > 0;
-        //console.log("کارت فعال موجود است:", activeCartExists);
       } catch (err: any) {
-        //console.log("کارت فعالی یافت نشد، باید کارت جدید ایجاد کنیم");
         activeCartExists = false;
       }
 
       // مرحله 2: اگر کارت فعالی وجود نداشت، کارت جدید ایجاد کن
       if (!activeCartExists) {
-        //console.log("کارت جدید ایجاد می‌شود...");
         await $axios.post("/carts", {
           userId: user.value.userId,
           items: [],
@@ -59,14 +57,28 @@ export const useAddToCart = () => {
         companyId: cartItem.companyId,
         priceAtAdd: cartItem.priceAtAdd,
       });
+      
       success.value = true;
-      //console.log("محصول به سبد خریدی افزوده شد:", response.data);
+      
+      toast.add({
+        title: 'موفقیت',
+        description: 'محصول با موفقیت به سبد خرید اضافه شد',
+        color: 'success'
+      });
+
       return response.data;
     } catch (err: any) {
       error.value =
         err.response?.data?.message ||
         err.message ||
-        "خطا در افزودن محصول به سبد خریدی";
+        "خطا در افزودن محصول به سبد خرید";
+      
+      toast.add({
+        title: 'خطا',
+        description: error.value || 'مشکلی در افزودن به سبد خرید پیش آمد',
+        color: 'red'
+      });
+      
       console.error("خطا:", error.value);
     } finally {
       loading.value = false;
@@ -79,9 +91,18 @@ export const useAddToCart = () => {
   const removeFromCart = async (productId: string) => {
     try {
       await $axios.delete(`/carts/items/${productId}`);
+      toast.add({
+        description: 'محصول از سبد خرید حذف شد',
+        color: 'success'
+      });
       return true;
     } catch (err: any) {
       error.value = err?.response?.data?.message || "خطا در حذف محصول";
+      toast.add({
+        title: 'خطا',
+        description: error.value,
+        color: 'red'
+      });
       throw err;
     }
   };
@@ -92,9 +113,18 @@ export const useAddToCart = () => {
   const clearCart = async () => {
     try {
       await $axios.delete("/carts/clear");
+      toast.add({
+        description: 'سبد خرید با موفقیت خالی شد',
+        color: 'success'
+      });
       return true;
     } catch (err: any) {
       error.value = err?.response?.data?.message || "خطا در خالی کردن سبد";
+      toast.add({
+        title: 'خطا',
+        description: error.value,
+        color: 'red'
+      });
       throw err;
     }
   };
@@ -145,9 +175,19 @@ export const useAddToCart = () => {
     try {
       const response = await $axios.post("/carts/checkout");
       success.value = true;
+      toast.add({
+        title: 'موفقیت',
+        description: 'سفارش شما با موفقیت ثبت شد',
+        color: 'success'
+      });
       return response.data;
     } catch (err: any) {
       error.value = err?.response?.data?.message || "خطا در تسویه حساب";
+      toast.add({
+        title: 'خطا',
+        description: error.value,
+        color: 'red'
+      });
       throw err;
     }
   };

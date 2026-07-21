@@ -1,113 +1,27 @@
+<script setup lang="ts">
+const banners = [
+  { id: 1, img: 'https://picsum.photos/seed/banner1/1920/600', title: 'تجهیزات صنعتی هوشمند', sub: 'ارتقای بهره‌وری با تکنولوژی نوین' },
+  { id: 2, img: 'https://picsum.photos/seed/banner2/1920/600', title: 'تأمین قطعات زیرساختی', sub: 'بالاترین کیفیت، کمترین زمان' }
+];
+</script>
+
 <template>
-  <section class="all">
-    <div class="category">
-      <CategorySec />
-    </div>
-    <div class="col-banners">
-      <div class="v-banner">
-        <SingleBanner imgSrc="/banner/v-banner.webp" />
+  <div class="relative w-full overflow-hidden bg-gray-100">
+    <UCarousel v-slot="{ item }" :items="banners" :ui="{ item: 'basis-full' }" arrows indicators class="w-full">
+      <div class="relative w-full h-[300px] md:h-[500px]">
+        <NuxtImg
+          :src="item.img"
+          class="absolute inset-0 w-full h-full object-cover"
+          alt="Banner"
+        />
+        <div class="absolute inset-0 bg-black/30 flex items-center justify-center text-center px-4">
+          <div>
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">{{ item.title }}</h2>
+            <p class="text-lg md:text-xl text-white/90">{{ item.sub }}</p>
+            <UButton size="xl" color="primary" class="mt-8 px-10">مشاهده محصولات</UButton>
+          </div>
+        </div>
       </div>
-
-      <div class="v-banner">
-        <SingleBanner imgSrc="/banner/v-banner.webp" />
-      </div>
-    </div>
-    <div class="h-banner">
-      <SingleBanner imgSrc="/banner/hBanner.webp" />
-    </div>
-  </section>
+    </UCarousel>
+  </div>
 </template>
-<script setup></script>
-<style scoped>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-.all {
-  width: 90%;
-  height: 450px;
-  margin: auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.all div {
-  margin-right: 10px;
-}
-.col-banners {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  flex-basis: 50%;
-}
-.h-banner {
-  flex-basis: 20%;
-  height: 100%;
-}
-.v-banner {
-  width: 100%;
-  height: 30%;
-}
-.v-banner:first-child {
-  height: 65%;
-}
-.category {
-  position: relative;
-  flex-basis: 22%;
-  height: 100%;
-  width: 100%;
-  padding: 0;
-}
-
-/* --- Mobile Styles --- */
-@media (max-width: 600px) {
-  .all {
-    flex-direction: column;
-    height: auto;
-    align-items: stretch;
-    justify-content: center;
-    width: 100%;
-    padding: 0;
-  }
-  .category {
-    order: -1;
-    width: 90%;
-    flex-basis: unset;
-    height: auto;
-    margin-bottom: 16px;
-    box-shadow: none;
-
-    padding: 0;
-  }
-  .col-banners,
-  .h-banner {
-    width: 90%;
-    flex-basis: unset;
-    height: auto;
-    margin: 0 auto;
-    padding: 0;
-  }
-  .col-banners {
-    flex-direction: row;
-    gap: 8px;
-    margin-bottom: 8px;
-    height: auto;
-    justify-content: space-around;
-    align-items: center;
-    padding-left: 10px;
-  }
-  .v-banner {
-    width: 50%;
-    height: auto;
-  }
-
-  .h-banner {
-    margin-top: 0;
-    width: 87%;
-    margin: 0 auto;
-    padding-right: 10px;
-  }
-}
-</style>

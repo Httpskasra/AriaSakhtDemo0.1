@@ -42,6 +42,18 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/icon", "@nuxt/image", "@nuxt/ui", "@pinia/nuxt"],
 
+  image: {
+    domains: ['picsum.photos', 'tejaris.ir'],
+    remotePatterns: [
+      {
+        hostname: 'picsum.photos',
+      },
+      {
+        hostname: '**.tejaris.ir',
+      }
+    ]
+  },
+
   components: [
     {
       path: "~/components",

@@ -1,110 +1,76 @@
 <template>
-  <div class="container">
-    <div class="inventory">
-      <div class="title"><p>موجودی کیف پول :</p></div>
-      <div class="price">
-        <p>185,555,115</p>
-        <span>ریال</span>
+  <div class="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2 text-gray-500">
+        <UIcon name="i-lucide-wallet" class="size-6 text-green-500" />
+        <span class="text-sm font-bold">موجودی فعلی</span>
+      </div>
+      <div v-if="loading" class="h-8 w-24 bg-gray-200 animate-pulse rounded-md"></div>
+      <div v-else class="flex items-baseline gap-1">
+        <span class="text-2xl font-black text-gray-900 tracking-tighter">{{ formatNumber(wallet?.balance || 0) }}</span>
+        <span class="text-xs font-bold text-gray-400">{{ currencyLabel }}</span>
       </div>
     </div>
-    <div class="btns">
-      <button class="charge">
-        شارژ کیف پول<img src="/icons/plus.png" alt="" />
-      </button>
-      <button class="drawal">
-        برداشت از کیف پول<img src="/icons/minus.png" alt="" />
-      </button>
+
+    <!-- Blocked Balance indicator -->
+    <div v-if="wallet?.blockedBalance > 0" class="mb-4 p-2 bg-amber-50 rounded-lg flex items-center justify-between">
+      <span class="text-[10px] text-amber-700 font-medium flex items-center gap-1">
+        <UIcon name="i-lucide-lock" class="size-3" />
+        مبلغ در انتظار تایید (مسدود شده)
+      </span>
+      <span class="text-xs font-bold text-amber-900">{{ formatNumber(wallet.blockedBalance) }} {{ currencyLabel }}</span>
+    </div>
+
+    <div class="flex gap-2">
+      <UButton
+        block
+        color="primary"
+        variant="solid"
+        size="md"
+        class="font-bold"
+        icon="i-lucide-plus-circle"
+        @click="openChargeModal"
+      >
+        افزایش موجودی
+      </UButton>
+      <UButton
+        block
+        color="gray"
+        variant="soft"
+        size="md"
+        class="font-bold"
+        icon="i-lucide-history"
+        @click="navigateTo('/dashboard/transactions')"
+      >
+        تراکنش‌ها
+      </UButton>
     </div>
   </div>
 </template>
-<style scoped>
-.container {
-  width: 80%;
-  margin: auto;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  text-align: center;
-}
-.inventory {
-  display: flex;
-  align-items: center;
-}
-.title {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
-  font-size: 24px;
-  margin: 0 15px;
-}
-.price {
-  display: flex;
-  align-items: center;
-}
-.price p {
-  font-family: "iran-yekan-num-Bold";
-  font-size: 32px;
-  color: var(--green-number);
-}
-.price span {
-  font-family: "iran-yekan-num-Medium";
-  font-size: 14px;
-  color: var(--blue-dark);
-  margin: 0 10px;
-}
-.btns {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  margin-top: 10px;
-}
-.btns button {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  border: var(--blue-light) 1px solid;
-  border-radius: 12px;
-  color: var(--blue-light);
-  padding: 10px 8px;
-  font-family: "iran-yekan-num-Medium";
-  font-size: 13px;
-  margin: 0 10px;
-}
-.btns button:hover {
-  background-color: var(--blue-light);
-  color: #fff;
-  cursor: pointer;
-  transition-duration: 0.5s;
-}
-.btns img {
-  width: 23px;
-  height: 23px;
-  margin: 0 10px 0 0;
-}
-@media (max-width: 767px) {
-  .container {
-    width: 90%;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
 
-  .title {
-    font-size: 14px;
-    margin: 0 8px;
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const props = defineProps<{
+  wallet: any
+  loading?: boolean
+}>()
+
+const currencyLabel = computed(() => {
+  const code = props.wallet?.currency || 'IRR'
+  switch (code) {
+    case 'IRR': return 'ریال'
+    case 'TOM': return 'تومان'
+    case 'USD': return 'دلار'
+    default: return code
   }
-  .price p {
-    font-size: 20px;
-  }
-  .btns button {
-    font-size: 10px;
-  }
-  .btns img {
-    width: 18px;
-    height: 18px;
-    margin: 0 5px 0 0;
-  }
+})
+
+const formatNumber = (val: number) => {
+  return new Intl.NumberFormat('fa-IR').format(val)
 }
-</style>
+
+const openChargeModal = () => {
+  // Logic to open charge modal
+}
+</script>

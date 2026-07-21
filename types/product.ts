@@ -1,13 +1,15 @@
 export interface Product {
-  _id: string | undefined;
+  _id?: string;
   id?: string;
   name: string;
   slug: string;
   sku: string;
   basePrice: number;
   discount?: number;
-  categories: string[];
+  currency?: string;
+  categories: any[];
   description: string;
+  companyId: string | { _id: string; name: string };
   stock: {
     quantity: number;
     reserved?: number;
@@ -16,35 +18,37 @@ export interface Product {
   variants?: Array<{
     id?: string;
     name: string;
-    options: Record<string, string>;
-    price?: number;
-    stock?: number;
+    options: Array<{ value: string; priceModifier?: number }>;
   }>;
   attributes?: Record<string, string | number>;
-  companyId: string;
   tags?: string[];
-  images?: Array<
-    | string
-    | {
-        url: string;
-        alt?: string;
-        order?: number;
-      }
-  >;
-  status?: "active" | "inactive" | "draft" | "archived";
-  companiesId?: string[];
-  subcategory?: string;
-  comments?: Array<{
-    sender: string;
-    comment: string;
+  images?: Array<{ url: string }>;
+  status?: "active" | "inactive" | "draft" | "archived" | "deleted";
+  
+  // Denormalized Rating Fields
+  avgRate?: number;
+  totalRatings?: number;
+  ratingsSummary?: Record<number, number>;
+  denormComments?: Array<{
+    userId?: any;
+    rating?: number;
+    comment?: string;
+    createdAt?: string;
   }>;
-  rating?: number;
+  
+  finalPrice?: number;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
 export type productImage = {
   url: string;
 };
+
 export interface CartItemDto {
-  userId: string | number;
+  userId: string;
   productId: string;
   quantity: number;
   variantId?: string;
@@ -57,14 +61,16 @@ export interface Cart {
   id: string;
   userId: string;
   items: Array<{
-    productId: string;
+    productId: any;
+    companyId: any;
     quantity: number;
-    price: number;
-    variantId?: string;
+    priceAtAdd: number;
+    variant?: { name: string; value: string };
+    discount?: { type: string; value: number };
   }>;
-  status: "active" | "abandoned" | "completed";
-  totalPrice: number;
-  totalQuantity: number;
+  totalAmount: number;
+  currency: string;
+  status: "active" | "abandoned" | "checked_out";
   createdAt: string;
   updatedAt: string;
 }

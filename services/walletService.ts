@@ -4,6 +4,8 @@ export interface Wallet {
   _id?: string;
   userId: string;
   balance: number;
+  blockedBalance: number;
+  currency: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -11,11 +13,12 @@ export interface Wallet {
 export interface Transaction {
   _id?: string;
   walletId?: string;
-  type: "credit" | "debit";
+  type: string;
   amount: number;
   description?: string;
   balanceAfter?: number;
   localId: string;
+  status: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -28,62 +31,39 @@ export interface DebitWalletDto {
   amount: number;
 }
 
-// Get wallet info
+/**
+ * Wallet API Service
+ * F4: Removed repetitive error logging and 401 checks. Interceptor handles these.
+ */
+
 export async function getWallet(): Promise<Wallet | null> {
   const { $axios } = useNuxtApp();
-  try {
-    const { data } = await $axios.get("/wallets");
-    return data;
-  } catch (err: any) {
-    console.error("خطا در دریافت کیف پول:", err);
-    return null;
-  }
+  const { data } = await $axios.get("/wallets");
+  return data;
 }
 
-// Get transaction history
 export async function getTransactions(): Promise<Transaction[]> {
   const { $axios } = useNuxtApp();
-  try {
-    const { data } = await $axios.get("/transaction");
-    return Array.isArray(data) ? data : [];
-  } catch (err: any) {
-    console.error("خطا در دریافت تاریخچه تراکنش:", err);
-    return [];
-  }
+  const { data } = await $axios.get("/transaction");
+  return Array.isArray(data) ? data : [];
 }
 
-// Credit wallet
 export async function creditWallet(
   payload: CreditWalletDto
 ): Promise<Transaction> {
   const { $axios } = useNuxtApp();
-  try {
-    const { data } = await $axios.post("/wallets/credit", {
-      amount: payload.amount,
-    });
-    return data;
-  } catch (err: any) {
-    if (err?.response?.status === 401) {
-      throw new Error("لطفا وارد سایت شوید");
-    }
-    throw new Error(err?.response?.data?.message || "خطا در شارژ کیف پول");
-  }
+  const { data } = await $axios.post("/wallets/credit", {
+    amount: payload.amount,
+  });
+  return data;
 }
 
-// Debit wallet
 export async function debitWallet(
   payload: DebitWalletDto
 ): Promise<Transaction> {
   const { $axios } = useNuxtApp();
-  try {
-    const { data } = await $axios.post("/wallets/debit", {
-      amount: payload.amount,
-    });
-    return data;
-  } catch (err: any) {
-    if (err?.response?.status === 401) {
-      throw new Error("لطفا وارد سایت شوید");
-    }
-    throw new Error(err?.response?.data?.message || "خطا در برداشت از کیف پول");
-  }
+  const { data } = await $axios.post("/wallets/debit", {
+    amount: payload.amount,
+  });
+  return data;
 }

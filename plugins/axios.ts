@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { useAuthStore } from "~/stores/auth";
+import { defineNuxtPlugin, useRuntimeConfig, navigateTo } from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
@@ -14,7 +15,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     },
   });
 
-  // Request Interceptor
+  // Request Interceptor: Attach token
   api.interceptors.request.use(
     (requestConfig) => {
       const accessToken = authStore.getAccessToken();
@@ -27,56 +28,53 @@ export default defineNuxtPlugin((nuxtApp) => {
     (error) => Promise.reject(error)
   );
 
-  // Response Interceptor
+  // Response Interceptor: Handle Token Refresh and 401s
   api.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
       const originalRequest = error.config as any;
+      
+      // If 401 Unauthorized and not already retrying
       if (
         error.response?.status === 401 &&
         originalRequest &&
         !originalRequest._retry
       ) {
         originalRequest._retry = true;
+        
         try {
           const refreshToken = authStore.getRefreshToken();
 
-          // اگر refresh token موجود نیست، کاربر را خارج کن
           if (!refreshToken) {
             authStore.clearTokens();
-            if (process.client) {
-              window.location.href = "/";
-            }
-            return Promise.reject(error);
+            // F1: Use navigateTo instead of window.location for SSR safety
+            return navigateTo("/", { external: true });
           }
 
+          // Request new access token
           const { data } = await axios.post(
             `${config.public.apiBase}/auth/refresh`,
-            {
-              refresh_token: refreshToken,
-            }
+            { refreshToken }
           );
 
-          authStore.setTokens(data.access_token, data.refresh_token);
+          // Update store with new token
+          authStore.setTokens(data.accessToken, refreshToken);
 
-          originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          console.error("Refresh token failed:", refreshError);
+          console.error("Refresh token session failed:", refreshError);
           authStore.clearTokens();
-
-          // استفاده از window.location به جای navigateTo
-          if (process.client) {
-            window.location.href = "/";
-          }
-
-          return Promise.reject(refreshError);
+          // F1: Robust redirect across SSR/Client
+          return navigateTo("/", { external: true });
         }
       }
+      
       return Promise.reject(error);
     }
   );
 
-  // Add instance to Nuxt App
+  // Provide axios instance globally
   nuxtApp.provide("axios", api);
 });

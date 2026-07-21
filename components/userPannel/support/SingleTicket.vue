@@ -1,205 +1,167 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
-import { useRoute } from "vue-router";
-import {
-  getTicket,
-  getTicketStatus,
-  updateTicket,
-  patchTicketStatus,
-  escalateTicket,
-  resolveTicket,
-  type Ticket,
-  type TicketStatus,
-  type TicketPriority,
-} from "@/services/ticketService";
+import { ref, onMounted, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
+import { getTicket, getTicketComments, addTicketComment } from '~/services/ticketService';
+import type { Ticket, TicketComment } from '~/services/ticketService';
+import { formatDate, formatTime } from '~/utils/date';
 
 const route = useRoute();
-const id = computed(() => String(route.params.id));
+const ticketId = route.params.id as string;
 
 const ticket = ref<Ticket | null>(null);
-const statusOnly = ref<TicketStatus | undefined>(undefined);
-const loading = ref(true);
-const errorMsg = ref("");
-const saving = ref(false);
+const comments = ref<TicketComment[]>([]);
+const newMessage = ref('');
+const isLoading = ref(true);
+const isSending = ref(false);
+const scrollContainer = ref<HTMLElement | null>(null);
 
-// editable
-const editTitle = ref("");
-const editDescription = ref("");
-const editPriority = ref<TicketPriority>("low");
+const fetchTicketData = async () => {
+  try {
+    isLoading.value = true;
+    const [ticketRes, commentsRes] = await Promise.all([
+      getTicket(ticketId),
+      getTicketComments(ticketId)
+    ]);
+    ticket.value = ticketRes;
+    comments.value = commentsRes;
+    await scrollToBottom();
+  } catch (error) {
+    console.error('Failed to load ticket:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-onMounted(async () => {
-  await refresh();
+const scrollToBottom = async () => {
+  await nextTick();
+  if (scrollContainer.value) {
+    scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight;
+  }
+};
+
+const handleSendMessage = async () => {
+  if (!newMessage.value.trim() || isSending.value) return;
+
+  try {
+    isSending.value = true;
+    await addTicketComment(ticketId, { content: newMessage.value });
+    newMessage.value = '';
+    // Refresh comments
+    comments.value = await getTicketComments(ticketId);
+    await scrollToBottom();
+  } catch (error) {
+    console.error('Failed to send message:', error);
+  } finally {
+    isSending.value = false;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'open': return 'text-green-500 bg-green-50';
+    case 'in_progress': return 'text-blue-500 bg-blue-50';
+    case 'resolved': return 'text-gray-500 bg-gray-50';
+    case 'escalated': return 'text-red-500 bg-red-50';
+    default: return 'text-gray-500 bg-gray-50';
+  }
+};
+
+onMounted(() => {
+  fetchTicketData();
 });
-
-async function refresh() {
-  loading.value = true;
-  errorMsg.value = "";
-  try {
-    ticket.value = await getTicket(id.value);
-    const st = await getTicketStatus(id.value);
-    statusOnly.value = st.status;
-
-    // init form values
-    editTitle.value = ticket.value.title;
-    editDescription.value = ticket.value.description;
-    editPriority.value = ticket.value.priority;
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Failed to load ticket";
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function saveBasic() {
-  if (!ticket.value) return;
-  saving.value = true;
-  errorMsg.value = "";
-  try {
-    ticket.value = await updateTicket(id.value, {
-      title: editTitle.value,
-      description: editDescription.value,
-      priority: editPriority.value,
-    });
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Update failed";
-  } finally {
-    saving.value = false;
-  }
-}
-
-async function changeStatus(status: TicketStatus, refund?: boolean) {
-  saving.value = true;
-  errorMsg.value = "";
-  try {
-    await patchTicketStatus(id.value, status, refund); // PATCH /status
-    await refresh();
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Status change failed";
-  } finally {
-    saving.value = false;
-  }
-}
-
-async function escalate() {
-  saving.value = true;
-  errorMsg.value = "";
-  try {
-    await escalateTicket(id.value);
-    await refresh();
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Escalation failed";
-  } finally {
-    saving.value = false;
-  }
-}
-
-async function resolve(refund: boolean) {
-  saving.value = true;
-  errorMsg.value = "";
-  try {
-    await resolveTicket(id.value, refund);
-    await refresh();
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Resolve failed";
-  } finally {
-    saving.value = false;
-  }
-}
 </script>
 
 <template>
-  <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="errorMsg" class="text-red-500">{{ errorMsg }}</div>
-    <div v-else-if="ticket">
-      <h2 class="mb-2">#{{ ticket.id }} — {{ ticket.title }}</h2>
-      <p class="mb-4">{{ ticket.description }}</p>
-      <div class="badge">Status: {{ statusOnly }}</div>
-      <div class="badge">Priority: {{ ticket.priority }}</div>
+  <div class="flex flex-col h-[calc(100vh-12rem)] max-h-[800px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Header -->
+    <div v-if="ticket" class="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center shrink-0">
+      <div>
+        <h1 class="text-lg font-bold text-gray-900">{{ ticket.title }}</h1>
+        <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+          <span>کد تیکت: #{{ ticketId.slice(-6).toUpperCase() }}</span>
+          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getStatusColor(ticket.status)]">
+            {{ ticket.status }}
+          </span>
+          <span>{{ formatDate(ticket.createdAt) }}</span>
+        </div>
+      </div>
+      <UButton
+        to="/dashboard/support"
+        variant="ghost"
+        color="neutral"
+        icon="i-lucide-arrow-right"
+      >
+        بازگشت
+      </UButton>
+    </div>
 
-      <hr class="my-4" />
-      <h3>Edit basics</h3>
-      <div class="grid">
-        <input v-model="editTitle" class="input" />
-        <textarea v-model="editDescription" class="textarea" />
-        <select v-model="editPriority" class="select">
-          <option value="low">low</option>
-          <option value="medium">medium</option>
-          <option value="high">high</option>
-          <option value="urgent">urgent</option>
-        </select>
-        <button :disabled="saving" @click="saveBasic" class="btn">Save</button>
+    <!-- Messages Area -->
+    <div ref="scrollContainer" class="flex-1 overflow-y-auto p-4 space-y-6">
+      <div v-if="isLoading" class="flex justify-center py-10">
+        <UIcon name="i-lucide-loader-circle" class="animate-spin size-8 text-primary-500" />
       </div>
 
-      <hr class="my-4" />
-      <h3>Status actions</h3>
-      <div class="actions">
-        <button :disabled="saving" @click="changeStatus('open')" class="btn">
-          Open
-        </button>
-        <button
-          :disabled="saving"
-          @click="changeStatus('in_progress')"
-          class="btn">
-          In Progress
-        </button>
-        <button
-          :disabled="saving"
-          @click="changeStatus('reopened')"
-          class="btn">
-          Reopen
-        </button>
-        <button :disabled="saving" @click="changeStatus('closed')" class="btn">
-          Close
-        </button>
+      <template v-else>
+        <!-- Initial Description -->
+        <div v-if="ticket" class="flex flex-col items-start max-w-[85%]">
+          <div class="bg-primary-50 text-primary-900 p-4 rounded-2xl rounded-tr-none shadow-sm ring-1 ring-primary-100">
+            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ ticket.description }}</p>
+            <span class="text-[10px] opacity-70 mt-2 block text-left">{{ formatTime(ticket.createdAt) }}</span>
+          </div>
+        </div>
 
-        <!-- Resolve با تصمیم مالی -->
-        <button :disabled="saving" @click="resolve(true)" class="btn warn">
-          Resolve & Refund User
-        </button>
-        <button :disabled="saving" @click="resolve(false)" class="btn warn">
-          Resolve & Release to Company
-        </button>
+        <!-- Thread Comments -->
+        <div 
+          v-for="comment in comments" 
+          :key="comment.id"
+          class="flex flex-col"
+          :class="[comment.createdBy === ticket?.createdBy ? 'items-start max-w-[85%]' : 'items-end ml-auto max-w-[85%] text-right']"
+        >
+          <div 
+            class="p-4 rounded-2xl shadow-sm ring-1"
+            :class="[
+              comment.createdBy === ticket?.createdBy 
+                ? 'bg-primary-50 text-primary-900 rounded-tr-none ring-primary-100' 
+                : 'bg-gray-100 text-gray-800 rounded-tl-none ring-gray-200'
+            ]"
+          >
+            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ comment.content }}</p>
+            <div class="flex justify-between items-center mt-2 gap-4">
+               <span class="text-[10px] opacity-60">{{ comment.createdBy === ticket?.createdBy ? 'شما' : 'پشتیبانی تجاریس' }}</span>
+               <span class="text-[10px] opacity-60">{{ formatTime(comment.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
 
-        <button :disabled="saving" @click="escalate" class="btn danger">
-          Escalate
-        </button>
+    <!-- Input Area -->
+    <div class="p-4 border-t border-gray-100 bg-white shrink-0">
+      <div class="relative flex items-end gap-2">
+        <UTextarea
+          v-model="newMessage"
+          placeholder="پاسخ خود را اینجا بنویسید..."
+          :rows="2"
+          class="flex-1"
+          :disabled="isSending || ticket?.status === 'closed'"
+          autoresize
+          @keydown.enter.prevent="handleSendMessage"
+        />
+        <UButton
+          color="primary"
+          icon="i-lucide-send-horizontal"
+          size="lg"
+          class="shrink-0"
+          :loading="isSending"
+          :disabled="!newMessage.trim() || ticket?.status === 'closed'"
+          @click="handleSendMessage"
+        >
+          ارسال
+        </UButton>
       </div>
+      <p v-if="ticket?.status === 'closed'" class="text-center text-xs text-red-500 mt-2">
+        این تیکت بسته شده است و امکان ارسال پاسخ جدید وجود ندارد.
+      </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.badge {
-  display: inline-block;
-  margin-right: 0.5rem;
-  background: #f1f5f9;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.4rem;
-}
-.grid {
-  display: grid;
-  gap: 0.5rem;
-}
-.input,
-.textarea,
-.select {
-  border: 1px solid #ddd;
-  padding: 0.6rem;
-  border-radius: 0.5rem;
-  width: 100%;
-}
-.btn {
-  background: #2b6cb0;
-  color: white;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.8rem;
-  margin-right: 0.5rem;
-}
-.warn {
-  background: #6b7280;
-}
-.danger {
-  background: #b91c1c;
-}
-</style>

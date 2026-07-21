@@ -1,17 +1,32 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-    <Header />
-    <main class="flex-grow">
-      <NuxtPage />
-    </main>
-    <Footer />
-    <UNotifications />
-    <SupportChatClient />
+  <div class="app-container min-h-screen flex flex-col font-yekan">
+    <UApp>
+      <Header />
+      
+      <main class="flex-grow">
+        <NuxtPage />
+      </main>
+
+      <Footer />
+      
+      <!-- Persistent Support Chat if authenticated -->
+      <SupportChatClient v-if="isAuthenticated" />
+      
+      <UNotifications />
+    </UApp>
   </div>
 </template>
 
-<script setup>
-// Main application layout assembly
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { useUser } from '~/composables/useUser';
+
+const { fetchUser, isAuthenticated } = useUser();
+
+// F3 - Ensure user state is hydrated on initial load regardless of route
+onMounted(async () => {
+  await fetchUser();
+});
 </script>
 
 <style>
