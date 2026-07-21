@@ -41,10 +41,8 @@ export const useProductSearch = () => {
 
   /* ---------- Update query string while preserving existing values ---------- */
   const updateQueryString = (newParams: Record<string, any> = {}) => {
-    // Start with a clean slate of current query values
     const query: Record<string, any> = { ...route.query };
 
-    // Explicitly handle each field to allow clearing or updating
     const updateField = (key: string) => {
       if (newParams[key] !== undefined) {
         if (newParams[key] === null || newParams[key] === "" || (Array.isArray(newParams[key]) && newParams[key].length === 0)) {
@@ -57,11 +55,14 @@ export const useProductSearch = () => {
 
     ['query', 'maxPrice', 'companyName', 'categoryIds', 'sort'].forEach(updateField);
 
-    // Reset to page 1 if any filter changed, unless page is explicitly provided
     query.page = newParams.page ?? 1;
     query.limit = newParams.limit ?? limit.value;
 
     router.replace({ query });
+  };
+
+  const clearAllFilters = () => {
+    router.replace({ query: { query: route.query.query } });
   };
 
   const onFiltersFromSidebar = (filters: {
@@ -94,6 +95,7 @@ export const useProductSearch = () => {
     categoryIds,
     buildParams,
     updateQueryString,
+    clearAllFilters,
     onFiltersFromSidebar,
     onSortChange,
     changePage,

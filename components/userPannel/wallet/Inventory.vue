@@ -1,76 +1,41 @@
+<script setup lang="ts">
+defineProps<{
+  balance: number;
+  blockedBalance: number;
+  currency: string;
+}>();
+</script>
+
 <template>
-  <div class="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center gap-2 text-gray-500">
-        <UIcon name="i-lucide-wallet" class="size-6 text-green-500" />
-        <span class="text-sm font-bold">موجودی فعلی</span>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Main Balance -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl text-white shadow-md relative overflow-hidden">
+      <div class="relative z-10">
+        <p class="text-sm opacity-80 mb-2">موجودی فعلی</p>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-num font-iran-yekan-Bold">{{ balance.toLocaleString() }}</span>
+          <span class="text-sm opacity-80">{{ currency }}</span>
+        </div>
       </div>
-      <div v-if="loading" class="h-8 w-24 bg-gray-200 animate-pulse rounded-md"></div>
-      <div v-else class="flex items-baseline gap-1">
-        <span class="text-2xl font-black text-gray-900 tracking-tighter">{{ formatNumber(wallet?.balance || 0) }}</span>
-        <span class="text-xs font-bold text-gray-400">{{ currencyLabel }}</span>
-      </div>
+      <!-- Ghost Background Icon -->
+      <UIcon name="i-lucide-wallet" class="absolute -bottom-4 -right-4 size-32 opacity-10 rotate-12" />
     </div>
 
-    <!-- Blocked Balance indicator -->
-    <div v-if="wallet?.blockedBalance > 0" class="mb-4 p-2 bg-amber-50 rounded-lg flex items-center justify-between">
-      <span class="text-[10px] text-amber-700 font-medium flex items-center gap-1">
-        <UIcon name="i-lucide-lock" class="size-3" />
-        مبلغ در انتظار تایید (مسدود شده)
-      </span>
-      <span class="text-xs font-bold text-amber-900">{{ formatNumber(wallet.blockedBalance) }} {{ currencyLabel }}</span>
-    </div>
-
-    <div class="flex gap-2">
-      <UButton
-        block
-        color="primary"
-        variant="solid"
-        size="md"
-        class="font-bold"
-        icon="i-lucide-plus-circle"
-        @click="openChargeModal"
-      >
-        افزایش موجودی
-      </UButton>
-      <UButton
-        block
-        color="gray"
-        variant="soft"
-        size="md"
-        class="font-bold"
-        icon="i-lucide-history"
-        @click="navigateTo('/dashboard/transactions')"
-      >
-        تراکنش‌ها
-      </UButton>
+    <!-- Blocked Balance (Escrow) -->
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
+      <div class="relative z-10 text-gray-800">
+        <div class="flex items-center gap-1.5 mb-2">
+          <p class="text-sm text-gray-500 font-medium">موجودی مسدود شده</p>
+          <UTooltip text="این مبلغ برای سفارشات در جریان مسدود شده است.">
+            <UIcon name="i-lucide-info" class="size-4 text-gray-400 cursor-help" />
+          </UTooltip>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-2xl font-num font-iran-yekan-Bold text-gray-600">{{ blockedBalance.toLocaleString() }}</span>
+          <span class="text-sm text-gray-400">{{ currency }}</span>
+        </div>
+      </div>
+      <UIcon name="i-lucide-lock" class="absolute -bottom-2 -right-2 size-20 text-gray-50 opacity-5" />
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from 'vue'
-
-const props = defineProps<{
-  wallet: any
-  loading?: boolean
-}>()
-
-const currencyLabel = computed(() => {
-  const code = props.wallet?.currency || 'IRR'
-  switch (code) {
-    case 'IRR': return 'ریال'
-    case 'TOM': return 'تومان'
-    case 'USD': return 'دلار'
-    default: return code
-  }
-})
-
-const formatNumber = (val: number) => {
-  return new Intl.NumberFormat('fa-IR').format(val)
-}
-
-const openChargeModal = () => {
-  // Logic to open charge modal
-}
-</script>

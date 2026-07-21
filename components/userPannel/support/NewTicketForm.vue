@@ -1,76 +1,105 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { createTicket, type TicketPriority } from "@/services/ticketService";
+import { reactive, ref } from 'vue';
+import { createTicket } from '~/services/ticketService';
+import type { TicketPriority } from '~/services/ticketService';
 
-const title = ref("");
-const description = ref("");
-const priority = ref<TicketPriority>("low");
-const orderId = ref<string | undefined>(undefined);
-
+const emit = defineEmits(['success', 'cancel']);
+const toast = useToast();
 const loading = ref(false);
-const errorMsg = ref("");
-const successMsg = ref("");
 
-async function submitForm() {
-  errorMsg.value = "";
-  successMsg.value = "";
+const state = reactive({
+  title: '',
+  description: '',
+  priority: 'low' as TicketPriority,
+  orderId: ''
+});
+
+const priorities = [
+  { label: 'کم', value: 'low' },
+  { label: 'متوسط', value: 'medium' },
+  { label: 'زیاد', value: 'high' },
+  { label: 'فوری', value: 'urgent' }
+];
+
+const validate = (state: any) => {
+  const errors = [];
+  if (!state.title) errors.push({ path: 'title', message: 'وارد کردن عنوان الزامی است' });
+  if (!state.description) errors.push({ path: 'description', message: 'وارد کردن توضیحات الزامی است' });
+  return errors;
+};
+
+const onSubmit = async () => {
   loading.value = true;
   try {
-    await createTicket({
-      title: title.value,
-      description: description.value,
-      priority: priority.value,
-      orderId: orderId.value,
-    });
-    successMsg.value = "Ticket created successfully";
-    // اگر پاپ‌آپ داری ببند، یا روتر بده به لیست
-    // this.$emit('created')  یا  router.push('/support/tickets')
-  } catch (e: any) {
-    errorMsg.value = e?.response?.data?.message ?? "Failed to create ticket";
+    await createTicket(state);
+    toast.add({ title: 'موفقیت', description: 'تیکت شما با موفقیت ثبت شد', color: 'success' });
+    emit('success');
+  } catch (error: any) {
+    toast.add({ title: 'خطا', description: error?.response?.data?.message || 'ثبت تیکت با خطا مواجه شد', color: 'red' });
   } finally {
     loading.value = false;
   }
-}
+};
 </script>
 
 <template>
-  <form @submit.prevent="submitForm" class="space-y-4">
-    <input v-model="title" required placeholder="Title" class="input" />
-    <textarea
-      v-model="description"
-      required
-      placeholder="Describe your issue"
-      class="textarea" />
-    <select v-model="priority" class="select">
-      <option value="low">Low</option>
-      <option value="medium">Medium</option>
-      <option value="high">High</option>
-      <option value="urgent">Urgent</option>
-    </select>
-    <input v-model="orderId" placeholder="Order ID (optional)" class="input" />
+  <div class="p-6 bg-white rounded-xl border border-gray-100 shadow-lg max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
+      <h2 class="text-xl font-iran-yekan-Bold text-blue-dark">ثبت تیکت جدید پشتیبانی</h2>
+      <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="$emit('cancel')" />
+    </div>
 
-    <button :disabled="loading" @click="submitForm" class="btn-primary">
-      {{ loading ? "Submitting..." : "Create Ticket" }}
-    </button>
+    <UForm :validate="validate" :state="state" @submit="onSubmit" class="space-y-6">
+      <UFormField label="عنوان تیکت" name="title" required>
+        <UInput 
+          v-model="state.title" 
+          placeholder="موضوع مشکل خود را کوتاه بنویسید..." 
+          size="lg"
+        />
+      </UFormField>
 
-    <p v-if="errorMsg" class="text-red-500">{{ errorMsg }}</p>
-    <p v-if="successMsg" class="text-green-600">{{ successMsg }}</p>
-  </form>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <UFormField label="اولویت" name="priority">
+          <USelectMenu 
+            v-model="state.priority" 
+            :options="priorities" 
+            value-attribute="value"
+            option-attribute="label"
+            size="lg"
+          />
+        </UFormField>
+
+        <UFormField label="شناسه سفارش (اختیاری)" name="orderId">
+          <UInput 
+            v-model="state.orderId" 
+            placeholder="مثلا: 64f2..." 
+            size="lg" 
+            class="font-num"
+          />
+        </UFormField>
+      </div>
+
+      <UFormField label="توضیحات کامل" name="description" required>
+        <UTextarea 
+          v-model="state.description" 
+          placeholder="جزئیات مشکل خود را اینجا شرح دهید..." 
+          :rows="6"
+          size="lg"
+        />
+      </UFormField>
+
+      <div class="flex items-center gap-4 pt-4">
+        <UButton 
+          type="submit" 
+          color="primary" 
+          size="xl" 
+          block
+          :loading="loading"
+          class="font-iran-yekan-Bold"
+        >
+          ارسال تیکت به کارشناسان
+        </UButton>
+      </div>
+    </UForm>
+  </div>
 </template>
-
-<style scoped>
-.input,
-.textarea,
-.select {
-  width: 100%;
-  border: 1px solid #ddd;
-  padding: 0.6rem;
-  border-radius: 0.5rem;
-}
-.btn-primary {
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  background: #2b6cb0;
-  color: white;
-}
-</style>

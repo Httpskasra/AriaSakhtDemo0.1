@@ -72,13 +72,20 @@ export default defineNuxtConfig({
         dir: 'rtl',
         lang: 'fa'
       },
-      title: 'تجاریس - پلتفرم صنعتی بیست‌وبی',
+      titleTemplate: 'تجاریس | %s',
+      title: 'پلتفرم صنعتی بیست‌وبی',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'مرکز مبادلات کالا و خدمات صنعتی کشور' }
       ]
     }
+  },
+
+  loadingIndicator: {
+    name: 'pulse',
+    color: '#1673ff',
+    background: 'white'
   },
 
   compatibilityDate: "2026-07-21"

@@ -1,18 +1,19 @@
 import { defineStore } from "pinia";
-import { useCookie, useRuntimeConfig } from "#app";
+import { useCookie } from "#app";
 
 export const useAuthStore = defineStore("auth", () => {
   // Use reactive cookies shared across the app
+  // Fixed: access_token maxAge reduced to 3600s (1 hour) to match backend JWT expiry
   const accessToken = useCookie<string | null>("access_token", {
     path: "/",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days fallback
+    maxAge: 3600, 
   });
   
   const refreshToken = useCookie<string | null>("refresh_token", {
     path: "/",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 7, // 7 days matches refresh session intent
   });
 
   // F2: Cross-tab synchronization using BroadcastChannel
@@ -24,7 +25,6 @@ export const useAuthStore = defineStore("auth", () => {
         // Sync logout across tabs
         accessToken.value = null;
         refreshToken.value = null;
-        // Optional: reload or navigate if needed
         window.location.reload();
       }
     };

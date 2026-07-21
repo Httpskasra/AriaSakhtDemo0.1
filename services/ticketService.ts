@@ -108,7 +108,8 @@ export async function patchTicketStatus(
 
 export async function escalateTicket(id: string): Promise<void> {
   const { $axios } = useNuxtApp();
-  await $axios.post(`/api/tickets/${id}/escalate`);
+  // Fixed: removed redundant /api/ prefix
+  await $axios.post(`/tickets/${id}/escalate`);
 }
 
 export async function resolveTicket(
@@ -116,7 +117,8 @@ export async function resolveTicket(
   refund: boolean
 ): Promise<void> {
   const { $axios } = useNuxtApp();
-  await $axios.patch(`/api/tickets/${id}/resolve`, { refund });
+  // Fixed: removed redundant /api/ prefix
+  await $axios.patch(`/tickets/${id}/resolve`, { refund });
 }
 export async function getTicketComments(id: string): Promise<TicketComment[]> {
   const { $axios } = useNuxtApp();

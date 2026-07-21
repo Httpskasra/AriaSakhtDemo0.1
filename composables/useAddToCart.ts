@@ -1,4 +1,5 @@
 import { ref, computed } from "vue";
+import { useState } from "#app";
 import type { CartItemDto } from "~/types/product";
 import { useUser } from "~/composables/useUser";
 
@@ -9,6 +10,9 @@ export const useAddToCart = () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const success = ref(false);
+
+  // U5: Shared state to trigger header cart animations
+  const cartBump = useState('cart-bump', () => 0);
 
   /**
    * اضافه کردن محصول به سبد خریدی
@@ -59,6 +63,9 @@ export const useAddToCart = () => {
       });
       
       success.value = true;
+      
+      // U5: Trigger visual feedback in the header
+      cartBump.value++;
       
       toast.add({
         title: 'موفقیت',
@@ -197,6 +204,7 @@ export const useAddToCart = () => {
     loading,
     error,
     success,
+    cartBump,
     // Methods
     addProductToCart,
     removeFromCart,
