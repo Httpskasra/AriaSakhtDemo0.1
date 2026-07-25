@@ -1,22 +1,21 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="relative flex flex-col items-center gap-5 otp-wrapper">
+    <div class="otp-wrapper">
       <img
         src="/logo/logo.png"
         alt="Logo"
-        class="w-[180px] h-[160px] mx-auto" />
+        class="otp-logo" />
 
-      <p
-        class="font-['iran-yekan-Light'] w-1/2 text-center mx-auto py-[15px] text-base mb-5">
+      <p class="otp-message">
         کد ۴ رقمی ارسال شده به شماره
-        <span
-          class="font-['iran-yekan-num-Regular'] text-blue-dark border-b border-blue-dark">
+        <span class="otp-phone">
           {{ phoneNumber }}
         </span>
         را وارد نمایید
       </p>
 
-      <div class="flex flex-row-reverse justify-center gap-5 code-inputs">
+      <div class="code-inputs">
+        <!-- Specialized OTP digit boxes keep per-character focus and paste behavior. -->
         <input
           v-for="(value, index) in inputs"
           :key="index"
@@ -30,41 +29,38 @@
           @keydown="onKeydown(index, $event)"
           :disabled="expired || loading"
           required
-          class="w-[45px] h-[50px] text-xl text-center border-2 border-gray-400 rounded-lg outline-none transition-colors duration-200 ease-in-out dir-ltr text-blue-dark font-['iran-yekan-num-DemiBold'] focus:border-blue-dark disabled:bg-gray-200 disabled:cursor-not-allowed" />
+          class="otp-input" />
       </div>
 
-      <div
-        v-if="!expired"
-        class="absolute right-0 bottom-[130px] font-['iran-yekan-num-Regular'] text-xs text-gray-800">
-        🕒 زمان باقی‌مانده: {{ formattedTime }}
-      </div>
-      <div v-else class="absolute right-0 bottom-[130px] text-red-500 text-sm">
-        ⛔ کد منقضی شد
-      </div>
+      <div class="otp-meta">
+        <div v-if="!expired" class="otp-timer">
+          زمان باقی‌مانده: {{ formattedTime }}
+        </div>
+        <div v-else class="otp-expired">
+          کد منقضی شد
+        </div>
 
-      <div v-if="errorMessage" class="text-red-500 text-sm mt-2">
-        {{ errorMessage }}
+        <button
+          type="button"
+          class="otp-resend"
+          @click="resetTimer"
+          :disabled="!expired || loading">
+          ارسال دوباره کد
+        </button>
       </div>
 
       <button
-        class="py-2.5 px-5 text-base bg-blue-500 text-white rounded-lg cursor-pointer transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="otp-submit"
         @click="verifyOtp"
         :disabled="!isComplete || expired || loading">
         {{ loading ? "در حال ارسال..." : "ارسال کد" }}
-      </button>
-
-      <button
-        class="absolute left-0 bottom-[130px] bg-transparent border-none text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
-        @click="resetTimer"
-        :disabled="!expired || loading">
-        ارسال دوباره کد
       </button>
     </div>
   </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { useAuthStore } from "@/stores/auth";
@@ -75,12 +71,13 @@ const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
 const duration = 120;
 const timeLeft = ref(duration);
-const timer = ref<number | null>(null);
+const timer = ref<ReturnType<typeof setInterval> | null>(null);
 
 const loading = ref(false);
 const errorMessage = ref("");
 
 const $axios = useNuxtApp().$axios;
+const toast = useToast();
 
 onMounted(() => {
   startTimer();
@@ -90,7 +87,7 @@ onMounted(() => {
 
 watch(timeLeft, (val) => {
   if (val <= 0) {
-    clearInterval(timer.value!);
+    clearTimer();
     timeLeft.value = 0;
   }
 });
@@ -105,12 +102,19 @@ const formattedTime = computed(() => {
 
 const expired = computed(() => timeLeft.value <= 0);
 
+const clearTimer = () => {
+  if (timer.value !== null) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+};
+
 const startTimer = () => {
-  clearInterval(timer.value!);
+  clearTimer();
   timeLeft.value = duration;
   timer.value = setInterval(() => {
     timeLeft.value--;
-  }, 1000) as unknown as number;
+  }, 1000);
 };
 
 const resendOtp = async () => {
@@ -120,7 +124,7 @@ const resendOtp = async () => {
       phoneNumber: phoneNumber.value,
     });
   } catch (err) {
-    errorMessage.value = "خطا در ارسال مجدد کد. لطفاً دوباره تلاش کنید.";
+    toast.add({ title: "ارسال دوباره کد ناموفق بود", description: "لطفاً دوباره تلاش کنید.", color: "error" });
   } finally {
     loading.value = false;
   }
@@ -134,6 +138,8 @@ const resetTimer = async () => {
   await resendOtp();
   nextTick(() => otpRefs.value[0]?.focus());
 };
+
+onUnmounted(clearTimer);
 
 const onInput = async (index: number) => {
   const value = inputs.value[index];
@@ -173,14 +179,14 @@ const verifyOtp = async () => {
       const authStore = useAuthStore();
       authStore.setTokens(
         response.data.accessToken,
-        response.data.refreshToken
+        response.data.csrfToken
       );
       emit("onVerified");
     } else {
-      errorMessage.value = "کد وارد شده اشتباه است.";
+      toast.add({ title: "کد وارد شده اشتباه است", color: "error" });
     }
   } catch (err) {
-    errorMessage.value = "خطا در اعتبارسنجی کد. دوباره تلاش کنید.";
+    toast.add({ title: "اعتبارسنجی کد ناموفق بود", description: "دوباره تلاش کنید.", color: "error" });
   } finally {
     loading.value = false;
   }
@@ -192,3 +198,140 @@ const closeModal = () => {
   setStep(null);
 };
 </script>
+
+<style scoped>
+.otp-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding: 8px 0 4px;
+}
+
+.otp-logo {
+  width: min(180px, 70vw);
+  height: auto;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.otp-message {
+  width: min(100%, 360px);
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-family: var(--font-yekan);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.otp-phone {
+  font-family: var(--font-num);
+  color: var(--blue-dark);
+  border-bottom: 1px solid var(--blue-dark);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.code-inputs {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  gap: clamp(6px, 3vw, 14px);
+  width: 100%;
+}
+
+.otp-input {
+  width: clamp(40px, 13vw, 45px);
+  height: clamp(44px, 14vw, 50px);
+  border: 2px solid #9ca3af;
+  border-radius: var(--radius-field);
+  color: var(--blue-dark);
+  direction: ltr;
+  font-family: var(--font-num);
+  font-size: 1.25rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.otp-input:focus {
+  border-color: var(--blue-dark);
+}
+
+.otp-input:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+}
+
+.otp-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(100%, 360px);
+  min-height: 28px;
+  font-size: 0.8125rem;
+}
+
+.otp-timer {
+  color: #1f2937;
+  font-family: var(--font-num);
+}
+
+.otp-expired {
+  color: #ef4444;
+}
+
+.otp-resend {
+  border: 0;
+  background: transparent;
+  color: var(--color-brand-blue);
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.otp-resend:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.otp-resend:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.otp-submit {
+  border: 0;
+  border-radius: var(--radius-field);
+  background: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.otp-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .otp-logo {
+    width: min(140px, 55vw);
+    max-height: 120px;
+  }
+
+  .code-inputs {
+    gap: 6px;
+  }
+
+  .otp-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+</style>

@@ -5,42 +5,20 @@
       @click="toggleChat"
       class="fixed bottom-20 md:bottom-6 right-6 bg-blue-600 text-white rounded-full px-4 py-4 shadow-lg hover:bg-blue-700 transition-colors z-50"
       aria-label="باز کردن چت پشتیبانی">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5v-4a2 2 0 012-2h10a2 2 0 012 2v4h-4M12 15v4m0 0h4m-4 0H8" />
-      </svg>
+      <UIcon name="i-lucide-message-circle" class="size-icon-empty-state" />
       <!-- <Icon name="ic:outline-support-agent" size="36px" /> -->
     </button>
 
     <!-- پنجره چت -->
     <div
       v-if="isChatOpen"
-      class="fixed bottom-28 md:bottom-20 right-6 w-80 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
+      class="fixed inset-x-4 bottom-28 w-auto max-w-[calc(100vw-2rem)] md:bottom-20 md:left-auto md:right-6 md:w-80 md:max-w-none bg-white rounded-field shadow-xl z-50 border border-gray-200">
       <!-- هدر چت -->
       <div
         class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
         <h3 class="text-lg font-semibold">پشتیبانی</h3>
         <button @click="toggleChat" class="text-white hover:text-gray-200">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <UIcon name="i-lucide-x" class="size-icon-action" />
         </button>
       </div>
 
@@ -49,13 +27,13 @@
         <!-- پیام‌های نمونه -->
         <div class="mb-2">
           <p class="text-sm text-gray-500">پشتیبانی - 10:30</p>
-          <p class="bg-blue-100 p-2 rounded-lg text-sm">
+          <p class="bg-blue-100 p-2 rounded-field text-sm">
             سلام! چگونه می‌توانم به شما کمک کنم؟
           </p>
         </div>
         <div class="mb-2 text-right">
           <p class="text-sm text-gray-500">شما - 10:32</p>
-          <p class="bg-gray-200 p-2 rounded-lg text-sm">
+          <p class="bg-gray-200 p-2 rounded-field text-sm">
             نیاز به کمک در مورد پروژه دارم.
           </p>
         </div>
@@ -68,24 +46,13 @@
             v-model="message"
             type="text"
             placeholder="پیام خود را بنویسید..."
-            class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" />
+            class="flex-1 p-2 border rounded-field focus:outline-none focus:ring-2 focus:ring-blue-600" />
           <button
             type="submit"
-            class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+            class="bg-blue-600 text-white p-2 rounded-field hover:bg-blue-700 transition-colors"
             :disabled="!message.trim()"
             aria-label="ارسال پیام">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            <UIcon name="i-lucide-send" class="size-icon-action" />
           </button>
         </form>
       </div>

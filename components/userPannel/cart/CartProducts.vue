@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+  <div class="premium-card overflow-hidden">
     <!-- Header -->
     <div class="hidden md:grid grid-cols-12 gap-4 p-6 bg-gray-50 border-b border-gray-100 text-sm font-bold text-gray-600">
       <div class="col-span-6">محصول</div>
@@ -13,7 +13,7 @@
       <div v-for="item in cartItems" :key="item.productId" class="p-4 md:p-6 grid grid-cols-12 gap-4 items-center">
         <!-- Product Info -->
         <div class="col-span-12 md:col-span-6 flex items-center gap-4">
-          <div class="size-20 bg-gray-100 rounded-lg overflow-hidden shrink-0 border border-gray-50">
+          <div class="size-20 bg-gray-100 rounded-field overflow-hidden shrink-0 border border-gray-50">
             <img :src="item.image || 'https://picsum.photos/seed/cart/100/100'" class="size-full object-cover" />
           </div>
           <div class="min-w-0">
@@ -35,7 +35,7 @@
         <!-- Quantity with B2B Step -->
         <div class="col-span-6 md:col-span-2 flex flex-col items-center gap-1">
           <span class="md:hidden text-xs text-muted block mb-1 text-center">تعداد</span>
-          <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden h-9">
+          <div class="flex items-center border border-gray-200 rounded-field overflow-hidden h-9">
             <UButton
               color="gray"
               variant="ghost"
@@ -75,7 +75,7 @@
     <!-- Empty State -->
     <div v-if="!cartItems?.length" class="p-16 flex flex-col items-center justify-center text-center">
       <div class="size-32 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-        <UIcon name="i-lucide-shopping-cart" class="size-16 text-gray-300" />
+        <UIcon name="i-lucide-shopping-cart" class="size-icon-hero text-gray-300" />
       </div>
       <h3 class="text-xl font-bold text-gray-800 mb-2">سبد خرید شما خالی است</h3>
       <p class="text-muted mb-8 max-w-sm">هنوز هیچ محصولی به سبد خرید خود اضافه نکرده‌اید. همین حالا محصولات ما را بررسی کنید.</p>

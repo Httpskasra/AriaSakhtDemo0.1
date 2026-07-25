@@ -5,10 +5,7 @@
     </div>
     <div v-for="order in orders" :key="order.id || order._id" class="item">
       <div class="status-header">
-        <div class="status-badge">
-          <img src="/icons/check.png" alt="✓" />
-          <span>تکمیل شده</span>
-        </div>
+        <OrderStatus :status="order.status" />
       </div>
       <div class="infos">
         <div class="info">
@@ -50,7 +47,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import type { Order } from "@/services/orderService";
+import type { Order } from "@/types/order";
 import Raiting from "./Raiting.vue";
 
 defineProps<{
@@ -122,7 +119,7 @@ function numberFormat(n?: number) {
 .item {
   border: 1px solid rgba(0, 0, 0, 0.1);
   width: 90%;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 15px;
   position: relative;
   margin: 15px auto;
@@ -136,20 +133,6 @@ function numberFormat(n?: number) {
 
 .status-header {
   margin-bottom: 12px;
-}
-
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #059669;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.status-badge img {
-  width: 24px;
-  height: 24px;
 }
 
 .infos {
@@ -171,7 +154,7 @@ function numberFormat(n?: number) {
 
 .info .name {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 600;
   margin: 0;
 }
@@ -200,7 +183,7 @@ function numberFormat(n?: number) {
   text-align: center;
   padding: 10px;
   border: 1px solid #f3f4f6;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   background: #f9fafb;
   min-width: 120px;
 }
@@ -251,15 +234,6 @@ function numberFormat(n?: number) {
 
   .item {
     width: 95%;
-  }
-
-  .status-badge {
-    font-size: 14px;
-  }
-
-  .status-badge img {
-    width: 20px;
-    height: 20px;
   }
 
   .infos {

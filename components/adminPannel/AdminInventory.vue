@@ -1,14 +1,12 @@
 <template>
   <div class="space-y-6">
     <!-- Action Bar -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-card shadow-sm border border-gray-100">
       <div class="flex-1 w-full md:max-w-md relative">
-        <UInput
+        <TableFilterInput
           v-model="searchQuery"
-          icon="i-lucide-search"
           placeholder="جستجو در انبار (نام کالا، SKU یا برند)..."
           class="w-full"
-          color="gray"
           size="lg"
         />
       </div>
@@ -29,7 +27,7 @@
     </div>
 
     <!-- Table Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="premium-card border border-gray-100 overflow-hidden">
       <UTable 
         :rows="filteredProducts" 
         :columns="columns" 
@@ -38,7 +36,7 @@
         :ui="{ th: { base: 'bg-gray-50 font-bold' } }"
       >
         <template #image-data="{ row }">
-          <div class="size-12 rounded-lg border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
+          <div class="size-12 rounded-field border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
             <img :src="row.images?.[0]?.url || 'https://picsum.photos/seed/inv/50/50'" class="size-full object-cover" />
           </div>
         </template>
@@ -46,19 +44,17 @@
         <template #name-data="{ row }">
           <div class="flex flex-col min-w-48">
             <span class="font-bold text-gray-800">{{ row.name }}</span>
+            <!-- Monospace is intentional for SKU identifiers. -->
             <span class="text-[10px] text-muted font-mono uppercase tracking-wider">SKU: {{ row.sku }}</span>
           </div>
         </template>
 
         <template #stock-data="{ row }">
           <div class="flex items-center gap-2">
-            <UBadge 
-              :color="row.stock?.quantity > 20 ? 'green' : (row.stock?.quantity > 0 ? 'orange' : 'red')" 
-              variant="soft"
-              class="font-num"
-            >
-              {{ row.stock?.quantity }} عدد
-            </UBadge>
+            <StatusPill
+              :label="`${row.stock?.quantity ?? 0} عدد`"
+              :semantic="stockSemantic(row.stock?.quantity)"
+              size="compact" />
           </div>
         </template>
 
@@ -131,6 +127,12 @@ const statusLabels = {
 }
 
 const formatPrice = (p) => new Intl.NumberFormat('fa-IR').format(p)
+
+const stockSemantic = (quantity = 0) => {
+  if (quantity > 20) return 'success'
+  if (quantity > 0) return 'warning'
+  return 'danger'
+}
 
 const filteredProducts = computed(() => {
   if (!searchQuery.value) return props.products

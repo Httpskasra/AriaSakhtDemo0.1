@@ -15,102 +15,75 @@
       <!-- فیلتر و سرچ شبیه users -->
       <div class="filter-bar">
         <div class="filter-left">
-          <select v-model="typeFilter" class="select">
-            <option value="">نوع تراکنش (همه)</option>
-            <option value="credit">واریز</option>
-            <option value="debit">برداشت</option>
-            <option value="transfer">انتقال</option>
-          </select>
+          <USelect
+            v-model="typeFilter"
+            :items="[
+              { label: 'نوع تراکنش (همه)', value: '' },
+              { label: 'واریز', value: 'credit' },
+              { label: 'برداشت', value: 'debit' },
+              { label: 'انتقال', value: 'transfer' }
+            ]" />
 
-          <select v-model="statusFilter" class="select">
-            <option value="">وضعیت (همه)</option>
-            <option value="pending">در انتظار</option>
-            <option value="success">موفق</option>
-            <option value="failed">ناموفق</option>
-          </select>
+          <USelect
+            v-model="statusFilter"
+            :items="[
+              { label: 'وضعیت (همه)', value: '' },
+              { label: 'در انتظار', value: 'pending' },
+              { label: 'موفق', value: 'success' },
+              { label: 'ناموفق', value: 'failed' }
+            ]" />
         </div>
 
         <div class="filter-right">
-          <input
+          <TableFilterInput
             v-model="search"
-            type="text"
-            class="search-input"
             placeholder="جستجو در توضیحات، مرجع، شناسه تراکنش ..." />
         </div>
       </div>
 
-      <!-- وضعیت لودینگ / خطا -->
-      <div v-if="pending" class="card info-card">
-        در حال بارگذاری تراکنش‌ها...
-      </div>
-
-      <div v-else-if="error" class="card error-card">
-        خطا در دریافت تراکنش‌ها. لطفاً دوباره تلاش کنید.
-      </div>
+      <SharedAsyncState v-if="pending" state="loading" />
+      <SharedAsyncState
+        v-else-if="error"
+        state="error"
+        message="خطا در دریافت تراکنش‌ها. لطفاً دوباره تلاش کنید."
+        @retry="fetchTransactions" />
 
       <!-- جدول تراکنش‌ها -->
-      <div v-else class="card table-card" v-if="canRead">
-        <table v-if="filteredTransactions.length" class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>نوع</th>
-              <th>مبلغ</th>
-              <th>تاریخ</th>
-              <th>وضعیت</th>
-              <th>شناسه مرجع</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(tx, index) in filteredTransactions"
-              :key="tx.id || tx._id || tx.transactionId || index">
-              <td>{{ index + 1 }}</td>
-
-              <!-- نوع تراکنش -->
-              <td>
-                <span
-                  class="pill"
-                  :class="`pill-type-${(tx.type || '').toLowerCase()}`">
-                  {{ humanType(tx.type) }}
-                </span>
-              </td>
-
-              <!-- مبلغ -->
-              <td class="amount">
-                {{ formatAmount(tx.amount) }}
-              </td>
-
-              <!-- تاریخ -->
-              <td>
-                {{ formatDate(tx.createdAt || tx.date || tx.timestamp) }}
-              </td>
-
-              <!-- وضعیت -->
-              <td>
-                <span
-                  class="pill"
-                  :class="`pill-status-${(
-                    tx.status || 'unknown'
-                  ).toLowerCase()}`">
-                  {{ humanStatus(tx.status) }}
-                </span>
-              </td>
-
-              <!-- مرجع -->
-              <td class="ref">
-                {{ tx.reference || tx.orderId || tx.trackId || "-" }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- وقتی لیست خالی است -->
-        <div v-else class="empty-state">
-          <p>هیچ تراکنشی برای نمایش وجود ندارد.</p>
-        </div>
+      <div v-else-if="canRead" class="premium-card border border-gray-100 overflow-hidden">
+  <TableScrollContainer>
+    <UTable :rows="transactionRows" :columns="transactionColumns" class="min-w-[42rem]">
+          <template #type-data="{ row }">
+            <StatusPill
+              v-bind="getTransactionTypeConfig(row.type)"
+              size="compact" />
+          </template>
+          <template #amount-data="{ row }">
+            <span class="amount">{{ formatAmount(row.amount) }}</span>
+          </template>
+          <template #date-data="{ row }">
+            {{ formatDate(row.createdAt || row.date || row.timestamp) }}
+          </template>
+          <template #status-data="{ row }">
+            <StatusPill
+              v-bind="getTransactionStatusConfig(row.status || 'unknown')"
+              size="compact" />
+          </template>
+          <template #reference-data="{ row }">
+            <span class="ref">{{ row.reference || row.orderId || row.trackId || "-" }}</span>
+          </template>
+    </UTable>
+  </TableScrollContainer>
+        <SharedAsyncState
+          v-if="filteredTransactions.length === 0"
+          state="empty"
+          title="تراکنشی پیدا نشد"
+          message="هیچ تراکنشی برای نمایش وجود ندارد." />
       </div>
-      <div v-else>شما اجازه دسترسی ندارید</div>
+      <SharedAsyncState
+        v-else
+        state="error"
+        title="دسترسی ندارید"
+        message="شما اجازه دسترسی ندارید." />
     </div>
   </NuxtLayout>
 </template>
@@ -118,6 +91,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { Resource } from "~/types/permissions";
+definePageMeta({
+  middleware: ["auth", "permission"],
+  permission: { resource: "transaction", action: "r" },
+});
 const { canRead } = useAccess(Resource.TRANSACTION);
 /**
  * گرفتن دیتای تراکنش‌ها از API طبق Swagger:
@@ -130,6 +107,14 @@ const error = ref<any>(null);
 const search = ref("");
 const typeFilter = ref("");
 const statusFilter = ref("");
+const transactionColumns = [
+  { key: "rowNumber", label: "#" },
+  { key: "type", label: "نوع" },
+  { key: "amount", label: "مبلغ" },
+  { key: "date", label: "تاریخ" },
+  { key: "status", label: "وضعیت" },
+  { key: "reference", label: "شناسه مرجع" },
+];
 
 // تابع برای دریافت تراکنش‌ها
 const fetchTransactions = async () => {
@@ -196,23 +181,12 @@ const filteredTransactions = computed(() => {
   });
 });
 
-// نمایش قشنگ نوع تراکنش
-const humanType = (value: any) => {
-  const v = String(value || "").toLowerCase();
-  if (v === "credit") return "واریز";
-  if (v === "debit") return "برداشت";
-  if (v === "transfer") return "انتقال";
-  return value || "نامشخص";
-};
-
-// نمایش قشنگ وضعیت
-const humanStatus = (value: any) => {
-  const v = String(value || "").toLowerCase();
-  if (v === "pending") return "در انتظار";
-  if (v === "success" || v === "completed") return "موفق";
-  if (v === "failed" || v === "error") return "ناموفق";
-  return value || "نامشخص";
-};
+const transactionRows = computed(() =>
+  filteredTransactions.value.map((tx: any, index) => ({
+    ...tx,
+    rowNumber: index + 1,
+  }))
+);
 
 // فرمت مبلغ
 const formatAmount = (amount: any) => {
@@ -260,7 +234,7 @@ const formatDate = (value: any) => {
 .subtitle {
   margin-top: 0.25rem;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .title-right {
@@ -294,24 +268,25 @@ const formatDate = (value: any) => {
 /* کارت‌ها */
 .card {
   background: white;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   padding: 1rem 1.25rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-raised);
   font-size: 0.9rem;
 }
 
 .info-card {
-  color: #4b5563;
+  color: var(--color-text-body);
 }
 
 .error-card {
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  color: var(--color-danger-fg);
+  border: 1px solid var(--color-danger-bg);
 }
 
 .table-card {
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* جدول */
@@ -339,95 +314,6 @@ const formatDate = (value: any) => {
   background: #eff6ff;
 }
 
-/* ورودی‌ها */
-.search-input {
-  width: 100%;
-  max-width: 260px;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.85rem;
-}
-
-.select {
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8rem;
-  background: #ffffff;
-}
-
-/* دکمه بروزرسانی */
-.refresh-btn {
-  border-radius: 999px;
-  border: none;
-  padding: 0.45rem 1rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  background: #2563eb;
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.refresh-btn:hover {
-  background: #1d4ed8;
-}
-
-/* چپس وضعیت/نوع */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-}
-
-/* نوع‌ها */
-.pill-type-credit {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.pill-type-debit {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.pill-type-transfer {
-  background: #e0f2fe;
-  color: #075985;
-}
-
-/* وضعیت‌ها */
-.pill-status-success {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.pill-status-completed {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.pill-status-pending {
-  background: #fef9c3;
-  color: #854d0e;
-}
-
-.pill-status-failed,
-.pill-status-error {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.pill-status-unknown {
-  background: #e5e7eb;
-  color: #374151;
-}
-
 /* مبلغ و مرجع */
 .amount {
   direction: ltr;
@@ -435,6 +321,7 @@ const formatDate = (value: any) => {
 }
 
 .ref {
+  /* Monospace is intentional for transaction reference identifiers. */
   font-family: monospace;
   font-size: 0.8rem;
 }
@@ -444,7 +331,7 @@ const formatDate = (value: any) => {
   padding: 1.25rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* ریسپانسیو */
@@ -462,10 +349,6 @@ const formatDate = (value: any) => {
 
   .filter-right {
     justify-content: stretch;
-  }
-
-  .search-input {
-    max-width: 100%;
   }
 
   .table th,

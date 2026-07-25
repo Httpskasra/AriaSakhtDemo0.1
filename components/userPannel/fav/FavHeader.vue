@@ -22,7 +22,7 @@
   background-color: #fff;
   margin: 0 auto;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 25px;
 }
 .header {
@@ -43,11 +43,11 @@
 @media (max-width: 767px) {
   .container {
     width: 100%;
-    margin-right: 30px;
+    margin: 0 auto;
   }
   .header {
-    width: 80vw;
-    padding: 0 20px;
+    width: 100%;
+    padding: 0 12px;
   }
   .header ul {
     width: 100%;

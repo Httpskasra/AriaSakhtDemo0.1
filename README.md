@@ -2,6 +2,14 @@
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
+## Theme Mode
+
+This application is intentionally light-only. Nuxt UI is configured with
+`colorMode.preference = 'light'` and `colorMode.fallback = 'light'`, and the
+CSS token layer only defines light-theme values. Existing light surfaces such as
+`bg-white`, `#fff`, and light gray text classes are intentional until a complete
+dark-mode token layer and component migration are implemented.
+
 ## Setup
 
 Make sure to install dependencies:

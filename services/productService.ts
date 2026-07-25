@@ -14,6 +14,58 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+export interface AdminProductListParams {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  filter?: string;
+}
+
+export const listAdminProducts = async (
+  params: AdminProductListParams = {},
+) => {
+  const $axios = useApi();
+  const { data } = await $axios.get<Product[] | PaginatedResponse<Product>>(
+    "/products/admin/all-products",
+    { params },
+  );
+
+  if (Array.isArray(data)) {
+    return {
+      items: data,
+      total: data.length,
+      page: params.page || 1,
+      limit: params.limit || data.length,
+    } satisfies PaginatedResponse<Product>;
+  }
+
+  return data;
+};
+
+export type ProductSearchResponse = {
+  data: PaginatedResponse<Product>;
+};
+
+/** Normalizes the product endpoints that may return either a bare array or a paginated payload. */
+export const normalizeProductPage = (
+  payload: Product[] | PaginatedResponse<Product> | null | undefined,
+  page = 1,
+  limit = 12,
+): PaginatedResponse<Product> => {
+  const isPaginated = !Array.isArray(payload) && Array.isArray(payload?.items);
+  const paginatedPayload = isPaginated ? payload as PaginatedResponse<Product> : undefined;
+  const items = Array.isArray(payload) ? payload : paginatedPayload?.items || [];
+  const total = paginatedPayload?.total ?? items.length;
+  const startIndex = (page - 1) * limit;
+
+  return {
+    items: isPaginated ? items : items.slice(startIndex, startIndex + limit),
+    total,
+    page: paginatedPayload?.page ?? page,
+    limit: paginatedPayload?.limit ?? limit,
+  };
+};
+
 /* ================== محصولات ساده ================== */
 
 export const getAllProducts = async (limit?: number, page?: number) => {
@@ -76,7 +128,9 @@ export interface AdvancedSearchParams {
  * مسئله: API فقط آرایه برمی‌گردونه نه PaginatedResponse
  * راه‌حل: تبدیل به PaginatedResponse و pagination client-side
  */
-export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
+export const advancedSearchProducts = async (
+  params: AdvancedSearchParams,
+): Promise<ProductSearchResponse> => {
   const $axios = useApi();
 
   // Filter out undefined values
@@ -89,7 +143,7 @@ export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
   });
 
   try {
-    const response = await $axios.get<any>("/products/advanced-search", {
+    const response = await $axios.get<Product[] | PaginatedResponse<Product>>("/products/advanced-search", {
       params: cleanParams,
       paramsSerializer: {
         serialize: (params: Record<string, any>) => {
@@ -116,50 +170,15 @@ export const advancedSearchProducts = async (params: AdvancedSearchParams) => {
       },
     });
 
-    let items: Product[] = [];
-    let total = 0;
-
-    // اگر response یک آرایه ساده است
-    if (Array.isArray(response.data)) {
-      items = response.data;
-      total = items.length;
-    }
-    // اگر response یک object است
-    else if (response.data?.items) {
-      items = response.data.items;
-      total = response.data.total;
-    }
-    // fallback
-    else {
-      items = [];
-      total = 0;
-    }
-
-    // انجام pagination client-side
     const page = cleanParams.page || 1;
     const limit = cleanParams.limit || 12;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedItems = items.slice(startIndex, endIndex);
 
     return {
-      data: {
-        items: paginatedItems,
-        total: total,
-        page: page,
-        limit: limit,
-      },
+      data: normalizeProductPage(response.data, page, limit),
     };
   } catch (error) {
     console.error("خطا در advanced search:", error);
-    return {
-      data: {
-        items: [],
-        total: 0,
-        page: cleanParams.page || 1,
-        limit: cleanParams.limit || 12,
-      },
-    };
+    throw error;
   }
 };
 
@@ -174,7 +193,8 @@ export const getTopProducts = async (limit?: number) => {
 
 export const getOfferProducts = async (limit?: number, page?: number) => {
   const $axios = useApi();
-  return await $axios.get<PaginatedResponse<Product>>("/products/offers", {
+  const response = await $axios.get<Product[] | PaginatedResponse<Product>>("/products/offers", {
     params: { limit, page },
   });
+  return normalizeProductPage(response.data, page || 1, limit || 12);
 };

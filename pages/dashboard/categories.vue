@@ -1,49 +1,50 @@
 <template>
   <NuxtLayout name="dashboard">
-    <div class="title">
-      <h1>دسته‌بندی‌ها</h1>
-      <img src="/icons/categories.png" alt="categories" />
-    </div>
+    <DashboardPageHeader title="دسته‌بندی‌ها" icon="/icons/categories.png" alt="categories" />
 
     <div class="container" v-if="canRead">
       <div class="header">
-        <SearchBar :dark="true" />
+        <TableFilterInput
+          v-model="search"
+          placeholder="جستجوی دسته‌بندی..." />
 
-        <button v-if="canCreate" class="create-btn" @click="openCreateModal">
+        <UButton v-if="canCreate" size="sm" @click="openCreateModal">
           افزودن دسته‌بندی
-        </button>
+        </UButton>
       </div>
 
-      <div class="list">
-        <table>
-          <thead>
-            <tr>
-              <th>نام دسته</th>
-              <th>توضیحات</th>
-              <th v-if="canUpdate || canDelete">عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="cat in categories" :key="cat.id">
-              <td>{{ cat.name }}</td>
-              <td>{{ cat.description }}</td>
-              <td v-if="canUpdate || canDelete" class="actions">
-                <button
-                  v-if="canUpdate"
-                  class="edit"
-                  @click="editCategory(cat)">
-                  ویرایش
-                </button>
-                <button
-                  v-if="canDelete"
-                  class="delete"
-                  @click="deleteCategory(cat.id)">
-                  حذف
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="premium-card border border-gray-100 overflow-hidden">
+        <TableScrollContainer>
+          <UTable :rows="filteredCategories" :columns="categoryColumns" class="min-w-[32rem]">
+          <template #description-data="{ row }">
+            {{ row.description || "-" }}
+          </template>
+          <template #actions-data="{ row }">
+            <div class="actions">
+              <UButton
+                v-if="canUpdate"
+                size="xs"
+                color="warning"
+                variant="soft"
+                @click="editCategory(row)">
+                ویرایش
+              </UButton>
+              <UButton
+                v-if="canDelete"
+                size="xs"
+                color="error"
+                @click="deleteCategory(row.id)">
+                حذف
+              </UButton>
+            </div>
+          </template>
+          </UTable>
+        </TableScrollContainer>
+        <SharedAsyncState
+          v-if="filteredCategories.length === 0"
+          state="empty"
+          title="دسته‌بندی‌ای پیدا نشد"
+          message="جستجو را تغییر دهید یا دسته‌بندی جدید بسازید." />
       </div>
     </div>
 
@@ -55,101 +56,70 @@
         {{ editMode ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی جدید" }}
       </h2>
 
-      <form class="space-y-5" @submit.prevent="saveCategory">
+      <UForm :state="form" class="space-y-5" @submit.prevent="saveCategory">
         <!-- نام -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >نام</label
-          >
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
-        </div>
+        <UFormField label="نام" name="name">
+          <UInput v-model="form.name" required />
+        </UFormField>
 
         <!-- Slug -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Slug</label
-          >
-          <input
-            v-model="form.slug"
-            type="text"
-            required
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
-        </div>
+        <UFormField label="Slug" name="slug">
+          <UInput v-model="form.slug" required />
+        </UFormField>
 
         <!-- توضیحات -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >توضیحات</label
-          >
-          <textarea
-            v-model="form.description"
-            rows="3"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition"></textarea>
-        </div>
+        <UFormField label="توضیحات" name="description">
+          <UTextarea v-model="form.description" :rows="3" />
+        </UFormField>
 
         <!-- والد (parentName = id والد) -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >دسته والد</label
-          >
-          <select
+        <UFormField label="دسته والد" name="parentName">
+          <USelect
             v-model="form.parentName"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
-            <option value="">بدون والد</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-              {{ cat.name }}
-            </option>
-          </select>
-        </div>
+            :items="[{ label: 'بدون والد', value: '' }, ...categories.map((cat) => ({ label: cat.name, value: cat.id }))]" />
+        </UFormField>
 
         <!-- وضعیت -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >وضعیت</label
-          >
-          <select
+        <UFormField label="وضعیت" name="status">
+          <USelect
             v-model="form.status"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition">
-            <option value="draft">پیش‌نویس</option>
-            <option value="active">فعال</option>
-            <option value="inactive">غیر فعال</option>
-          </select>
-        </div>
+            :items="[
+              { label: 'پیش‌نویس', value: 'draft' },
+              { label: 'فعال', value: 'active' },
+              { label: 'غیر فعال', value: 'inactive' }
+            ]" />
+        </UFormField>
 
         <!-- دکمه‌ها -->
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
+          <UButton
             type="button"
             @click="closeModal"
-            class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+            color="neutral"
+            variant="soft">
             لغو
-          </button>
-          <button
-            type="submit"
-            class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition">
+          </UButton>
+          <UButton type="submit">
             ذخیره
-          </button>
+          </UButton>
         </div>
-      </form>
+      </UForm>
     </BaseModal>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 useHead({
-  title: " آریاساخت | داشبورد | دسته بندی ها",
+  title: "داشبورد | دسته‌بندی‌ها",
 });
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import BaseModal from "~/components/BaseModal.vue";
-import dashboardAuth from "~/middleware/dashboard-auth";
+const feedback = useFeedback();
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "categories", action: "r" },
 });
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
@@ -166,6 +136,14 @@ type Category = {
 };
 
 const categories = ref<Category[]>([]);
+const search = ref("");
+const categoryColumns = computed(() => [
+  { key: "name", label: "نام دسته" },
+  { key: "description", label: "توضیحات" },
+  ...(canUpdate.value || canDelete.value
+    ? [{ key: "actions", label: "عملیات" }]
+    : []),
+]);
 const { $axios } = useNuxtApp();
 
 const isModalOpen = ref(false);
@@ -206,7 +184,7 @@ const editCategory = (cat: Category) => {
 };
 
 const deleteCategory = async (id: string) => {
-  if (!canDelete) return alert("شما اجازه حذف ندارید!");
+  if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
 
   try {
@@ -219,7 +197,7 @@ const deleteCategory = async (id: string) => {
 };
 
 const fetchCategories = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
   try {
     const { data } = await $axios.get("/categories");
     categories.value = data;
@@ -230,9 +208,22 @@ const fetchCategories = async () => {
   }
 };
 
+const filteredCategories = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return categories.value;
+
+  return categories.value.filter((cat) =>
+    [cat.name, cat.slug, cat.description, cat.status]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(query)
+  );
+});
+
 const saveCategory = async () => {
-  if (!canCreate && !editMode.value) return alert("شما اجازه ایجاد ندارید!");
-  if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
+  if (!canCreate.value && !editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
+  if (!canUpdate.value && editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
 
   try {
     const parentId =
@@ -274,26 +265,9 @@ onMounted(() => {
 });
 </script>
 <style scoped>
-.title {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
-  width: 230px;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  margin: 15px;
-}
-.title h1 {
-  font-size: 36px;
-}
-.title img {
-  width: 66px;
-  height: 66px;
-}
-
 .container {
   background: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
   width: 90%;
   margin: auto;
@@ -302,19 +276,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-}
-.create-btn {
-  background-color: var(--blue-dark);
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-family: "iran-yekan-Bold";
-  font-size: 10px;
-}
-.create-btn:hover {
-  opacity: 0.85;
-  cursor: pointer;
+  margin-bottom: 16px;
 }
 .list table {
   width: 100%;
@@ -333,34 +295,12 @@ onMounted(() => {
   display: flex;
   gap: 10px;
 }
-.edit {
-  background-color: var(--yellow-warning);
-  color: var(--blue-dark);
-  padding: 4px 10px;
-  border-radius: 6px;
-}
-.delete {
-  background-color: #f87171;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 6px;
-}
 .no-access {
   color: var(--gray-600);
   text-align: center;
   padding: 20px;
 }
 @media (max-width: 767px) {
-  .title {
-    width: 40%;
-  }
-  .title h1 {
-    font-size: 20px;
-  }
-  .title img {
-    width: 40px;
-    height: 40px;
-  }
   .container {
     width: 95%;
     padding: 10px;

@@ -25,12 +25,13 @@
 .last-order {
   position: relative;
   margin: auto;
-  width: 1000px;
+  width: 100%;
+  max-width: min(100%, 1000px);
   height: 242px;
   display: flex;
   justify-content: center;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
 }
 .last-order .status {
   margin: 20px 100px 20px 100px;
@@ -43,7 +44,7 @@
 .last-order .status p,
 .last-order .status span {
   color: var(--blue-dark);
-  font-family: "iran-yekan-num-regular";
+  font-family: var(--font-num);
 }
 .last-order img {
   width: 120px;
@@ -51,7 +52,7 @@
 }
 
 .see-more {
-  font-family: "iran-yekan-Light";
+  font-family: var(--font-yekan);
   color: var(--blue-bright);
   font-size: 10px;
   position: absolute;

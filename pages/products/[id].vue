@@ -1,11 +1,9 @@
 <template>
   <NuxtLayout name="default">
-    <!-- حالت بارگذاری -->
     <div class="loading" v-if="loading">
       <SkeletonLoaderProduct />
     </div>
 
-    <!-- نمایش خطا -->
     <div class="error-container" v-if="error && !loading">
       <div class="error-box">
         <h1>❌ خطا در بارگذاری محصول</h1>
@@ -14,422 +12,144 @@
       </div>
     </div>
 
-    <!-- نمایش محصول -->
     <div class="container" v-if="!loading && !error && data">
-      <!-- عنوان و توضیح محصول -->
-      <Product :data="data" class="title" />
-
-      <!-- اطلاعات و تصاویر و فرم -->
+      <div class="title mb-6">
+        <h1 class="text-2xl font-bold text-[var(--color-text-heading)]">{{ data.name }}</h1>
+        <p class="mt-1 text-sm text-[var(--color-text-muted)]">شناسه کالا: {{ data.sku }}</p>
+      </div>
       <div class="fields">
         <ProductImage :data="data" class="img" />
-        <InputProduct
-          :data="data"
-          @add-to-cart="handleAddToCart"
-          class="form" />
+        <InputProduct :data="data" @add-to-cart="handleAddToCart" class="form" />
         <ProductRecip :data="data" class="recip" />
       </div>
 
-      <!-- ویژگی‌های محصول -->
-      <div
-        class="feature-demo"
-        v-if="data.attributes && Object.keys(data.attributes).length > 0">
+      <div class="feature-demo" v-if="data.attributes && Object.keys(data.attributes).length > 0">
         <span>ویژگی ها</span>
         <ProductFutureDemo :attributes="data.attributes" />
       </div>
 
-      <!-- محصولات پیشنهادی -->
-      <!-- <div class="recomend">
-        <FullRecommend />
-      </div> -->
-
-      <!-- اطلاعات تفصیلی -->
       <div class="info" v-if="data.description">
         <InfoContainer :data="data" />
       </div>
 
-      <!-- محصولات مشابه -->
       <div class="more-products">
         <h2>محصولات مشابه</h2>
         <RelatedProducts />
       </div>
     </div>
 
-    <!-- پیام اطلاع‌رسانی -->
-    <div v-if="successMessage" class="success-notification">
-      {{ successMessage }}
-    </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
-import type { Product } from "~/types/product";
 import { useProductById } from "~/composables/useGetProductByID";
-import { useUser } from "~/composables/useUser";
+import { useAddToCart } from "~/composables/useAddToCart";
 import RelatedProducts from "~/components/products/info/RelatedProducts.vue";
 
 const route = useRoute();
-const successMessage = ref<string | null>(null);
-const { user, fetchUser } = useUser();
+const toast = useToast();
+const { addProductToCart } = useAddToCart();
 
-// دریافت اطلاعات محصول
-const { data, loading, error, fetchProduct } = useProductById(
+const { data, loading, error, fetchProduct } = await useProductById(
   computed(() => route.params.id as string)
 );
 
-// onMounted(() => {
-//   fetchUser();
-// });
+const runtimeConfig = useRuntimeConfig();
+const siteUrl = String(runtimeConfig.public.siteUrl || "https://tejaris.ir").replace(/\/$/, "");
+const productUrl = computed(() => `${siteUrl}/products/${encodeURIComponent(String(route.params.id))}`);
+const productImage = computed(() => {
+  const image = data.value?.images?.[0]?.url;
+  if (!image) return `${siteUrl}/logo/logo.png`;
+  return image.startsWith("http") ? image : `${siteUrl}${image.startsWith("/") ? "" : "/"}${image}`;
+});
+const productPrice = computed(() => Number(data.value?.finalPrice ?? data.value?.basePrice ?? 0));
+const productAvailability = computed(() =>
+  data.value?.status === "active" && Number(data.value?.stock?.quantity ?? 0) > 0
+    ? "https://schema.org/InStock"
+    : "https://schema.org/OutOfStock",
+);
+const companyName = computed(() =>
+  typeof data.value?.companyId === "object" ? data.value.companyId.name : "تجاریس",
+);
 
-// تابع تلاش دوباره
-const retryFetch = () => {
-  fetchProduct();
-};
+useSeoMeta({
+  title: () => data.value?.name || 'جزئیات محصول',
+  description: () => data.value?.description?.slice(0, 160) || 'مشاهده جزئیات محصول',
+  ogTitle: () => data.value?.name || 'جزئیات محصول',
+  ogDescription: () => data.value?.description?.slice(0, 160) || 'مشاهده جزئیات محصول',
+  ogImage: () => productImage.value,
+  ogUrl: () => productUrl.value,
+  ogType: "product",
+});
 
-// مدیریت اضافه کردن به سبد خریدیت
+useHead(() => ({
+  link: [{ rel: "canonical", href: productUrl.value }],
+  meta: [
+    { property: "product:price:amount", content: String(productPrice.value) },
+    { property: "product:price:currency", content: data.value?.currency || "IRR" },
+    { property: "product:availability", content: productAvailability.value },
+  ],
+  script: [{
+    key: "product-structured-data",
+    type: "application/ld+json",
+    children: JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Product",
+          name: data.value?.name || "محصول",
+          description: data.value?.description || "",
+          image: [productImage.value],
+          sku: data.value?.sku,
+          brand: { "@type": "Brand", name: companyName.value },
+          offers: {
+            "@type": "Offer",
+            url: productUrl.value,
+            priceCurrency: data.value?.currency || "IRR",
+            price: productPrice.value,
+            availability: productAvailability.value,
+            itemCondition: "https://schema.org/NewCondition",
+          },
+        },
+        {
+          "@type": "Organization",
+          name: "تجاریس",
+          url: siteUrl,
+          logo: `${siteUrl}/logo/logo.png`,
+        },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "خانه", item: siteUrl },
+            { "@type": "ListItem", position: 2, name: "محصولات", item: `${siteUrl}/products` },
+            { "@type": "ListItem", position: 3, name: data.value?.name || "محصول", item: productUrl.value },
+          ],
+        },
+      ],
+    }),
+  }],
+}));
+
+const retryFetch = () => fetchProduct();
+
 const handleAddToCart = async (item: any) => {
   try {
-    const { $axios } = useNuxtApp();
+    const companyId = typeof data.value?.companyId === 'string'
+      ? data.value.companyId
+      : data.value?.companyId?._id;
 
-    // بررسی احراز هویت
-    if (!user.value?.userId) {
-      await fetchUser();
-    }
-
-    if (!user.value?.userId) {
-      successMessage.value = "❌ خطا: لطفا وارد سایت شوید";
-      setTimeout(() => {
-        successMessage.value = null;
-      }, 3000);
-      return;
-    }
-
-    // مرحله 1: سعی کردن برای افزودن آیتم به سبد
-    try {
-      await $axios.post("/carts/items", {
-        userId: user.value.userId,
-        productId: route.params.id,
-        quantity: item.quantity || 1,
-        priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-        companyId: item.companyId || data.value?.companyId,
-        variantId: item.variantId,
-        selectedVariant: item.selectedVariant,
-      });
-
-      successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
-      setTimeout(() => {
-        successMessage.value = null;
-      }, 3000);
-    } catch (err: any) {
-      // مرحله 2: اگر خطا داد، کارت جدید ایجاد کن
-      if (err?.response?.status) {
-        let shouldAddItem = false;
-        let activeCartExists = false;
-
-        try {
-          const activeCartResponse = await $axios.get("/carts/active");
-          activeCartExists =
-            activeCartResponse.data &&
-            Object.keys(activeCartResponse.data).length > 0;
-        } catch (activeErr) {
-          activeCartExists = false;
-        }
-
-        if (activeCartExists) {
-          shouldAddItem = true;
-        } else {
-          try {
-            await $axios.post("/carts", {
-              userId: user.value.userId,
-              items: [
-                {
-                  productId: route.params.id,
-                  quantity: item.quantity || 1,
-                  priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-                  companyId: item.companyId || data.value?.companyId,
-                  variantId: item.variantId,
-                  selectedVariant: item.selectedVariant,
-                },
-              ],
-            });
-          } catch (createErr: any) {
-            const message = createErr?.response?.data?.message || "";
-            if (String(message).includes("duplicate key")) {
-              shouldAddItem = true;
-            } else {
-              throw createErr;
-            }
-          }
-        }
-
-        if (shouldAddItem) {
-          await $axios.post("/carts/items", {
-            userId: user.value.userId,
-            productId: route.params.id,
-            quantity: item.quantity || 1,
-            priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
-            companyId: item.companyId || data.value?.companyId,
-            variantId: item.variantId,
-            selectedVariant: item.selectedVariant,
-          });
-        }
-
-        successMessage.value = "✓ محصول به سبد خریدی افزوده شد";
-        setTimeout(() => {
-          successMessage.value = null;
-        }, 3000);
-      } else {
-        throw err;
-      }
-    }
-  } catch (err: any) {
+    await addProductToCart({
+      productId: String(route.params.id),
+      quantity: item.quantity || 1,
+      priceAtAdd: item.priceAtAdd || data.value?.basePrice || 0,
+      companyId: String(item.companyId || companyId),
+      variant: item.variant,
+    });
+    toast.add({ title: "محصول به سبد خرید اضافه شد", color: "success" });
+  } catch (err) {
     console.error("خطا در افزودن به سبد خریدی:", err);
-    let errorMsg =
-      err?.response?.data?.message ||
-      (Array.isArray(err?.response?.data?.message)
-        ? err?.response?.data?.message[0]
-        : "نتوانست محصول اضافه شود");
-
-    // بررسی خطای توکن احراز هویت
-    if (errorMsg === "Missing authorization token") {
-      errorMsg = "لطفا وارد سایت شوید";
-    }
-
-    successMessage.value = "❌ خطا: " + errorMsg;
-    setTimeout(() => {
-      successMessage.value = null;
-    }, 3000);
   }
 };
 </script>
-
-<style scoped>
-.loading {
-  width: 90%;
-  margin: 30px auto;
-}
-
-.error-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-  margin: 30px 20px;
-}
-
-.error-box {
-  background-color: #ffebee;
-  border: 2px solid #f44336;
-  border-radius: 8px;
-  padding: 30px;
-  text-align: center;
-  max-width: 500px;
-}
-
-.error-box h1 {
-  color: #c62828;
-  font-family: "iran-yekan-DemiBold";
-  margin: 0 0 15px 0;
-  font-size: 22px;
-}
-
-.error-box p {
-  color: #d32f2f;
-  font-family: "iran-yekan-Light";
-  margin: 0 0 20px 0;
-  line-height: 1.6;
-}
-
-.retry-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: "iran-yekan-DemiBold";
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.retry-btn:hover {
-  background-color: #d32f2f;
-}
-
-.container {
-  margin: auto;
-  margin-top: 10px;
-  height: auto;
-  width: 100%;
-  padding: 0 20px;
-}
-
-.title {
-  margin-bottom: 30px;
-}
-
-.fields {
-  display: flex;
-  width: 100%;
-  justify-content: space-around;
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-.fields .img {
-  flex: 1;
-  min-width: 300px;
-}
-
-.fields .form {
-  flex: 1;
-  min-width: 300px;
-}
-
-.fields .recip {
-  flex: 0 1 340px;
-}
-
-.feature-demo {
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-  margin: 40px auto;
-  padding: 20px;
-}
-
-.feature-demo span {
-  width: 100%;
-  text-align: right;
-  font-family: "iran-yekan-DemiBold";
-  font-size: 20px;
-  color: var(--blue-dark);
-  margin-bottom: 20px;
-}
-
-.recomend {
-  margin: 40px auto;
-  width: 100%;
-}
-
-.info {
-  margin: 40px auto;
-  width: 100%;
-}
-
-.more-products {
-  margin: 40px auto;
-  width: 100%;
-}
-
-.more-products h2 {
-  font-family: "iran-yekan-DemiBold";
-  color: var(--blue-dark);
-  font-size: 20px;
-  text-align: right;
-  margin-bottom: 20px;
-}
-
-.success-notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #4caf50;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 4px;
-  font-family: "iran-yekan-DemiBold";
-  z-index: 1000;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@media (max-width: 1024px) {
-  .fields {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .fields .img,
-  .fields .form,
-  .fields .recip {
-    flex: 1;
-    min-width: 280px;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 767px) {
-  .container {
-    padding: 0 10px;
-  }
-
-  .fields {
-    width: 100%;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .fields * {
-    margin-top: 15px;
-    width: 100%;
-  }
-
-  .container * {
-    margin: auto;
-  }
-
-  .feature-demo {
-    width: 95%;
-    margin: 20px auto;
-  }
-
-  .feature-demo span {
-    font-size: 16px;
-    margin-bottom: 15px;
-  }
-
-  .recomend {
-    margin-top: 30px;
-  }
-
-  .info {
-    /* position: relative;
-    top: 180px; */
-    height: auto;
-    width: 100%;
-  }
-
-  .more-products {
-    display: block;
-    margin-top: 30px;
-    position: relative;
-  }
-
-  .error-box {
-    padding: 20px;
-  }
-
-  .error-box h1 {
-    font-size: 18px;
-  }
-
-  .error-box p {
-    font-size: 13px;
-  }
-}
-</style>

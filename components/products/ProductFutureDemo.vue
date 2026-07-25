@@ -29,7 +29,7 @@ const limitedAttributes = computed(() => {
 .container-future-demo {
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   width: 100%;
   max-width: 900px;
   padding: 20px;
@@ -43,7 +43,7 @@ const limitedAttributes = computed(() => {
 }
 
 .no-attributes p {
-  font-family: "iran-yekan-Light";
+  font-family: var(--font-yekan);
   font-size: 14px;
 }
 
@@ -61,28 +61,28 @@ li {
   justify-content: center;
   align-items: center;
   gap: 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   background-color: #f9f9f9;
   transition: all 0.3s;
 }
 
 li:hover {
-  border-color: #0066cc;
+  border-color: var(--color-brand-blue);
   background-color: #f0f5ff;
   transform: translateY(-2px);
 }
 
 .title {
-  color: #666;
-  font-family: "iran-yekan-DemiBold";
+  color: var(--color-text-muted);
+  font-family: var(--font-yekan);
   font-size: 13px;
   font-weight: bold;
   text-align: center;
 }
 
 .val {
-  color: #0066cc;
-  font-family: "iran-yekan-num-DemiBold";
+  color: var(--color-brand-blue);
+  font-family: var(--font-num);
   font-size: 14px;
   font-weight: bold;
   text-align: center;

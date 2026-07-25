@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white border border-gray-100 rounded-2xl p-4 h-full flex flex-col shadow-sm">
+  <div class="premium-card border border-gray-100 p-4 h-full flex flex-col shadow-sm">
     <!-- Image Skeleton with reserved Badge space -->
-    <div class="relative w-full aspect-square bg-gray-50 rounded-xl mb-4 overflow-hidden">
+    <div class="relative w-full aspect-square bg-gray-50 rounded-card mb-4 overflow-hidden">
       <USkeleton class="size-full" />
       <!-- Ghost Badge -->
       <div class="absolute top-2 right-2">
@@ -21,14 +21,14 @@
           <USkeleton class="h-5 w-24" />
           <USkeleton class="h-3 w-16 opacity-50" />
         </div>
-        <USkeleton class="h-10 w-10 rounded-lg" />
+        <USkeleton class="h-10 w-10 rounded-field" />
       </div>
     </div>
     
     <!-- Action Bar Mirroring Product.vue -->
     <div class="mt-4 pt-4 border-t border-gray-50 flex gap-2">
-      <USkeleton class="h-10 flex-1 rounded-lg" />
-      <USkeleton class="h-10 w-10 rounded-lg" />
+      <USkeleton class="h-10 flex-1 rounded-field" />
+      <USkeleton class="h-10 w-10 rounded-field" />
     </div>
   </div>
 </template>

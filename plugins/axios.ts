@@ -1,17 +1,29 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { useAuthStore } from "~/stores/auth";
-import { defineNuxtPlugin, useRuntimeConfig, navigateTo } from "#app";
+import { refreshAccessToken } from "~/services/authService";
+import {
+  defineNuxtPlugin,
+  useRuntimeConfig,
+  useRequestHeaders,
+  navigateTo,
+} from "#app";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
   const authStore = useAuthStore();
+  const incomingCookie = process.server
+    ? useRequestHeaders(["cookie"]).cookie
+    : undefined;
+  const cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
 
   const api: AxiosInstance = axios.create({
     baseURL: config.public.apiBase as string,
     timeout: 10000,
+    withCredentials: true,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...cookieHeaders,
     },
   });
 
@@ -22,6 +34,13 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (accessToken) {
         requestConfig.headers = requestConfig.headers || {};
         requestConfig.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      const method = (requestConfig.method || "get").toLowerCase();
+      if (!["get", "head", "options"].includes(method)) {
+        const csrfToken = authStore.getCsrfToken();
+        if (csrfToken) {
+          requestConfig.headers["X-CSRF-Token"] = csrfToken;
+        }
       }
       return requestConfig;
     },
@@ -43,25 +62,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         originalRequest._retry = true;
         
         try {
-          const refreshToken = authStore.getRefreshToken();
-
-          if (!refreshToken) {
-            authStore.clearTokens();
-            // F1: Use navigateTo instead of window.location for SSR safety
-            return navigateTo("/", { external: true });
-          }
-
-          // Request new access token
-          const { data } = await axios.post(
-            `${config.public.apiBase}/auth/refresh`,
-            { refreshToken }
-          );
-
-          // Update store with new token
-          authStore.setTokens(data.accessToken, refreshToken);
+          const accessToken = await refreshAccessToken();
 
           // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
           console.error("Refresh token session failed:", refreshError);

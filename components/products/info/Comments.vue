@@ -3,19 +3,7 @@
     <div class="container">
       <div class="header">
         <div class="user">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M8.00033 8.49998C5.88699 8.49998 4.16699 6.77998 4.16699 4.66665C4.16699 2.55331 5.88699 0.833313 8.00033 0.833313C10.1137 0.833313 11.8337 2.55331 11.8337 4.66665C11.8337 6.77998 10.1137 8.49998 8.00033 8.49998ZM8.00033 1.83331C6.44033 1.83331 5.16699 3.10665 5.16699 4.66665C5.16699 6.22665 6.44033 7.49998 8.00033 7.49998C9.56033 7.49998 10.8337 6.22665 10.8337 4.66665C10.8337 3.10665 9.56033 1.83331 8.00033 1.83331Z"
-              fill="#57626D" />
-            <path
-              d="M13.7268 15.1667C13.4534 15.1667 13.2268 14.94 13.2268 14.6667C13.2268 12.3667 10.8801 10.5 8.0001 10.5C5.1201 10.5 2.77344 12.3667 2.77344 14.6667C2.77344 14.94 2.54677 15.1667 2.27344 15.1667C2.0001 15.1667 1.77344 14.94 1.77344 14.6667C1.77344 11.82 4.56677 9.5 8.0001 9.5C11.4334 9.5 14.2268 11.82 14.2268 14.6667C14.2268 14.94 14.0001 15.1667 13.7268 15.1667Z"
-              fill="#57626D" />
-          </svg>
+          <UIcon name="i-lucide-user" class="size-icon-action text-muted" />
           <div class="user-info">
             <!-- <span class="username">{{
               data.userName || data.sender || "کاربر"
@@ -83,9 +71,9 @@ const getStatusLabel = (status: string): string => {
   margin: auto;
   padding: 20px;
   background-color: #fff;
-  border-radius: 15px;
+  border-radius: var(--radius-field);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  margin-top: 15px;
+  margin-top: 16px;
   transition: all 0.3s ease;
 }
 
@@ -120,7 +108,7 @@ const getStatusLabel = (status: string): string => {
 
 .username {
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-heading);
   font-size: 14px;
 }
 
@@ -131,7 +119,7 @@ const getStatusLabel = (status: string): string => {
 
 .date {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .title {
@@ -142,7 +130,7 @@ const getStatusLabel = (status: string): string => {
 
 .title strong {
   font-size: 15px;
-  color: #333;
+  color: var(--color-text-heading);
 }
 
 .comment {
@@ -150,8 +138,8 @@ const getStatusLabel = (status: string): string => {
 }
 
 .comment p {
-  line-height: 22px;
-  color: #555;
+  line-height: var(--line-height-body);
+  color: var(--color-text-body);
   font-size: 14px;
   word-break: break-word;
 }
@@ -186,7 +174,7 @@ const getStatusLabel = (status: string): string => {
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .container {
-    padding: 15px;
+    padding: 16px;
   }
 
   .username {

@@ -11,11 +11,29 @@
       <!-- Orders List (Step 1) -->
       <div v-if="!selectedOrder" class="space-y-4">
         <div
-          class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-          <SearchBar v-model="searchOrders" :dark="true" />
+          class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+          <div class="flex items-center gap-2">
+            <TableFilterInput
+              v-model="searchOrders"
+              placeholder="جستجوی سفارش..."
+              @submit="applyOrderFilters" />
+            <USelect
+              v-model="sortOrders"
+              :items="[
+                { label: 'جدیدترین', value: 'createdAt:desc' },
+                { label: 'قدیمی‌ترین', value: 'createdAt:asc' }
+              ]" />
+            <USelect
+              v-model="limitOrders"
+              :items="[
+                { label: '۱۰', value: 10 },
+                { label: '۲۵', value: 25 },
+                { label: '۵۰', value: 50 }
+              ]" />
+          </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="premium-card border border-gray-100">
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
@@ -44,7 +62,7 @@
               </thead>
               <tbody class="text-gray-800">
                 <tr
-                  v-for="(order, idx) in filteredOrders"
+                v-for="(order, idx) in orders"
                   :key="order._id || idx"
                   class="hover:bg-gray-50 border-b border-gray-100">
                   <td class="px-4 py-3 font-medium text-gray-800 ltr">
@@ -59,19 +77,19 @@
                   <td class="px-4 py-3">
                     <span
                       class="px-2 py-1 rounded text-xs"
-                      :class="orderStatusClass(order.status)">
+                      :style="useStatusStyle(order.status)">
                       {{ orderStatusText(order.status) }}
                     </span>
                   </td>
                   <td class="px-4 py-3">
-                    <button
+                    <UButton
                       @click="selectOrder(order)"
-                      class="px-2 py-1 rounded text-xs bg-blue-500 text-white hover:bg-blue-600 transition">
+                      size="xs">
                       مشاهده حمل‌ونقل
-                    </button>
+                    </UButton>
                   </td>
                 </tr>
-                <tr v-if="filteredOrders.length === 0">
+                <tr v-if="orders.length === 0">
                   <td colspan="5" class="text-center px-4 py-6 text-gray-500">
                     سفارشی یافت نشد
                   </td>
@@ -80,33 +98,54 @@
             </table>
           </div>
         </div>
+        <div v-if="totalOrders > limitOrders" class="flex justify-center py-4">
+          <UPagination v-model="pageOrders" :total="totalOrders" :page-count="limitOrders" :disabled="loading" />
+        </div>
       </div>
 
       <!-- Transportings for Selected Order (Step 2) -->
       <div v-else class="space-y-4">
         <div class="flex items-center gap-3 mb-4">
-          <button
+          <UButton
             @click="selectedOrder = null"
-            class="px-3 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 text-sm transition">
+            color="neutral"
+            variant="soft">
             ← بازگشت به سفارش‌ها
-          </button>
+          </UButton>
           <span class="text-sm font-medium">
             سفارش: {{ selectedOrder._id?.substring(0, 8) }}
           </span>
         </div>
 
         <div
-          class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-          <SearchBar v-model="searchTransportings" :dark="true" />
-          <button
+          class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+          <div class="flex items-center gap-2">
+            <TableFilterInput
+              v-model="searchTransportings"
+              placeholder="جستجوی حمل‌ونقل..."
+              @submit="applyTransportFilters" />
+            <USelect
+              v-model="sortTransportings"
+              :items="[
+                { label: 'جدیدترین', value: 'createdAt:desc' },
+                { label: 'قدیمی‌ترین', value: 'createdAt:asc' }
+              ]" />
+            <USelect
+              v-model="limitTransportings"
+              :items="[
+                { label: '۱۰', value: 10 },
+                { label: '۲۵', value: 25 },
+                { label: '۵۰', value: 50 }
+              ]" />
+          </div>
+          <UButton
             v-if="canCreate"
-            @click="openModal()"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+            @click="openModal()">
             + افزودن
-          </button>
+          </UButton>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="premium-card border border-gray-100">
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
@@ -135,7 +174,7 @@
               </thead>
               <tbody class="text-gray-800">
                 <tr
-                  v-for="(transporting, idx) in filteredTransportings"
+                v-for="(transporting, idx) in transportings"
                   :key="transporting._id || idx"
                   class="hover:bg-gray-50 border-b border-gray-100">
                   <td class="px-4 py-3 text-gray-700">
@@ -148,47 +187,52 @@
                     {{ numberFormat(transporting.cost) }}
                   </td>
                   <td class="px-4 py-3">
-                    <select
+                    <USelect
                       v-if="canUpdate"
-                      :value="transporting.status"
-                      @change="(e) => updateStatus(transporting, (e.target as HTMLSelectElement).value as any)"
-                      class="px-2 py-1 rounded text-xs border border-gray-300"
-                      :class="statusClass(transporting.status)"
-                      :disabled="statusLoading[transporting._id || '']">
-                      <option value="pending">درحال‌انتظار</option>
-                      <option value="in_transit">درحال‌حمل</option>
-                      <option value="delivered">تحویل‌شده</option>
-                      <option value="cancelled">لغو‌شده</option>
-                    </select>
+                      :model-value="transporting.status"
+                      size="xs"
+                      :items="[
+                        { label: 'درحال‌انتظار', value: 'pending' },
+                        { label: 'درحال‌حمل', value: 'shipped' },
+                        { label: 'تحویل‌شده', value: 'delivered' },
+                        { label: 'لغو‌شده', value: 'canceled' }
+                      ]"
+                      :disabled="statusLoading[transporting._id || '']"
+                      @update:model-value="(value) => updateStatus(transporting, value as any)" />
                     <span
                       v-else
                       class="px-2 py-1 rounded text-xs"
-                      :class="statusClass(transporting.status)">
+                      :style="useStatusStyle(transporting.status)">
                       {{ statusText(transporting.status) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 flex gap-2">
-                    <button
+                    <UButton
                       v-if="canUpdate && statusLoading[transporting._id || '']"
                       disabled
-                      class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-600 cursor-not-allowed">
+                      size="xs"
+                      color="neutral"
+                      variant="soft">
                       درحال‌بروزرسانی...
-                    </button>
-                    <button
+                    </UButton>
+                    <UButton
                       v-if="canUpdate && !statusLoading[transporting._id || '']"
                       @click="openModal(transporting)"
-                      class="px-2 py-1 rounded text-xs bg-yellow-400 text-gray-800 hover:bg-yellow-500 transition">
+                      size="xs"
+                      color="warning"
+                      variant="soft">
                       ویرایش
-                    </button>
-                    <button
+                    </UButton>
+                    <UButton
                       v-if="canDelete"
                       @click="deleteTransporting(transporting)"
-                      class="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600 transition">
+                      size="xs"
+                      color="error">
                       حذف
-                    </button>
+                    </UButton>
                   </td>
                 </tr>
-                <tr v-if="filteredTransportings.length === 0">
+                <tr v-if="transportings.length === 0">
                   <td colspan="5" class="text-center px-4 py-6 text-gray-500">
                     حمل‌ونقلی برای این سفارش یافت نشد
                   </td>
@@ -196,6 +240,9 @@
               </tbody>
             </table>
           </div>
+        </div>
+        <div v-if="totalTransportings > limitTransportings" class="flex justify-center py-4">
+          <UPagination v-model="pageTransportings" :total="totalTransportings" :page-count="limitTransportings" :disabled="loading" />
         </div>
       </div>
 
@@ -205,92 +252,72 @@
           {{ editMode ? "ویرایش حمل‌ونقل" : "افزودن حمل‌ونقل جدید" }}
         </h2>
 
-        <form class="space-y-5" @submit.prevent="saveTransporting">
+        <UForm :state="form" class="space-y-5" @submit.prevent="saveTransporting">
           <!-- Delivery Address -->
-          <div>
-            <label class="block text-sm font-medium mb-1">آدرس تحویل</label>
-            <textarea
+          <UFormField label="آدرس تحویل" name="deliveryAddress">
+            <UTextarea
               v-model="form.deliveryAddress"
               placeholder="آدرس تحویل کامل"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"
-              required></textarea>
-          </div>
+              :rows="3"
+              required />
+          </UFormField>
 
           <!-- Cost -->
-          <div>
-            <label class="block text-sm font-medium mb-1">مبلغ</label>
-            <input
-              v-model.number="form.cost"
-              type="number"
-              placeholder="0"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required />
-          </div>
+          <UFormField label="مبلغ" name="cost">
+            <UInput v-model.number="form.cost" type="number" placeholder="0" required />
+          </UFormField>
 
           <!-- Status -->
-          <div>
-            <label class="block text-sm font-medium mb-1">وضعیت</label>
-            <select
+          <UFormField label="وضعیت" name="status">
+            <USelect
               v-model="form.status"
-              class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="pending">درحال‌انتظار</option>
-              <option value="in_transit">درحال‌حمل</option>
-              <option value="delivered">تحویل‌شده</option>
-              <option value="cancelled">لغو‌شده</option>
-            </select>
-          </div>
+              :items="[
+                { label: 'درحال‌انتظار', value: 'pending' },
+                { label: 'درحال‌حمل', value: 'shipped' },
+                { label: 'تحویل‌شده', value: 'delivered' },
+                { label: 'لغو‌شده', value: 'canceled' }
+              ]" />
+          </UFormField>
 
           <!-- Buttons -->
           <div class="flex justify-end gap-2 pt-4">
-            <button
+            <UButton
               type="button"
               @click="closeModal"
-              class="px-4 py-2 rounded border border-gray-200 bg-white hover:bg-gray-100 text-sm">
+              color="neutral"
+              variant="soft">
               انصراف
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">
+            </UButton>
+            <UButton type="submit">
               ذخیره
-            </button>
+            </UButton>
           </div>
-        </form>
+        </UForm>
       </BaseModal>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
+import type { Order } from "~/types/order";
+import {
+  listTransportOrders,
+  listTransportings,
+  type Transporting,
+} from "~/services/transportService";
 
 useHead({
-  title: " آریاساخت | داشبورد | حمل و نقل",
+  title: "داشبورد | حمل‌ونقل",
 });
 
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "transporting", action: "r" },
 });
-
-// Types
-type Order = {
-  _id?: string;
-  createdAt?: string;
-  totalAmount: number;
-  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
-};
-
-type Transporting = {
-  _id?: string;
-  orderId: string;
-  deliveryAddress: string;
-  cost: number;
-  status: "pending" | "in_transit" | "delivered" | "cancelled";
-  createdAt?: string;
-};
 
 // Permissions
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
@@ -305,6 +332,15 @@ const transportings = ref<Transporting[]>([]);
 const selectedOrder = ref<Order | null>(null);
 const searchOrders = ref("");
 const searchTransportings = ref("");
+const sortOrders = ref("createdAt:desc");
+const sortTransportings = ref("createdAt:desc");
+const pageOrders = ref(1);
+const pageTransportings = ref(1);
+const limitOrders = ref(25);
+const limitTransportings = ref(25);
+const totalOrders = ref(0);
+const totalTransportings = ref(0);
+const loading = ref(false);
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -313,7 +349,7 @@ const form = ref<Transporting>({
   orderId: "",
   deliveryAddress: "",
   cost: 0,
-  status: "pending",
+              status: "pending",
 });
 
 const statusLoading = ref<Record<string, boolean>>({});
@@ -322,21 +358,11 @@ const statusLoading = ref<Record<string, boolean>>({});
 function statusText(status: string) {
   const statusMap: Record<string, string> = {
     pending: "درحال‌انتظار",
-    in_transit: "درحال‌حمل",
+    shipped: "درحال‌حمل",
     delivered: "تحویل‌شده",
-    cancelled: "لغو‌شده",
+    canceled: "لغو‌شده",
   };
   return statusMap[status] || status;
-}
-
-function statusClass(status: string) {
-  const classMap: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    in_transit: "bg-blue-100 text-blue-800",
-    delivered: "bg-green-100 text-green-800",
-    cancelled: "bg-red-100 text-red-800",
-  };
-  return classMap[status] || "bg-gray-100 text-gray-800";
 }
 
 function orderStatusText(status: string) {
@@ -350,17 +376,6 @@ function orderStatusText(status: string) {
   return statusMap[status] || status;
 }
 
-function orderStatusClass(status: string) {
-  const classMap: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-800",
-    paid: "bg-blue-100 text-blue-800",
-    shipped: "bg-purple-100 text-purple-800",
-    delivered: "bg-green-100 text-green-800",
-    cancelled: "bg-red-100 text-red-800",
-  };
-  return classMap[status] || "bg-gray-100 text-gray-800";
-}
-
 function formatDate(dateString?: string) {
   if (!dateString) return "—";
   return new Date(dateString).toLocaleDateString("fa-IR");
@@ -371,61 +386,86 @@ function numberFormat(n?: number) {
   return n.toLocaleString("fa-IR");
 }
 
-// Filtered lists
-const filteredOrders = computed(() =>
-  orders.value.filter((o) =>
-    (o._id || "").toLowerCase().includes(searchOrders.value.toLowerCase())
-  )
-);
-
-const filteredTransportings = computed(() => {
-  if (!selectedOrder.value) return [];
-  return transportings.value.filter(
-    (t) =>
-      t.orderId === selectedOrder.value?._id &&
-      (t.deliveryAddress
-        .toLowerCase()
-        .includes(searchTransportings.value.toLowerCase()) ||
-        t.status
-          .toLowerCase()
-          .includes(searchTransportings.value.toLowerCase()))
-  );
-});
-
 // API calls
 async function fetchOrders() {
-  if (!canRead) return;
+  if (!canRead.value) return;
+  loading.value = true;
   try {
-    const { data } = await $axios.get("/orders");
-    orders.value = Array.isArray(data) ? data : data?.items || [];
+    const result = await listTransportOrders({
+      page: pageOrders.value,
+      limit: limitOrders.value,
+      sort: sortOrders.value,
+      filter: searchOrders.value.trim() || undefined,
+    });
+    orders.value = result.items as Order[];
+    totalOrders.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت سفارش‌ها:", err);
     orders.value = [];
+    totalOrders.value = 0;
+  } finally {
+    loading.value = false;
   }
 }
 
 async function fetchTransportings() {
-  if (!canRead) return;
+  if (!canRead.value || !selectedOrder.value) return;
+  loading.value = true;
   try {
-    const { data } = await $axios.get("/transportings");
-    transportings.value = Array.isArray(data) ? data : data?.items || [];
+    const result = await listTransportings({
+      page: pageTransportings.value,
+      limit: limitTransportings.value,
+      sort: sortTransportings.value,
+      filter: searchTransportings.value.trim() || undefined,
+      orderId: selectedOrder.value._id,
+    });
+    transportings.value = result.items;
+    totalTransportings.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت حمل‌ونقل‌ها:", err);
     transportings.value = [];
+    totalTransportings.value = 0;
+  } finally {
+    loading.value = false;
   }
 }
 
 function selectOrder(order: Order) {
   selectedOrder.value = order;
   searchTransportings.value = "";
+  pageTransportings.value = 1;
+  fetchTransportings();
+}
+
+const totalOrderPages = computed(() => Math.max(1, Math.ceil(totalOrders.value / limitOrders.value)));
+const totalTransportPages = computed(() => Math.max(1, Math.ceil(totalTransportings.value / limitTransportings.value)));
+
+function applyOrderFilters() {
+  pageOrders.value = 1;
+  fetchOrders();
+}
+
+function applyTransportFilters() {
+  pageTransportings.value = 1;
+  fetchTransportings();
+}
+
+function goToOrderPage(nextPage: number) {
+  pageOrders.value = Math.max(1, Math.min(nextPage, totalOrderPages.value));
+  fetchOrders();
+}
+
+function goToTransportPage(nextPage: number) {
+  pageTransportings.value = Math.max(1, Math.min(nextPage, totalTransportPages.value));
+  fetchTransportings();
 }
 
 async function updateStatus(
   transporting: Transporting,
-  newStatus: "pending" | "in_transit" | "delivered" | "cancelled"
+  newStatus: "pending" | "shipped" | "delivered" | "canceled"
 ) {
-  if (!canUpdate) {
-    alert("شما اجازه تغییر وضعیت ندارید!");
+  if (!canUpdate.value) {
+    feedback.error("دسترسی کافی ندارید", "شما اجازه تغییر وضعیت ندارید.");
     return;
   }
 
@@ -436,33 +476,34 @@ async function updateStatus(
   try {
     statusLoading.value[transporting._id] = true;
     if (newStatus === "delivered") {
-      await $axios.patch(`/transportings/${transporting._id}/delivered`);
-    } else if (newStatus === "cancelled") {
-      await $axios.patch(`/transportings/${transporting._id}/cancel`);
+      await $axios.patch(`/transport/${transporting._id}/delivered`);
+    } else if (newStatus === "canceled") {
+      await $axios.patch(`/transport/${transporting._id}/cancel`);
     } else {
-      await $axios.patch(`/transportings/${transporting._id}`, {
+      await $axios.patch("/transport", {
+        id: transporting._id,
         status: newStatus,
       });
     }
     transporting.status = newStatus;
   } catch (err: any) {
     console.error("خطا در تغییر وضعیت:", err);
-    alert("خطا در تغییر وضعیت. دوباره تلاش کنید.");
+    feedback.error("تغییر وضعیت انجام نشد", "دوباره تلاش کنید.");
   } finally {
     if (transporting._id) statusLoading.value[transporting._id] = false;
   }
 }
 
 function openModal(transporting: Transporting | null = null) {
-  if (!selectedOrder.value) return alert("لطفا ابتدا یک سفارش انتخاب کنید!");
+  if (!selectedOrder.value) return feedback.error("سفارش انتخاب نشده", "لطفاً ابتدا یک سفارش انتخاب کنید.");
 
   if (transporting) {
-    if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+    if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
     editMode.value = true;
     selectedId.value = transporting._id || null;
     form.value = { ...transporting };
   } else {
-    if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+    if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
     selectedId.value = null;
     form.value = {
@@ -483,37 +524,36 @@ async function saveTransporting() {
   try {
     if (editMode.value) {
       if (!selectedId.value) {
-        alert("شناسه حمل‌ونقل معتبر نیست!");
+        feedback.error("شناسه نامعتبر", "شناسه حمل‌ونقل معتبر نیست.");
         return;
       }
-      await $axios.patch(`/transportings/${selectedId.value}`, form.value);
+      await $axios.patch("/transport", { ...form.value, id: selectedId.value });
     } else {
-      await $axios.post("/transportings", form.value);
+      await $axios.post("/transport", form.value);
     }
     await fetchTransportings();
     closeModal();
   } catch (err: any) {
     console.error("خطا در ذخیره حمل‌ونقل:", err);
-    alert(err?.response?.data?.message || "خطا در ذخیره");
+    feedback.error("ذخیره انجام نشد", err?.response?.data?.message || "خطا در ذخیره اطلاعات.");
   }
 }
 
 async function deleteTransporting(transporting: Transporting) {
-  if (!canDelete) return alert("شما اجازه حذف ندارید!");
+  if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!confirm("آیا از حذف این حمل‌ونقل مطمئن هستید؟")) return;
 
   try {
-    await $axios.delete(`/transportings/${transporting._id}`);
+    await $axios.patch(`/transport/${transporting._id}/cancel`);
     await fetchTransportings();
   } catch (err: any) {
     console.error("خطا در حذف حمل‌ونقل:", err);
-    alert(err?.response?.data?.message || "خطا در حذف");
+    feedback.error("حذف انجام نشد", err?.response?.data?.message || "خطا در حذف اطلاعات.");
   }
 }
 
 onMounted(() => {
   fetchOrders();
-  fetchTransportings();
 });
 </script>
 
@@ -525,7 +565,7 @@ onMounted(() => {
 
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   display: flex;
   align-items: center;
   gap: 10px;

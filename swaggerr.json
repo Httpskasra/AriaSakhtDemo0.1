@@ -10,7 +10,9 @@
             "description": ""
           }
         },
-        "tags": ["App"]
+        "tags": [
+          "App"
+        ]
       }
     },
     "/api/users": {
@@ -56,7 +58,9 @@
           }
         },
         "summary": "List all users (super-admin only)",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/api/users/created-by-super": {
@@ -102,7 +106,9 @@
           }
         },
         "summary": "List users created by the super-admin",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/api/users/{id}": {
@@ -131,7 +137,9 @@
           }
         },
         "summary": "Get a user's details and profile (super-admin only)",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/api/auth/signup": {
@@ -161,7 +169,9 @@
           }
         },
         "summary": "Register a new user",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/signin": {
@@ -191,7 +201,9 @@
           }
         },
         "summary": "Sign in with credentials",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/verify-otp": {
@@ -221,7 +233,9 @@
           }
         },
         "summary": "Verify OTP code",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/refresh": {
@@ -257,7 +271,9 @@
           }
         },
         "summary": "Refresh access token using a refresh token",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/signout": {
@@ -283,7 +299,9 @@
           }
         },
         "summary": "Sign out user and invalidate refresh token",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/me": {
@@ -365,7 +383,9 @@
           }
         },
         "summary": "Get current user profile and permissions",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/admin-signup": {
@@ -395,7 +415,9 @@
           }
         },
         "summary": "Admin creates a user with permissions",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/auth/users/{id}/permissions": {
@@ -434,7 +456,9 @@
           }
         },
         "summary": "Update a user's permissions",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/api/profile": {
@@ -460,7 +484,9 @@
           }
         ],
         "summary": "Get current user profile",
-        "tags": ["Profile"]
+        "tags": [
+          "Profile"
+        ]
       }
     },
     "/api/profile/{id}": {
@@ -505,7 +531,9 @@
           }
         ],
         "summary": "Update profile by ID",
-        "tags": ["Profile"]
+        "tags": [
+          "Profile"
+        ]
       }
     },
     "/api/companies": {
@@ -540,13 +568,15 @@
             "description": "Unauthorized"
           }
         },
+        "summary": "Create a new company",
+        "tags": [
+          "Companies"
+        ],
         "security": [
           {
             "bearer": []
           }
-        ],
-        "summary": "Create a new company",
-        "tags": ["Companies"]
+        ]
       },
       "get": {
         "operationId": "CompaniesController_findAll",
@@ -585,13 +615,10 @@
             }
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get all companies",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       }
     },
     "/api/companies/{id}": {
@@ -646,7 +673,9 @@
           }
         ],
         "summary": "Update a company by ID",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       },
       "delete": {
         "description": "Company admins can delete their own company. Superadmins can delete any company.",
@@ -679,7 +708,9 @@
           }
         ],
         "summary": "Delete company by ID",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       },
       "get": {
         "operationId": "CompaniesController_findOne",
@@ -709,13 +740,10 @@
             "description": "Company not found"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get company by ID",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       }
     },
     "/api/companies/{id}/status": {
@@ -754,6 +782,9 @@
               }
             }
           },
+          "401": {
+            "description": "Unauthorized"
+          },
           "403": {
             "description": "Forbidden - not admin of this company"
           }
@@ -764,7 +795,9 @@
           }
         ],
         "summary": "Change company's status",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       }
     },
     "/api/companies/exists/name/{name}": {
@@ -795,7 +828,9 @@
           }
         ],
         "summary": "Check if a company exists by name",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       }
     },
     "/api/companies/count": {
@@ -816,7 +851,9 @@
           }
         ],
         "summary": "Get total number of companies",
-        "tags": ["Companies"]
+        "tags": [
+          "Companies"
+        ]
       }
     },
     "/api/images/presign": {
@@ -893,7 +930,9 @@
           }
         },
         "summary": "Generate presigned URLs for direct file uploads to cloud storage",
-        "tags": ["images"]
+        "tags": [
+          "images"
+        ]
       }
     },
     "/api/images/upload": {
@@ -910,7 +949,10 @@
                 "properties": {
                   "type": {
                     "type": "string",
-                    "enum": ["product", "company"],
+                    "enum": [
+                      "product",
+                      "company"
+                    ],
                     "description": "Upload target type"
                   },
                   "files": {
@@ -922,7 +964,10 @@
                     "description": "Files to upload (max 5 for product, max 1 for company)"
                   }
                 },
-                "required": ["type", "files"]
+                "required": [
+                  "type",
+                  "files"
+                ]
               }
             }
           }
@@ -943,7 +988,9 @@
           }
         },
         "summary": "Upload files directly to cloud storage (no presign needed)",
-        "tags": ["images"]
+        "tags": [
+          "images"
+        ]
       }
     },
     "/api/wallets": {
@@ -972,7 +1019,9 @@
           }
         ],
         "summary": "Get wallet for authenticated user",
-        "tags": ["Wallets"]
+        "tags": [
+          "Wallets"
+        ]
       }
     },
     "/api/wallets/credit": {
@@ -1014,7 +1063,9 @@
           }
         ],
         "summary": "Credit wallet",
-        "tags": ["Wallets"]
+        "tags": [
+          "Wallets"
+        ]
       }
     },
     "/api/wallets/debit": {
@@ -1056,7 +1107,9 @@
           }
         ],
         "summary": "Debit wallet",
-        "tags": ["Wallets"]
+        "tags": [
+          "Wallets"
+        ]
       }
     },
     "/api/wallets/transfer": {
@@ -1091,7 +1144,9 @@
           }
         ],
         "summary": "Transfer funds between wallets",
-        "tags": ["Wallets"]
+        "tags": [
+          "Wallets"
+        ]
       }
     },
     "/api/transaction": {
@@ -1115,7 +1170,9 @@
           }
         },
         "summary": "Get transaction history",
-        "tags": ["Transaction"]
+        "tags": [
+          "Transaction"
+        ]
       }
     },
     "/api/products/advanced-search": {
@@ -1221,7 +1278,9 @@
           }
         ],
         "summary": "Advanced search for products with multiple filters",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/search-by-price-company": {
@@ -1288,7 +1347,9 @@
           }
         ],
         "summary": "Search products by max price and company name",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/search": {
@@ -1337,7 +1398,9 @@
           }
         ],
         "summary": "Search products by name, company, or category",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products": {
@@ -1380,7 +1443,9 @@
           }
         ],
         "summary": "Create a new product",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       },
       "get": {
         "operationId": "ProductsController_findAll",
@@ -1418,7 +1483,9 @@
           }
         ],
         "summary": "Get a paginated list of products",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/admin/all-products": {
@@ -1471,7 +1538,9 @@
           }
         ],
         "summary": "Get all products (all statuses) for admin/editor",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/company/{companyId}": {
@@ -1525,7 +1594,9 @@
           }
         ],
         "summary": "Get products by company ID",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/top-sales": {
@@ -1566,7 +1637,9 @@
           }
         ],
         "summary": "Get top-rated products",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/offers": {
@@ -1595,18 +1668,12 @@
         "responses": {
           "200": {
             "description": "List of offer products returned"
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get products that currently have a discount (offers)",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/{id}": {
@@ -1634,20 +1701,14 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "404": {
             "description": "Product not found"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get product by ID",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       },
       "patch": {
         "operationId": "ProductsController_update",
@@ -1699,7 +1760,9 @@
           }
         ],
         "summary": "Update product by ID",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       },
       "delete": {
         "operationId": "ProductsController_remove",
@@ -1731,7 +1794,9 @@
           }
         ],
         "summary": "Delete product by ID",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/{id}/status": {
@@ -1785,7 +1850,9 @@
           }
         ],
         "summary": "Update only the status of a product",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/count/category/{categoryId}": {
@@ -1823,7 +1890,9 @@
           }
         ],
         "summary": "Count products by category ID",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/exists/name/{name}": {
@@ -1861,7 +1930,9 @@
           }
         ],
         "summary": "Check if a product exists by name",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/products/count": {
@@ -1889,7 +1960,9 @@
           }
         ],
         "summary": "Get total number of products",
-        "tags": ["Products"]
+        "tags": [
+          "Products"
+        ]
       }
     },
     "/api/tickets": {
@@ -1925,7 +1998,9 @@
           }
         ],
         "summary": "Create a new ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       },
       "get": {
         "description": "Regular users see only their own tickets. Superadmin/staff with TICKETING.READ permission see all tickets.",
@@ -1952,7 +2027,9 @@
           }
         ],
         "summary": "Get tickets",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/tickets/{id}": {
@@ -1993,7 +2070,9 @@
           }
         ],
         "summary": "Get a ticket by ID",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       },
       "patch": {
         "description": "Admins/staff can update ticket details. Regular users can add replies.",
@@ -2042,7 +2121,9 @@
           }
         ],
         "summary": "Update a ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       },
       "delete": {
         "description": "Only admins/staff can delete tickets.",
@@ -2081,7 +2162,9 @@
           }
         ],
         "summary": "Delete a ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/tickets/{id}/status": {
@@ -2122,7 +2205,9 @@
           }
         ],
         "summary": "Get status of a ticket by ID",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       },
       "patch": {
         "description": "Only admins/staff can update ticket status.",
@@ -2189,7 +2274,9 @@
           }
         ],
         "summary": "Update ticket status",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/tickets/{id}/escalate": {
@@ -2230,7 +2317,9 @@
           }
         ],
         "summary": "Escalate a ticket to higher priority",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/tickets/{id}/resolve": {
@@ -2287,7 +2376,9 @@
           }
         ],
         "summary": "Resolve a ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/tickets/{id}/comments": {
@@ -2338,7 +2429,9 @@
           }
         ],
         "summary": "Add a comment/reply to a ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       },
       "get": {
         "description": "Users can view comments on their own tickets. Admins can view any ticket comments.",
@@ -2380,7 +2473,9 @@
           }
         ],
         "summary": "Get all comments on a ticket",
-        "tags": ["Tickets"]
+        "tags": [
+          "Tickets"
+        ]
       }
     },
     "/api/orders": {
@@ -2411,7 +2506,9 @@
           }
         },
         "summary": "Create a new order",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       },
       "get": {
         "description": "Regular users see only their own orders. Admins see all.",
@@ -2450,7 +2547,9 @@
           }
         },
         "summary": "Find orders by userId or companyId",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}": {
@@ -2484,7 +2583,9 @@
           }
         },
         "summary": "Get order by ID",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}/mark-paid": {
@@ -2507,7 +2608,9 @@
           }
         },
         "summary": "Mark order as paid",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}/mark-shipped": {
@@ -2546,7 +2649,9 @@
           }
         },
         "summary": "Mark order as shipped",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}/mark-delivered": {
@@ -2569,7 +2674,9 @@
           }
         },
         "summary": "Mark order as delivered",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}/refund": {
@@ -2592,7 +2699,9 @@
           }
         },
         "summary": "Refund an order",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/orders/{id}/confirm-delivery": {
@@ -2615,7 +2724,9 @@
           }
         },
         "summary": "User confirms delivery of order",
-        "tags": ["Orders"]
+        "tags": [
+          "Orders"
+        ]
       }
     },
     "/api/carts/active": {
@@ -2640,7 +2751,9 @@
           }
         ],
         "summary": "Get the active cart for current user",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/populated": {
@@ -2668,7 +2781,9 @@
           }
         ],
         "summary": "Get carts with populated related data for current user",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/summary": {
@@ -2693,7 +2808,9 @@
           }
         ],
         "summary": "Get summary of user carts",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts": {
@@ -2728,7 +2845,9 @@
           }
         ],
         "summary": "Create a new cart",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       },
       "patch": {
         "operationId": "CartsController_updateCart",
@@ -2761,7 +2880,9 @@
           }
         ],
         "summary": "Update the user's cart partially",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/items": {
@@ -2802,7 +2923,9 @@
           }
         ],
         "summary": "Add item to user's cart",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/items/{productId}": {
@@ -2837,7 +2960,9 @@
           }
         ],
         "summary": "Remove item from user's cart",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/clear": {
@@ -2862,7 +2987,9 @@
           }
         ],
         "summary": "Clear all items from user's cart",
-        "tags": ["Carts"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/carts/checkout": {
@@ -2887,216 +3014,9 @@
           }
         ],
         "summary": "Checkout the user's cart",
-        "tags": ["Carts"]
-      }
-    },
-    "/api/transportings": {
-      "post": {
-        "operationId": "TransportingsController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTransportingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Transporting record created successfully"
-          },
-          "400": {
-            "description": "Invalid input"
-          }
-        },
-        "summary": "Create a new transporting record",
-        "tags": ["transportings"]
-      },
-      "patch": {
-        "operationId": "TransportingsController_update",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTransportingDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Transporting record updated successfully"
-          },
-          "404": {
-            "description": "Transporting record not found"
-          }
-        },
-        "summary": "Update a transporting record",
-        "tags": ["transportings"]
-      }
-    },
-    "/api/transportings/{id}": {
-      "get": {
-        "description": "This route is open for default users.",
-        "operationId": "TransportingsController_findById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Transporting ID",
-            "schema": {
-              "example": "507f1f77bcf86cd799439011",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transporting record found"
-          },
-          "404": {
-            "description": "Transporting record not found"
-          }
-        },
-        "summary": "Get transporting record by ID",
-        "tags": ["transportings"]
-      }
-    },
-    "/api/transportings/order/{orderId}": {
-      "get": {
-        "description": "This route is open for default users.",
-        "operationId": "TransportingsController_findByOrderId",
-        "parameters": [
-          {
-            "name": "orderId",
-            "required": true,
-            "in": "path",
-            "description": "Order ID",
-            "schema": {
-              "example": "507f1f77bcf86cd799439012",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transporting record found"
-          },
-          "404": {
-            "description": "Transporting record not found"
-          }
-        },
-        "summary": "Get transporting record by order ID",
-        "tags": ["transportings"]
-      }
-    },
-    "/api/transportings/company/{companyId}": {
-      "get": {
-        "operationId": "TransportingsController_findByCompanyId",
-        "parameters": [
-          {
-            "name": "companyId",
-            "required": true,
-            "in": "path",
-            "description": "Company ID",
-            "schema": {
-              "example": "507f1f77bcf86cd799439013",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of transporting records found"
-          },
-          "404": {
-            "description": "No transporting records found for the company"
-          }
-        },
-        "summary": "Get transporting records by company ID",
-        "tags": ["transportings"]
-      }
-    },
-    "/api/transportings/{id}/cancel": {
-      "patch": {
-        "operationId": "TransportingsController_cancel",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Transporting ID",
-            "schema": {
-              "example": "507f1f77bcf86cd799439011",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Transporting record canceled successfully"
-          },
-          "400": {
-            "description": "Transporting record cannot be canceled"
-          },
-          "404": {
-            "description": "Transporting record not found"
-          }
-        },
-        "summary": "Cancel a transporting record",
-        "tags": ["transportings"]
-      }
-    },
-    "/api/transportings/{id}/delivered": {
-      "patch": {
-        "operationId": "TransportingsController_markAsDelivered",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Transporting ID",
-            "schema": {
-              "example": "507f1f77bcf86cd799439011",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "estimatedDelivery": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Transporting record marked as delivered successfully"
-          },
-          "400": {
-            "description": "Transporting record cannot be marked as delivered"
-          },
-          "404": {
-            "description": "Transporting record not found"
-          }
-        },
-        "summary": "Mark a transporting record as delivered",
-        "tags": ["transportings"]
+        "tags": [
+          "Carts"
+        ]
       }
     },
     "/api/payment/initiate": {
@@ -3146,7 +3066,9 @@
           }
         ],
         "summary": "Initiate a payment via Zibal",
-        "tags": ["Payment"]
+        "tags": [
+          "Payment"
+        ]
       }
     },
     "/api/payment/pay": {
@@ -3175,7 +3097,9 @@
           }
         ],
         "summary": "Pay for an order using wallet or gateway",
-        "tags": ["Payment"]
+        "tags": [
+          "Payment"
+        ]
       }
     },
     "/api/payment/callback": {
@@ -3198,7 +3122,10 @@
             "in": "query",
             "description": "Payment success flag (1 = success)",
             "schema": {
-              "enum": ["1", "0"],
+              "enum": [
+                "1",
+                "0"
+              ],
               "type": "string"
             }
           },
@@ -3229,7 +3156,9 @@
           }
         ],
         "summary": "Handle Zibal callback after payment",
-        "tags": ["Payment"]
+        "tags": [
+          "Payment"
+        ]
       }
     },
     "/api/categories": {
@@ -3270,7 +3199,9 @@
           }
         ],
         "summary": "Create a new category",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       },
       "get": {
         "operationId": "CategoriesController_findAll",
@@ -3331,7 +3262,9 @@
           }
         },
         "summary": "Get all categories",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/categories/{id}": {
@@ -3365,7 +3298,9 @@
           }
         },
         "summary": "Get category by ID",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       },
       "patch": {
         "operationId": "CategoriesController_update",
@@ -3417,7 +3352,9 @@
           }
         ],
         "summary": "Update category by ID",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       },
       "delete": {
         "operationId": "CategoriesController_remove",
@@ -3455,7 +3392,9 @@
           }
         ],
         "summary": "Delete category by ID",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/categories/{id}/status": {
@@ -3481,7 +3420,11 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["active", "inactive", "draft"],
+                    "enum": [
+                      "active",
+                      "inactive",
+                      "draft"
+                    ],
                     "example": "active"
                   }
                 }
@@ -3509,7 +3452,9 @@
           }
         ],
         "summary": "Set status for a category",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/categories/parent/{parentId}": {
@@ -3560,7 +3505,9 @@
           }
         },
         "summary": "Get categories by parent ID",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/categories/exists/slug/{slug}": {
@@ -3583,7 +3530,9 @@
           }
         },
         "summary": "Check if a category exists by slug",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/categories/count": {
@@ -3596,7 +3545,9 @@
           }
         },
         "summary": "Get total number of categories",
-        "tags": ["Categories"]
+        "tags": [
+          "Categories"
+        ]
       }
     },
     "/api/ratings": {
@@ -3638,7 +3589,9 @@
           }
         ],
         "summary": "Create or update a rating for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       }
     },
     "/api/ratings/product/{productId}": {
@@ -3682,7 +3635,9 @@
           }
         ],
         "summary": "Get all ratings for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       },
       "patch": {
         "description": "This route is open for default users.",
@@ -3731,7 +3686,9 @@
           }
         ],
         "summary": "Update a user's rating for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       },
       "delete": {
         "description": "This route is open for default users.",
@@ -3763,7 +3720,9 @@
           }
         ],
         "summary": "Delete a user's rating for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       }
     },
     "/api/ratings/product/{productId}/average": {
@@ -3806,7 +3765,9 @@
           }
         ],
         "summary": "Get average rating for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       }
     },
     "/api/ratings/product/{productId}/count": {
@@ -3849,7 +3810,9 @@
           }
         ],
         "summary": "Get ratings count for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       }
     },
     "/api/ratings/product/{productId}/user/{userId}": {
@@ -3898,7 +3861,9 @@
           }
         ],
         "summary": "Get a user's rating for a product",
-        "tags": ["Ratings"]
+        "tags": [
+          "Ratings"
+        ]
       }
     },
     "/api/health/live": {
@@ -3910,7 +3875,9 @@
             "description": ""
           }
         },
-        "tags": ["Health"]
+        "tags": [
+          "Health"
+        ]
       }
     },
     "/api/health/ready": {
@@ -3922,7 +3889,9 @@
             "description": ""
           }
         },
-        "tags": ["Health"]
+        "tags": [
+          "Health"
+        ]
       }
     },
     "/api/health": {
@@ -3934,7 +3903,269 @@
             "description": ""
           }
         },
-        "tags": ["Health"]
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/transport": {
+      "post": {
+        "operationId": "TransportingsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransportingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transporting record created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "summary": "Create a new transporting record",
+        "tags": [
+          "transportings"
+        ]
+      },
+      "patch": {
+        "operationId": "TransportingsController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransportingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transporting record updated successfully"
+          },
+          "404": {
+            "description": "Transporting record not found"
+          }
+        },
+        "summary": "Update a transporting record",
+        "tags": [
+          "transportings"
+        ]
+      },
+      "get": {
+        "tags": [
+          "Transport"
+        ],
+        "summary": "Get all transport records with pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated transport records returned"
+          },
+          "400": {
+            "description": "Invalid pagination"
+          }
+        }
+      }
+    },
+    "/api/transport/{id}": {
+      "get": {
+        "description": "This route is open for default users.",
+        "operationId": "TransportingsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transporting ID",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transporting record found"
+          },
+          "404": {
+            "description": "Transporting record not found"
+          }
+        },
+        "summary": "Get transporting record by ID",
+        "tags": [
+          "transportings"
+        ]
+      }
+    },
+    "/api/transport/order/{orderId}": {
+      "get": {
+        "description": "This route is open for default users.",
+        "operationId": "TransportingsController_findByOrderId",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "description": "Order ID",
+            "schema": {
+              "example": "507f1f77bcf86cd799439012",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transporting record found"
+          },
+          "404": {
+            "description": "Transporting record not found"
+          }
+        },
+        "summary": "Get transporting record by order ID",
+        "tags": [
+          "transportings"
+        ]
+      }
+    },
+    "/api/transport/company/{companyId}": {
+      "get": {
+        "operationId": "TransportingsController_findByCompanyId",
+        "parameters": [
+          {
+            "name": "companyId",
+            "required": true,
+            "in": "path",
+            "description": "Company ID",
+            "schema": {
+              "example": "507f1f77bcf86cd799439013",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transporting records found"
+          },
+          "404": {
+            "description": "No transporting records found for the company"
+          }
+        },
+        "summary": "Get transporting records by company ID",
+        "tags": [
+          "transportings"
+        ]
+      }
+    },
+    "/api/transport/{id}/cancel": {
+      "patch": {
+        "operationId": "TransportingsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transporting ID",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transporting record canceled successfully"
+          },
+          "400": {
+            "description": "Transporting record cannot be canceled"
+          },
+          "404": {
+            "description": "Transporting record not found"
+          }
+        },
+        "summary": "Cancel a transporting record",
+        "tags": [
+          "transportings"
+        ]
+      }
+    },
+    "/api/transport/{id}/delivered": {
+      "patch": {
+        "operationId": "TransportingsController_markAsDelivered",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transporting ID",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "estimatedDelivery": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transporting record marked as delivered successfully"
+          },
+          "400": {
+            "description": "Transporting record cannot be marked as delivered"
+          },
+          "404": {
+            "description": "Transporting record not found"
+          }
+        },
+        "summary": "Mark a transporting record as delivered",
+        "tags": [
+          "transportings"
+        ]
       }
     }
   },
@@ -3987,7 +4218,10 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["phoneNumber", "nationalId"]
+        "required": [
+          "phoneNumber",
+          "nationalId"
+        ]
       },
       "UserListItemDto": {
         "type": "object",
@@ -4012,7 +4246,9 @@
             "example": [
               {
                 "resource": "users",
-                "actions": ["r"]
+                "actions": [
+                  "r"
+                ]
               }
             ],
             "type": "array",
@@ -4029,7 +4265,10 @@
             ]
           }
         },
-        "required": ["id", "phoneNumber"]
+        "required": [
+          "id",
+          "phoneNumber"
+        ]
       },
       "UserListResponseDto": {
         "type": "object",
@@ -4047,7 +4286,9 @@
             "example": 123
           }
         },
-        "required": ["items"]
+        "required": [
+          "items"
+        ]
       },
       "UserDetailResponseDto": {
         "type": "object",
@@ -4072,7 +4313,9 @@
             "example": [
               {
                 "resource": "users",
-                "actions": ["r"]
+                "actions": [
+                  "r"
+                ]
               }
             ],
             "type": "array",
@@ -4089,7 +4332,10 @@
             ]
           }
         },
-        "required": ["id", "phoneNumber"]
+        "required": [
+          "id",
+          "phoneNumber"
+        ]
       },
       "CreateUserDto": {
         "type": "object",
@@ -4105,7 +4351,10 @@
             "example": "2284280072"
           }
         },
-        "required": ["phoneNumber", "nationalId"]
+        "required": [
+          "phoneNumber",
+          "nationalId"
+        ]
       },
       "SignUpResponseDto": {
         "type": "object",
@@ -4138,7 +4387,9 @@
             }
           }
         },
-        "required": ["phoneNumber"]
+        "required": [
+          "phoneNumber"
+        ]
       },
       "SignInDto": {
         "type": "object",
@@ -4149,7 +4400,9 @@
             "example": "+09123456789"
           }
         },
-        "required": ["phoneNumber"]
+        "required": [
+          "phoneNumber"
+        ]
       },
       "SignInResponseDto": {
         "type": "object",
@@ -4160,7 +4413,9 @@
             "description": "User phone number"
           }
         },
-        "required": ["phoneNumber"]
+        "required": [
+          "phoneNumber"
+        ]
       },
       "VerifyOtpDto": {
         "type": "object",
@@ -4176,7 +4431,10 @@
             "example": "1234"
           }
         },
-        "required": ["phoneNumber", "otp"]
+        "required": [
+          "phoneNumber",
+          "otp"
+        ]
       },
       "SignUpDto": {
         "type": "object",
@@ -4197,15 +4455,22 @@
             "example": [
               {
                 "resource": "carts",
-                "actions": ["r", "m"]
+                "actions": [
+                  "r",
+                  "m"
+                ]
               },
               {
                 "resource": "orders",
-                "actions": ["r"]
+                "actions": [
+                  "r"
+                ]
               },
               {
                 "resource": "products",
-                "actions": ["c"],
+                "actions": [
+                  "c"
+                ],
                 "companyId": "507f1f77bcf86cd799439011"
               }
             ],
@@ -4218,7 +4483,10 @@
             "description": "Company id to assign the user to (optional, used by admin signup)"
           }
         },
-        "required": ["phoneNumber", "nationalId"]
+        "required": [
+          "phoneNumber",
+          "nationalId"
+        ]
       },
       "PermissionDto": {
         "type": "object",
@@ -4230,7 +4498,10 @@
           },
           "actions": {
             "description": "Allowed actions for the resource",
-            "example": ["r", "m"],
+            "example": [
+              "r",
+              "m"
+            ],
             "type": "array",
             "items": {
               "type": "string"
@@ -4242,7 +4513,10 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["resource", "actions"]
+        "required": [
+          "resource",
+          "actions"
+        ]
       },
       "UpdateUserPermissionsDto": {
         "type": "object",
@@ -4255,7 +4529,9 @@
             }
           }
         },
-        "required": ["permissions"]
+        "required": [
+          "permissions"
+        ]
       },
       "Profile": {
         "type": "object",
@@ -4357,7 +4633,12 @@
             "type": "string",
             "description": "MIME content type of the file",
             "example": "image/jpeg",
-            "enum": ["image/jpeg", "image/png", "image/webp", "image/gif"]
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "image/gif"
+            ]
           },
           "size": {
             "type": "number",
@@ -4366,7 +4647,11 @@
             "minimum": 0
           }
         },
-        "required": ["filename", "contentType", "size"]
+        "required": [
+          "filename",
+          "contentType",
+          "size"
+        ]
       },
       "CreateCompanyDto": {
         "type": "object",
@@ -4415,7 +4700,11 @@
             "example": "0123456789"
           }
         },
-        "required": ["name", "email", "registrationNumber"]
+        "required": [
+          "name",
+          "email",
+          "registrationNumber"
+        ]
       },
       "Company": {
         "type": "object",
@@ -4430,17 +4719,26 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
       "ChangeCompanyStatusDto": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["pending", "active", "suspended", "rejected"]
+            "enum": [
+              "pending",
+              "active",
+              "suspended",
+              "rejected"
+            ]
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "CreatePresignDto": {
         "type": "object",
@@ -4448,7 +4746,10 @@
           "type": {
             "type": "string",
             "description": "Upload target type (determines storage path and limits)",
-            "enum": ["product", "company"],
+            "enum": [
+              "product",
+              "company"
+            ],
             "example": "product"
           },
           "files": {
@@ -4460,7 +4761,10 @@
             }
           }
         },
-        "required": ["type", "files"]
+        "required": [
+          "type",
+          "files"
+        ]
       },
       "PresignItemDto": {
         "type": "object",
@@ -4487,7 +4791,11 @@
             "example": "https://cdn.example.com/product/uuid_product.jpg"
           }
         },
-        "required": ["filename", "contentType", "publicUrl"]
+        "required": [
+          "filename",
+          "contentType",
+          "publicUrl"
+        ]
       },
       "CreatePresignResponseDto": {
         "type": "object",
@@ -4500,7 +4808,9 @@
             }
           }
         },
-        "required": ["items"]
+        "required": [
+          "items"
+        ]
       },
       "Wallet": {
         "type": "object",
@@ -4516,7 +4826,9 @@
             "minimum": 0
           }
         },
-        "required": ["amount"]
+        "required": [
+          "amount"
+        ]
       },
       "DebitWalletRequestDto": {
         "type": "object",
@@ -4527,7 +4839,9 @@
             "example": 50000
           }
         },
-        "required": ["amount"]
+        "required": [
+          "amount"
+        ]
       },
       "TransferWalletRequestDto": {
         "type": "object",
@@ -4540,7 +4854,11 @@
           "toOwnerType": {
             "type": "string",
             "description": "Destination ownerType; optional for users (defaults to intermediary)",
-            "enum": ["user", "company", "intermediary"],
+            "enum": [
+              "user",
+              "company",
+              "intermediary"
+            ],
             "example": "intermediary"
           },
           "amount": {
@@ -4549,7 +4867,10 @@
             "example": 1000
           }
         },
-        "required": ["toOwnerId", "amount"]
+        "required": [
+          "toOwnerId",
+          "amount"
+        ]
       },
       "Transaction": {
         "type": "object",
@@ -4563,7 +4884,9 @@
             "example": 500
           }
         },
-        "required": ["quantity"]
+        "required": [
+          "quantity"
+        ]
       },
       "VariantOptionDto": {
         "type": "object",
@@ -4575,7 +4898,9 @@
             "type": "number"
           }
         },
-        "required": ["value"]
+        "required": [
+          "value"
+        ]
       },
       "VariantDto": {
         "type": "object",
@@ -4590,7 +4915,10 @@
             }
           }
         },
-        "required": ["name", "options"]
+        "required": [
+          "name",
+          "options"
+        ]
       },
       "ImageDto": {
         "type": "object",
@@ -4599,7 +4927,9 @@
             "type": "string"
           }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       },
       "ProductResponseDto": {
         "type": "object",
@@ -4661,7 +4991,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["active", "inactive", "draft", "archived", "deleted"]
+            "enum": [
+              "active",
+              "inactive",
+              "draft",
+              "archived",
+              "deleted"
+            ]
           },
           "deletedAt": {
             "format": "date-time",
@@ -4734,7 +5070,9 @@
           },
           "categories": {
             "description": "List of category IDs",
-            "example": ["507f1f77bcf86cd799439012"],
+            "example": [
+              "507f1f77bcf86cd799439012"
+            ],
             "type": "array",
             "items": {
               "type": "string"
@@ -4771,7 +5109,10 @@
           },
           "tags": {
             "description": "Tags for filtering and search",
-            "example": ["cement", "construction"],
+            "example": [
+              "cement",
+              "construction"
+            ],
             "type": "array",
             "items": {
               "type": "string"
@@ -4806,11 +5147,23 @@
           "status": {
             "type": "string",
             "description": "Status of the product",
-            "enum": ["active", "inactive", "draft", "archived", "deleted"],
+            "enum": [
+              "active",
+              "inactive",
+              "draft",
+              "archived",
+              "deleted"
+            ],
             "example": "draft"
           }
         },
-        "required": ["name", "slug", "sku", "basePrice", "stock"]
+        "required": [
+          "name",
+          "slug",
+          "sku",
+          "basePrice",
+          "stock"
+        ]
       },
       "UpdateStockDto": {
         "type": "object",
@@ -4822,7 +5175,9 @@
             "minimum": 0
           }
         },
-        "required": ["quantity"]
+        "required": [
+          "quantity"
+        ]
       },
       "UpdateProductDto": {
         "type": "object",
@@ -4838,7 +5193,13 @@
           "status": {
             "type": "string",
             "description": "Status of the product",
-            "enum": ["active", "inactive", "draft", "archived", "deleted"],
+            "enum": [
+              "active",
+              "inactive",
+              "draft",
+              "archived",
+              "deleted"
+            ],
             "example": "active"
           }
         }
@@ -4848,11 +5209,19 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["active", "inactive", "draft", "archived", "deleted"],
+            "enum": [
+              "active",
+              "inactive",
+              "draft",
+              "archived",
+              "deleted"
+            ],
             "description": "New status for the product"
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "ProductStatusResponseDto": {
         "type": "object",
@@ -4863,7 +5232,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["active", "inactive", "draft", "archived", "deleted"]
+            "enum": [
+              "active",
+              "inactive",
+              "draft",
+              "archived",
+              "deleted"
+            ]
           },
           "updatedBy": {
             "type": "string"
@@ -4873,7 +5248,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "status", "updatedBy", "updatedAt"]
+        "required": [
+          "id",
+          "status",
+          "updatedBy",
+          "updatedAt"
+        ]
       },
       "CountDto": {
         "type": "object",
@@ -4883,7 +5263,9 @@
             "example": 42
           }
         },
-        "required": ["count"]
+        "required": [
+          "count"
+        ]
       },
       "ExistsDto": {
         "type": "object",
@@ -4893,7 +5275,9 @@
             "example": true
           }
         },
-        "required": ["exists"]
+        "required": [
+          "exists"
+        ]
       },
       "CreateTicketDto": {
         "type": "object",
@@ -4924,7 +5308,12 @@
           "priority": {
             "type": "string",
             "description": "Priority of the ticket",
-            "enum": ["low", "medium", "high", "urgent"],
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
             "default": "low"
           },
           "orderId": {
@@ -4933,7 +5322,10 @@
             "example": "507f1f77bcf86cd799439099"
           }
         },
-        "required": ["title", "description"]
+        "required": [
+          "title",
+          "description"
+        ]
       },
       "TicketCommentDto": {
         "type": "object",
@@ -4964,7 +5356,11 @@
             "description": "Comment updated timestamp"
           }
         },
-        "required": ["id", "userId", "content"]
+        "required": [
+          "id",
+          "userId",
+          "content"
+        ]
       },
       "TicketResponseDto": {
         "type": "object",
@@ -4998,7 +5394,12 @@
           "priority": {
             "type": "string",
             "description": "Priority of the ticket",
-            "enum": ["low", "medium", "high", "urgent"],
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
             "example": "low"
           },
           "createdBy": {
@@ -5057,7 +5458,9 @@
             ]
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "UpdateTicketDto": {
         "type": "object",
@@ -5088,7 +5491,12 @@
           "priority": {
             "type": "string",
             "description": "Priority of the ticket",
-            "enum": ["low", "medium", "high", "urgent"],
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
             "example": "high"
           }
         }
@@ -5102,7 +5510,9 @@
             "example": "I have reviewed your issue and here is the solution..."
           }
         },
-        "required": ["content"]
+        "required": [
+          "content"
+        ]
       },
       "OrderItemDto": {
         "type": "object",
@@ -5138,7 +5548,12 @@
             }
           }
         },
-        "required": ["productId", "companyId", "quantity", "priceAtAdd"]
+        "required": [
+          "productId",
+          "companyId",
+          "quantity",
+          "priceAtAdd"
+        ]
       },
       "CreateOrderDto": {
         "type": "object",
@@ -5201,7 +5616,13 @@
             "example": "507f1f77bcf86cd799439099"
           }
         },
-        "required": ["userId", "items", "totalPrice", "status", "companyId"]
+        "required": [
+          "userId",
+          "items",
+          "totalPrice",
+          "status",
+          "companyId"
+        ]
       },
       "Order": {
         "type": "object",
@@ -5216,7 +5637,10 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["percentage", "fixed"]
+            "enum": [
+              "percentage",
+              "fixed"
+            ]
           },
           "value": {
             "type": "number",
@@ -5224,7 +5648,10 @@
             "example": 10
           }
         },
-        "required": ["type", "value"]
+        "required": [
+          "type",
+          "value"
+        ]
       },
       "CartItemDto": {
         "type": "object",
@@ -5272,7 +5699,12 @@
             ]
           }
         },
-        "required": ["productId", "companyId", "quantity", "priceAtAdd"]
+        "required": [
+          "productId",
+          "companyId",
+          "quantity",
+          "priceAtAdd"
+        ]
       },
       "CreateCartDto": {
         "type": "object",
@@ -5298,11 +5730,18 @@
           "status": {
             "type": "string",
             "description": "Status of the cart",
-            "enum": ["active", "abandoned", "checked_out"],
+            "enum": [
+              "active",
+              "abandoned",
+              "checked_out"
+            ],
             "example": "active"
           }
         },
-        "required": ["userId", "items"]
+        "required": [
+          "userId",
+          "items"
+        ]
       },
       "UpdateCartDto": {
         "type": "object",
@@ -5313,7 +5752,9 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
       "CreateTransportingDto": {
         "type": "object",
@@ -5341,7 +5782,12 @@
           "status": {
             "type": "string",
             "description": "Status of the shipment",
-            "enum": ["pending", "shipped", "delivered", "canceled"],
+            "enum": [
+              "pending",
+              "shipped",
+              "delivered",
+              "canceled"
+            ],
             "example": "shipped"
           },
           "estimatedDelivery": {
@@ -5351,7 +5797,12 @@
             "example": "2025-06-10"
           }
         },
-        "required": ["orderId", "companyId", "carrier", "trackingNumber"]
+        "required": [
+          "orderId",
+          "companyId",
+          "carrier",
+          "trackingNumber"
+        ]
       },
       "UpdateTransportingDto": {
         "type": "object",
@@ -5362,7 +5813,9 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
       "InitiatePaymentDto": {
         "type": "object",
@@ -5376,7 +5829,10 @@
             "description": "Expected order total amount (IRR)"
           }
         },
-        "required": ["orderId", "amount"]
+        "required": [
+          "orderId",
+          "amount"
+        ]
       },
       "PayDto": {
         "type": "object",
@@ -5389,11 +5845,17 @@
           },
           "method": {
             "type": "string",
-            "enum": ["GATEWAY", "WALLET"],
+            "enum": [
+              "GATEWAY",
+              "WALLET"
+            ],
             "example": "GATEWAY"
           }
         },
-        "required": ["amount", "orderId"]
+        "required": [
+          "amount",
+          "orderId"
+        ]
       },
       "InitiatePaymentResponseDto": {
         "type": "object",
@@ -5407,7 +5869,10 @@
             "example": "https://zibal.ir/pg/StartPay/1533727744287"
           }
         },
-        "required": ["trackId", "paymentUrl"]
+        "required": [
+          "trackId",
+          "paymentUrl"
+        ]
       },
       "HandleCallbackResponseDto": {
         "type": "object",
@@ -5424,7 +5889,11 @@
             "$ref": "#/components/schemas/InitiatePaymentResponseDto"
           }
         },
-        "required": ["success", "message", "data"]
+        "required": [
+          "success",
+          "message",
+          "data"
+        ]
       },
       "CreateCategoryDto": {
         "type": "object",
@@ -5453,11 +5922,18 @@
           "status": {
             "type": "string",
             "description": "Status of the category",
-            "enum": ["active", "inactive", "draft"],
+            "enum": [
+              "active",
+              "inactive",
+              "draft"
+            ],
             "example": "draft"
           }
         },
-        "required": ["name", "slug"]
+        "required": [
+          "name",
+          "slug"
+        ]
       },
       "Category": {
         "type": "object",
@@ -5472,7 +5948,9 @@
             "example": "507f1f77bcf86cd799439011"
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       },
       "CreateRatingDto": {
         "type": "object",
@@ -5495,7 +5973,10 @@
             "example": "Great product!"
           }
         },
-        "required": ["productId", "rating"]
+        "required": [
+          "productId",
+          "rating"
+        ]
       }
     }
   }

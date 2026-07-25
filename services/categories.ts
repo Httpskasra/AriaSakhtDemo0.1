@@ -13,7 +13,11 @@ export interface Category {
 export async function fetchCategories(): Promise<Category[]> {
   const { $axios } = useNuxtApp();
   const res = await $axios.get("/categories");
-  return Array.isArray(res.data) ? res.data : (res.data?.items || []);
+  const categories = Array.isArray(res.data) ? res.data : res.data?.items;
+  if (!Array.isArray(categories)) {
+    throw new Error("ساختار پاسخ دسته‌بندی‌ها نامعتبر است.");
+  }
+  return categories;
 }
 
 export async function createCategory(payload: Partial<Category>): Promise<Category> {

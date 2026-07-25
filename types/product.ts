@@ -1,3 +1,24 @@
+export interface ProductVariantOption {
+  value: string;
+  priceModifier?: number;
+}
+
+export interface ProductVariant {
+  id?: string;
+  name: string;
+  options: ProductVariantOption[];
+}
+
+export interface ProductImage {
+  url: string;
+}
+
+export interface ProductImageMeta {
+  filename: string;
+  contentType: string;
+  size: number;
+}
+
 export interface Product {
   _id?: string;
   id?: string;
@@ -9,20 +30,17 @@ export interface Product {
   currency?: string;
   categories: any[];
   description: string;
-  companyId: string | { _id: string; name: string };
+  companyId?: string | { _id: string; name: string };
   stock: {
     quantity: number;
     reserved?: number;
     total?: number;
   };
-  variants?: Array<{
-    id?: string;
-    name: string;
-    options: Array<{ value: string; priceModifier?: number }>;
-  }>;
-  attributes?: Record<string, string | number>;
-  tags?: string[];
-  images?: Array<{ url: string }>;
+  variants: ProductVariant[];
+  attributes: Record<string, string | number>;
+  tags: string[];
+  images: ProductImage[];
+  imagesMeta?: ProductImageMeta[];
   status?: "active" | "inactive" | "draft" | "archived" | "deleted";
   
   // Denormalized Rating Fields
@@ -48,11 +66,9 @@ export type productImage = {
 };
 
 export interface CartItemDto {
-  userId: string;
   productId: string;
   quantity: number;
-  variantId?: string;
-  selectedOptions?: Record<string, string>;
+  variant?: { name: string; value: string };
   companyId?: string;
   priceAtAdd?: number;
 }

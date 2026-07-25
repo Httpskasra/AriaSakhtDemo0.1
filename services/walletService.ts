@@ -45,7 +45,10 @@ export async function getWallet(): Promise<Wallet | null> {
 export async function getTransactions(): Promise<Transaction[]> {
   const { $axios } = useNuxtApp();
   const { data } = await $axios.get("/transaction");
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) {
+    throw new Error("ساختار پاسخ تراکنش‌ها نامعتبر است.");
+  }
+  return data;
 }
 
 export async function creditWallet(

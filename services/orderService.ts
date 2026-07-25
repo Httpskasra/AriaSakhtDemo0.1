@@ -1,70 +1,84 @@
 // services/orderService.ts
 
-// ==== Types (طبق Swagger) ====
-export type OrderStatus =
-  | "pending"
-  | "paid"
-  | "shipped"
-  | "delivered"
-  | "cancelled"
-  | "refunded";
+import { getPopulatedCart } from '~/services/cartService';
+import { useUser } from '~/composables/useUser';
+import type {
+  Order,
+  OrderItemDto,
+  OrderStatus,
+  OrdersListResponse,
+  OrderStatusUpdateDto,
+} from '~/types/order';
 
-export interface OrderItemDto {
-  productId: string;
-  quantity: number;
-  price: number;
-  priceAtAdd?: number;
-  variantId?: string;
-  selectedVariant?: Record<string, string>;
-}
-
+// ==== Types (طبق CreateOrderDto بک‌اند) ====
 export interface CreateOrderDto {
-  items: OrderItemDto[];
-  shippingAddress?: string;
-  shippingCost?: number;
-  notes?: string;
-}
-
-export interface Order {
-  id: string;
-  _id?: string;
   userId: string;
-  companyId?: string;
   items: OrderItemDto[];
-  status: OrderStatus;
   totalPrice: number;
+  status: 'pending';
+  companyId: string;
   shippingAddress?: string;
-  shippingCost?: number;
-  notes?: string;
-  trackingCode?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  paidAt?: string;
-  shippedAt?: string;
-  deliveredAt?: string;
+  paymentMethod?: string;
+  transportId?: string;
 }
 
-export interface OrdersListResponse {
-  items: Order[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-export interface OrderStatusUpdateDto {
-  status: OrderStatus;
-  refund?: boolean;
+export interface CreateOrderOptions {
+  shippingAddress?: string;
+  paymentMethod?: string;
+  transportId?: string;
 }
 
 // ==== API calls ====
 
 /**
- * ایجاد سفارش جدید
+ * ساخت payload کامل سفارش از cart/session و ایجاد سفارش.
+ * بک‌اند cart فعال را دوباره validate و سفارش‌ها را بر اساس شرکت گروه‌بندی می‌کند.
  */
-export async function createOrder(body: CreateOrderDto): Promise<Order> {
+export async function createOrder(options: CreateOrderOptions = {}): Promise<Order[]> {
   const { $axios } = useNuxtApp();
-  const { data } = await $axios.post("/orders", body);
-  return data;
+  const { user, fetchUser } = useUser();
+
+  if (!user.value?.userId) await fetchUser();
+  const userId = user.value?.userId;
+  if (!userId) throw new Error('برای ایجاد سفارش باید وارد حساب کاربری شوید.');
+
+  const { data: cart } = await getPopulatedCart();
+  const items = (cart.items || []).map((item: any): OrderItemDto => {
+    const productId = typeof item.productId === 'string'
+      ? item.productId
+      : item.productId?._id || item.productId?.id;
+    const companyId = typeof item.companyId === 'string'
+      ? item.companyId
+      : item.companyId?._id || item.companyId?.id;
+
+    if (!productId || !companyId || !Number.isFinite(Number(item.priceAtAdd))) {
+      throw new Error('اطلاعات یکی از اقلام سبد خرید برای ایجاد سفارش کامل نیست.');
+    }
+
+    return {
+      productId: String(productId),
+      companyId: String(companyId),
+      quantity: Number(item.quantity),
+      priceAtAdd: Number(item.priceAtAdd),
+      ...(item.variant ? { variant: item.variant } : {}),
+    };
+  });
+
+  if (items.length === 0) throw new Error('سبد خرید خالی است.');
+
+  const payload: CreateOrderDto = {
+    userId,
+    items,
+    totalPrice: items.reduce((sum, item) => sum + item.priceAtAdd * item.quantity, 0),
+    status: 'pending',
+    companyId: items[0].companyId,
+    ...(options.shippingAddress ? { shippingAddress: options.shippingAddress } : {}),
+    ...(options.paymentMethod ? { paymentMethod: options.paymentMethod } : {}),
+    ...(options.transportId ? { transportId: options.transportId } : {}),
+  };
+
+  const { data } = await $axios.post<Order | Order[]>('/orders', payload);
+  return Array.isArray(data) ? data : [data];
 }
 
 /**
@@ -106,7 +120,7 @@ export async function markOrderAsPaid(id: string): Promise<Order> {
  */
 export async function markOrderAsShipped(
   id: string,
-  body?: { trackingCode?: string }
+  body?: { transportId?: string }
 ): Promise<Order> {
   const { $axios } = useNuxtApp();
   const { data } = await $axios.patch(`/orders/${id}/mark-shipped`, body || {});

@@ -3,16 +3,12 @@
     <!-- Header with Filters -->
     <div class="header-section">
       <div class="filter-controls">
-        <button type="button" @click="toggleFilters" class="filter-btn">
+        <UButton type="button" color="neutral" variant="outline" @click="toggleFilters">
           <span>فیلتر</span>
-        </button>
-        <div class="search-box">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="جستجو بر اساس شناسه یا محصول..."
-            class="search-input" />
-        </div>
+        </UButton>
+        <TableFilterInput
+          v-model="searchQuery"
+          placeholder="جستجو بر اساس شناسه یا محصول..." />
       </div>
 
       <!-- Filter Panel -->
@@ -28,30 +24,21 @@
             <option value="refunded">بازپرداخت‌شده</option>
           </select>
 
-          <button class="filter-clear" @click="clearFilters">
+          <UButton color="error" variant="ghost" size="sm" @click="clearFilters">
             حذف فیلترها
-          </button>
+          </UButton>
         </div>
       </transition>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="state loading">
-      <div class="skeleton" v-for="i in 4" :key="i"></div>
-    </div>
+    <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="4" />
 
     <!-- Error State -->
-    <div v-else-if="errorMsg" class="state error">
-      <p>خطا در دریافت سفارش‌ها</p>
-      <small>{{ errorMsg }}</small>
-      <button class="retry" @click="fetchOrders">تلاش مجدد</button>
-    </div>
+    <SharedAsyncState v-else-if="errorMsg" state="error" :message="errorMsg" @retry="fetchOrders" />
 
     <!-- Empty State -->
-    <div v-else-if="filteredOrders.length === 0" class="state empty">
-      <p>سفارشی پیدا نشد.</p>
-      <small>فیلترها یا جستجو را تغییر دهید.</small>
-    </div>
+    <SharedAsyncState v-else-if="filteredOrders.length === 0" state="empty" title="سفارشی پیدا نشد" message="فیلترها یا جستجو را تغییر دهید." />
 
     <!-- Orders List -->
     <div v-else class="orders-container">
@@ -65,9 +52,7 @@
           @click="selectOrder(order)">
           <div class="order-header">
             <h3>سفارش #{{ truncateId(order.id || order._id) }}</h3>
-            <span class="status-badge" :class="`status-${order.status}`">
-              {{ getStatusLabel(order.status) }}
-            </span>
+            <OrderStatus :status="order.status" />
           </div>
           <p class="order-description">{{ order.items?.length || 0 }} محصول</p>
           <div class="order-meta">
@@ -88,11 +73,7 @@
               سفارش #{{ truncateId(selectedOrder.id || selectedOrder._id) }}
             </h2>
             <div class="order-badges">
-              <span
-                class="status-badge"
-                :class="`status-${selectedOrder.status}`">
-                {{ getStatusLabel(selectedOrder.status) }}
-              </span>
+              <OrderStatus :status="selectedOrder.status" />
             </div>
           </div>
 
@@ -129,7 +110,7 @@
               <div class="info-item">
                 <span class="label">وضعیت:</span>
                 <span class="value">{{
-                  getStatusLabel(selectedOrder.status)
+                  getOrderStatusConfig(selectedOrder.status).label
                 }}</span>
               </div>
               <div class="info-item">
@@ -153,9 +134,9 @@
                   formatDate(selectedOrder.createdAt)
                 }}</span>
               </div>
-              <div class="info-item" v-if="selectedOrder.trackingCode">
-                <span class="label">کد پیگیری:</span>
-                <span class="value">{{ selectedOrder.trackingCode }}</span>
+              <div class="info-item" v-if="selectedOrder.transportId">
+                <span class="label">شناسه حمل‌ونقل:</span>
+                <span class="value">{{ selectedOrder.transportId }}</span>
               </div>
             </div>
 
@@ -176,51 +157,58 @@
           <div class="details-section actions-section">
             <h4>اقدامات</h4>
             <div class="actions-buttons">
-              <button
+              <UButton
                 v-if="selectedOrder.status === 'pending'"
                 @click="handleStatusChange('paid')"
                 :disabled="updatingStatus"
-                class="btn-action btn-paid">
+                size="sm"
+                color="success">
                 {{
                   updatingStatus ? "درحال انجام..." : "علامت‌گذاری پرداخت شده"
                 }}
-              </button>
+              </UButton>
 
-              <button
+              <UButton
                 v-if="selectedOrder.status === 'paid'"
                 @click="handleStatusChange('shipped')"
                 :disabled="updatingStatus"
-                class="btn-action btn-shipped">
+                size="sm"
+                color="warning"
+                variant="soft">
                 {{
                   updatingStatus ? "درحال انجام..." : "علامت‌گذاری ارسال شده"
                 }}
-              </button>
+              </UButton>
 
-              <button
+              <UButton
                 v-if="selectedOrder.status === 'shipped'"
                 @click="handleStatusChange('delivered')"
                 :disabled="updatingStatus"
-                class="btn-action btn-delivered">
+                size="sm"
+                color="success">
                 {{
                   updatingStatus ? "درحال انجام..." : "علامت‌گذاری تحویل شده"
                 }}
-              </button>
+              </UButton>
 
-              <button
+              <UButton
                 v-if="['pending', 'paid'].includes(selectedOrder.status)"
                 @click="handleStatusChange('cancelled')"
                 :disabled="updatingStatus"
-                class="btn-action btn-cancel">
+                size="sm"
+                color="error">
                 {{ updatingStatus ? "درحال انجام..." : "لغو سفارش" }}
-              </button>
+              </UButton>
 
-              <button
+              <UButton
                 v-if="['paid', 'shipped'].includes(selectedOrder.status)"
                 @click="handleRefund"
                 :disabled="updatingStatus"
-                class="btn-action btn-refund">
+                size="sm"
+                color="error"
+                variant="soft">
                 {{ updatingStatus ? "درحال انجام..." : "بازپرداخت" }}
-              </button>
+              </UButton>
             </div>
           </div>
         </div>
@@ -233,8 +221,9 @@
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, computed } from "vue";
-import type { Order, OrderStatus } from "@/services/orderService";
+import type { Order, OrderStatus } from "@/types/order";
 import {
   listOrders,
   getOrder,
@@ -326,7 +315,7 @@ const handleStatusChange = async (newStatus: OrderStatus) => {
     if (idx >= 0) orders.value[idx] = updatedOrder;
   } catch (err: any) {
     console.error("خطا در تغییر وضعیت:", err);
-    alert("خطا در تغییر وضعیت سفارش");
+    feedback.error("تغییر وضعیت انجام نشد", "وضعیت سفارش با مشکل مواجه شد.");
   } finally {
     updatingStatus.value = false;
   }
@@ -349,7 +338,7 @@ const handleRefund = async () => {
     if (idx >= 0) orders.value[idx] = refundedOrder;
   } catch (err: any) {
     console.error("خطا در بازپرداخت:", err);
-    alert("خطا در بازپرداخت سفارش");
+    feedback.error("بازپرداخت انجام نشد", "بازپرداخت سفارش با مشکل مواجه شد.");
   } finally {
     updatingStatus.value = false;
   }
@@ -391,18 +380,6 @@ function numberFormat(n?: number) {
   return n.toLocaleString("fa-IR");
 }
 
-function getStatusLabel(status: OrderStatus) {
-  const labels: Record<OrderStatus, string> = {
-    pending: "درانتظار",
-    paid: "پرداخت‌شده",
-    shipped: "ارسال‌شده",
-    delivered: "تحویل‌داده‌شده",
-    cancelled: "لغو‌شده",
-    refunded: "بازپرداخت‌شده",
-  };
-  return labels[status] || status;
-}
-
 // On Mount
 onMounted(fetchOrders);
 </script>
@@ -417,7 +394,7 @@ onMounted(fetchOrders);
   flex-direction: column;
   width: 100%;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 0;
 }
 
@@ -429,48 +406,9 @@ onMounted(fetchOrders);
 
 .filter-controls {
   display: flex;
-  gap: 15px;
+  gap: 16px;
   align-items: center;
-  margin-bottom: 15px;
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  padding: 8px 16px;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.filter-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-color: var(--blue-dark);
-}
-
-.search-box {
-  flex: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: inherit;
-  direction: rtl;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--blue-dark);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  margin-bottom: 16px;
 }
 
 .filter-panel {
@@ -479,32 +417,18 @@ onMounted(fetchOrders);
   flex-wrap: wrap;
   background: #f8fafc;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   border: 1px solid #e5e7eb;
 }
 
 .filter-panel select {
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   padding: 6px 10px;
   background: #fff;
   font-size: 13px;
   font-family: inherit;
   direction: rtl;
-}
-
-.filter-clear {
-  background: transparent;
-  color: #ef4444;
-  border: 0;
-  cursor: pointer;
-  padding: 6px 10px;
-  font-size: 13px;
-  transition: color 0.2s;
-}
-
-.filter-clear:hover {
-  color: #dc2626;
 }
 
 /* States */
@@ -517,7 +441,7 @@ onMounted(fetchOrders);
 .loading .skeleton {
   height: 80px;
   margin: 10px 0;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
   background-size: 400% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
@@ -542,23 +466,8 @@ onMounted(fetchOrders);
   color: #9ca3af;
 }
 
-.state.error .retry {
-  background: var(--blue-dark);
-  color: #fff;
-  border-radius: 6px;
-  padding: 8px 16px;
-  border: 0;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background-color 0.2s;
-}
-
-.state.error .retry:hover {
-  background-color: #1565c0;
-}
-
 .state.empty {
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* Orders Container */
@@ -572,7 +481,7 @@ onMounted(fetchOrders);
 .orders-list {
   flex: 0 0 320px;
   background: #f9fafb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   padding: 12px;
   max-height: 600px;
   overflow-y: auto;
@@ -583,7 +492,7 @@ onMounted(fetchOrders);
   padding: 12px;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -616,49 +525,10 @@ onMounted(fetchOrders);
   flex: 1;
 }
 
-.status-badge {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: bold;
-  white-space: nowrap;
-  margin-right: 0;
-}
-
-.status-badge.status-pending {
-  background-color: #fef08a;
-  color: #713f12;
-}
-
-.status-badge.status-paid {
-  background-color: #bfdbfe;
-  color: #1e40af;
-}
-
-.status-badge.status-shipped {
-  background-color: #fed7aa;
-  color: #92400e;
-}
-
-.status-badge.status-delivered {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.status-badge.status-cancelled {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.status-badge.status-refunded {
-  background-color: #fecaca;
-  color: #7f1d1d;
-}
-
 .order-description {
   margin: 0 0 6px 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .order-meta {
@@ -677,7 +547,7 @@ onMounted(fetchOrders);
 .order-details {
   flex: 1;
   background: white;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   border: 1px solid #e5e7eb;
   padding: 20px;
   max-height: 600px;
@@ -694,7 +564,7 @@ onMounted(fetchOrders);
 
 .details-header {
   border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 15px;
+  padding-bottom: 16px;
   margin-bottom: 20px;
 }
 
@@ -744,7 +614,7 @@ onMounted(fetchOrders);
 }
 
 .item-quantity {
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0 10px;
 }
 
@@ -774,13 +644,13 @@ onMounted(fetchOrders);
 
 .info-item .label {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 600;
 }
 
 .info-item .value {
   font-size: 13px;
-  color: #374151;
+  color: var(--color-text-body);
   word-break: break-all;
 }
 
@@ -796,7 +666,7 @@ onMounted(fetchOrders);
 .notes-section .label {
   display: block;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 600;
   margin-bottom: 6px;
 }
@@ -805,14 +675,14 @@ onMounted(fetchOrders);
 .notes-text {
   margin: 0;
   font-size: 13px;
-  color: #374151;
-  line-height: 1.5;
+  color: var(--color-text-body);
+  line-height: var(--line-height-body);
 }
 
 /* Actions Section */
 .actions-section {
   border-top: 2px solid #e5e7eb;
-  padding-top: 15px;
+  padding-top: 16px;
 }
 
 .actions-buttons {
@@ -821,77 +691,14 @@ onMounted(fetchOrders);
   gap: 8px;
 }
 
-.btn-action {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  transition: all 0.2s;
-  flex: 1;
-  min-width: 150px;
-}
-
-.btn-paid {
-  background-color: #bfdbfe;
-  color: #1e40af;
-}
-
-.btn-paid:hover:not(:disabled) {
-  background-color: #93c5fd;
-}
-
-.btn-shipped {
-  background-color: #fed7aa;
-  color: #92400e;
-}
-
-.btn-shipped:hover:not(:disabled) {
-  background-color: #fdba74;
-}
-
-.btn-delivered {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.btn-delivered:hover:not(:disabled) {
-  background-color: #bbf7d0;
-}
-
-.btn-cancel {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background-color: #e5e7eb;
-}
-
-.btn-refund {
-  background-color: #fecaca;
-  color: #7f1d1d;
-}
-
-.btn-refund:hover:not(:disabled) {
-  background-color: #fca5a5;
-}
-
-.btn-action:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .orders-container {
-    gap: 15px;
+    gap: 16px;
   }
 
   .orders-list {
-    flex: 0 0 280px;
+    flex: 0 0 min(32vw, 280px);
   }
 
   .info-grid {
@@ -918,17 +725,10 @@ onMounted(fetchOrders);
     gap: 10px;
   }
 
-  .search-box {
-    width: 100%;
-  }
-
   .actions-buttons {
     flex-direction: column;
   }
 
-  .btn-action {
-    min-width: unset;
-  }
 }
 
 /* Transitions */
@@ -948,11 +748,12 @@ onMounted(fetchOrders);
   width: 85%;
   margin: 20px auto;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
 }
 .title h2 {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
+  font-weight: 700;
   color: var(--blue-dark);
   font-size: 24px;
 }
@@ -969,7 +770,8 @@ onMounted(fetchOrders);
   box-sizing: border-box;
 }
 .header ul li {
-  font-family: "iran-yekan-num-Regular";
+  font-family: var(--font-num);
+  font-weight: 400;
   font-size: 12px;
   flex: 1 1 0;
   text-align: center;
@@ -1027,25 +829,29 @@ onMounted(fetchOrders);
   cursor: pointer;
 }
 .transaction * {
-  font-family: "iran-yekan-num-Medium";
+  font-family: var(--font-num);
+  font-weight: 500;
   color: var(--blue-dark);
   font-size: 12px;
 }
 .transaction .name {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
+  font-weight: 700;
   font-size: 12px;
 }
 .transaction .id {
-  font-family: "iran-yekan-num-Bold";
+  font-family: var(--font-num);
+  font-weight: 700;
   font-size: 12px;
 }
 
 .transaction .status {
   color: var(--green-number);
   background-color: rgba(0, 186, 0, 0.2);
-  padding: 5px;
-  border-radius: 6px;
-  font-family: "iran-yekan-num-Regular";
+  padding: 4px;
+  border-radius: var(--radius-compact-list-item);
+  font-family: var(--font-num);
+  font-weight: 400;
   font-size: 10px;
 }
 @media (max-width: 767px) {
@@ -1063,7 +869,8 @@ onMounted(fetchOrders);
     gap: 2px;
   }
   .header ul li {
-    font-family: "iran-yekan-num-Regular";
+    font-family: var(--font-num);
+    font-weight: 400;
     font-size: 9px;
     padding: 0 1px;
     margin: 0 1px;

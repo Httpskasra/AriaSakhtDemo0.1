@@ -2,41 +2,46 @@
 
 <template>
   <NuxtLayout name="dashboard">
-    <div class="title">
-      <h1>مدیریت نقش‌ها</h1>
-      <img src="/icons/roles.png" alt="roles" />
-    </div>
+    <DashboardPageHeader title="مدیریت نقش‌ها" icon="/icons/roles.png" alt="roles" />
     <div class="container">
       <div class="header">
-        <button v-if="canCreate" class="create-btn" @click="openCreateModal">
+        <UButton v-if="canCreate" size="sm" @click="openCreateModal">
           افزودن نقش جدید
-        </button>
+        </UButton>
       </div>
-      <div v-if="canRead" class="list">
-        <table>
-          <thead>
-            <tr>
-              <th>شماره تماس</th>
-              <th>کد ملی</th>
-              <th>دسترسی‌ها</th>
-              <th v-if="canUpdate || canDelete">عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="role in roles" :key="role.id">
-              <td>{{ role.phoneNumber || "-" }}</td>
-              <td>{{ role.nationalId || "-" }}</td>
-              <td class="permissions-cell">
-                {{ formatPermissions(role.permissions) || "-" }}
-              </td>
-              <td v-if="canUpdate || canDelete" class="actions">
-                <button v-if="canUpdate" class="edit" @click="editRole(role)">
-                  ویرایش
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-if="canRead" class="premium-card border border-gray-100 overflow-hidden">
+    <TableScrollContainer>
+      <UTable :rows="roles" :columns="roleColumns" class="min-w-[34rem]">
+          <template #phoneNumber-data="{ row }">
+            {{ row.phoneNumber || "-" }}
+          </template>
+          <template #nationalId-data="{ row }">
+            {{ row.nationalId || "-" }}
+          </template>
+          <template #permissions-data="{ row }">
+            <span class="permissions-cell">
+              {{ formatPermissions(row.permissions) || "-" }}
+            </span>
+          </template>
+          <template #actions-data="{ row }">
+            <div class="actions">
+              <UButton
+                v-if="canUpdate"
+                size="xs"
+                color="warning"
+                variant="soft"
+                @click="editRole(row)">
+                ویرایش
+              </UButton>
+            </div>
+          </template>
+      </UTable>
+    </TableScrollContainer>
+        <SharedAsyncState
+          v-if="roles.length === 0"
+          state="empty"
+          title="نقشی پیدا نشد"
+          message="هنوز نقشی برای نمایش وجود ندارد." />
       </div>
       <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
     </div>
@@ -46,27 +51,13 @@
       <h2 class="text-xl font-bold mb-6 text-gray-800">
         {{ editMode ? "ویرایش نقش" : "ایجاد نقش جدید" }}
       </h2>
-      <form class="space-y-5" @submit.prevent="saveRole">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >شماره موبایل</label
-          >
-          <input
-            v-model="form.phoneNumber"
-            type="tel"
-            placeholder="+989123456789"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
-            >کد ملی</label
-          >
-          <input
-            v-model="form.nationalId"
-            type="text"
-            placeholder="1234567891"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition" />
-        </div>
+      <UForm :state="form" class="space-y-5" @submit.prevent="saveRole">
+        <UFormField label="شماره موبایل" name="phoneNumber">
+          <UInput v-model="form.phoneNumber" type="tel" placeholder="+989123456789" />
+        </UFormField>
+        <UFormField label="کد ملی" name="nationalId">
+          <UInput v-model="form.nationalId" placeholder="1234567891" />
+        </UFormField>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >دسترسی‌ها</label
@@ -78,16 +69,19 @@
               class="resource-block">
               <div class="resource-header">
                 <div class="resource-title">{{ resource.label }}</div>
-                <button
+                <UButton
                   type="button"
-                  class="toggle-all-btn"
+                  size="xs"
+                  color="neutral"
+                  variant="soft"
                   @click="toggleAll(resource.value)">
                   {{
                     allChecked(resource.value) ? "برداشتن تیک همه" : "تیک همه"
                   }}
-                </button>
+                </UButton>
               </div>
               <div class="actions-list">
+                <!-- Specialized permission toggles: native checkboxes preserve compact bulk-edit behavior. -->
                 <label
                   v-for="action in actionOptions"
                   :key="action.value"
@@ -109,18 +103,21 @@
 
               <!-- products-only: company selector -->
               <div v-if="resource.value === Resource.PRODUCTS" class="mt-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >شرکت (برای محصولات)</label
-                >
-                <input
-                  v-model="companySearch"
-                  placeholder="جستجو شرکت..."
-                  class="w-full rounded-lg border-gray-300 shadow-sm px-3 py-2 mb-2" />
-                <div class="max-h-40 overflow-auto border rounded">
+                <UFormField label="شرکت (برای محصولات)" name="companySearch">
+                  <UInput
+                    v-model="companySearch"
+                    placeholder="جستجو شرکت..."
+                    class="mb-2" />
+                </UFormField>
+                <div class="max-h-40 overflow-auto border rounded" role="listbox" aria-label="انتخاب شرکت">
                   <div
                     v-for="c in filteredCompanies"
                     :key="c._id || c.id"
-                    class="p-2 hover:bg-gray-100 cursor-pointer"
+                    class="p-2 hover:bg-gray-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    role="option"
+                    :aria-selected="selectedCompanyIdForResource(resource.value) === String(c._id || c.id)"
+                    tabindex="0"
+                    @keydown="onCompanyKeydown($event, c, filteredCompanies)"
                     @click="
                       setCompanyForResource(
                         resource.value,
@@ -139,35 +136,37 @@
           </div>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
+          <UButton
             type="button"
             @click="closeModal"
-            class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+            color="neutral"
+            variant="soft">
             لغو
-          </button>
-          <button
-            type="submit"
-            class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition">
+          </UButton>
+          <UButton type="submit">
             ذخیره
-          </button>
+          </UButton>
         </div>
-      </form>
+      </UForm>
     </BaseModal>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+const feedback = useFeedback();
+import { computed, ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
 import { toInternationalPhone } from "~/utils/PhoneNumber";
-import dashboardAuth from "~/middleware/dashboard-auth";
+import { updateUserPermissions } from "~/services/authService";
 useHead({
-  title: " آریاساخت | داشبورد | نقش ها ",
+  title: "داشبورد | نقش‌ها",
 });
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "users", action: "m" },
 });
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
 // داده mock برای تست سریع
 const actionOptions = [
   { value: Action.READ, label: "خواندن" },
@@ -199,6 +198,14 @@ type Role = {
 };
 // NOTE: mock roles removed. Fetch real data from API in onMounted.
 const roles = ref<Role[]>([]);
+const roleColumns = computed(() => [
+  { key: "phoneNumber", label: "شماره تماس" },
+  { key: "nationalId", label: "کد ملی" },
+  { key: "permissions", label: "دسترسی‌ها" },
+  ...(canUpdate.value || canDelete.value
+    ? [{ key: "actions", label: "عملیات" }]
+    : []),
+]);
 const isModalOpen = ref(false);
 const editMode = ref(false);
 const form = ref<Role>({
@@ -255,8 +262,8 @@ const closeModal = () => {
 };
 
 const saveRole = async () => {
-  if (!canCreate && !editMode.value) return alert("شما اجازه ایجاد ندارید!");
-  if (!canUpdate && editMode.value) return alert("شما اجازه ویرایش ندارید!");
+  if (!canCreate.value && !editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
+  if (!canUpdate.value && editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
 
   // Build permissions payload, including companyId when set on permission
   const permissionsPayload = form.value.permissions
@@ -281,7 +288,7 @@ const saveRole = async () => {
     prodPerm.actions.length > 0 &&
     !companyIdFromProducts
   ) {
-    alert("برای دسترسی محصولات، انتخاب شرکت الزامی است");
+    feedback.error("اطلاعات ناقص", "برای دسترسی محصولات، انتخاب شرکت الزامی است.");
     return;
   }
   const body: any = {
@@ -308,7 +315,7 @@ const saveRole = async () => {
         if (companyIdFromProducts) {
           payload.companyId = companyIdFromProducts;
         }
-        await axios.patch(`/users/${targetId}/permissions`, payload);
+        await updateUserPermissions(targetId, payload);
 
         // به‌روزرسانی UI محلی
         const idx = roles.value.findIndex((r) => r.id === form.value.id);
@@ -320,7 +327,7 @@ const saveRole = async () => {
             permissions: form.value.permissions,
           } as Role;
         }
-        alert("ویرایش با موفقیت انجام شد");
+        feedback.success("ویرایش شد", "نقش با موفقیت ویرایش شد.");
       } catch (err) {
         console.error("failed to update permissions/profile:", err);
         throw err;
@@ -340,11 +347,11 @@ const saveRole = async () => {
         permissions: form.value.permissions,
       };
       roles.value.push(newRole);
-      alert("ایجاد با موفقیت انجام شد");
+      feedback.success("ایجاد شد", "نقش با موفقیت ایجاد شد.");
     }
   } catch (err) {
     console.error("saveRole failed:", err);
-    alert("خطا در ارسال به سرور");
+    feedback.error("ذخیره انجام نشد", "ارسال اطلاعات به سرور با مشکل مواجه شد.");
   }
 };
 
@@ -386,7 +393,6 @@ const nuxtApp = useNuxtApp();
 const axios = nuxtApp.$axios;
 const meUserId = ref<string | null>(null);
 
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
 // const { canCreate, canRead, canUpdate, canDelete } = {
 //   canCreate: true,
 //   canRead: true,
@@ -408,6 +414,23 @@ function setCompanyForResource(resource: Resource, companyId: string) {
   // attach companyId to this permission
   // @ts-ignore
   (perm as any).companyId = companyId;
+}
+
+function selectedCompanyIdForResource(resource: Resource) {
+  const perm = form.value.permissions.find((p) => p.resource === resource);
+  return perm ? String((perm as any).companyId || "") : "";
+}
+
+function onCompanyKeydown(event: KeyboardEvent, company: any, options: any[]) {
+  const index = options.indexOf(company);
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    setCompanyForResource(resource.value, String(company._id || company.id));
+  } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    const next = options[(index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length];
+    (event.currentTarget as HTMLElement)?.parentElement?.querySelectorAll<HTMLElement>('[role="option"]')[options.indexOf(next)]?.focus();
+  }
 }
 
 function selectedCompanyNameForResource(resource: Resource) {
@@ -471,25 +494,9 @@ function formatPermissions(perms: Permission[] = []) {
 </script>
 
 <style scoped>
-.title {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
-  width: 280px;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  margin: 15px;
-}
-.title h1 {
-  font-size: 30px;
-}
-.title img {
-  width: 66px;
-  height: 66px;
-}
 .container {
   background: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
   width: 90%;
   margin: auto;
@@ -498,19 +505,7 @@ function formatPermissions(perms: Permission[] = []) {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-bottom: 15px;
-}
-.create-btn {
-  background-color: var(--blue-dark);
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-family: "iran-yekan-Bold";
-  font-size: 10px;
-}
-.create-btn:hover {
-  opacity: 0.85;
-  cursor: pointer;
+  margin-bottom: 16px;
 }
 .list table {
   width: 100%;
@@ -529,18 +524,6 @@ function formatPermissions(perms: Permission[] = []) {
   display: flex;
   gap: 10px;
 }
-.edit {
-  background-color: var(--yellow-warning);
-  color: var(--blue-dark);
-  padding: 4px 10px;
-  border-radius: 6px;
-}
-.delete {
-  background-color: #f87171;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 6px;
-}
 .no-access {
   color: var(--gray-600);
   text-align: center;
@@ -549,12 +532,12 @@ function formatPermissions(perms: Permission[] = []) {
 .resources-actions-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
   margin-top: 8px;
 }
 .resource-block {
   background: #f9f9f9;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 10px 12px;
   margin-bottom: 4px;
 }
@@ -562,18 +545,6 @@ function formatPermissions(perms: Permission[] = []) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-.toggle-all-btn {
-  background: transparent;
-  border: 1px solid var(--gray-300);
-  color: var(--blue-dark);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-}
-.toggle-all-btn:hover {
-  background: rgba(59, 130, 246, 0.06);
-  cursor: pointer;
 }
 .resource-title {
   font-size: 14px;
@@ -594,7 +565,7 @@ function formatPermissions(perms: Permission[] = []) {
   font-size: 13px;
   background: #f6f6f6;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
 }
 .action-checkbox input[type="checkbox"] {
   accent-color: var(--blue-dark);
@@ -602,16 +573,6 @@ function formatPermissions(perms: Permission[] = []) {
   height: 16px;
 }
 @media (max-width: 767px) {
-  .title {
-    width: 40%;
-  }
-  .title h1 {
-    font-size: 20px;
-  }
-  .title img {
-    width: 40px;
-    height: 40px;
-  }
   .container {
     width: 95%;
     padding: 10px;

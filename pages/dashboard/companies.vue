@@ -9,17 +9,35 @@
 
     <div class="space-y-4" dir="rtl">
       <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-        <SearchBar v-model="search" :dark="true" />
-        <button
+        class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+        <div class="flex items-center gap-2">
+          <TableFilterInput
+            v-model="search"
+            placeholder="جستجوی شرکت..."
+            @submit="applyCompanyFilters" />
+          <USelect
+            v-model="sort"
+            :items="[
+              { label: 'جدیدترین', value: 'createdAt:desc' },
+              { label: 'قدیمی‌ترین', value: 'createdAt:asc' },
+              { label: 'نام (الفبا)', value: 'name:asc' }
+            ]" />
+          <USelect
+            v-model="limit"
+            :items="[
+              { label: '۱۰', value: 10 },
+              { label: '۲۵', value: 25 },
+              { label: '۵۰', value: 50 }
+            ]" />
+        </div>
+        <UButton
           v-if="canCreate"
-          @click="openModal()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+          @click="openModal()">
           + افزودن
-        </button>
+        </UButton>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="premium-card border border-gray-100">
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
             <thead>
@@ -66,7 +84,7 @@
             </thead>
             <tbody class="text-gray-800">
               <tr
-                v-for="(company, idx) in filteredCompanies"
+                v-for="(company, idx) in companies"
                 :key="company._id || idx"
                 class="hover:bg-gray-50 border-b border-gray-100">
                 <td class="px-4 py-3">
@@ -128,36 +146,40 @@
                       }}
                     </span>
 
-                    <select
+                    <USelect
                       v-if="canUpdate"
                       :disabled="statusLoading[company._id || '']"
-                      class="text-xs border rounded px-2 py-1 bg-white focus:outline-none"
-                      :value="
+                      size="xs"
+                      :model-value="
                         company.status ??
                         (company.isActive ? 'active' : 'suspended')
                       "
-                      @change="onChangeStatus($event, company)">
-                      <option value="active">فعال</option>
-                      <option value="suspended">معلق</option>
-                      <option value="pending">در انتظار</option>
-                      <option value="rejected">رد شده</option>
-                    </select>
+                      :items="[
+                        { label: 'فعال', value: 'active' },
+                        { label: 'معلق', value: 'suspended' },
+                        { label: 'در انتظار', value: 'pending' },
+                        { label: 'رد شده', value: 'rejected' }
+                      ]"
+                      @update:model-value="(value) => onChangeStatus({ target: { value } } as unknown as Event, company)" />
                   </div>
                 </td>
                 <td class="px-4 py-3" @click.stop>
                   <div class="flex items-center gap-2">
-                    <button
+                    <UButton
                       v-if="canUpdate"
                       @click="openModal(company)"
-                      class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 hover:bg-gray-100 transition">
+                      size="xs"
+                      color="neutral"
+                      variant="outline">
                       ویرایش
-                    </button>
-                    <button
+                    </UButton>
+                    <UButton
                       v-if="canDelete"
                       @click="deleteCompany(company)"
-                      class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs text-white hover:bg-red-700 transition">
+                      size="xs"
+                      color="error">
                       حذف
-                    </button>
+                    </UButton>
                   </div>
                 </td>
               </tr>
@@ -166,56 +188,40 @@
         </div>
       </div>
 
+      <div v-if="total > limit" class="flex justify-center py-4">
+        <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
+      </div>
+
       <!-- Modal -->
       <BaseModal v-if="showModal" @close="closeModal">
         <div class="w-full max-w-md mx-auto space-y-4" dir="rtl">
           <h2 class="text-lg font-bold">
             {{ editMode ? "ویرایش شرکت" : "شرکت جدید" }}
           </h2>
-          <form @submit.prevent="saveCompany" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">نام</label>
-              <input
-                v-model="form.name"
-                type="text"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required />
-            </div>
+          <UForm :state="form" @submit.prevent="saveCompany" class="space-y-4">
+            <UFormField label="نام" name="name">
+              <UInput v-model="form.name" required />
+            </UFormField>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">ایمیل</label>
-              <input
-                v-model="form.email"
-                type="email"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required />
-            </div>
+            <UFormField label="ایمیل" name="email">
+              <UInput v-model="form.email" type="email" required />
+            </UFormField>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">تلفن</label>
-              <input
-                v-model="form.phone"
-                type="text"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
+            <UFormField label="تلفن" name="phone">
+              <UInput v-model="form.phone" />
+            </UFormField>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">شماره ثبت</label>
-              <input
-                v-model="form.registrationNumber"
-                type="text"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
+            <UFormField label="شماره ثبت" name="registrationNumber">
+              <UInput v-model="form.registrationNumber" />
+            </UFormField>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">آدرس</label>
-              <textarea
-                v-model="form.address"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
+            <UFormField label="آدرس" name="address">
+              <UTextarea v-model="form.address" />
+            </UFormField>
 
             <div>
               <label class="block text-sm font-medium mb-1">لوگو</label>
+              <!-- Specialized upload control: native file input is required for image preview FileReader flow. -->
               <input type="file" @change="onFileChange" />
               <img
                 v-if="form.image"
@@ -224,19 +230,18 @@
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
-              <button
+              <UButton
                 type="button"
                 @click="closeModal"
-                class="px-4 py-2 rounded border border-gray-200 bg-white hover:bg-gray-100 text-sm">
+                color="neutral"
+                variant="soft">
                 انصراف
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">
+              </UButton>
+              <UButton type="submit">
                 ذخیره
-              </button>
+              </UButton>
             </div>
-          </form>
+          </UForm>
         </div>
       </BaseModal>
     </div>
@@ -244,16 +249,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+const feedback = useFeedback();
+import { ref, computed, onMounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-// import dashboardAuth from "~/middleware/dashboard-auth";
+import type { Company } from "~/types/company";
+import { listCompanies } from "~/services/companyService";
 useHead({
-  title: " آریاساخت | داشبورد | شرکت ها",
+  title: "داشبورد | شرکت‌ها",
 });
-// definePageMeta({
-//   middleware: dashboardAuth,
-// });
+definePageMeta({
+  middleware: ["auth", "permission"],
+  permission: { resource: "companies", action: "r" },
+});
 
 // // دسترسی‌ها
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
@@ -265,23 +273,13 @@ const { canCreate, canRead, canUpdate, canDelete } = useAccess(
 //   canRead: true,
 //   canUpdate: true,
 // };
-// نوع شرکت
-type Company = {
-  _id?: string; // changed from id to _id
-  name: string;
-  email: string;
-  phone: string;
-  registrationNumber: string;
-  address: string;
-  isActive: boolean;
-  image: string;
-  // optional status returned by API (preferred) - fallback to isActive
-  // new statuses: active | suspended | pending | rejected
-  status?: "active" | "suspended" | "pending" | "rejected";
-};
-
 const companies = ref<Company[]>([]);
 const search = ref("");
+const sort = ref("createdAt:desc");
+const page = ref(1);
+const limit = ref(25);
+const total = ref(0);
+const loading = ref(false);
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -310,7 +308,7 @@ const statusLoading = ref<Record<string, boolean>>({});
  * body: { status: 'pending' | 'active' | 'suspended' | 'rejected' }
  */
 async function onChangeStatus(e: Event, company: Company) {
-  if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+  if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
   const select = e.target as HTMLSelectElement;
   const newStatus = select.value as
     | "active"
@@ -318,7 +316,7 @@ async function onChangeStatus(e: Event, company: Company) {
     | "pending"
     | "rejected";
   if (!company._id) {
-    return alert("شناسه شرکت موجود نیست");
+    return feedback.error("شناسه نامعتبر", "شناسه شرکت موجود نیست.");
   }
   // optional confirmation for destructive changes
   if (!confirm("آیا از تغییر وضعیت این شرکت مطمئن هستید؟")) {
@@ -336,7 +334,7 @@ async function onChangeStatus(e: Event, company: Company) {
     company.status = newStatus;
   } catch (err) {
     console.error("خطا در تغییر وضعیت:", err);
-    alert("خطا در تغییر وضعیت. دوباره تلاش کنید.");
+    feedback.error("تغییر وضعیت انجام نشد", "دوباره تلاش کنید.");
     // rollback select
     select.value = company.status ?? (company.isActive ? "active" : "inactive");
   } finally {
@@ -345,30 +343,48 @@ async function onChangeStatus(e: Event, company: Company) {
 }
 
 const fetchCompanies = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
+  loading.value = true;
   try {
-    const res = await $axios.get("/companies");
-    companies.value = res.data;
+    const result = await listCompanies({
+      page: page.value,
+      limit: limit.value,
+      sort: sort.value,
+      filter: search.value.trim() || undefined,
+    });
+    companies.value = result.items;
+    total.value = result.total;
   } catch (err) {
     console.warn("API در دسترس نیست.");
     companies.value = [];
+    total.value = 0;
+  } finally {
+    loading.value = false;
   }
 };
 
-const filteredCompanies = computed(() =>
-  companies.value.filter((c) =>
-    c.name.toLowerCase().includes(search.value.toLowerCase())
-  )
-);
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.value)));
+
+function applyCompanyFilters() {
+  page.value = 1;
+  fetchCompanies();
+}
+
+function goToCompanyPage(nextPage: number) {
+  page.value = Math.max(1, Math.min(nextPage, totalPages.value));
+  fetchCompanies();
+}
+
+watch([sort, limit], applyCompanyFilters);
 
 function openModal(company: any | null = null) {
   if (company) {
-    if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+    if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
     editMode.value = true;
     selectedId.value = company._id; // changed from company.id
     form.value = { ...company };
   } else {
-    if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+    if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
     selectedId.value = null;
     form.value = {
@@ -404,7 +420,7 @@ const saveCompany = async () => {
   try {
     if (editMode.value) {
       if (!selectedId.value || selectedId.value.length !== 24) {
-        alert("شناسه شرکت معتبر نیست!");
+        feedback.error("شناسه نامعتبر", "شناسه شرکت معتبر نیست.");
         return;
       }
       // فقط فیلدهای مجاز را ارسال کن
@@ -431,7 +447,7 @@ const saveCompany = async () => {
 };
 
 const deleteCompany = async (company: Company) => {
-  if (!canDelete) return alert("شما اجازه حذف ندارید!");
+  if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!confirm("آیا از حذف این شرکت مطمئن هستید؟")) return;
   try {
     await $axios.delete(`/companies/${company._id}`); // changed from company.id
@@ -453,7 +469,7 @@ onMounted(() => {
 }
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   display: flex;
   align-items: center;
   gap: 10px;

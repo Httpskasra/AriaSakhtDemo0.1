@@ -1,7 +1,7 @@
 // composables/useOrders.ts
 
 import { ref, computed } from "vue";
-import type { Order, OrderStatus } from "@/services/orderService";
+import type { Order, OrderStatus } from "@/types/order";
 import {
   listOrders,
   getOrder,

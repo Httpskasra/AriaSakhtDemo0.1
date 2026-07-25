@@ -4,7 +4,7 @@ export enum Action {
   CREATE = "c",
   DELETE = "d",
   MANAGE = "m",
-  DEFAULT = "default",
+  detailed_read = "dr",
   deposit_company = "dc",
   deposit_intermediary = "di",
   deposit_user = "du",

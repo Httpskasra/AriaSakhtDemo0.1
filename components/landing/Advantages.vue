@@ -36,8 +36,8 @@ const advantages = [
           :key="item.title"
           class="flex flex-col items-start gap-4 p-6 rounded-brand border border-slate-100 hover:border-brand-blue/20 hover:bg-slate-50 transition-all group"
         >
-          <div class="p-3 bg-slate-100 rounded-xl text-slate-600 group-hover:bg-brand-blue group-hover:text-white transition-all duration-500">
-            <UIcon :name="item.icon" class="size-8" />
+          <div class="p-3 bg-slate-100 rounded-card text-slate-600 group-hover:bg-brand-blue group-hover:text-white transition-all duration-500">
+            <UIcon :name="item.icon" class="size-icon-empty-state" />
           </div>
           <div class="space-y-2">
             <h3 class="font-bold text-lg text-slate-900">{{ item.title }}</h3>

@@ -7,121 +7,100 @@
       </div>
 
       <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-        <SearchBar v-model="search" :dark="true" />
+        class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+        <TableFilterInput
+          v-model="search"
+          placeholder="جستجوی محصول..." />
       </div>
 
-      <div class="bg-white rounded-lg overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="p-3 text-right">تصویر</th>
-              <th class="p-3 text-right">نام</th>
-              <th class="p-3 text-right">SKU</th>
-              <th class="p-3 text-right">قیمت پایه</th>
-              <th class="p-3 text-right">موجودی</th>
-              <th class="p-3 text-right">شرکت</th>
-              <th class="p-3 text-right">وضعیت</th>
-              <th class="p-3 text-right">اقدامات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="product in filteredProducts"
-              :key="product._id"
-              class="border-b hover:bg-gray-50">
-              <td class="p-3">
-                <img
-                  v-if="product.images && product.images.length"
-                  :src="product.images[0].url"
-                  class="w-12 h-12 rounded object-cover" />
-              </td>
-              <td class="p-3">{{ product.name }}</td>
-              <td class="p-3 ltr">{{ product.sku }}</td>
-              <td class="p-3">{{ numberFormat(product.basePrice) }}</td>
-              <td class="p-3">{{ product.stock?.quantity ?? 0 }}</td>
-              <!-- <td class="p-3 ltr text-xs">{{ product.companyId }}</td> -->
-              <td class="p-3 ltr text-xs">ID</td>
-              <td class="p-3">
-                <select
-                  v-if="canUpdate"
-                  :value="product.status"
-                  @change="(e) => updateStatus(product, (e.target as HTMLSelectElement).value as any)"
-                  class="px-2 py-1 rounded text-xs border border-gray-300"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': product.status === 'draft',
-                    'bg-green-100 text-green-800': product.status === 'active',
-                    'bg-gray-100 text-gray-800': product.status === 'inactive',
-                    'bg-red-100 text-red-800': product.status === 'archived',
-                  }">
-                  <option value="draft">پیش‌نویس</option>
-                  <option value="active">فعال</option>
-                  <option value="inactive">غیرفعال</option>
-                  <option value="archived">آرشیو</option>
-                </select>
-                <span
-                  v-else
-                  class="px-2 py-1 rounded text-xs"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': product.status === 'draft',
-                    'bg-green-100 text-green-800': product.status === 'active',
-                    'bg-gray-100 text-gray-800': product.status === 'inactive',
-                    'bg-red-100 text-red-800': product.status === 'archived',
-                  }">
-                  {{ statusFa(product.status) }}
-                </span>
-              </td>
-              <td class="p-3 flex gap-2">
-                <span
-                  v-if="loadingProductId === product._id"
-                  class="text-sm text-gray-500"
-                  >درحال‌بروزرسانی...</span
-                >
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="premium-card border border-gray-100 overflow-hidden">
+  <TableScrollContainer>
+    <UTable :rows="filteredProducts" :columns="productStatusColumns" class="min-w-[36rem]">
+          <template #image-data="{ row }">
+            <img
+              v-if="row.images && row.images.length"
+              :src="row.images[0].url"
+              class="w-12 h-12 rounded-field object-cover" />
+          </template>
+          <template #sku-data="{ row }">
+            <span class="ltr">{{ row.sku }}</span>
+          </template>
+          <template #basePrice-data="{ row }">
+            {{ numberFormat(row.basePrice) }}
+          </template>
+          <template #stock-data="{ row }">
+            {{ row.stock?.quantity ?? 0 }}
+          </template>
+          <template #company-data>
+            <span class="ltr text-xs">ID</span>
+          </template>
+          <template #status-data="{ row }">
+            <USelect
+              v-if="canUpdate"
+              :model-value="row.status"
+              size="xs"
+              :items="productStatusOptions"
+              @update:model-value="(value) => updateStatus(row, value as any)" />
+            <StatusPill
+              v-else
+              :label="statusFa(row.status)"
+              :semantic="productStatusSemantic(row.status)"
+              size="compact" />
+          </template>
+          <template #actions-data="{ row }">
+            <span
+              v-if="loadingProductId === row._id"
+              class="text-sm text-gray-500">
+              درحال‌بروزرسانی...
+            </span>
+          </template>
+    </UTable>
+  </TableScrollContainer>
+        <SharedAsyncState
+          v-if="filteredProducts.length === 0"
+          state="empty"
+          title="محصولی پیدا نشد"
+          message="جستجو را تغییر دهید." />
       </div>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
+import type { Product } from "~/types/product";
 
 useHead({
-  title: " آریاساخت | داشبورد | وضعیت محصولات ",
+  title: "داشبورد | وضعیت محصولات",
 });
 
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "product_status", action: "u" },
 });
-
-type ImageItem = { url: string };
-
-type Product = {
-  _id?: string;
-  name: string;
-  slug: string;
-  sku: string;
-  basePrice: number;
-  companyId?: string;
-  categories: string[];
-  description: string;
-  stock: { quantity: number };
-  variants: any[];
-  attributes: Record<string, string>;
-  tags: string[];
-  images: ImageItem[];
-  status: "draft" | "active" | "inactive" | "archived";
-};
 
 const search = ref("");
 const products = ref<Product[]>([]);
 const loadingProductId = ref<string | null>(null);
+const productStatusColumns = [
+  { key: "image", label: "تصویر" },
+  { key: "name", label: "نام" },
+  { key: "sku", label: "SKU" },
+  { key: "basePrice", label: "قیمت پایه" },
+  { key: "stock", label: "موجودی" },
+  { key: "company", label: "شرکت" },
+  { key: "status", label: "وضعیت" },
+  { key: "actions", label: "اقدامات" },
+];
+const productStatusOptions = [
+  { label: "پیش‌نویس", value: "draft" },
+  { label: "فعال", value: "active" },
+  { label: "غیرفعال", value: "inactive" },
+  { label: "آرشیو", value: "archived" },
+];
 
 const { canUpdate, canRead } = useAccess(Resource.PRODUCT_STATUS);
 
@@ -141,6 +120,10 @@ function statusFa(s: Product["status"]) {
     : "آرشیو";
 }
 
+function productStatusSemantic(s: Product["status"]) {
+  return getStatusSemantic(s);
+}
+
 const filteredProducts = computed(() =>
   products.value.filter((p) =>
     (p.name || "").toLowerCase().includes(search.value.toLowerCase())
@@ -148,7 +131,7 @@ const filteredProducts = computed(() =>
 );
 
 async function fetchProducts() {
-  if (!canRead) return;
+  if (!canRead.value) return;
   try {
     const { data } = await $axios.get("/products/admin/all-products");
     products.value = Array.isArray(data) ? data : [];
@@ -161,8 +144,8 @@ async function updateStatus(
   product: Product,
   newStatus: "draft" | "active" | "inactive" | "archived"
 ) {
-  if (!canUpdate) {
-    alert("شما اجازه تغییر وضعیت ندارید!");
+  if (!canUpdate.value) {
+    feedback.error("دسترسی کافی ندارید", "شما اجازه تغییر وضعیت ندارید.");
     return;
   }
 
@@ -177,7 +160,7 @@ async function updateStatus(
   } catch (e: any) {
     console.error("خطا در بروزرسانی وضعیت:", e);
     const errorMsg = e?.response?.data?.message || e?.message || "خطای نامشخص";
-    alert("خطا: " + errorMsg);
+    feedback.error("تغییر وضعیت انجام نشد", errorMsg);
     await fetchProducts(); // بازیابی محصولات در صورت خطا
   } finally {
     loadingProductId.value = null;
@@ -195,7 +178,7 @@ function numberFormat(n?: number) {
   width: 100%;
 }
 .title {
-  color: var(--text, #333);
+  color: var(--color-text-dark);
   display: flex;
   align-items: center;
   gap: 10px;

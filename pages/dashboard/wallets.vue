@@ -9,7 +9,7 @@
 
     <div class="space-y-4" dir="rtl">
       <!-- Wallet Balance Card -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div class="premium-card border border-gray-100 p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-bold text-gray-800">موجودی کیف پول</h2>
           <div class="text-3xl font-bold text-blue-600">
@@ -20,89 +20,54 @@
 
       <!-- Actions -->
       <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2 px-4">
-        <!-- <SearchBar v-model="search" :dark="true" /> -->
+        class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2 px-4">
         <div class="flex gap-2">
-          <button
+          <ActionButton
+            tone="primary"
             v-if="canCreate"
             @click="openCreditModal()"
-            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition text-sm">
+            class="text-sm">
             + شارژ کیف پول
-          </button>
-          <button
+          </ActionButton>
+          <ActionButton
+            tone="destructive"
             v-if="canCreate"
             @click="openDebitModal()"
-            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm">
+            class="text-sm">
             - برداشت
-          </button>
+          </ActionButton>
         </div>
       </div>
 
       <!-- Transaction History Table -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="bg-gray-50 text-gray-600">
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  تاریخ
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  نوع
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  مبلغ
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  شرح
-                </th>
-                <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  موجودی بعد از تراکنش
-                </th>
-              </tr>
-            </thead>
-            <tbody class="text-gray-800">
-              <tr
-                v-for="(transaction, idx) in filteredTransactions"
-                :key="transaction._id || idx"
-                class="hover:bg-gray-50 border-b border-gray-100">
-                <td class="px-4 py-3">
-                  {{ formatDate(transaction.createdAt) }}
-                </td>
-                <td class="px-4 py-3">
-                  <span
-                    class="px-2 py-1 rounded text-white text-xs"
-                    :class="
-                      transaction.type === 'credit'
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
-                    ">
-                    {{ transaction.type === "credit" ? "شارژ" : "برداشت" }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 font-medium">
-                  {{ transaction.amount }} تومان
-                </td>
-                <td class="px-4 py-3 text-gray-700 truncate max-w-[200px]">
-                  {{ transaction.description || "—" }}
-                </td>
-                <td class="px-4 py-3 text-gray-700">
-                  {{ transaction.balanceAfter || "—" }} تومان
-                </td>
-              </tr>
-              <tr v-if="transactions.length === 0" class="text-center">
-                <td colspan="5" class="px-4 py-6 text-gray-500">
-                  تراکنشی یافت نشد
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="premium-card border border-gray-100 overflow-hidden">
+        <UTable :rows="filteredTransactions" :columns="walletTransactionColumns">
+          <template #createdAt-data="{ row }">
+            {{ formatDate(row.createdAt) }}
+          </template>
+          <template #type-data="{ row }">
+            <StatusPill
+              :label="row.type === 'credit' ? 'شارژ' : 'برداشت'"
+              :semantic="row.type === 'credit' ? 'success' : 'danger'"
+              size="compact" />
+          </template>
+          <template #amount-data="{ row }">
+            <span class="font-medium">{{ row.amount }} تومان</span>
+          </template>
+          <template #description-data="{ row }">
+            <span class="text-gray-700 truncate max-w-[200px] block">
+              {{ row.description || "—" }}
+            </span>
+          </template>
+          <template #balanceAfter-data="{ row }">
+            {{ row.balanceAfter || "—" }} تومان
+          </template>
+        </UTable>
+        <SharedAsyncState
+          v-if="filteredTransactions.length === 0"
+          state="empty"
+          title="تراکنشی یافت نشد"
+          message="هنوز تراکنشی برای این کیف پول ثبت نشده است." />
       </div>
 
       <!-- Credit Modal -->
@@ -112,12 +77,7 @@
           <form @submit.prevent="creditWalletHandler" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1">مبلغ (تومان)</label>
-              <input
-                v-model.number="creditForm.amount"
-                type="number"
-                min="0"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required />
+              <UInput v-model.number="creditForm.amount" type="number" min="0" required />
             </div>
 
             <!-- <div>
@@ -136,18 +96,20 @@
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
-              <button
+              <ActionButton
+                tone="secondary"
                 type="button"
                 @click="closeCreditModal"
-                class="px-4 py-2 rounded border border-gray-200 bg-white hover:bg-gray-100 text-sm">
+                class="text-sm">
                 انصراف
-              </button>
-              <button
+              </ActionButton>
+              <ActionButton
+                tone="primary"
                 type="submit"
                 :disabled="creditLoading"
-                class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 text-sm disabled:opacity-50">
+                class="text-sm">
                 {{ creditLoading ? "درحال پردازش..." : "شارژ" }}
-              </button>
+              </ActionButton>
             </div>
           </form>
         </div>
@@ -160,22 +122,14 @@
           <form @submit.prevent="debitWalletHandler" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-1">مبلغ (تومان)</label>
-              <input
-                v-model.number="debitForm.amount"
-                type="number"
-                min="0"
-                :max="wallet?.balance || 0"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required />
+              <UInput v-model.number="debitForm.amount" type="number" min="0" :max="wallet?.balance || 0" required />
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-1"
                 >شرح (اختیاری)</label
               >
-              <textarea
-                v-model="debitForm.description"
-                class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+              <UTextarea v-model="debitForm.description" />
             </div>
 
             <div
@@ -185,18 +139,20 @@
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
-              <button
+              <ActionButton
+                tone="secondary"
                 type="button"
                 @click="closeDebitModal"
-                class="px-4 py-2 rounded border border-gray-200 bg-white hover:bg-gray-100 text-sm">
+                class="text-sm">
                 انصراف
-              </button>
-              <button
+              </ActionButton>
+              <ActionButton
+                tone="destructive"
                 type="submit"
                 :disabled="debitLoading"
-                class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 text-sm disabled:opacity-50">
+                class="text-sm">
                 {{ debitLoading ? "درحال پردازش..." : "برداشت" }}
-              </button>
+              </ActionButton>
             </div>
           </form>
         </div>
@@ -206,6 +162,7 @@
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
@@ -216,11 +173,12 @@ import {
   debitWallet,
 } from "~/services/walletService";
 useHead({
-  title: " آریاساخت | داشبورد | کیف پول",
+  title: "داشبورد | کیف پول",
 });
 
 definePageMeta({
-  middleware: "dashboard-auth",
+  middleware: ["auth", "permission"],
+  permission: { resource: "wallets", action: "r" },
 });
 
 // Permissions
@@ -249,6 +207,13 @@ type Transaction = {
 const wallet = ref<Wallet | null>(null);
 const transactions = ref<Transaction[]>([]);
 const search = ref("");
+const walletTransactionColumns = [
+  { key: "createdAt", label: "تاریخ" },
+  { key: "type", label: "نوع" },
+  { key: "amount", label: "مبلغ" },
+  { key: "description", label: "شرح" },
+  { key: "balanceAfter", label: "موجودی بعد از تراکنش" },
+];
 const showCreditModal = ref(false);
 const showDebitModal = ref(false);
 const creditLoading = ref(false);
@@ -279,7 +244,7 @@ const filteredTransactions = computed(() =>
 
 // Fetch wallet data
 const fetchWallet = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
   try {
     const result = await getWallet();
     wallet.value = result;
@@ -291,7 +256,7 @@ const fetchWallet = async () => {
 
 // Fetch transaction history
 const fetchTransactions = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
   try {
     const result = await getTransactions();
     transactions.value = result;
@@ -309,7 +274,7 @@ const formatDate = (date: string | undefined) => {
 
 // Open credit modal
 function openCreditModal() {
-  if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+  if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   creditForm.value = { amount: 0, description: "" };
   errorMsg.value = "";
   showCreditModal.value = true;
@@ -322,7 +287,7 @@ function closeCreditModal() {
 
 // Open debit modal
 function openDebitModal() {
-  if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+  if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   debitForm.value = { amount: 0, description: "" };
   errorMsg.value = "";
   showDebitModal.value = true;
@@ -335,7 +300,7 @@ function closeDebitModal() {
 
 // Credit wallet
 const creditWalletHandler = async () => {
-  if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+  if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   if (creditForm.value.amount <= 0)
     return (errorMsg.value = "مبلغ باید بزرگتر از صفر باشد!");
 
@@ -348,7 +313,7 @@ const creditWalletHandler = async () => {
     await fetchWallet();
     await fetchTransactions();
     closeCreditModal();
-    alert("کیف پول با موفقیت شارژ شد");
+    feedback.success("شارژ انجام شد", "کیف پول با موفقیت شارژ شد.");
   } catch (err: any) {
     const message = err?.message || "خطا در شارژ کیف پول. دوباره تلاش کنید.";
     errorMsg.value = message;
@@ -360,7 +325,7 @@ const creditWalletHandler = async () => {
 
 // Debit wallet
 const debitWalletHandler = async () => {
-  if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+  if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   if (debitForm.value.amount <= 0)
     return (errorMsg.value = "مبلغ باید بزرگتر از صفر باشد!");
   if ((wallet.value?.balance || 0) < debitForm.value.amount)
@@ -375,7 +340,7 @@ const debitWalletHandler = async () => {
     await fetchWallet();
     await fetchTransactions();
     closeDebitModal();
-    alert("برداشت با موفقیت انجام شد");
+    feedback.success("برداشت انجام شد", "درخواست برداشت با موفقیت ثبت شد.");
   } catch (err: any) {
     const message = err?.message || "خطا در برداشت. دوباره تلاش کنید.";
     errorMsg.value = message;
@@ -398,7 +363,7 @@ onMounted(() => {
 }
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   display: flex;
   align-items: center;
   gap: 10px;

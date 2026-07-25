@@ -1,5 +1,5 @@
 <template>
-  <div v-if="ticket" class="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[75vh]">
+  <div v-if="ticket" class="premium-card border border-gray-100 flex flex-col h-[75vh]">
     <!-- Ticket Header -->
     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
       <div class="flex items-center gap-4">
@@ -19,8 +19,12 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <UBadge :color="statusColors[ticket.status]" variant="soft">{{ statusLabels[ticket.status] }}</UBadge>
-        <UBadge :color="priorityColors[ticket.priority]" variant="soft">{{ priorityLabels[ticket.priority] }}</UBadge>
+        <StatusPill
+          v-bind="getTicketStatusConfig(ticket.status)"
+          size="compact" />
+        <StatusPill
+          v-bind="getTicketPriorityConfig(ticket.priority)"
+          size="compact" />
       </div>
     </div>
 
@@ -28,7 +32,7 @@
     <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('/assets/img/chat-bg.png')] bg-repeat">
       <!-- Original Description -->
       <div class="flex justify-start">
-        <div class="max-w-[80%] bg-white rounded-2xl rounded-tr-none p-4 shadow-sm border border-gray-100">
+        <div class="max-w-[80%] bg-white rounded-card rounded-tr-none p-4 shadow-sm border border-gray-100">
           <p class="text-sm text-gray-700 leading-relaxed">{{ ticket.description }}</p>
           <div class="text-[10px] text-muted mt-2 text-right font-num">{{ formatTime(ticket.createdAt) }}</div>
         </div>
@@ -37,14 +41,14 @@
       <!-- Comments/Replies -->
       <div v-for="comment in ticket.comments" :key="comment.id" 
            :class="['flex', comment.userId === currentUserId ? 'justify-end' : 'justify-start']">
-        <div :class="['max-w-[80%] p-4 shadow-sm rounded-2xl relative', 
+        <div :class="['max-w-[80%] p-4 shadow-sm rounded-card relative',
                      comment.userId === currentUserId ? 'bg-primary text-white rounded-tl-none' : 'bg-white text-gray-700 border border-gray-100 rounded-tr-none']">
           <p class="text-sm leading-relaxed">{{ comment.content }}</p>
           
           <!-- Attachments -->
           <div v-if="comment.attachments?.length" class="mt-3 grid grid-cols-2 gap-2">
             <div v-for="(img, idx) in comment.attachments" :key="idx" 
-                 class="aspect-square rounded-lg overflow-hidden bg-black/10 cursor-pointer"
+                 class="aspect-square rounded-field overflow-hidden bg-black/10 cursor-pointer"
                  @click="openImage(img)">
               <img :src="img" class="size-full object-cover" />
             </div>
@@ -61,7 +65,7 @@
     <div class="p-4 border-t border-gray-100 bg-white">
       <div class="flex flex-col gap-3">
         <div v-if="attachments.length" class="flex gap-2 overflow-x-auto pb-2">
-          <div v-for="(file, idx) in attachments" :key="idx" class="relative size-16 shrink-0 border rounded-lg overflow-hidden">
+          <div v-for="(file, idx) in attachments" :key="idx" class="relative size-16 shrink-0 border rounded-field overflow-hidden">
             <img :src="file.preview" class="size-full object-cover" />
             <UButton
               color="red"
@@ -120,11 +124,6 @@ const replyContent = ref('')
 const sending = ref(false)
 const attachments = ref([])
 const fileInput = ref(null)
-
-const statusLabels = { open: 'باز', in_progress: 'در حال بررسی', resolved: 'حل شده', closed: 'بسته شده' }
-const statusColors = { open: 'blue', in_progress: 'orange', resolved: 'green', closed: 'gray' }
-const priorityLabels = { low: 'کم', medium: 'متوسط', high: 'زیاد', urgent: 'فوری' }
-const priorityColors = { low: 'gray', medium: 'blue', high: 'orange', urgent: 'red' }
 
 const triggerFile = () => fileInput.value.click()
 

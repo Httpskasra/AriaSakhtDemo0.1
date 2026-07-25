@@ -40,19 +40,19 @@ const isLightboxOpen = ref(false);
 <template>
   <div class="container mx-auto px-4 py-8">
     <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-lucide-loader-circle" class="w-12 h-12 animate-spin text-primary" />
+      <UIcon name="i-lucide-loader-circle" class="size-icon-hero animate-spin text-primary" />
     </div>
 
-    <div v-else-if="error" class="bg-red-50 p-6 rounded-lg text-center">
+    <div v-else-if="error" class="bg-red-50 p-6 rounded-field text-center">
       <p class="text-red-600 font-medium">{{ error }}</p>
       <UButton color="gray" variant="ghost" class="mt-4" to="/products">بازگشت به فروشگاه</UButton>
     </div>
 
-    <div v-else-if="product" class="bg-white rounded-2xl shadow-sm p-6 lg:p-10">
+    <div v-else-if="product" class="premium-card p-6 lg:p-10">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Product Images -->
         <div class="space-y-4">
-          <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-zoom-in border border-gray-100" @click="isLightboxOpen = true">
+          <button type="button" class="relative block w-full aspect-square rounded-card overflow-hidden bg-gray-100 cursor-zoom-in border border-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" @click="isLightboxOpen = true" aria-label="مشاهده تصویر بزرگ محصول">
             <NuxtImg :src="mainImage" class="w-full h-full object-cover" />
             <div v-if="isOutOfStock" class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
               ناموجود
@@ -60,11 +60,11 @@ const isLightboxOpen = ref(false);
             <div v-else-if="product.discount" class="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
               {{ product.discount }}% تخفیف
             </div>
-          </div>
+          </button>
           
           <!-- Image Thumbnails Placeholder -->
           <div class="grid grid-cols-4 gap-4">
-            <div v-for="img in product.images" :key="img.url" class="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+            <div v-for="img in product.images" :key="img.url" class="aspect-square rounded-field overflow-hidden bg-gray-100 border border-gray-200">
               <NuxtImg :src="img.url" class="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity cursor-pointer" />
             </div>
           </div>
@@ -77,12 +77,12 @@ const isLightboxOpen = ref(false);
 
           <div class="flex items-center gap-2 mb-6">
             <div class="flex text-yellow-400">
-              <UIcon name="i-lucide-star" v-for="i in 5" :key="i" class="w-5 h-5 fill-current" />
+              <UIcon name="i-lucide-star" v-for="i in 5" :key="i" class="size-icon-action fill-current" />
             </div>
             <span class="text-sm text-gray-400 font-num">({{ product.totalRatings || 0 }} نظر)</span>
           </div>
 
-          <div class="bg-gray-50 rounded-xl p-6 mb-8">
+          <div class="bg-gray-50 rounded-card p-6 mb-8">
             <div v-if="product.discount" class="text-gray-400 line-through text-lg mb-1 font-num">
               {{ product.basePrice.toLocaleString() }} ریال
             </div>
@@ -108,7 +108,7 @@ const isLightboxOpen = ref(false);
               {{ isOutOfStock ? 'ناموجود' : 'افزودن به سبد خرید' }}
             </UButton>
             <UButton size="xl" variant="soft" color="gray" class="h-14 w-14 p-0 flex items-center justify-center">
-              <UIcon name="i-lucide-heart" class="w-6 h-6" />
+              <UIcon name="i-lucide-heart" class="size-icon-action" />
             </UButton>
           </div>
         </div>

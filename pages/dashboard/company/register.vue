@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { createCompany } from '~/services/companyService';
+import { createVendorRequest } from '~/services/companyService';
+import { useUser } from '~/composables/useUser';
 
 definePageMeta({
-  middleware: ['dashboard-auth'],
   layout: 'dashboard'
 });
 
 const toast = useToast();
 const router = useRouter();
+const { isAuthenticated } = useUser();
 
 const loading = ref(false);
 const logoUrl = ref('');
-const logoMeta = ref<{ filename: string; contentType: string; size: number } | null>(null);
 
 const state = reactive({
   name: '',
@@ -25,11 +25,6 @@ const state = reactive({
 
 const onLogoUploaded = (data: { publicUrl: string; meta: any }) => {
   logoUrl.value = data.publicUrl;
-  logoMeta.value = {
-    filename: data.meta.filename,
-    contentType: data.meta.contentType,
-    size: data.meta.size
-  };
 };
 
 const onSubmit = async () => {
@@ -41,19 +36,32 @@ const onSubmit = async () => {
   loading.value = true;
   try {
     const payload = {
-      ...state,
-      imageMeta: logoMeta.value || undefined
+      companyName: state.name,
+      email: state.email,
+      phone: state.phone || undefined,
+      registrationNumber: state.registrationNumber || undefined,
+      nationalId: state.nationalId || undefined,
+      address: state.address || undefined,
+      imageUrl: logoUrl.value || undefined,
     };
 
-    await createCompany(payload);
-    
+    await createVendorRequest(payload);
+
     toast.add({
       title: 'موفقیت',
       description: 'درخواست ثبت کسب‌وکار شما با موفقیت ارسال شد و در حال بررسی است.',
       color: 'green'
     });
 
-    router.push('/dashboard');
+    state.name = '';
+    state.nationalId = '';
+    state.registrationNumber = '';
+    state.email = '';
+    state.phone = '';
+    state.address = '';
+    logoUrl.value = '';
+
+    router.push(isAuthenticated.value ? '/dashboard' : '/');
   } catch (err: any) {
     toast.add({
       title: 'خطا در ثبت',
@@ -101,10 +109,10 @@ const onSubmit = async () => {
               <div v-if="logoUrl" class="w-16 h-16 rounded overflow-hidden border">
                 <img :src="logoUrl" class="w-full h-full object-cover" />
               </div>
-              <FileUpload 
+              <CompanyFileUpload
                 type="company" 
                 label="انتخاب تصویر" 
-                @uploaded="onLogoUploaded"
+                @success="onLogoUploaded"
               />
             </div>
           </UFormGroup>
@@ -135,8 +143,8 @@ const onSubmit = async () => {
       </form>
     </UCard>
 
-    <div class="mt-8 bg-blue-50 p-4 rounded-lg flex items-start gap-3 border border-blue-100">
-      <UIcon name="i-lucide-info" class="size-6 text-blue-600 shrink-0 mt-0.5" />
+    <div class="mt-8 bg-blue-50 p-4 rounded-field flex items-start gap-3 border border-blue-100">
+      <UIcon name="i-lucide-info" class="size-icon-action text-blue-600 shrink-0 mt-0.5" />
       <div class="text-sm text-blue-800 leading-relaxed">
         <p class="font-bold mb-1">راهنما:</p>
         <p>پس از ارسال درخواست، کارشناسان ما ظرف مدت ۲۴ ساعت کاری مدارک شما را بررسی و پنل فروشندگی شما را فعال خواهند کرد. در صورت نیاز به راهنمایی بیشتر با پشتیبانی تماس بگیرید.</p>

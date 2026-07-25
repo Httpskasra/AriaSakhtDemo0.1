@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useOrders } from '~/composables/useOrders';
 import { useUser } from '~/composables/useUser';
+import { confirmDelivery } from '~/services/orderService';
+import { getValidatedPaymentUrl } from '~/utils/paymentRedirect';
 
-const { orders, loading, updating, fetchOrders, updateOrderStatus } = useOrders();
+const { orders, loading, updating, fetchOrders } = useOrders();
 const { user } = useUser();
 
 onMounted(() => {
@@ -16,9 +18,11 @@ const handlePayment = async (orderId: string, amount: number) => {
       orderId,
       amount
     });
-    if (response.data.paymentUrl) {
-      window.location.href = response.data.paymentUrl;
+    const paymentUrl = getValidatedPaymentUrl(response.data.paymentUrl);
+    if (!paymentUrl) {
+      throw new Error('آدرس درگاه پرداخت نامعتبر است');
     }
+    window.location.assign(paymentUrl);
   } catch (err: any) {
     useToast().add({
       title: 'خطا در اتصال به درگاه',
@@ -30,7 +34,7 @@ const handlePayment = async (orderId: string, amount: number) => {
 
 const handleConfirmDelivery = async (orderId: string) => {
   try {
-    await updateOrderStatus(orderId, 'delivered');
+    await confirmDelivery(orderId);
     useToast().add({
       title: 'موفقیت',
       description: 'تحویل کالا با موفقیت تایید شد. مبلغ به حساب فروشنده واریز گردید.',
@@ -67,11 +71,9 @@ const handleConfirmDelivery = async (orderId: string) => {
       </UButton>
     </div>
 
-    <div v-if="loading && orders.length === 0" class="space-y-4">
-      <USkeleton v-for="i in 3" :key="i" class="h-32 w-full rounded-xl" />
-    </div>
+    <SharedAsyncState v-if="loading && orders.length === 0" state="loading" :skeleton-rows="3" />
 
-    <div v-else-if="orders.length === 0" class="bg-white rounded-2xl p-12 flex flex-col items-center text-center">
+    <div v-else-if="orders.length === 0" class="bg-white rounded-card p-12 flex flex-col items-center text-center">
       <div class="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mb-6">
         <UIcon name="i-lucide-shopping-bag" class="w-16 h-16 text-gray-200" />
       </div>
@@ -81,11 +83,11 @@ const handleConfirmDelivery = async (orderId: string) => {
     </div>
 
     <div v-else class="grid gap-4">
-      <div v-for="order in orders" :key="order.id" class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
+      <div v-for="order in orders" :key="order.id" class="bg-white rounded-card border border-gray-100 p-5 hover:shadow-md transition-shadow">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div class="flex items-center gap-4">
-            <div class="p-3 bg-blue-50 rounded-lg">
-              <UIcon name="i-lucide-hash" class="w-6 h-6 text-blue-600" />
+            <div class="p-3 bg-blue-50 rounded-field">
+              <UIcon name="i-lucide-hash" class="size-icon-action text-blue-600" />
             </div>
             <div>
               <div class="text-xs text-gray-400 font-medium font-num">شماره سفارش: {{ order.id }}</div>

@@ -1,18 +1,18 @@
 <template>
-  <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+  <div class="p-6 premium-card border border-gray-100">
     <h3 class="text-lg font-bold text-gray-900 mb-4">ثبت دیدگاه و امتیاز</h3>
 
-    <div v-if="!isAuthenticated" class="bg-blue-50 p-4 rounded-lg flex items-center gap-3">
-      <UIcon name="i-lucide-info" class="text-blue-500 size-5" />
+    <div v-if="!isAuthenticated" class="bg-blue-50 p-4 rounded-field flex items-center gap-3">
+      <UIcon name="i-lucide-info" class="text-blue-500 size-icon-action" />
       <p class="text-sm text-blue-700 font-medium">برای ثبت نظر، ابتدا وارد حساب کاربری خود شوید.</p>
     </div>
 
     <div v-else-if="checkingEligibility" class="flex justify-center py-6">
-      <UIcon name="i-lucide-loader-2" class="animate-spin size-8 text-green-500" />
+      <UIcon name="i-lucide-loader-2" class="animate-spin size-icon-empty-state text-green-500" />
     </div>
 
-    <div v-else-if="!canComment" class="bg-amber-50 p-4 rounded-lg flex items-center gap-3 border border-amber-100">
-      <UIcon name="i-lucide-alert-circle" class="text-amber-500 size-5 shrink-0" />
+    <div v-else-if="!canComment" class="bg-amber-50 p-4 rounded-field flex items-center gap-3 border border-amber-100">
+      <UIcon name="i-lucide-alert-circle" class="text-amber-500 size-icon-action shrink-0" />
       <p class="text-sm text-amber-800">
         تنها کاربرانی که این محصول را خریداری کرده و سفارش آن‌ها تکمیل شده است، مجاز به ثبت نظر هستند.
       </p>
@@ -32,7 +32,7 @@
           >
             <UIcon
               :name="star <= form.rating ? 'i-lucide-star' : 'i-lucide-star'"
-              class="size-6 transition-colors"
+              class="size-icon-action transition-colors"
               :class="star <= form.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'"
             />
           </button>
@@ -69,6 +69,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useUser } from '~/composables/useUser'
 import { listOrders } from '~/services/orderService'
+import { OrderStatus } from '~/types/order'
 import { createRating } from '~/services/ratingService'
 
 const props = defineProps<{
@@ -99,9 +100,9 @@ const checkEligibility = async () => {
     const response = await listOrders({ userId: user.value?.userId })
     const orders = Array.isArray(response) ? response : response.items || []
     
-    // Check if any completed order contains this product
+    // A delivered order is eligible for a product comment.
     canComment.value = orders.some(order => 
-      order.status === 'completed' && 
+      order.status === OrderStatus.Delivered &&
       order.items.some(item => item.productId === props.productId)
     )
   } catch (err) {

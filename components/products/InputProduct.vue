@@ -38,7 +38,7 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <UForm :validate="validate" :state="state" @submit="onSubmit" class="space-y-8 bg-white p-8 rounded-xl border border-gray-100">
+  <UForm :validate="validate" :state="state" @submit="onSubmit" class="space-y-8 bg-white p-8 rounded-card border border-gray-100">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <UFormField label="نام محصول" name="name" required>
         <UInput v-model="state.name" placeholder="مثلا: سیمان تیپ ۲" size="lg" />

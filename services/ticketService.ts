@@ -1,14 +1,10 @@
-// tickets.ts
-
-// ==== Types (طبق Swagger) ====
-export type TicketPriority = "low" | "medium" | "high" | "urgent";
-export type TicketStatus =
-  | "open"
-  | "in_progress"
-  | "resolved"
-  | "closed"
-  | "reopened"
-  | "escalated";
+import type {
+  CreateTicketCommentDto,
+  Ticket,
+  TicketComment,
+  TicketPriority,
+  TicketStatus,
+} from "~/types/ticket";
 
 export interface CreateTicketDto {
   title: string;
@@ -26,35 +22,8 @@ export interface UpdateTicketDto {
   orderId?: string;
 }
 
-export interface Ticket {
-  id: string;
-  title: string;
-  description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  createdBy?: string;
-  assignedTo?: string;
-  orderId?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export interface TicketStatusResponseDto {
   status: TicketStatus;
-}
-
-export interface TicketComment {
-  id: string;
-  content: string;
-  createdBy?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CreateTicketCommentDto {
-  content?: string;
-  text?: string;
-  comment?: string;
 }
 
 // ==== API calls ====
@@ -64,9 +33,9 @@ export async function createTicket(body: CreateTicketDto): Promise<Ticket> {
   return data;
 }
 
-export async function listTickets(): Promise<Ticket[]> {
+export async function listTickets(params?: { page?: number; limit?: number }): Promise<Ticket[] | { items: Ticket[]; total: number }> {
   const { $axios } = useNuxtApp();
-  const { data } = await $axios.get("/tickets");
+  const { data } = await $axios.get("/tickets", { params });
   return data;
 }
 

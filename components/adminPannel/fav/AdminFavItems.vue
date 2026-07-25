@@ -4,7 +4,7 @@
 
     <div class="fav-grid">
       <div v-for="item in favorites" :key="item.id">
-        <SingleProduct :productId="item.id" />
+        <CatalogProductCard :product="item" />
       </div>
     </div>
   </div>
@@ -70,7 +70,7 @@ const removeFavorite = (id) => {
   width: 100%;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 15px;
+  border-radius: var(--radius-field);
   background-color: #ffff;
 }
 
@@ -89,7 +89,7 @@ const removeFavorite = (id) => {
 }
 
 .no-items p {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 1.1rem;
 }
 
@@ -99,11 +99,13 @@ const removeFavorite = (id) => {
   gap: 10px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .fav-container {
-    width: 100vw;
+    width: 100%;
+    max-width: 100%;
     padding: 20px 10px;
     padding-top: 0;
+    box-sizing: border-box;
   }
   .fav-grid {
     grid-template-columns: repeat(2, 1fr);

@@ -1,20 +1,12 @@
 import { defineStore } from "pinia";
-import { useCookie } from "#app";
+import { useState } from "#app";
 
 export const useAuthStore = defineStore("auth", () => {
-  // Use reactive cookies shared across the app
-  // Fixed: access_token maxAge reduced to 3600s (1 hour) to match backend JWT expiry
-  const accessToken = useCookie<string | null>("access_token", {
-    path: "/",
-    sameSite: "lax",
-    maxAge: 3600, 
-  });
-  
-  const refreshToken = useCookie<string | null>("refresh_token", {
-    path: "/",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days matches refresh session intent
-  });
+  // Access and CSRF tokens are request/session state, not persistent cookies.
+  // The refresh token is intentionally never exposed to this store: the backend
+  // owns it in an HttpOnly cookie.
+  const accessToken = useState<string | null>("auth:access-token", () => null);
+  const csrfToken = useState<string | null>("auth:csrf-token", () => null);
 
   // F2: Cross-tab synchronization using BroadcastChannel
   let syncChannel: BroadcastChannel | null = null;
@@ -24,7 +16,7 @@ export const useAuthStore = defineStore("auth", () => {
       if (event.data === "logout") {
         // Sync logout across tabs
         accessToken.value = null;
-        refreshToken.value = null;
+        csrfToken.value = null;
         window.location.reload();
       }
     };
@@ -32,18 +24,21 @@ export const useAuthStore = defineStore("auth", () => {
 
   const setTokens = (
     newAccessToken: string | null,
-    newRefreshToken: string | null
+    newCsrfToken: string | null = null
   ) => {
     accessToken.value = newAccessToken;
-    refreshToken.value = newRefreshToken;
+    csrfToken.value = newCsrfToken;
   };
 
   const getAccessToken = () => accessToken.value;
-  const getRefreshToken = () => refreshToken.value;
+  const getCsrfToken = () => csrfToken.value;
+  const setCsrfToken = (token: string | null) => {
+    csrfToken.value = token;
+  };
 
   const clearTokens = () => {
     accessToken.value = null;
-    refreshToken.value = null;
+    csrfToken.value = null;
     // Notify other tabs
     if (process.client && syncChannel) {
       syncChannel.postMessage("logout");
@@ -53,7 +48,8 @@ export const useAuthStore = defineStore("auth", () => {
   return {
     setTokens,
     getAccessToken,
-    getRefreshToken,
+    getCsrfToken,
+    setCsrfToken,
     clearTokens,
   };
 });

@@ -24,15 +24,16 @@ p {
   padding: 10px;
   padding-top: 60px;
   font-size: 18px;
-  line-height: 38px;
-  font-family: "iran-yekan-DemiBold";
+  line-height: var(--line-height-long-form);
+  font-family: var(--font-yekan);
+  font-weight: 600;
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   p {
-    padding: 15px;
+    padding: 16px;
     padding-top: 40px;
     font-size: 14px;
-    line-height: 32px;
+    line-height: var(--line-height-long-form);
   }
 }
 
@@ -40,7 +41,7 @@ p {
   p {
     padding: 10px;
     font-size: 8px;
-    line-height: 25px;
+    line-height: var(--line-height-long-form);
   }
 }
 </style>

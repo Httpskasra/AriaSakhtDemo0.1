@@ -110,11 +110,11 @@
   width: 85%;
   margin: 20px auto;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
 }
 .title h2 {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   color: var(--blue-dark);
   font-size: 24px;
 }
@@ -149,13 +149,13 @@
   cursor: pointer;
 }
 .transaction * {
-  font-family: "iran-yekan-num-Medium";
+  font-family: var(--font-num);
   color: var(--blue-dark);
   font-size: 20px;
 }
 .transaction .num {
   background-color: rgba(37, 61, 78, 0.8);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 5px 10px;
   color: #fff;
 }
@@ -171,7 +171,7 @@
   height: 24px;
 }
 .transaction .price {
-  font-family: "iran-yekan-num-Bold";
+  font-family: var(--font-num);
   color: var(--green-number);
 }
 @media (max-width: 767px) {

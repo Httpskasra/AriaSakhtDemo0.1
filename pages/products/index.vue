@@ -1,20 +1,15 @@
 <script setup lang="ts">
-const { buildParams, changePage, page, limit } = useProductSearch();
-const { $axios } = useNuxtApp();
+import { advancedSearchProducts } from '~/services/productService';
 
-const { data: productsData, refresh } = await useAsyncData('products-list', async () => {
-  const params = buildParams();
-  const res = await $axios.get('/products/advanced-search', { params });
-  // Simulate pagination if backend returns flat array
-  return {
-    items: res.data,
-    total: res.data.length // Simplified for logic
-  };
+const { buildParams, changePage, page, limit, maxPrice, companyName, categoryIds, onFiltersFromSidebar, clearAllFilters } = useProductSearch();
+
+const { data: productsData, pending, refresh } = await useAsyncData('products-list', async () => {
+  return (await advancedSearchProducts(buildParams())).data;
 }, { watch: [() => useRoute().query] });
 
 const onPageChange = (newPage: number) => {
   changePage(newPage);
-  if (process.client) {
+  if (typeof window !== 'undefined') {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
@@ -24,16 +19,22 @@ const onPageChange = (newPage: number) => {
   <UContainer class="py-8">
     <div class="flex flex-col lg:flex-row gap-8">
       <aside class="w-full lg:w-64 shrink-0">
-        <FilterSidebar />
+        <FilterSidebar
+          :initialMaxPrice="maxPrice"
+          :initialCompanyName="companyName"
+          :initialCategoryIds="categoryIds"
+          @update:filters="onFiltersFromSidebar"
+          @clear="clearAllFilters"
+        />
       </aside>
 
       <main class="flex-1">
         <div class="flex justify-between items-center mb-6">
-          <RecordCount :total="productsData?.total || 0" />
+          <RecordCount :total="productsData?.total || 0" :page="page" :limit="limit" />
           <SortFilter />
         </div>
 
-        <ProductGrid :products="productsData?.items || []" />
+        <ProductGrid :products="productsData?.items || []" :loading="pending" />
 
         <div v-if="productsData?.total && productsData.total > limit" class="mt-12 flex justify-center border-t border-gray-100 pt-8">
           <UPagination

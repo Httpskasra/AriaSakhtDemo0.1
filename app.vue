@@ -1,18 +1,13 @@
 <template>
   <div dir="rtl">
-    <NuxtLoadingIndicator color="#1673ff" :height="3" />
+    <NuxtLoadingIndicator color="var(--color-brand-blue)" :height="3" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <UNotifications />
+    <UToaster />
   </div>
 </template>
 
 <script setup>
-// Global initialization and meta tags
-useHead({
-  titleTemplate: (titleChunk) => {
-    return titleChunk ? `${titleChunk} - تجاریس` : 'تجاریس - پلتفرم صنعتی بیست‌وبی';
-  }
-})
+// Global head configuration is defined in nuxt.config.ts so the brand template has one source of truth.
 </script>

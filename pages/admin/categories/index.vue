@@ -1,5 +1,9 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'admin', middleware: 'dashboard-auth' });
+definePageMeta({
+  layout: 'admin',
+  middleware: ['auth', 'permission'],
+  permission: { resource: 'categories', action: 'c' },
+});
 
 const { data: categories, refresh } = await useAsyncData('admin-categories', fetchCategories);
 const toast = useToast();

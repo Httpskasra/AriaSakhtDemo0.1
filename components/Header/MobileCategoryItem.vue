@@ -6,20 +6,10 @@
       :aria-expanded="open"
       :aria-controls="'children-' + id">
       <span>{{ category.name }}</span>
-      <svg
+      <UIcon
         v-if="hasChildren"
-        class="chev"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none">
-        <path
-          :d="open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round" />
-      </svg>
+        :name="open ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+        class="chev size-icon-action" />
     </button>
 
     <transition name="slide-fade">
@@ -29,10 +19,9 @@
         class="children-list"
         role="group">
         <li v-for="child in children" :key="getId(child)" class="child-item">
-          <!-- می‌توان این را لینک کرد به صفحه‌ی دسته با router-link -->
-          <a class="child-link" href="#" @click.prevent="onChildClick(child)">{{
+          <NuxtLink class="child-link" :to="categoryPath(child)" @click="onChildClick(child)">{{
             child.name
-          }}</a>
+          }}</NuxtLink>
         </li>
       </ul>
     </transition>
@@ -60,6 +49,10 @@ function toggle() {
 
 function onChildClick(child: Category) {
   emits("child-click", child);
+}
+
+function categoryPath(category: Category) {
+  return `/products?categoryIds=${encodeURIComponent(getId(category))}`;
 }
 
 // helper id provider (پشتیبانی از id یا _id)

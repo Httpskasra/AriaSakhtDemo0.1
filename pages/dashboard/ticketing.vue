@@ -2,10 +2,7 @@
   <NuxtLayout name="dashboard">
     <div v-if="canRead" class="container">
       <!-- Title -->
-      <div class="title">
-        <h1>پشتیبانی</h1>
-        <img src="/userPannleIcons/support.png" alt="support" />
-      </div>
+      <DashboardPageHeader title="پشتیبانی" icon="/userPannleIcons/support.png" alt="support" />
 
       <!-- Header: ساخت تیکت جدید از داخل مودال SupportHeader -->
       <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
@@ -13,57 +10,47 @@
       <!-- Filter + Search UI (همون استایل قبلی حفظ شده) -->
       <div class="fillter">
         <div class="fillter-btn">
-          <button type="button" @click="toggleFilters">
+          <ActionButton tone="ghost" type="button" @click="toggleFilters">
             <span>فیلتر</span>
-          </button>
+          </ActionButton>
         </div>
-        <!-- <div class="search">
-          <SearchBar :dark="true" />
-        </div> -->
       </div>
 
       <!-- پنل فیلتر ساده -->
       <transition name="fade">
         <div v-if="showFilters" class="filter-panel">
-          <select v-model="statusFilter">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="open">باز</option>
-            <option value="in_progress">در حال رسیدگی</option>
-            <option value="resolved">حل‌شده</option>
-            <option value="closed">بسته</option>
-            <option value="reopened">دوباره بازشده</option>
-            <option value="escalated">ارجاع‌شده</option>
-          </select>
+          <USelect
+            v-model="statusFilter"
+            :items="[
+              { label: 'همه وضعیت‌ها', value: '' },
+              { label: 'باز', value: 'open' },
+              { label: 'در حال رسیدگی', value: 'in_progress' },
+              { label: 'حل‌شده', value: 'resolved' },
+              { label: 'بسته', value: 'closed' },
+              { label: 'دوباره بازشده', value: 'reopened' },
+              { label: 'ارجاع‌شده', value: 'escalated' }
+            ]" />
 
-          <select v-model="priorityFilter">
-            <option value="">همه اولویت‌ها</option>
-            <option value="low">کم</option>
-            <option value="medium">متوسط</option>
-            <option value="high">زیاد</option>
-            <option value="urgent">فوری</option>
-          </select>
+          <USelect
+            v-model="priorityFilter"
+            :items="[
+              { label: 'همه اولویت‌ها', value: '' },
+              { label: 'کم', value: 'low' },
+              { label: 'متوسط', value: 'medium' },
+              { label: 'زیاد', value: 'high' },
+              { label: 'فوری', value: 'urgent' }
+            ]" />
 
-          <button class="filter-clear" @click="clearFilters">
+          <ActionButton tone="ghost" class="filter-clear" @click="clearFilters">
             حذف فیلترها
-          </button>
+          </ActionButton>
         </div>
       </transition>
 
       <!-- States -->
-      <div v-if="loading" class="state loading">
-        <div class="skeleton" v-for="i in 4" :key="i"></div>
-      </div>
-
-      <div v-else-if="errorMsg" class="state error">
-        <p>خطا در دریافت تیکت‌ها</p>
-        <small>{{ errorMsg }}</small>
-        <button class="retry" @click="fetchTickets">تلاش مجدد</button>
-      </div>
-
-      <div v-else-if="filteredTickets.length === 0" class="state empty">
-        <p>تیکتی پیدا نشد.</p>
-        <small>فیلترها یا جستجو را تغییر دهید.</small>
-      </div>
+      <SharedAsyncState v-if="loading" state="loading" />
+      <SharedAsyncState v-else-if="errorMsg" state="error" :message="errorMsg" @retry="fetchTickets" />
+      <SharedAsyncState v-else-if="filteredTickets.length === 0" state="empty" title="تیکتی پیدا نشد" message="فیلترها یا جستجو را تغییر دهید." />
 
       <!-- Content Area: لیست تیکت‌ها + جزئیات -->
       <div v-else class="tickets-container">
@@ -77,22 +64,28 @@
             @click="selectTicket(ticket)">
             <div class="ticket-header">
               <h3>{{ ticket.title }}</h3>
-              <span class="status-badge" :class="`status-${ticket.status}`">
-                {{ getStatusLabel(ticket.status) }}
-              </span>
+              <StatusPill
+                v-bind="getTicketStatusConfig(ticket.status)"
+                size="compact" />
             </div>
             <p class="ticket-description">
               {{ truncate(ticket.description, 50) }}
             </p>
             <div class="ticket-meta">
-              <span class="priority" :class="`priority-${ticket.priority}`">
-                {{ getPriorityLabel(ticket.priority) }}
-              </span>
+              <StatusPill
+                v-bind="getTicketPriorityConfig(ticket.priority)"
+                size="compact" />
               <span class="date">
                 {{ formatDate(ticket.createdAt) }}
               </span>
             </div>
           </div>
+          <UPagination
+            v-if="totalTickets > limitTickets"
+            v-model="pageTickets"
+            :total="totalTickets"
+            :page-count="limitTickets"
+            :disabled="loading" />
         </div>
 
         <!-- جزئیات تیکت -->
@@ -102,16 +95,12 @@
             <div class="details-header">
               <h2>{{ selectedTicket.title }}</h2>
               <div class="ticket-badges">
-                <span
-                  class="status-badge"
-                  :class="`status-${selectedTicket.status}`">
-                  {{ getStatusLabel(selectedTicket.status) }}
-                </span>
-                <span
-                  class="priority"
-                  :class="`priority-${selectedTicket.priority}`">
-                  {{ getPriorityLabel(selectedTicket.priority) }}
-                </span>
+                <StatusPill
+                  v-bind="getTicketStatusConfig(selectedTicket.status)"
+                  size="compact" />
+                <StatusPill
+                  v-bind="getTicketPriorityConfig(selectedTicket.priority)"
+                  size="compact" />
               </div>
             </div>
 
@@ -149,12 +138,9 @@
               <h4>کامنت‌ها ({{ comments.length }})</h4>
 
               <!-- لیست کامنت‌ها -->
-              <div v-if="loadingComments" class="loading-comments">
-                درحال بارگذاری کامنت‌ها...
-              </div>
-              <div v-else-if="comments.length === 0" class="no-comments">
-                هیچ کامنتی وجود ندارد.
-              </div>
+              <SharedAsyncState v-if="loadingComments" state="loading" :skeleton-rows="2" />
+              <SharedAsyncState v-else-if="commentsErrorMsg" state="error" :message="commentsErrorMsg" @retry="fetchComments" />
+              <SharedAsyncState v-else-if="comments.length === 0" state="empty" title="کامنتی وجود ندارد" message="هنوز کامنتی برای این تیکت ثبت نشده است." />
               <div v-else class="comments-list">
                 <div
                   v-for="comment in comments"
@@ -174,17 +160,18 @@
 
               <!-- اضافه کردن کامنت جدید -->
               <div class="add-comment">
-                <textarea
+                <UTextarea
                   v-model="newComment"
                   placeholder="کامنت خود را بنویسید..."
-                  rows="4"
-                  class="comment-input"></textarea>
-                <button
+                  :rows="4"
+                  class="comment-input" />
+                <ActionButton
+                  tone="primary"
                   @click="addComment"
                   :disabled="!newComment.trim() || submittingComment"
                   class="btn-submit-comment">
                   {{ submittingComment ? "درحال ارسال..." : "ارسال کامنت" }}
-                </button>
+                </ActionButton>
               </div>
             </div>
           </div>
@@ -200,7 +187,6 @@
 </template>
 
 <script setup lang="ts">
-import dashboardAuth from "~/middleware/dashboard-auth";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
@@ -209,7 +195,7 @@ import type {
   TicketPriority,
   TicketStatus,
   TicketComment,
-} from "@/services/ticketService";
+} from "~/types/ticket";
 import {
   listTickets,
   createTicket,
@@ -218,13 +204,19 @@ import {
   addTicketComment,
 } from "@/services/ticketService";
 
-useHead({ title: " آریاساخت | داشبورد | تیکتینگ " });
-definePageMeta({ middleware: dashboardAuth });
+useHead({ title: "داشبورد | تیکتینگ" });
+definePageMeta({
+  middleware: ["auth", "permission"],
+  permission: { resource: "ticketing", action: "r" },
+});
 
 const { canRead, canCreate } = useAccess(Resource.TICKETING);
 
 // وضعیت صفحه
 const tickets = ref<Ticket[]>([]);
+const pageTickets = ref(1);
+const limitTickets = ref(25);
+const totalTickets = ref(0);
 const loading = ref(false);
 const errorMsg = ref("");
 
@@ -240,20 +232,29 @@ const selectedTicket = ref<Ticket | null>(null);
 // کامنت‌ها
 const comments = ref<TicketComment[]>([]);
 const loadingComments = ref(false);
+const commentsErrorMsg = ref("");
 const newComment = ref("");
 const submittingComment = ref(false);
 
 // گرفتن لیست تیکت‌ها
 const fetchTickets = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
   loading.value = true;
   errorMsg.value = "";
   try {
-    tickets.value = await listTickets();
+    const result = await listTickets({ page: pageTickets.value, limit: limitTickets.value });
+    if (Array.isArray(result)) {
+      tickets.value = result;
+      totalTickets.value = result.length;
+    } else {
+      tickets.value = result.items;
+      totalTickets.value = result.total;
+    }
   } catch (err: any) {
     errorMsg.value =
       err?.response?.data?.message || err?.message || "خطای نامشخص";
     tickets.value = [];
+    totalTickets.value = 0;
   } finally {
     loading.value = false;
   }
@@ -271,11 +272,13 @@ const selectTicket = async (ticket: Ticket) => {
 const fetchComments = async () => {
   if (!selectedTicket.value) return;
   loadingComments.value = true;
+  commentsErrorMsg.value = "";
   try {
     comments.value = await getTicketComments(selectedTicket.value.id);
   } catch (err: any) {
     console.error("خطا در دریافت کامنت‌ها:", err);
     comments.value = [];
+    commentsErrorMsg.value = "دریافت کامنت‌ها با مشکل مواجه شد.";
   } finally {
     loadingComments.value = false;
   }
@@ -294,7 +297,7 @@ const addComment = async () => {
     newComment.value = "";
   } catch (err: any) {
     console.error("خطا در اضافه کردن کامنت:", err);
-    alert("خطا در ارسال کامنت");
+    errorMsg.value = "ارسال کامنت با مشکل مواجه شد.";
   } finally {
     submittingComment.value = false;
   }
@@ -302,7 +305,10 @@ const addComment = async () => {
 
 // ساخت تیکت جدید
 const handleNewTicket = async (payload: Partial<Ticket>) => {
-  if (!canCreate) return alert("شما اجازه ایجاد تیکت را ندارید.");
+  if (!canCreate.value) {
+    errorMsg.value = "شما اجازه ایجاد تیکت را ندارید.";
+    return;
+  }
 
   try {
     if (!payload.title || !payload.description) {
@@ -317,7 +323,7 @@ const handleNewTicket = async (payload: Partial<Ticket>) => {
     tickets.value.unshift(created || (payload as Ticket));
   } catch (err: any) {
     console.error("خطا در ایجاد تیکت:", err);
-    alert("ایجاد تیکت ناموفق بود.");
+    errorMsg.value = "ایجاد تیکت ناموفق بود.";
   }
 };
 
@@ -334,6 +340,8 @@ const filteredTickets = computed(() => {
   });
 });
 
+watch([pageTickets, limitTickets], fetchTickets);
+
 // توابع کمکی
 function truncate(text: string, length: number) {
   return text.length > length ? text.substring(0, length) + "..." : text;
@@ -348,28 +356,6 @@ function formatDate(date?: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(date));
-}
-
-function getStatusLabel(status: TicketStatus) {
-  const labels: Record<TicketStatus, string> = {
-    open: "باز",
-    in_progress: "در حال رسیدگی",
-    resolved: "حل‌شده",
-    closed: "بسته",
-    reopened: "دوباره بازشده",
-    escalated: "ارجاع‌شده",
-  };
-  return labels[status] || status;
-}
-
-function getPriorityLabel(priority: TicketPriority) {
-  const labels: Record<TicketPriority, string> = {
-    low: "کم",
-    medium: "متوسط",
-    high: "زیاد",
-    urgent: "فوری",
-  };
-  return labels[priority] || priority;
 }
 
 function toggleFilters() {
@@ -389,24 +375,6 @@ onMounted(fetchTickets);
   box-sizing: border-box;
 }
 
-/* title */
-.title {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
-  width: 230px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  margin: 15px;
-}
-.title h1 {
-  font-size: 36px;
-}
-.title img {
-  width: 66px;
-  height: 66px;
-}
-
 /* filter bar */
 .fillter {
   display: flex;
@@ -416,7 +384,7 @@ onMounted(fetchTickets);
   margin: 0 auto;
   margin-top: 10px;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px 100px;
   gap: 12px;
   flex-wrap: wrap;
@@ -427,7 +395,7 @@ onMounted(fetchTickets);
   justify-content: center;
   gap: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 10px 20px;
   background: #fff;
   cursor: pointer;
@@ -445,17 +413,11 @@ onMounted(fetchTickets);
   margin: 10px auto 0;
   background: #f8fafc;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 10px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-}
-.filter-panel select {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px 10px;
-  background: #fff;
 }
 .filter-clear {
   background: transparent;
@@ -474,7 +436,7 @@ onMounted(fetchTickets);
 .loading .skeleton {
   height: 70px;
   margin: 10px 0;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
   background-size: 400% 100%;
   animation: shimmer 1.2s ease-in-out infinite;
@@ -495,13 +457,13 @@ onMounted(fetchTickets);
 .state.error .retry {
   background: #1f2937;
   color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 8px 12px;
   border: 0;
   cursor: pointer;
 }
 .state.empty small {
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* Tickets Container */
@@ -515,9 +477,9 @@ onMounted(fetchTickets);
 .tickets-list {
   flex: 0 0 350px;
   background: white;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-field);
+  padding: 16px;
+  box-shadow: var(--shadow-raised);
   max-height: 600px;
   overflow-y: auto;
 }
@@ -525,7 +487,7 @@ onMounted(fetchTickets);
 .ticket-card {
   padding: 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.2s;
@@ -556,50 +518,11 @@ onMounted(fetchTickets);
   flex: 1;
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: bold;
-  white-space: nowrap;
-  margin-right: 8px;
-}
-
-.status-badge.status-open {
-  background-color: #dbeafe;
-  color: #1e40af;
-}
-
-.status-badge.status-in_progress {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.status-badge.status-resolved {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.status-badge.status-closed {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.status-badge.status-escalated {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.status-badge.status-reopened {
-  background-color: #f3e8ff;
-  color: #6b21a8;
-}
-
 .ticket-description {
   margin: 0 0 8px 0;
   font-size: 13px;
-  color: #6b7280;
-  line-height: 1.4;
+  color: var(--color-text-muted);
+  line-height: var(--line-height-metadata);
 }
 
 .ticket-meta {
@@ -616,33 +539,13 @@ onMounted(fetchTickets);
   font-size: 11px;
 }
 
-.priority-low {
-  background-color: #e0e7ff;
-  color: #3730a3;
-}
-
-.priority-medium {
-  background-color: #fef08a;
-  color: #713f12;
-}
-
-.priority-high {
-  background-color: #fed7aa;
-  color: #92400e;
-}
-
-.priority-urgent {
-  background-color: #fecaca;
-  color: #7f1d1d;
-}
-
 /* Ticket Details */
 .ticket-details {
   flex: 1;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-raised);
   max-height: 600px;
   overflow-y: auto;
 }
@@ -655,7 +558,7 @@ onMounted(fetchTickets);
 
 .details-header {
   border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 15px;
+  padding-bottom: 16px;
   margin-bottom: 20px;
 }
 
@@ -681,14 +584,14 @@ onMounted(fetchTickets);
 
 .details-section p {
   margin: 0;
-  color: #374151;
-  line-height: 1.6;
+  color: var(--color-text-body);
+  line-height: var(--line-height-body);
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 16px;
 }
 
 .info-item {
@@ -699,13 +602,13 @@ onMounted(fetchTickets);
 
 .info-item .label {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 600;
 }
 
 .info-item .value {
   font-size: 13px;
-  color: #374151;
+  color: var(--color-text-body);
 }
 
 /* Comments Section */
@@ -717,13 +620,13 @@ onMounted(fetchTickets);
 .loading-comments,
 .no-comments {
   text-align: center;
-  padding: 15px;
+  padding: 16px;
   color: #9ca3af;
   font-size: 13px;
 }
 
 .comments-list {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   max-height: 250px;
   overflow-y: auto;
 }
@@ -731,7 +634,7 @@ onMounted(fetchTickets);
 .comment {
   padding: 12px;
   background-color: #f9fafb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   margin-bottom: 10px;
 }
 
@@ -754,8 +657,8 @@ onMounted(fetchTickets);
 .comment-text {
   margin: 0;
   font-size: 13px;
-  color: #374151;
-  line-height: 1.5;
+  color: var(--color-text-body);
+  line-height: var(--line-height-body);
 }
 
 /* Add Comment */
@@ -769,7 +672,7 @@ onMounted(fetchTickets);
   width: 100%;
   padding: 10px;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   font-family: inherit;
   font-size: 13px;
   resize: vertical;
@@ -780,7 +683,8 @@ onMounted(fetchTickets);
 .comment-input:focus {
   outline: none;
   border-color: var(--blue-dark);
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  /* Focus ring, not elevation. */
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-blue) 10%, transparent);
 }
 
 .btn-submit-comment {
@@ -788,15 +692,16 @@ onMounted(fetchTickets);
   background-color: var(--blue-dark);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   cursor: pointer;
   font-size: 13px;
-  font-family: "iran-yekan-DemiBold";
+  font-family: var(--font-yekan);
+  font-weight: 600;
   transition: background-color 0.2s;
 }
 
 .btn-submit-comment:hover:not(:disabled) {
-  background-color: #1565c0;
+  background-color: var(--color-brand-blue-hover);
 }
 
 .btn-submit-comment:disabled {
@@ -805,30 +710,19 @@ onMounted(fetchTickets);
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 1023px) {
   .tickets-container {
-    gap: 15px;
+    gap: 16px;
   }
 
   .tickets-list {
-    flex: 0 0 280px;
+    flex: 0 0 min(30vw, 280px);
   }
 }
 
 @media (max-width: 767px) {
-  .title {
-    width: 40%;
-  }
-  .title h1 {
-    font-size: 20px;
-  }
-  .title img {
-    width: 40px;
-    height: 40px;
-  }
-
   .fillter {
-    padding: 15px 25px;
+    padding: 16px 24px;
   }
 
   .tickets-container {

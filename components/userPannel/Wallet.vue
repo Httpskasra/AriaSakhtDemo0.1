@@ -36,10 +36,11 @@
 
 <style scoped>
 .wallet {
-  width: 390px;
+  width: 100%;
+  max-width: min(100%, 390px);
   height: 370px;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   position: relative;
   /* right: 600px;
   top: 20px; */
@@ -53,7 +54,8 @@
   width: 80%;
 }
 .wallet .title p {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
+  font-weight: 700;
   font-size: 24px;
   color: var(--blue-dark);
 }
@@ -68,18 +70,21 @@
   margin: 20px;
 }
 .wallet .price p {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
+  font-weight: 700;
   color: var(--blue-dark);
   font-size: 14px;
   margin: 10px;
 }
 .wallet .price span {
-  font-family: "iran-yekan-num-Bold";
+  font-family: var(--font-num);
+  font-weight: 700;
   color: var(--green-number);
   font-size: 32px;
 }
 .wallet .last-transaction {
-  font-family: "iran-yekan-num-DemiBold";
+  font-family: var(--font-num);
+  font-weight: 600;
   color: var(--blue-dark);
   font-size: 14px;
   margin: 20px;
@@ -99,7 +104,8 @@
   padding: 10px 0;
   color: var(--red-danger);
   font-size: 14px;
-  font-family: "iran-yekan-num-Bold";
+  font-family: var(--font-num);
+  font-weight: 700;
 }
 .wallet .transaction.success {
   justify-content: flex-start;
@@ -129,7 +135,8 @@
   border-radius: 12px;
   color: var(--blue-light);
   padding: 10px 8px;
-  font-family: "iran-yekan-num-Medium";
+  font-family: var(--font-num);
+  font-weight: 500;
   font-size: 13px;
 }
 .wallet .btns button:hover {

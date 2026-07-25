@@ -59,9 +59,9 @@
         </label>
 
         <!-- دکمه ارسال -->
-        <button type="submit" class="submit-btn" :disabled="loading">
+        <UButton type="submit" color="primary" variant="solid" size="lg" block :disabled="loading">
           {{ loading ? "در حال ارسال..." : "عضویت" }}
-        </button>
+        </UButton>
 
         <!-- خطای تطابق -->
         <span
@@ -201,14 +201,15 @@ const closeModal = () => {
 }
 
 .input-label {
-  font-family: "iran-yekan-num-Regular";
+  /* Specialized auth input shell; shares field radius and typography tokens with Nuxt UI inputs. */
+  font-family: var(--font-num);
   background: rgba(128, 128, 128, 0.08);
   width: 100%;
   height: 48px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  border-radius: 15px;
+  border-radius: var(--radius-field);
   cursor: pointer;
   overflow: hidden;
 }
@@ -262,24 +263,6 @@ const closeModal = () => {
   margin-right: 2px;
 }
 
-.submit-btn {
-  background: var(--blue-dark);
-  color: #fff;
-  padding: 10px 28px;
-  border-radius: 15px;
-  font-size: 16px;
-  margin-top: 8px;
-  transition: opacity 0.2s;
-  cursor: pointer;
-  border: none;
-  font-family: "iran-yekan-Bold";
-}
-
-.submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 @media (max-width: 768px) {
   .signup-container {
     min-height: 250px;
@@ -309,11 +292,6 @@ const closeModal = () => {
     font-size: 11px;
     min-width: 70px;
     padding: 0 6px;
-  }
-  .submit-btn {
-    font-size: 14px;
-    padding: 8px 18px;
-    margin-top: 4px;
   }
   .rules-text {
     font-size: 11px;

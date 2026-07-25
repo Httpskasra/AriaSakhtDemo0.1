@@ -8,12 +8,12 @@
     <div class="container" dir="rtl">
       <!-- Loading State -->
       <div v-if="loading" class="col-products">
-        <div class="loading-message">درحال بارگذاری...</div>
+        <SharedAsyncState state="loading" />
       </div>
 
       <!-- Empty Cart -->
       <div v-else-if="cartItems.length === 0" class="col-products">
-        <div class="empty-message">سبد خرید خالی است</div>
+        <SharedAsyncState state="empty" title="سبد خرید خالی است" message="هنوز محصولی به سبد خرید اضافه نشده است." />
       </div>
 
       <!-- Cart Items -->
@@ -26,9 +26,9 @@
             <div class="item-info">
               <h3>{{ item.productName }}</h3>
               <p class="sku">SKU: {{ item.sku }}</p>
-              <p v-if="item.selectedVariant" class="variant">
-                {{ item.selectedVariant.name }}:
-                {{ item.selectedVariant.value }}
+              <p v-if="item.variant" class="variant">
+                {{ item.variant.name }}:
+                {{ item.variant.value }}
               </p>
               <p v-if="item.companyName" class="company">
                 شرکت: {{ item.companyName }}
@@ -42,22 +42,25 @@
               </p>
             </div>
             <div class="item-actions">
-              <input
+              <UInput
                 v-model.number="item.quantity"
                 type="number"
                 min="1"
                 @change="updateQuantity(item)"
                 class="quantity-input" />
-              <button
+              <UButton
                 @click="removeFromCart(item.productId)"
-                class="btn-remove">
+                size="xs"
+                color="error">
                 حذف
-              </button>
+              </UButton>
             </div>
           </div>
         </div>
 
-        <button @click="clearCart" class="btn-clear-all">خالی کردن سبد</button>
+        <UButton @click="clearCart" color="error" variant="soft" block>
+          خالی کردن سبد
+        </UButton>
       </div>
 
       <!-- Cart Summary (Factor) -->
@@ -85,41 +88,35 @@
             <span>{{ numberFormat(totalPrice + shippingCost) }} تومان</span>
           </div>
 
-          <button
+          <UButton
             @click="checkout"
             :disabled="isCheckingOut"
-            class="btn-checkout">
+            size="lg"
+            block>
             {{ isCheckingOut ? "درحال پردازش..." : "تسویه حساب" }}
-          </button>
+          </UButton>
 
-          <button @click="continueShopping" class="btn-continue">
+          <UButton @click="continueShopping" color="neutral" variant="soft" block>
             ادامه خرید
-          </button>
+          </UButton>
         </div>
       </div>
     </div>
 
-    <!-- Success/Error Messages -->
-    <div v-if="successMessage" class="notification success">
-      {{ successMessage }}
-    </div>
-    <div v-if="errorMessage" class="notification error">
-      {{ errorMessage }}
-    </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import dashboardAuth from "~/middleware/dashboard-auth";
 import { useUser } from "~/composables/useUser";
 
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "carts", action: "r" },
 });
 
 useHead({
-  title: " آریاساخت | داشبورد | سبد خرید",
+  title: "داشبورد | سبد خرید",
 });
 
 // Get user data
@@ -132,8 +129,7 @@ interface CartItem {
   sku: string;
   price: number;
   quantity: number;
-  variantId?: string;
-  selectedVariant?: Record<string, string>;
+  variant?: { name: string; value: string };
   companyId?: string;
   companyName?: string;
   priceAtAdd?: number;
@@ -145,11 +141,10 @@ interface CartItem {
 
 // State
 const { $axios } = useNuxtApp();
+const toast = useToast();
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
 const isCheckingOut = ref(false);
-const successMessage = ref<string | null>(null);
-const errorMessage = ref<string | null>(null);
 const shippingCost = ref(0);
 
 // Computed
@@ -171,17 +166,7 @@ function numberFormat(n?: number) {
 }
 
 function showNotification(message: string, type: "success" | "error") {
-  if (type === "success") {
-    successMessage.value = message;
-    setTimeout(() => {
-      successMessage.value = null;
-    }, 3000);
-  } else {
-    errorMessage.value = message;
-    setTimeout(() => {
-      errorMessage.value = null;
-    }, 3000);
-  }
+  toast.add({ title: message, color: type === "success" ? "success" : "error" });
 }
 
 // API calls
@@ -212,8 +197,7 @@ async function fetchCart() {
               productObj?.basePrice ||
               0,
             quantity: item.quantity,
-            variantId: item.variant?.name,
-            selectedVariant: item.variant,
+            variant: item.variant,
             companyId: companyObj?._id || item.companyId,
             companyName: companyObj?.name,
             priceAtAdd: item.priceAtAdd,
@@ -235,8 +219,7 @@ async function fetchCart() {
 async function addToCart(
   productId: string,
   quantity: number,
-  variantId?: string,
-  selectedVariant?: Record<string, string>,
+  variant?: { name: string; value: string },
   companyId?: string,
   priceAtAdd?: number
 ) {
@@ -248,11 +231,9 @@ async function addToCart(
 
     // افزودن آیتم به سبد
     await $axios.post("/carts/items", {
-      userId: user.value.userId,
       productId,
       quantity,
-      variantId,
-      selectedVariant,
+      variant,
       companyId,
       priceAtAdd,
     });
@@ -276,11 +257,9 @@ async function updateQuantity(item: CartItem) {
 
     // به‌روزرسانی تعداد محصول
     await $axios.post("/carts/items", {
-      userId: user.value.userId,
       productId: item.productId,
       quantity: item.quantity,
-      variantId: item.variantId,
-      selectedVariant: item.selectedVariant,
+      variant: item.variant,
       companyId: item.companyId,
       priceAtAdd: item.priceAtAdd,
     });
@@ -368,11 +347,12 @@ defineExpose({
 
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin: 15px;
+  gap: 16px;
+  margin: 16px;
 }
 
 .title h1 {
@@ -387,7 +367,7 @@ defineExpose({
 .col-products {
   flex: 1;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   min-height: 400px;
@@ -396,7 +376,7 @@ defineExpose({
 .col-summary {
   flex: 0 0 300px;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   height: fit-content;
@@ -415,7 +395,7 @@ defineExpose({
 .cart-items {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -423,9 +403,9 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
+  padding: 16px;
   border: 1px solid var(--gray-300);
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   background: var(--gray-50);
 }
 
@@ -481,41 +461,11 @@ defineExpose({
   font-size: 14px;
 }
 
-.btn-remove {
-  padding: 6px 12px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background-color 0.3s;
-}
-
-.btn-remove:hover {
-  background-color: #d32f2f;
-}
-
-.btn-clear-all {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--gray-500);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn-clear-all:hover {
-  background-color: var(--gray-600);
-}
-
 /* Summary Box */
 .summary-box h2 {
   color: var(--blue-dark);
-  font-family: "iran-yekan-DemiBold";
+  font-family: var(--font-yekan);
+  font-weight: 600;
   margin-bottom: 20px;
   font-size: 18px;
   border-bottom: 2px solid var(--gray-200);
@@ -525,7 +475,7 @@ defineExpose({
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   font-size: 14px;
   padding: 10px 0;
   border-bottom: 1px solid var(--gray-200);
@@ -540,42 +490,6 @@ defineExpose({
   margin-bottom: 20px;
 }
 
-.btn-checkout,
-.btn-continue {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-family: "iran-yekan-DemiBold";
-  transition: background-color 0.3s;
-  margin-bottom: 10px;
-}
-
-.btn-checkout {
-  background-color: var(--blue-dark);
-  color: white;
-}
-
-.btn-checkout:hover:not(:disabled) {
-  background-color: #1565c0;
-}
-
-.btn-checkout:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-continue {
-  background-color: var(--gray-300);
-  color: var(--gray-800);
-}
-
-.btn-continue:hover {
-  background-color: var(--gray-400);
-}
-
 /* Notifications */
 .notification {
   position: fixed;
@@ -583,7 +497,8 @@ defineExpose({
   right: 20px;
   padding: 16px 24px;
   border-radius: 4px;
-  font-family: "iran-yekan-DemiBold";
+  font-family: var(--font-yekan);
+  font-weight: 600;
   z-index: 1000;
   animation: slideIn 0.3s ease-out;
 }
@@ -610,13 +525,13 @@ defineExpose({
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .container {
     gap: 20px;
   }
 
   .col-summary {
-    flex: 0 0 280px;
+    flex: 0 0 min(32vw, 280px);
   }
 }
 
@@ -670,10 +585,6 @@ defineExpose({
   }
 
   .quantity-input {
-    flex: 1;
-  }
-
-  .btn-remove {
     flex: 1;
   }
 

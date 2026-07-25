@@ -13,42 +13,45 @@
       <!-- Header / Controls -->
       <div
         class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div class="flex-1" />
+        <div class="flex items-center gap-2">
+          <TableFilterInput
+            v-model="filter"
+            placeholder="جستجوی کاربر..."
+            @submit="applyUserFilters" />
+          <USelect
+            v-model="sort"
+            :items="[
+              { label: 'جدیدترین', value: 'createdAt:desc' },
+              { label: 'قدیمی‌ترین', value: 'createdAt:asc' }
+            ]" />
+        </div>
 
         <div class="flex items-center gap-2">
           <label for="page-size" class="text-sm text-gray-600"
             >تعداد در صفحه</label
           >
-          <select
+          <USelect
             id="page-size"
             v-model.number="limit"
             :disabled="loading"
             @change="onChangeLimit"
-            class="block rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60">
-            <option :value="10">10</option>
-            <option :value="25">25</option>
-            <option :value="50">50</option>
-            <option :value="100">100</option>
-          </select>
+            :items="[
+              { label: '10', value: 10 },
+              { label: '25', value: 25 },
+              { label: '50', value: 50 },
+              { label: '100', value: 100 }
+            ]" />
         </div>
       </div>
 
       <!-- States -->
-      <div
-        v-if="errorMessage"
-        class="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
-        {{ errorMessage }}
-      </div>
-      <div
-        v-else-if="loading"
-        class="rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700 px-4 py-3 text-sm">
-        در حال دریافت اطلاعات...
-      </div>
+      <SharedAsyncState v-if="errorMessage" state="error" :message="errorMessage" @retry="fetchUsers" />
+      <SharedAsyncState v-else-if="loading" state="loading" />
 
       <!-- List -->
       <div
         v-if="!loading && users.length"
-        class="bg-white rounded-xl shadow-sm border border-gray-100">
+        class="premium-card border border-gray-100">
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
             <thead>
@@ -79,10 +82,9 @@
               <tr
                 v-for="(u, idx) in users"
                 :key="u.id"
-                @click="openDetails(u)"
-                class="hover:bg-gray-50 cursor-pointer">
+                class="hover:bg-gray-50">
                 <td class="px-4 py-3 border-b border-gray-100">
-                  {{ skip + idx + 1 }}
+                  {{ (page - 1) * limit + idx + 1 }}
                 </td>
                 <td class="px-4 py-3 border-b border-gray-100">
                   {{ u.phoneNumber || u.profile?.phoneNumber || "—" }}
@@ -95,15 +97,17 @@
                 </td>
                 <td class="px-4 py-3 border-b border-gray-100" @click.stop>
                   <div class="flex items-center gap-2">
-                    <button
-                      class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 hover:bg-gray-100 transition"
+                    <UButton
+                      size="xs"
+                      color="neutral"
+                      variant="outline"
                       @click="openDetails(u)">
                       جزییات
-                    </button>
+                    </UButton>
 
                     <!-- <button
                       v-if="canUpdate"
-                      class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 transition"
+                      class="inline-flex items-center justify-center rounded-field bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 transition"
                       title="ویرایش (نمایشی)"
                       @click="openDetails(u)">
                       ویرایش
@@ -111,7 +115,7 @@
                     <!-- 
                     <button
                       v-if="canDelete"
-                      class="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs text-white opacity-70 cursor-not-allowed"
+                      class="inline-flex items-center justify-center rounded-field bg-red-600 px-3 py-2 text-xs text-white opacity-70 cursor-not-allowed"
                       title="حذف (غیرفعال)"
                       disabled>
                       حذف
@@ -125,39 +129,18 @@
       </div>
 
       <!-- Empty state -->
-      <div
-        v-else-if="!loading && !users.length"
-        class="text-center text-gray-500 border border-dashed border-gray-200 rounded-xl py-10 bg-white">
-        هیچ کاربری پیدا نشد.
-      </div>
+      <SharedAsyncState v-else-if="!loading && !users.length" state="empty" title="کاربری پیدا نشد" message="هنوز کاربری برای نمایش وجود ندارد." />
 
       <!-- Pagination -->
-      <div v-if="total > 0" class="flex items-center justify-center gap-3 pt-1">
-        <button
-          class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 transition disabled:opacity-50"
-          :disabled="page <= 1 || loading"
-          @click="goToPage(page - 1)">
-          قبلی
-        </button>
-
-        <span
-          class="text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-4 py-2">
-          صفحه {{ page }} از {{ totalPages }}
-        </span>
-
-        <button
-          class="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 transition disabled:opacity-50"
-          :disabled="page >= totalPages || loading"
-          @click="goToPage(page + 1)">
-          بعدی
-        </button>
+      <div v-if="total > limit" class="flex justify-center pt-1">
+        <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
       </div>
     </div>
 
     <!-- No access -->
     <div
       v-else
-      class="rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm"
+      class="rounded-card border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm"
       dir="rtl">
       شما دسترسی مشاهده کاربران را ندارید.
     </div>
@@ -175,7 +158,7 @@
           <!-- <div class="space-y-1">
             <label class="text-xs text-gray-500">شناسه</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{ selected?.id }}
             </div>
           </div> -->
@@ -183,7 +166,7 @@
           <div class="space-y-1">
             <label class="text-xs text-gray-500">موبایل</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{
                 selected?.phoneNumber || selected?.profile?.phoneNumber || "—"
               }}
@@ -193,7 +176,7 @@
           <div class="space-y-1">
             <label class="text-xs text-gray-500">کد ملی</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{ selected?.nationalId || selected?.profile?.nationalId || "—" }}
             </div>
           </div>
@@ -201,7 +184,7 @@
           <!-- <div class="space-y-1">
             <label class="text-xs text-gray-500">کیف پول</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{ selected?.profile?.walletId || "—" }}
             </div>
           </div> -->
@@ -209,7 +192,7 @@
           <div class="space-y-1 md:col-span-2">
             <label class="text-xs text-gray-500">نام و نام خانوادگی</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{ fullName(selected) }}
             </div>
           </div>
@@ -217,7 +200,7 @@
           <div class="space-y-1 md:col-span-2">
             <label class="text-xs text-gray-500">آدرس</label>
             <div
-              class="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm text-gray-800">
+              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
               {{ selected?.profile?.address || "—" }}
             </div>
           </div>
@@ -225,7 +208,7 @@
 
         <!-- <div class="space-y-3">
           <h4 class="text-sm font-semibold text-gray-800">مجوزها</h4>
-          <div class="overflow-x-auto border border-gray-100 rounded-xl">
+          <div class="overflow-x-auto border border-gray-100 rounded-card">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="bg-gray-50 text-gray-600">
@@ -273,17 +256,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
-import { useNuxtApp } from "#app";
 import { useAccess } from "~/composables/useAccess";
-import { Action, Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
+import { Resource } from "~/types/permissions";
+import { listUsers, type UserListItem } from "~/services/userService";
 useHead({
-  title: " آریاساخت | داشبورد | کاربران ",
+  title: "داشبورد | کاربران",
 });
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "users", action: "m" },
 });
 // Access control
 const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
@@ -294,44 +277,22 @@ const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
 // };
 
 // State
-type Permission = {
-  resource: string;
-  actions: string[];
-  companyId?: string;
-};
-type UserItem = {
-  id: string;
-  phoneNumber?: string;
-  nationalId?: string;
-  permissions: Permission[];
-  profile?: {
-    phoneNumber?: string;
-    nationalId?: string;
-    firstName?: string;
-    lastName?: string;
-    address?: string;
-    walletId?: string;
-  };
-};
-
-const users = ref<UserItem[]>([]);
+const users = ref<UserListItem[]>([]);
 const total = ref(0);
 const limit = ref(50);
-const skip = ref(0);
+const page = ref(1);
+const sort = ref("createdAt:desc");
+const filter = ref("");
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 
-const page = computed(() => Math.floor(skip.value / limit.value) + 1);
 const totalPages = computed(() =>
   total.value > 0 ? Math.ceil(total.value / limit.value) : 1
 );
 
 // Modal
 const showModal = ref(false);
-const selected = ref<UserItem | null>(null);
-
-// Axios
-const { $axios } = useNuxtApp();
+const selected = ref<UserListItem | null>(null);
 
 // Helpers for labels
 const ACTION_LABELS: Record<string, string> = {
@@ -368,7 +329,7 @@ function actionLabel(a: string) {
 function resourceLabel(r: string) {
   return RESOURCE_LABELS[r] || r;
 }
-function fullName(u: UserItem | null) {
+function fullName(u: UserListItem | null) {
   if (!u) return "—";
   const f = u.profile?.firstName?.trim() || "";
   const l = u.profile?.lastName?.trim() || "";
@@ -378,19 +339,19 @@ function fullName(u: UserItem | null) {
 
 // API
 async function fetchUsers() {
-  if (!canRead) return;
+  if (!canRead.value) return;
   loading.value = true;
   errorMessage.value = null;
 
   try {
-    const { data } = await $axios.get(`/users`, {
-      params: {
-        limit: limit.value,
-        skip: skip.value,
-      },
+    const result = await listUsers({
+      page: page.value,
+      limit: limit.value,
+      sort: sort.value,
+      filter: filter.value.trim() || undefined,
     });
-    users.value = data?.items ?? [];
-    total.value = data?.total ?? 0;
+    users.value = result.items;
+    total.value = result.total;
   } catch (err: any) {
     console.error(err);
     errorMessage.value =
@@ -402,21 +363,26 @@ async function fetchUsers() {
 
 function goToPage(p: number) {
   const safe = Math.max(1, Math.min(p, totalPages.value));
-  skip.value = (safe - 1) * limit.value;
+  page.value = safe;
 }
 
 function onChangeLimit() {
-  skip.value = 0;
+  page.value = 1;
   fetchUsers();
 }
 
-function openDetails(u: UserItem) {
+function applyUserFilters() {
+  page.value = 1;
+  fetchUsers();
+}
+
+function openDetails(u: UserListItem) {
   selected.value = u;
   showModal.value = true;
 }
 
 // Watchers
-watch([limit, skip], () => {
+watch([limit, page, sort], () => {
   fetchUsers();
 });
 
@@ -434,7 +400,7 @@ onMounted(() => {
 }
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   width: 230px;
   display: flex;
   justify-content: space-evenly;

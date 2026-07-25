@@ -1,48 +1,87 @@
 <script setup lang="ts">
-const vendors = [
-  { name: 'فولاد مبارکه اصفهان', location: 'اصفهان', rate: 4.9, products: '۱۲۰+', status: 'تایید شده' },
-  { name: 'سیمان تهران', location: 'تهران', rate: 4.8, products: '۴۵+', status: 'تایید شده' },
-  { name: 'گروه صنعتی پمپیران', location: 'تبریز', rate: 4.7, products: '۸۸+', status: 'تایید شده' },
-  { name: 'کاشی تبریز', location: 'تبریز', rate: 4.9, products: '۲۰۰+', status: 'تایید شده' }
-];
+import { listCompanies } from "~/services/companyService";
+import type { Company } from "~/types/company";
+
+const { data: vendors, pending, error, refresh } = await useAsyncData(
+  "landing-featured-vendors",
+  async () => {
+    const response = await listCompanies({ limit: 4, page: 1 });
+    return response.items;
+  },
+  { default: () => [] as Company[] },
+);
+
+const companyId = (vendor: Company) => vendor._id || vendor.id || vendor.name;
+const vendorPath = (vendor: Company) => `/products?companyName=${encodeURIComponent(vendor.name)}`;
+const vendorLocation = (vendor: Company) => vendor.address || "موقعیت ثبت نشده";
+const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isActive === true;
 </script>
 
 <template>
-  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div v-for="vendor in vendors" :key="vendor.name" class="premium-card p-6 group">
-      <div class="flex items-start justify-between mb-6">
-        <div class="size-14 bg-slate-100 rounded-xl flex items-center justify-center border border-slate-200 overflow-hidden">
-          <UIcon name="i-lucide-building-2" class="text-slate-400 size-8" />
-        </div>
-        <UBadge color="success" variant="soft" size="xs" class="rounded-lg font-bold">
-          <UIcon name="i-lucide-badge-check" class="me-1" />
-          {{ vendor.status }}
-        </UBadge>
-      </div>
+  <section aria-labelledby="featured-vendors-heading" class="space-y-6">
+    <h2 id="featured-vendors-heading" class="text-2xl font-black text-slate-900">تامین‌کنندگان برتر</h2>
 
-      <h4 class="text-lg font-black text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{{ vendor.name }}</h4>
-      <p class="text-xs text-slate-500 flex items-center gap-1 mb-6">
-        <UIcon name="i-lucide-map-pin" class="size-3" />
-        {{ vendor.location }}
-      </p>
+    <SharedAsyncState
+      v-if="pending"
+      state="loading"
+      title="در حال دریافت تامین‌کنندگان"
+      message="فهرست فروشندگان ثبت‌شده در حال بارگذاری است." />
 
-      <div class="grid grid-cols-2 gap-4 py-4 border-y border-slate-50 mb-6">
-        <div class="flex flex-col">
-          <span class="text-xs text-slate-400 mb-1">کالاها</span>
-          <span class="font-bold text-slate-800 font-num">{{ vendor.products }}</span>
+    <SharedAsyncState
+      v-else-if="error"
+      state="error"
+      title="نمایش تامین‌کنندگان انجام نشد"
+      message="دریافت فهرست فروشندگان با مشکل مواجه شد."
+      @retry="refresh" />
+
+    <SharedAsyncState
+      v-else-if="!vendors.length"
+      state="empty"
+      title="تامین‌کننده‌ای برای نمایش وجود ندارد"
+      message="پس از ثبت شرکت‌های فعال، این بخش به‌صورت خودکار تکمیل می‌شود." />
+
+    <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div v-for="vendor in vendors" :key="companyId(vendor)" class="premium-card group p-6">
+        <div class="mb-6 flex items-start justify-between">
+          <div class="flex size-14 items-center justify-center overflow-hidden border border-slate-200 bg-slate-100">
+            <NuxtImg
+              v-if="vendor.image"
+              :src="vendor.image"
+              :alt="vendor.name"
+              class="h-full w-full object-cover" />
+            <UIcon v-else name="i-lucide-building-2" class="size-icon-empty-state text-slate-400" />
+          </div>
+          <StatusPill
+            v-if="isVerified(vendor)"
+            label="تایید شده"
+            semantic="success"
+            icon="i-lucide-badge-check"
+            size="compact" />
         </div>
-        <div class="flex flex-col items-end">
-          <span class="text-xs text-slate-400 mb-1">امتیاز</span>
-          <div class="flex items-center gap-1 text-amber-500 font-bold font-num">
-            {{ vendor.rate }}
-            <UIcon name="i-lucide-star" class="size-3 fill-current" />
+
+        <h3 class="mb-1 text-lg font-black text-slate-900 transition-colors group-hover:text-brand-blue">{{ vendor.name }}</h3>
+        <p class="mb-6 flex items-center gap-1 text-xs text-slate-500">
+          <UIcon name="i-lucide-map-pin" class="size-icon-compact" />
+          {{ vendorLocation(vendor) }}
+        </p>
+
+        <div class="mb-6 grid grid-cols-2 gap-4 border-y border-slate-50 py-4">
+          <div class="flex flex-col">
+            <span class="mb-1 text-xs text-slate-400">وضعیت</span>
+            <span class="font-bold text-slate-800">{{ isVerified(vendor) ? "فعال" : "در حال بررسی" }}</span>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="mb-1 text-xs text-slate-400">شناسه</span>
+            <div class="max-w-24 truncate text-xs font-num text-slate-500">
+              {{ vendor.registrationNumber || "ثبت نشده" }}
+            </div>
           </div>
         </div>
-      </div>
 
-      <UButton block color="neutral" variant="outline" class="font-bold rounded-xl group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
-        مشاهده غرفه تامین‌کننده
-      </UButton>
+        <UButton :to="vendorPath(vendor)" block color="neutral" variant="outline" class="font-bold transition-all group-hover:border-brand-blue group-hover:bg-brand-blue group-hover:text-white">
+          مشاهده غرفه تامین‌کننده
+        </UButton>
+      </div>
     </div>
-  </div>
+  </section>
 </template>

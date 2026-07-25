@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useCategories } from '~/composables/useCategories';
 
 const props = defineProps<{
@@ -8,7 +8,14 @@ const props = defineProps<{
   initialCategoryIds?: string[];
 }>();
 
-const emit = defineDefineEmits(['update:filters', 'clear']);
+const emit = defineEmits<{
+  (event: 'update:filters', payload: {
+    maxPrice?: number;
+    companyName?: string;
+    categoryIds?: string[];
+  }): void;
+  (event: 'clear'): void;
+}>();
 
 const { categories, load: loadCategories } = useCategories();
 
@@ -37,21 +44,23 @@ const clearFilters = () => {
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-sm space-y-8 sticky top-24 border border-gray-100">
+  <div class="bg-white p-6 rounded-field shadow-sm space-y-8 sticky top-24 border border-gray-100">
     <div class="flex items-center justify-between">
-      <h3 class="font-iran-yekan-Bold text-lg text-blue-dark">فیلترهای جستجو</h3>
-      <button 
+      <h3 class="font-yekan font-bold text-lg text-blue-dark">فیلترهای جستجو</h3>
+      <ActionButton
+        tone="ghost"
+        size="sm"
         @click="clearFilters"
         class="text-sm text-red-500 hover:text-red-700 transition-colors flex items-center gap-1"
       >
-        <UIcon name="i-lucide-trash-2" class="size-4" />
+        <UIcon name="i-lucide-trash-2" class="size-icon-inline" />
         پاکسازی
-      </button>
+      </ActionButton>
     </div>
 
     <!-- Category Filter -->
     <div class="space-y-4">
-      <h4 class="font-iran-yekan-DemiBold text-blue-dark">دسته‌بندی‌ها</h4>
+      <h4 class="font-yekan font-semibold text-blue-dark">دسته‌بندی‌ها</h4>
       <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pe-2">
         <div v-for="cat in categories" :key="cat.id || cat._id" class="flex items-center">
           <UCheckbox
@@ -66,7 +75,7 @@ const clearFilters = () => {
 
     <!-- Price Filter -->
     <div class="space-y-4">
-      <h4 class="font-iran-yekan-DemiBold text-blue-dark">محدوده قیمت (ریال)</h4>
+      <h4 class="font-yekan font-semibold text-blue-dark">محدوده قیمت (ریال)</h4>
       <UInput
         v-model="maxPrice"
         type="number"
@@ -78,7 +87,7 @@ const clearFilters = () => {
 
     <!-- Company Filter -->
     <div class="space-y-4">
-      <h4 class="font-iran-yekan-DemiBold text-blue-dark">نام تامین‌کننده</h4>
+      <h4 class="font-yekan font-semibold text-blue-dark">نام تامین‌کننده</h4>
       <UInput
         v-model="companyName"
         placeholder="جستجوی شرکت..."
@@ -91,7 +100,7 @@ const clearFilters = () => {
       color="primary"
       size="lg"
       @click="applyFilters"
-      class="font-iran-yekan-DemiBold"
+      class="font-yekan font-semibold"
     >
       اعمال فیلترها
     </UButton>
@@ -107,6 +116,6 @@ const clearFilters = () => {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
 }
 </style>

@@ -71,7 +71,7 @@ const cats = [
 
 <style scoped>
 .cats * {
-  font-family: "iran-yekan-Light";
+  font-family: var(--font-yekan);
   color: var(--blue-dark);
   font-size: 13px;
 }
@@ -83,7 +83,7 @@ const cats = [
   height: 180px;
   margin: 0 auto;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 10px;
   margin-top: 10px;
 }
@@ -94,7 +94,7 @@ const cats = [
   justify-content: space-around;
   height: 80%;
   flex-basis: 15%;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 .cats .item:hover {
@@ -109,14 +109,14 @@ const cats = [
 }
 
 .cats .item .item-title .count {
-  font-family: "iran-yekan-DemiBold";
+  font-family: var(--font-yekan);
   font-size: 14px;
 }
 .cats .create button {
-  font-family: "iran-yekan-DemiBold";
+  font-family: var(--font-yekan);
   flex-basis: 10%;
   background-color: var(--green-number);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 10px;
   color: #fff;
 }

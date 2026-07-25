@@ -63,9 +63,10 @@ const filteredTransactions = computed(() => {
           </span>
         </template>
         <template #status-data="{ row }">
-          <UBadge :color="row.status === 'completed' ? 'success' : 'warning'" variant="soft">
-            {{ row.status === 'completed' ? 'موفق' : 'در جریان' }}
-          </UBadge>
+          <StatusPill
+            :label="row.status === 'completed' ? 'موفق' : 'در جریان'"
+            :semantic="row.status === 'completed' ? 'success' : 'warning'"
+            size="compact" />
         </template>
       </UTable>
     </UCard>

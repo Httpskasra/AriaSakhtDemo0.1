@@ -77,14 +77,14 @@ const closeModal = () => {
           </span>
         </div>
 
-        <button class="submit-btn" type="submit" :disabled="isLoading">
+        <UButton type="submit" color="primary" variant="solid" size="lg" block :disabled="isLoading">
           {{ isLoading ? "در حال ارسال..." : "ورود" }}
-        </button>
+        </UButton>
       </form>
 
       <span class="signup-hint">
         اگر تا حالا عضو سایت نشدید، با کلیک روی دکمه
-        <button class="signup-btn" @click="emit('goToSignup')">عضویت</button>
+        <UButton variant="link" size="xs" @click="emit('goToSignup')">عضویت</UButton>
         به جمع ما بپیوندید.
       </span>
     </div>
@@ -125,14 +125,15 @@ const closeModal = () => {
   gap: 4px;
 }
 .input-label {
-  font-family: "iran-yekan-num-Regular";
+  /* Specialized auth input shell; shares field radius and typography tokens with Nuxt UI inputs. */
+  font-family: var(--font-num);
   background: rgba(128, 128, 128, 0.08);
   width: 100%;
   height: 48px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  border-radius: 15px;
+  border-radius: var(--radius-field);
   cursor: pointer;
   overflow: hidden;
 }
@@ -163,37 +164,11 @@ const closeModal = () => {
   font-size: 12px;
   margin-top: 2px;
 }
-.submit-btn {
-  background: var(--blue-dark);
-  color: #fff;
-  padding: 10px 28px;
-  border-radius: 15px;
-  font-size: 16px;
-  margin-top: 8px;
-  transition: opacity 0.2s;
-  cursor: pointer;
-  border: none;
-  font-family: "iran-yekan-Bold";
-}
-.submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 .signup-hint {
   font-size: 13px;
   color: var(--blue-dark);
   margin-top: 10px;
   text-align: center;
-}
-.signup-btn {
-  color: var(--blue-dark);
-  font-family: "iran-yekan-DemiBold";
-  padding: 2px 8px;
-  border-bottom: 1px solid var(--blue-dark);
-  background: transparent;
-  cursor: pointer;
-  font-size: 13px;
-  margin: 0 2px;
 }
 @media (max-width: 768px) {
   .signin-container {
@@ -225,18 +200,9 @@ const closeModal = () => {
     min-width: 70px;
     padding: 0 6px;
   }
-  .submit-btn {
-    font-size: 14px;
-    padding: 8px 18px;
-    margin-top: 4px;
-  }
   .signup-hint {
     font-size: 12px;
     margin-top: 6px;
-  }
-  .signup-btn {
-    font-size: 12px;
-    padding: 1px 5px;
   }
 }
 </style>

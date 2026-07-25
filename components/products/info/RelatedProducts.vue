@@ -28,7 +28,7 @@ const { data: related } = await useAsyncData(`related-${props.currentProductId}`
     </div>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Product v-for="item in related" :key="item.id" :product="item" />
+      <CatalogProductCard v-for="item in related" :key="item.id" :product="item" />
     </div>
   </div>
 </template>

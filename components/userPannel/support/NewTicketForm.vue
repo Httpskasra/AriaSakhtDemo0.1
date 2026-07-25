@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { createTicket } from '~/services/ticketService';
-import type { TicketPriority } from '~/services/ticketService';
+import { TicketPriority } from '~/types/ticket';
 
 const emit = defineEmits(['success', 'cancel']);
 const toast = useToast();
@@ -43,9 +43,9 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="p-6 bg-white rounded-xl border border-gray-100 shadow-lg max-w-2xl mx-auto">
+  <div class="p-6 bg-white rounded-card border border-gray-100 shadow-lg max-w-2xl mx-auto">
     <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
-      <h2 class="text-xl font-iran-yekan-Bold text-blue-dark">ثبت تیکت جدید پشتیبانی</h2>
+      <h2 class="text-xl font-yekan font-bold text-blue-dark">ثبت تیکت جدید پشتیبانی</h2>
       <UButton color="neutral" variant="ghost" icon="i-lucide-x" @click="$emit('cancel')" />
     </div>
 
@@ -95,7 +95,7 @@ const onSubmit = async () => {
           size="xl" 
           block
           :loading="loading"
-          class="font-iran-yekan-Bold"
+          class="font-yekan font-bold"
         >
           ارسال تیکت به کارشناسان
         </UButton>

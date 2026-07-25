@@ -22,7 +22,7 @@
   background-color: #fff;
   margin: 0 auto;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
   padding: 25px;
 }
 .header {
@@ -44,13 +44,13 @@
   background-color: var(--blue-light);
   color: #fff;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-card);
 }
 .add-item:hover {
   opacity: 0.8;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .container {
     flex-direction: column;
     padding: 10px;

@@ -1,31 +1,40 @@
-export type TicketPriority = "کم" | "متوسط" | "زیاد";
-export type TicketStatus = "درحال بررسی" | "پاسخ داده شده" | "بسته" | "باز";
+export enum TicketPriority {
+  Low = "low",
+  Medium = "medium",
+  High = "high",
+  Urgent = "urgent",
+}
 
-// export interface Ticket {
-//   id: number;
-//   title: string;
-//   status: TicketStatus;
-//   date: string;
-//   time: string;
-//   description: string;
-//   priority: TicketPriority;
-// }
-export interface TicketReply {
-  id: number;
-  message: string;
-  date: string;
-  time: string;
-  sender: "کاربر" | "پشتیبان";
+export enum TicketStatus {
+  Open = "open",
+  InProgress = "in_progress",
+  Resolved = "resolved",
+  Closed = "closed",
+  Reopened = "reopened",
+  Escalated = "escalated",
 }
 
 export interface Ticket {
-  id: number;
+  id: string;
   title: string;
   status: TicketStatus;
-  date: string;
-  time: string;
   description: string;
   priority: TicketPriority;
-  images?: string[];
-  reply?: TicketReply; // 👈 حالا فقط یک پاسخ داریم
+  createdBy?: string;
+  assignedTo?: string;
+  orderId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TicketComment {
+  id: string;
+  content: string;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateTicketCommentDto {
+  content: string;
 }

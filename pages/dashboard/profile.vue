@@ -7,103 +7,59 @@
       </div>
 
       <div class="w-full max-w-xl mx-auto">
-        <form
+        <UForm
+          :state="form"
           @submit.prevent="saveProfile"
-          class="bg-white rounded-2xl shadow-md p-8 flex flex-col gap-6">
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >نام</label
-            >
-            <input
-              v-model="form.firstName"
-              type="text"
-              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-              :disabled="!canUpdate"
-              required />
-          </div>
+          class="premium-card p-8 flex flex-col gap-6">
+          <UFormField label="نام" name="firstName">
+            <UInput v-model="form.firstName" :disabled="!canUpdate" required />
+          </UFormField>
 
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >نام خانوادگی</label
-            >
-            <input
-              v-model="form.lastName"
-              type="text"
-              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-              :disabled="!canUpdate"
-              required />
-          </div>
+          <UFormField label="نام خانوادگی" name="lastName">
+            <UInput v-model="form.lastName" :disabled="!canUpdate" required />
+          </UFormField>
 
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >ایمیل</label
-            >
-            <input
-              v-model="form.email"
-              type="email"
-              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-              :disabled="!canUpdate"
-              required />
-          </div>
+          <UFormField label="ایمیل" name="email">
+            <UInput v-model="form.email" type="email" :disabled="!canUpdate" required />
+          </UFormField>
 
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >شماره موبایل</label
-            >
-            <input
-              v-model="form.phoneNumber"
-              type="tel"
-              class="w-full rounded-lg border border-gray-200 p-3 bg-gray-100 text-left"
-              disabled />
-          </div>
+          <UFormField label="شماره موبایل" name="phoneNumber">
+            <UInput v-model="form.phoneNumber" type="tel" disabled class="text-left" />
+          </UFormField>
 
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >کد ملی</label
-            >
-            <input
-              v-model="form.nationalId"
-              type="text"
-              class="w-full rounded-lg border border-gray-200 p-3 bg-gray-100 text-left"
-              disabled />
-          </div>
+          <UFormField label="کد ملی" name="nationalId">
+            <UInput v-model="form.nationalId" disabled class="text-left" />
+          </UFormField>
 
-          <div>
-            <label class="block mb-2 text-right font-semibold text-[#1976d2]"
-              >آدرس</label
-            >
-            <textarea
-              v-model="form.address"
-              class="w-full rounded-lg border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#1976d2] transition"
-              rows="3"
-              :disabled="!canUpdate"
-              required></textarea>
-          </div>
+          <UFormField label="آدرس" name="address">
+            <UTextarea v-model="form.address" :rows="3" :disabled="!canUpdate" required />
+          </UFormField>
 
           <div class="flex justify-end">
-            <button
+            <UButton
               v-if="canUpdate"
               type="submit"
-              class="bg-[#1976d2] disabled:opacity-60 text-white rounded-lg py-3 px-2 font-bold hover:bg-[#125ea7] transition">
+              size="lg">
               ذخیره اطلاعات
-            </button>
+            </UButton>
           </div>
-        </form>
+        </UForm>
       </div>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
 useHead({
-  title: " آریاساخت | داشبورد | حساب کاربری ",
+  title: "داشبورد | حساب کاربری",
 });
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "profile", action: "r" },
 });
 
 // دسترسی‌ها
@@ -131,7 +87,7 @@ const form = ref<Profile>({
 const id = ref<string | null>(null);
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
-  if (!canRead) return;
+  if (!canRead.value) return;
   //console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
@@ -160,14 +116,14 @@ const fetchProfile = async () => {
 
 // ذخیره تغییرات
 const saveProfile = async () => {
-  if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+  if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
   try {
     await $axios.patch(`/profile/${id.value}`, form.value);
-    alert("اطلاعات با موفقیت ذخیره شد!");
+    feedback.success("ذخیره شد", "اطلاعات با موفقیت ذخیره شد.");
     await fetchProfile();
   } catch (err) {
     console.error("خطا در ذخیره پروفایل:", err);
-    alert("ذخیره اطلاعات با مشکل مواجه شد.");
+    feedback.error("ذخیره انجام نشد", "ذخیره اطلاعات با مشکل مواجه شد.");
   }
 };
 
@@ -183,7 +139,7 @@ onMounted(() => {
 }
 .title {
   color: var(--blue-dark);
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   display: flex;
   align-items: center;
   gap: 10px;

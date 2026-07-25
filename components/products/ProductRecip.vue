@@ -30,10 +30,10 @@
       </li>
       <li v-if="data.status">
         <span class="title">وضعیت</span>
-        <span class="val status" :class="data.status">{{ statusLabel }}</span>
+        <span class="val status" :style="useStatusStyle(data.status)">{{ statusLabel }}</span>
       </li>
     </ul>
-    <button class="sub" @click="copyProductLink">کپی لینک محصول</button>
+    <ActionButton class="sub" tone="secondary" @click="copyProductLink">کپی لینک محصول</ActionButton>
   </div>
 </template>
 
@@ -44,6 +44,8 @@ import { computed, ref, onMounted } from "vue";
 const props = defineProps<{
   data: Product;
 }>();
+
+const toast = useToast();
 
 interface Category {
   _id?: string;
@@ -96,7 +98,7 @@ const formatPrice = (price: number) => {
 const copyProductLink = () => {
   const productLink = `${window.location.origin}/products/${props.data.id}`;
   navigator.clipboard.writeText(productLink).then(() => {
-    alert("لینک محصول کپی شد!");
+  toast.add({ title: "کپی شد", description: "لینک محصول در کلیپ‌بورد ذخیره شد.", color: "success" });
   });
 };
 </script>
@@ -104,7 +106,7 @@ const copyProductLink = () => {
 .container-recip {
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   width: 340px;
   height: 380px;
   position: relative;
@@ -121,8 +123,8 @@ const copyProductLink = () => {
 
 .recip-header h3 {
   margin: 0;
-  color: #333;
-  font-family: "iran-yekan-DemiBold";
+  color: var(--color-text-heading);
+  font-family: var(--font-yekan);
   font-size: 18px;
 }
 
@@ -152,74 +154,35 @@ li:last-child {
 
 .title {
   font-size: 14px;
-  color: #666;
-  font-family: "iran-yekan-DemiBold";
+  color: var(--color-text-muted);
+  font-family: var(--font-yekan);
   font-weight: bold;
 }
 
 .val {
   font-size: 14px;
-  color: #0066cc;
-  font-family: "iran-yekan-num-DemiBold";
+  color: var(--color-brand-blue);
+  font-family: var(--font-num);
   text-align: left;
 }
 
 .val.discount {
-  color: #ff4444;
+  color: var(--color-danger-fg);
   font-weight: bold;
 }
 
 .val.available {
-  color: #22aa22;
+  color: var(--color-success-fg);
 }
 
 .val.unavailable {
-  color: #cc2222;
+  color: var(--color-danger-fg);
 }
 
 .val.status {
   padding: 3px 8px;
   border-radius: 3px;
   font-size: 12px;
-}
-
-.val.status.active {
-  background-color: #e3f2fd;
-  color: #0066cc;
-}
-
-.val.status.inactive {
-  background-color: #f3f3f3;
-  color: #666;
-}
-
-.val.status.draft {
-  background-color: #fff3e0;
-  color: #ff9800;
-}
-
-.val.status.archived {
-  background-color: #fce4ec;
-  color: #c2185b;
-}
-
-button.sub {
-  font-family: "iran-yekan-DemiBold";
-  width: 100%;
-  padding: 12px;
-  height: 45px;
-  color: var(--blue-dark);
-  background-color: var(--yellow-warning);
-  border: none;
-  border-radius: 0 0 7px 7px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-button.sub:hover {
-  opacity: 0.9;
-  background-color: #ffc107;
 }
 
 @media (max-width: 767px) {
@@ -255,15 +218,6 @@ button.sub:hover {
     font-size: 12px;
   }
 
-  button.sub {
-    width: 100%;
-    height: auto;
-    min-height: 40px;
-    padding: 10px;
-    margin: 15px 0 0 0;
-    border-radius: 6px;
-    font-size: 12px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -284,10 +238,5 @@ button.sub:hover {
     font-size: 11px;
   }
 
-  button.sub {
-    min-height: 36px;
-    padding: 8px;
-    font-size: 11px;
-  }
 }
 </style>

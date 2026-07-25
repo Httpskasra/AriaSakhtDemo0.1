@@ -43,9 +43,9 @@ export const createCart = async (
 /**
  * به‌روزرسانی سبد خریدی
  */
-export const updateCart = async (id: string, updates: any) => {
+export const updateCart = async (updates: any) => {
   const $axios = useApi();
-  return await $axios.patch<Cart>(`/carts/${id}`, updates);
+  return await $axios.patch<Cart>("/carts", updates);
 };
 
 /**
@@ -53,7 +53,7 @@ export const updateCart = async (id: string, updates: any) => {
  */
 export const addToCart = async (cartItem: CartItemDto) => {
   const $axios = useApi();
-  return await $axios.post("/carts/items", cartItem);
+  return await $axios.post<Cart>("/carts/items", cartItem);
 };
 
 /**

@@ -3,12 +3,12 @@
     <ol class="inline-flex items-center space-x-2 space-x-reverse">
       <li class="inline-flex items-center">
         <ULink to="/" class="hover:text-primary flex items-center gap-1">
-          <UIcon name="i-lucide-house" class="size-4" />
+          <UIcon name="i-lucide-house" class="size-icon-inline" />
           خانه
         </ULink>
       </li>
       <li v-for="(item, index) in items" :key="index" class="inline-flex items-center">
-        <UIcon name="i-lucide-chevron-left" class="size-4 mx-2 text-gray-400" />
+        <UIcon name="i-lucide-chevron-left" class="size-icon-inline mx-2 text-gray-400" />
         <ULink v-if="item.to" :to="item.to" class="hover:text-primary">
           {{ item.label }}
         </ULink>

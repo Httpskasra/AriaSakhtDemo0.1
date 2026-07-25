@@ -2,7 +2,7 @@
 <template>
   <div class="w-full">
     <div
-      class="relative border-2 border-dashed rounded-lg p-6 transition-all duration-200"
+      class="relative border-2 border-dashed rounded-field p-6 transition-all duration-200"
       :class="[
         isDragging ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary',
         loading ? 'opacity-50 pointer-events-none' : ''
@@ -11,10 +11,11 @@
       @dragleave.prevent="isDragging = false"
       @drop.prevent="handleDrop"
     >
+      <!-- Specialized upload control: native file input covers the full drop zone for drag/click uploads. -->
       <input
         type="file"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
         :multiple="multiple"
         @change="handleFileChange"
       />
@@ -68,6 +69,12 @@ const loading = ref(false);
 const uploadProgress = ref(0);
 const errorMessage = ref('');
 
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+
+const getFileExtension = (filename: string) =>
+  filename.split('.').pop()?.toLowerCase() || '';
+
 const handleDrop = (e: DragEvent) => {
   isDragging.value = false;
   const files = e.dataTransfer?.files;
@@ -84,8 +91,16 @@ const handleFileChange = (e: Event) => {
 };
 
 const processFile = async (file: File) => {
+  const extension = getFileExtension(file.name);
+  if (!ALLOWED_MIME_TYPES.has(file.type) || !ALLOWED_EXTENSIONS.has(extension)) {
+    errorMessage.value = 'فرمت فایل باید JPG، PNG یا WEBP باشد.';
+    emit('error', errorMessage.value);
+    return;
+  }
+
   if (file.size > 10 * 1024 * 1024) {
     errorMessage.value = 'حجم فایل نباید بیشتر از ۱۰ مگابایت باشد.';
+    emit('error', errorMessage.value);
     return;
   }
 

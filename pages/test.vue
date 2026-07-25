@@ -125,7 +125,7 @@ const submitReview = async () => {
   width: 100%;
   min-height: 280px;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
   display: flex;
   flex-direction: row;
@@ -153,7 +153,7 @@ const submitReview = async () => {
   border: 1px solid rgba(0, 0, 0, 0.2);
   outline: none;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.3s ease;
@@ -174,13 +174,13 @@ const submitReview = async () => {
 
 .inner span {
   font-size: 16px;
-  color: #333;
+  color: var(--color-text-heading);
   white-space: nowrap;
 }
 
 h3 {
   font-size: 20px;
-  color: #333;
+  color: var(--color-text-heading);
   margin: 0;
 }
 
@@ -192,7 +192,7 @@ textarea {
   width: 100%;
   max-width: 480px;
   height: 200px;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   outline: none;
   font-size: 14px;
   font-family: inherit;
@@ -216,10 +216,10 @@ textarea:focus {
   align-self: flex-end;
   padding: 12px 24px;
   background-color: var(--yellow-warning);
-  font-family: "iran-yekan-DemiBold", sans-serif;
+  font-family: var(--font-yekan);
   color: var(--blue-dark);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -242,7 +242,7 @@ textarea:focus {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   font-size: 14px;
   text-align: right;
 }
@@ -252,7 +252,7 @@ textarea:focus {
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   font-size: 14px;
   text-align: right;
 }

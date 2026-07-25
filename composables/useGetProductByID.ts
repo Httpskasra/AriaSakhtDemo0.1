@@ -1,50 +1,39 @@
-import { ref, onMounted, watch, unref } from "vue";
-import type { Product } from "~/types/product";
-import { getProductById } from "~/services/productService";
+import { computed, unref, type ComputedRef, type Ref } from 'vue';
+import type { Product } from '~/types/product';
+import { getProductById } from '~/services/productService';
 
-export function useProductById(id: string | Ref<string> | ComputedRef<string>) {
-  const data = ref<Product | null>(null); // داده محصول
-  const loading = ref(true); // وضعیت بارگذاری
-  const error = ref<string | null>(null); // پیام خطا
+type ProductId = string | Ref<string> | ComputedRef<string>;
 
-  const fetchProduct = async () => {
-    const currentId = unref(id);
-    if (!currentId) {
-      error.value = "شناسه محصول یافت نشد";
-      loading.value = false;
-      return;
-    }
+/** SSR-safe product loader keyed by the route product id. */
+export async function useProductById(id: ProductId) {
+  const productId = computed(() => String(unref(id) || ''));
 
-    loading.value = true; // شروع بارگذاری
-    error.value = null; // پاک کردن خطاهای قبلی
-    try {
-      const response = await getProductById(currentId); // فراخوانی سرویس
-      data.value = response.data; // ذخیره داده محصول
-      //console.log("محصول بارگذاری شد:", data.value);
-    } catch (err: any) {
-      error.value =
-        err.response?.data?.message ||
-        err.message ||
-        "خطایی در بارگذاری محصول رخ داده است."; // مدیریت خطا
-      data.value = null;
-      console.error("خطا در دریافت محصول:", err);
-    } finally {
-      loading.value = false; // پایان بارگذاری
-    }
-  };
+  const { data, pending, error: asyncError, refresh } = await useAsyncData<Product>(
+    computed(() => `product:${productId.value}`),
+    async () => {
+      if (!productId.value) {
+        throw createError({ statusCode: 404, statusMessage: 'محصول یافت نشد', fatal: true });
+      }
 
-  // فراخوانی خودکار هنگام بارگذاری کامپوننت
-  onMounted(() => {
-    fetchProduct();
-  });
-
-  // به‌روزرسانی خودکار هنگام تغییر id
-  watch(
-    () => unref(id),
-    () => {
-      fetchProduct();
-    }
+      try {
+        const response = await getProductById(productId.value);
+        return response.data;
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          throw createError({ statusCode: 404, statusMessage: 'محصول یافت نشد', fatal: true });
+        }
+        throw createError({
+          statusCode: error?.response?.status || 500,
+          statusMessage: error?.response?.data?.message || 'خطایی در بارگذاری محصول رخ داده است.',
+        });
+      }
+    },
+    { watch: [productId] },
   );
 
-  return { data, loading, error, fetchProduct };
+  const error = computed(() =>
+    asyncError.value?.statusMessage || asyncError.value?.message || null,
+  );
+
+  return { data, loading: pending, error, fetchProduct: refresh };
 }

@@ -13,11 +13,11 @@ const end = computed(() => Math.min(props.page * props.limit, props.total));
   <div class="text-sm text-gray-500 font-num">
     <template v-if="total > 0">
       نمایش 
-      <span class="font-iran-yekan-DemiBold text-blue-dark">{{ start }}</span>
+      <span class="font-yekan font-semibold text-blue-dark">{{ start }}</span>
       تا
-      <span class="font-iran-yekan-DemiBold text-blue-dark">{{ end }}</span>
+      <span class="font-yekan font-semibold text-blue-dark">{{ end }}</span>
       از
-      <span class="font-iran-yekan-DemiBold text-blue-dark">{{ total }}</span>
+      <span class="font-yekan font-semibold text-blue-dark">{{ total }}</span>
       نتیجه
     </template>
     <template v-else>

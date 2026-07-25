@@ -60,7 +60,7 @@ onMounted(() => {
 .loading {
   text-align: center;
   padding: 40px 20px;
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -69,7 +69,7 @@ onMounted(() => {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   text-align: center;
   margin-bottom: 20px;
 }
@@ -80,7 +80,7 @@ onMounted(() => {
   color: #999;
   font-size: 14px;
   background-color: #f9f9f9;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   border: 1px solid #eee;
 }
 

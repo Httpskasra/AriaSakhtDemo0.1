@@ -5,9 +5,7 @@
     </div>
     <div v-for="order in orders" :key="order.id || order._id" class="item">
       <div class="status-header">
-        <span class="status-badge status-refunded">{{
-          getStatusLabel(order.status)
-        }}</span>
+        <OrderStatus :status="order.status" />
       </div>
       <div class="infos">
         <div class="info-group">
@@ -20,7 +18,7 @@
         </div>
         <div class="info-group">
           <p class="label">وضعیت:</p>
-          <p class="value">{{ getStatusLabel(order.status) }}</p>
+          <p class="value">{{ getOrderStatusConfig(order.status).label }}</p>
         </div>
       </div>
       <div class="products">
@@ -36,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Order, OrderStatus } from "@/services/orderService";
+import type { Order } from "@/types/order";
 
 defineProps<{
   orders: Order[];
@@ -51,17 +49,6 @@ function numberFormat(n?: number) {
   return n.toLocaleString("fa-IR");
 }
 
-function getStatusLabel(status: OrderStatus) {
-  const labels: Record<OrderStatus, string> = {
-    pending: "درانتظار",
-    paid: "پرداخت‌شده",
-    shipped: "ارسال‌شده",
-    delivered: "تحویل‌داده‌شده",
-    cancelled: "لغو‌شده",
-    refunded: "بازپرداخت‌شده",
-  };
-  return labels[status] || status;
-}
 </script>
 
 <style scoped>
@@ -80,7 +67,7 @@ function getStatusLabel(status: OrderStatus) {
 
 .item {
   border: 1px solid #a4d4ff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 12px;
   background: #fff;
   transition: all 0.2s;
@@ -92,19 +79,6 @@ function getStatusLabel(status: OrderStatus) {
 
 .status-header {
   margin-bottom: 10px;
-}
-
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-.status-badge.status-refunded {
-  background-color: #fecaca;
-  color: #7f1d1d;
 }
 
 .infos {
@@ -124,7 +98,7 @@ function getStatusLabel(status: OrderStatus) {
 
 .info-group .label {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 600;
   margin: 0;
 }
@@ -148,7 +122,7 @@ function getStatusLabel(status: OrderStatus) {
   align-items: center;
   padding: 6px;
   background: #f9fafb;
-  border-radius: 6px;
+  border-radius: var(--radius-compact-list-item);
   border: 1px solid #f3f4f6;
   min-width: 90px;
   text-align: center;
@@ -171,14 +145,14 @@ function getStatusLabel(status: OrderStatus) {
 
 .quantity {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .price {
   font-size: 11px;
   font-weight: 600;
-  color: #7f1d1d;
+  color: var(--color-danger-fg);
   margin-top: 3px;
 }
 

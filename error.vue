@@ -25,7 +25,7 @@
 
       <NuxtLink
         to="/"
-        class="inline-block my-0 px-8 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105 active:scale-95"
+        class="inline-block my-0 px-8 py-3 bg-blue-600 text-white rounded-field shadow-lg hover:bg-blue-700 transition transform hover:scale-105 active:scale-95"
         aria-label="Back to Home">
         بازگشت به صفحه اصلی
       </NuxtLink>

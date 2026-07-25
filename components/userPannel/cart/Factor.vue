@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAddToCart } from '~/composables/useAddToCart';
+import { getValidatedPaymentUrl } from '~/utils/paymentRedirect';
 
 const props = defineProps<{
   summary: {
@@ -33,9 +34,16 @@ const handleCheckout = async () => {
         orderId: order.id,
         amount: order.totalPrice
       });
-      if (payRes.data.paymentUrl) {
-        window.location.href = payRes.data.paymentUrl;
+      const paymentUrl = getValidatedPaymentUrl(payRes.data.paymentUrl);
+      if (!paymentUrl) {
+        useToast().add({
+          title: 'خطا در اتصال به درگاه',
+          description: 'آدرس درگاه پرداخت معتبر نیست؛ redirect انجام نشد.',
+          color: 'red'
+        });
+        return;
       }
+      window.location.assign(paymentUrl);
     }
   } catch (err) {
     // Error handled by useAddToCart toast
@@ -46,7 +54,7 @@ const handleCheckout = async () => {
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+  <div class="premium-card overflow-hidden border border-gray-100">
     <!-- C5: Payment Loading Overlay -->
     <UModal v-model="isProcessing" prevent-close>
       <div class="p-10 flex flex-col items-center justify-center space-y-6 text-center">
@@ -96,7 +104,7 @@ const handleCheckout = async () => {
       </UButton>
 
       <div class="flex items-center gap-2 justify-center mt-4 text-[10px] text-gray-400">
-        <UIcon name="i-lucide-shield-check" class="w-4 h-4" />
+        <UIcon name="i-lucide-shield-check" class="size-icon-inline" />
         تضمین پرداخت امن و ضمانت بازگشت کالا
       </div>
     </div>

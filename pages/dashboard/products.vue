@@ -7,18 +7,39 @@
       </div>
 
       <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-lg py-2">
-        <SearchBar v-model="search" :dark="true" />
-        <button
+        class="actions flex flex-wrap justify-between items-center gap-2 mb-4 bg-white rounded-field py-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <TableFilterInput
+            v-model="search"
+            placeholder="جستجوی محصول..."
+            @submit="applyProductFilters" />
+          <USelect
+            v-model="sort"
+            :items="[
+              { label: 'جدیدترین', value: 'createdAt:desc' },
+              { label: 'قدیمی‌ترین', value: 'createdAt:asc' },
+              { label: 'نام (الفبا)', value: 'name:asc' },
+              { label: 'قیمت نزولی', value: 'basePrice:desc' }
+            ]" />
+          <USelect
+            v-model="limit"
+            :items="[
+              { label: '۱۰', value: 10 },
+              { label: '۲۵', value: 25 },
+              { label: '۵۰', value: 50 }
+            ]" />
+        </div>
+        <UButton
           v-if="canCreate"
-          @click="openModal()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+          @click="openModal()">
           + محصول جدید
-        </button>
+        </UButton>
       </div>
 
-      <div class="bg-white rounded-lg overflow-hidden">
-        <table class="w-full">
+      <div class="bg-white rounded-field overflow-hidden">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <TableScrollContainer>
+            <table class="w-full min-w-[36rem]">
           <thead class="bg-gray-100">
             <tr>
               <th class="p-3 text-right">تصویر</th>
@@ -33,7 +54,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="product in filteredProducts"
+              v-for="product in products"
               :key="product._id"
               class="border-b hover:bg-gray-50">
               <td class="p-3">
@@ -49,34 +70,37 @@
               <!-- <td class="p-3 ltr text-xs">{{ product.companyId }}</td> -->
               <!-- <td class="p-3 ltr text-xs">ID</td> -->
               <td class="p-3">
-                <span
-                  class="px-2 py-1 rounded text-xs"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': product.status === 'draft',
-                    'bg-green-100 text-green-800': product.status === 'active',
-                    'bg-gray-100 text-gray-800': product.status === 'inactive',
-                    'bg-red-100 text-red-800': product.status === 'archived',
-                  }">
-                  {{ statusFa(product.status) }}
-                </span>
+                <StatusPill
+                  :label="statusFa(product.status)"
+                  :semantic="getStatusSemantic(product.status)"
+                  size="compact" />
               </td>
               <td class="p-3 flex gap-2">
-                <button
+                <UButton
                   v-if="canUpdate"
                   @click="openModal(product)"
-                  class="text-blue-500 hover:underline">
+                  size="xs"
+                  variant="ghost">
                   ویرایش
-                </button>
-                <button
+                </UButton>
+                <UButton
                   v-if="canDelete"
                   @click="deleteProduct(product)"
-                  class="text-red-500 hover:underline">
+                  size="xs"
+                  color="error"
+                  variant="ghost">
                   حذف
-                </button>
+                </UButton>
               </td>
             </tr>
           </tbody>
-        </table>
+            </table>
+          </TableScrollContainer>
+        </div>
+      </div>
+
+      <div v-if="total > limit" class="flex justify-center py-4">
+        <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
       </div>
 
       <!-- Modal -->
@@ -86,116 +110,65 @@
             {{ editMode ? "ویرایش محصول" : "محصول جدید" }}
           </h2>
 
-          <form @submit.prevent="saveProduct" class="space-y-5">
+          <UForm :state="form" @submit.prevent="saveProduct" class="space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium mb-1">نام</label>
-                <input
-                  v-model="form.name"
-                  type="text"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required />
-              </div>
+              <UFormField label="نام" name="name">
+                <UInput v-model="form.name" required />
+              </UFormField>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">
-                  نامک (slug)
-                </label>
-                <input
-                  v-model="form.slug"
-                  type="text"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr"
-                  required />
-              </div>
+              <UFormField label="نامک (slug)" name="slug">
+                <UInput v-model="form.slug" class="ltr" required />
+              </UFormField>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">SKU</label>
-                <input
-                  v-model="form.sku"
-                  type="text"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr" />
-              </div>
+              <UFormField label="SKU" name="sku">
+                <UInput v-model="form.sku" class="ltr" />
+              </UFormField>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">قیمت پایه</label>
-                <input
-                  v-model.number="form.basePrice"
-                  type="number"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
+              <UFormField label="قیمت پایه" name="basePrice">
+                <UInput v-model.number="form.basePrice" type="number" />
+              </UFormField>
 
-              <div>
-                <label class="block text-sm font-medium mb-1">تخفیف (%)</label>
-                <input
-                  v-model.number="form.discount"
-                  type="number"
-                  min="0"
-                  max="100"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
+              <UFormField label="تخفیف (%)" name="discount">
+                <UInput v-model.number="form.discount" type="number" min="0" max="100" />
+              </UFormField>
 
-              <!-- <div>
-                <label class="block text-sm font-medium mb-1">شناسه شرکت</label>
-                <input
-                  v-model="form.companyId"
-                  type="text"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ltr"
-                />
-              </div> -->
-
-              <div>
-                <label class="block text-sm font-medium mb-1">موجودی</label>
-                <input
-                  v-model.number="form.stock.quantity"
-                  type="number"
-                  class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
+              <UFormField label="موجودی" name="stockQuantity">
+                <UInput v-model.number="form.stock.quantity" type="number" />
+              </UFormField>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">توضیحات</label>
-              <textarea
-                v-model="form.description"
-                rows="4"
-                class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"></textarea>
-            </div>
+            <UFormField label="توضیحات" name="description">
+              <UTextarea v-model="form.description" :rows="4" />
+            </UFormField>
 
             <!-- دسته‌بندی‌ها -->
-            <div>
-              <label class="block text-sm font-medium mb-1">دسته‌بندی</label>
+            <UFormField label="دسته‌بندی" name="categories">
               <div class="space-y-2">
-                <select
+                <USelectMenu
                   v-model="form.categories"
                   multiple
-                  class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option
-                    v-for="cat in categoryOptions"
-                    :key="cat._id"
-                    :value="cat._id">
-                    {{ cat.name }}
-                  </option>
-                </select>
+                  :options="categoryOptions"
+                  value-attribute="_id"
+                  option-attribute="name" />
                 <div class="text-xs text-gray-500">
                   از لیست بالا یکی را انتخاب کن؛
                 </div>
               </div>
-            </div>
+            </UFormField>
 
             <!-- برچسب‌ها -->
-            <div>
-              <label class="block text-sm font-medium mb-1"> برچسب‌ها </label>
-              <input
+            <UFormField label="برچسب‌ها" name="tags">
+              <UInput
                 v-model="tagsInput"
                 @blur="syncTagsFromInput"
-                placeholder="برچسب‌ها را با ویرگول جدا کنید"
-                class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
+                placeholder="برچسب‌ها را با ویرگول جدا کنید" />
+            </UFormField>
 
             <!-- تصاویر (Choose + Upload → images / imagesMeta) -->
             <div>
               <label class="block text-sm font-medium mb-1">تصاویر</label>
               <div class="space-y-3">
-                <!-- Choose image(s) -->
+                <!-- Specialized upload control: native file input is required for FileList/ref handling. -->
                 <input
                   ref="fileInputRef"
                   type="file"
@@ -209,13 +182,13 @@
                   v-if="imageFiles.length"
                   class="flex items-center gap-2 text-sm">
                   <span>{{ imageFiles.length }} فایل انتخاب شد.</span>
-                  <button
+                  <UButton
                     v-if="!uploading"
                     type="button"
-                    class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                    size="sm"
                     @click="uploadSelectedImages">
                     آپلود تصاویر
-                  </button>
+                  </UButton>
                   <span v-else class="text-blue-600">در حال آپلود...</span>
                 </div>
 
@@ -229,9 +202,12 @@
                       :src="img.url"
                       alt=""
                       class="w-full h-24 object-cover rounded" />
-                    <button
+                    <UButton
                       type="button"
-                      class="absolute top-1 right-1 text-xs bg-white/80 px-2 py-1 rounded"
+                      class="absolute top-1 right-1"
+                      size="xs"
+                      color="error"
+                      variant="soft"
                       @click="
                         () => {
                           form.images.splice(i, 1);
@@ -239,7 +215,7 @@
                         }
                       ">
                       حذف
-                    </button>
+                    </UButton>
                   </div>
                 </div>
               </div>
@@ -254,56 +230,62 @@
                   :key="vi"
                   class="border rounded p-3">
                   <div class="flex items-center gap-2 mb-2">
-                    <input
+                    <UInput
                       v-model="variant.name"
                       placeholder="نام واریانت (مثلا: بسته‌بندی)"
-                      class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <button
+                      class="flex-1" />
+                    <UButton
                       type="button"
-                      class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                      size="sm"
+                      color="neutral"
+                      variant="soft"
                       @click="form.variants.splice(vi, 1)">
                       حذف واریانت
-                    </button>
+                    </UButton>
                   </div>
                   <div class="space-y-2">
                     <div
                       v-for="(opt, oi) in variant.options"
                       :key="oi"
                       class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <input
+                      <UInput
                         v-model="opt.value"
-                        placeholder="مقدار (مثلا: 50 kg)"
-                        class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                      <input
+                        placeholder="مقدار (مثلا: 50 kg)" />
+                      <UInput
                         v-model.number="opt.priceModifier"
                         type="number"
-                        placeholder="تغییر قیمت"
-                        class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        placeholder="تغییر قیمت" />
                       <div class="md:col-span-2">
-                        <button
+                        <UButton
                           type="button"
-                          class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                          size="sm"
+                          color="neutral"
+                          variant="soft"
                           @click="variant.options.splice(oi, 1)">
                           حذف گزینه
-                        </button>
+                        </UButton>
                       </div>
                     </div>
-                    <button
+                    <UButton
                       type="button"
-                      class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                      size="sm"
+                      color="neutral"
+                      variant="outline"
                       @click="
                         variant.options.push({ value: '', priceModifier: 0 })
                       ">
                       + افزودن گزینه
-                    </button>
+                    </UButton>
                   </div>
                 </div>
-                <button
+                <UButton
                   type="button"
-                  class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
                   @click="form.variants.push({ name: '', options: [] })">
                   + افزودن واریانت
-                </button>
+                </UButton>
               </div>
             </div>
 
@@ -315,44 +297,45 @@
                   v-for="(pair, i) in attributesPairs"
                   :key="i"
                   class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <input
+                  <UInput
                     v-model="pair.key"
-                    placeholder="کلید"
-                    class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <input
+                    placeholder="کلید" />
+                  <UInput
                     v-model="pair.value"
-                    placeholder="مقدار"
-                    class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  <button
+                    placeholder="مقدار" />
+                  <UButton
                     type="button"
-                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                    size="sm"
+                    color="neutral"
+                    variant="soft"
                     @click="attributesPairs.splice(i, 1)">
                     حذف
-                  </button>
+                  </UButton>
                 </div>
-                <button
+                <UButton
                   type="button"
-                  class="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
                   @click="attributesPairs.push({ key: '', value: '' })">
                   + افزودن ویژگی
-                </button>
+                </UButton>
               </div>
             </div>
 
             <div class="flex items-center justify-end gap-2">
-              <button
+              <UButton
                 type="button"
                 @click="closeModal"
-                class="px-4 py-2 rounded border border-gray-300">
+                color="neutral"
+                variant="soft">
                 انصراف
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+              </UButton>
+              <UButton type="submit">
                 ذخیره
-              </button>
+              </UButton>
             </div>
-          </form>
+          </UForm>
         </template>
       </BaseModal>
     </div>
@@ -360,29 +343,26 @@
 </template>
 
 <script setup lang="ts">
+const feedback = useFeedback();
 import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import dashboardAuth from "~/middleware/dashboard-auth";
+import type {
+  Product,
+  ProductImage,
+  ProductImageMeta,
+} from "~/types/product";
+import { listAdminProducts } from "~/services/productService";
 
 useHead({
-  title: " آریاساخت | داشبورد | محصولات ",
+  title: "داشبورد | محصولات",
 });
 
 definePageMeta({
-  middleware: dashboardAuth,
+  middleware: ["auth", "permission"],
+  permission: { resource: "products", action: "c" },
 });
-
-type VariantOption = { value: string; priceModifier: number };
-type Variant = { name: string; options: VariantOption[] };
-type ImageItem = { url: string };
-
-type ImageMeta = {
-  filename: string;
-  contentType: string;
-  size: number;
-};
 
 type PresignItem = {
   filename: string;
@@ -391,26 +371,12 @@ type PresignItem = {
   publicUrl: string;
 };
 
-type Product = {
-  _id?: string;
-  name: string;
-  slug: string;
-  sku: string;
-  basePrice: number;
-  discount?: number;
-  companyId?: string;
-  categories: string[];
-  description: string;
-  stock: { quantity: number };
-  variants: Variant[];
-  attributes: Record<string, string>;
-  tags: string[];
-  images: ImageItem[];
-  imagesMeta?: ImageMeta[];
-  status: "draft" | "active" | "inactive" | "archived";
-};
-
 const search = ref("");
+const sort = ref("createdAt:desc");
+const page = ref(1);
+const limit = ref(25);
+const total = ref(0);
+const loading = ref(false);
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -493,13 +459,10 @@ async function uploadSelectedImages() {
 
     //console.log("uploading files via POST /api/images/upload");
 
-    // آپلود مستقیم به endpoint
-    const uploadRes = await $fetch<{ items: PresignItem[] }>(
-      "/api/images/upload",
-      {
-        method: "POST",
-        body: formData,
-      }
+    // Use the configured backend client so the request uses apiBase and auth.
+    const { data: uploadRes } = await $axios.post<{ items: PresignItem[] }>(
+      "/images/upload",
+      formData
     );
 
     const items = uploadRes?.items || [];
@@ -510,11 +473,11 @@ async function uploadSelectedImages() {
     //console.log("upload response items:", items);
 
     // ست کردن images و imagesMeta روی فرم
-    const newImages: ImageItem[] = items.map((item) => ({
+    const newImages: ProductImage[] = items.map((item) => ({
       url: item.publicUrl,
     }));
 
-    const newImagesMeta: ImageMeta[] = items.map((item) => ({
+    const newImagesMeta: ProductImageMeta[] = items.map((item) => ({
       filename: item.filename,
       contentType: item.contentType,
       size: imageFiles.value.find((f) => f.name === item.filename)?.size ?? 0,
@@ -535,9 +498,7 @@ async function uploadSelectedImages() {
     //console.log("upload done, images:", form.value.images);
   } catch (e) {
     console.error("خطا در آپلود تصاویر:", e);
-    alert(
-      "خطا در آپلود تصاویر: " + (e instanceof Error ? e.message : String(e))
-    );
+    feedback.error("آپلود انجام نشد", e instanceof Error ? e.message : "خطا در آپلود تصاویر.");
   } finally {
     uploading.value = false;
   }
@@ -569,25 +530,44 @@ function statusFa(s: Product["status"]) {
     : "آرشیو";
 }
 
-const filteredProducts = computed(() =>
-  products.value.filter((p) =>
-    (p.name || "").toLowerCase().includes(search.value.toLowerCase())
-  )
-);
-
 async function fetchProducts() {
-  if (!canRead) return;
+  if (!canRead.value) return;
+  loading.value = true;
   try {
-    const { data } = await $axios.get("/products/admin/all-products");
-    products.value = data;
+    const result = await listAdminProducts({
+      page: page.value,
+      limit: limit.value,
+      sort: sort.value,
+      filter: search.value.trim() || undefined,
+    });
+    products.value = result.items;
+    total.value = result.total;
   } catch (e) {
     console.error("خطا در دریافت محصولات:", e);
+    products.value = [];
+    total.value = 0;
+  } finally {
+    loading.value = false;
   }
 }
 
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.value)));
+
+function applyProductFilters() {
+  page.value = 1;
+  fetchProducts();
+}
+
+function goToProductPage(nextPage: number) {
+  page.value = Math.max(1, Math.min(nextPage, totalPages.value));
+  fetchProducts();
+}
+
+watch([sort, limit], applyProductFilters);
+
 function openModal(product: Product | null = null) {
   if (product) {
-    if (!canUpdate) return alert("شما اجازه ویرایش ندارید!");
+    if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
     editMode.value = true;
     selectedId.value = product._id || null;
     form.value = {
@@ -597,7 +577,7 @@ function openModal(product: Product | null = null) {
       discount: product.discount ?? 0,
     };
   } else {
-    if (!canCreate) return alert("شما اجازه ایجاد ندارید!");
+    if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
     selectedId.value = null;
     form.value = {
@@ -678,12 +658,12 @@ async function saveProduct() {
     console.error("خطا در ذخیره محصول:", e);
     const errorMsg =
       e?.response?.data?.message?.join(", ") || e?.message || "خطای نامشخص";
-    alert("خطا: " + errorMsg);
+    feedback.error("ذخیره انجام نشد", errorMsg);
   }
 }
 
 async function deleteProduct(product: Product) {
-  if (!canDelete) return alert("شما اجازه حذف ندارید!");
+  if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!product._id) return;
   if (!confirm(`حذف «${product.name}»؟`)) return;
   try {
@@ -705,7 +685,7 @@ function numberFormat(n?: number) {
   width: 100%;
 }
 .title {
-  color: var(--text, #333);
+  color: var(--color-text-dark);
   display: flex;
   align-items: center;
   gap: 10px;

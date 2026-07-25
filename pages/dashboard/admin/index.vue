@@ -5,8 +5,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <UCard v-for="stat in stats" :key="stat.label">
         <div class="flex items-center gap-4">
-          <div :class="`p-3 rounded-lg ${stat.color} text-white`">
-            <UIcon :name="stat.icon" class="size-6" />
+          <div :class="`p-3 rounded-field ${stat.color} text-white`">
+            <UIcon :name="stat.icon" class="size-icon-action" />
           </div>
           <div>
             <p class="text-sm text-gray-500">{{ stat.label }}</p>
@@ -39,7 +39,8 @@
 <script setup lang="ts">
 definePageMeta({
   layout: 'admin',
-  middleware: 'dashboard-auth'
+  middleware: ['auth', 'permission'],
+  permission: { resource: 'all', action: 'm' }
 });
 
 const stats = [

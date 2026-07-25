@@ -1,14 +1,13 @@
-import { ref } from "vue";
+import { useState } from "#app";
 
 export type AuthStep = "signin" | "signup" | "otp" | null;
 
-const authStep = ref<AuthStep>(null);
-
-const setStep = (step: AuthStep) => {
-  authStep.value = step;
-};
-
 export const useAuthStep = () => {
+  const authStep = useState<AuthStep>("auth:step", () => null);
+  const setStep = (step: AuthStep) => {
+    authStep.value = step;
+  };
+
   return {
     authStep,
     setStep,

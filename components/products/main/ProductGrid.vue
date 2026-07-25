@@ -7,8 +7,8 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!products.length" class="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-      <UIcon name="i-lucide-search-x" class="size-16 text-gray-300 mb-4" />
+    <div v-else-if="!products.length" class="flex flex-col items-center justify-center py-20 premium-card border border-gray-100">
+      <UIcon name="i-lucide-search-x" class="size-icon-hero text-gray-300 mb-4" />
       <h3 class="text-lg font-bold text-gray-700">محصولی یافت نشد</h3>
       <p class="text-sm text-gray-500 mt-2">لطفا فیلترهای خود را تغییر دهید یا عبارت دیگری را جستجو کنید.</p>
       <UButton
@@ -22,7 +22,7 @@
 
     <!-- Results Grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <SingleProduct
+      <CatalogProductCard
         v-for="product in products"
         :key="product._id || product.id"
         :product="product"

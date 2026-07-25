@@ -4,8 +4,8 @@ import {
   patchTicketStatus,
   resolveTicket,
   escalateTicket,
-  type TicketStatus,
 } from "@/services/ticketService";
+import type { TicketStatus } from "@/types/ticket";
 
 const props = defineProps<{ id: string }>();
 const emit = defineEmits(["changed", "closed"]);
@@ -43,14 +43,14 @@ async function doEscalate() {
 <template>
   <div class="modal">
     <h4>Ticket actions</h4>
-    <button :disabled="busy" @click="setStatus('in_progress')">Start</button>
-    <button :disabled="busy" @click="setStatus('reopened')">Reopen</button>
-    <button :disabled="busy" @click="setStatus('closed')">Close</button>
-    <button :disabled="busy" @click="doResolve(true)">Resolve + Refund</button>
-    <button :disabled="busy" @click="doResolve(false)">
+    <UButton :disabled="busy" size="sm" @click="setStatus('in_progress')">Start</UButton>
+    <UButton :disabled="busy" size="sm" color="neutral" variant="soft" @click="setStatus('reopened')">Reopen</UButton>
+    <UButton :disabled="busy" size="sm" color="neutral" variant="soft" @click="setStatus('closed')">Close</UButton>
+    <UButton :disabled="busy" size="sm" color="error" variant="soft" @click="doResolve(true)">Resolve + Refund</UButton>
+    <UButton :disabled="busy" size="sm" color="success" variant="soft" @click="doResolve(false)">
       Resolve + Release
-    </button>
-    <button :disabled="busy" @click="doEscalate()">Escalate</button>
-    <button @click="$emit('closed')">Close</button>
+    </UButton>
+    <UButton :disabled="busy" size="sm" color="warning" variant="soft" @click="doEscalate()">Escalate</UButton>
+    <UButton size="sm" color="neutral" variant="ghost" @click="$emit('closed')">Close</UButton>
   </div>
 </template>

@@ -1,5 +1,196 @@
 @import "tailwindcss";
 
+/* IRAN Yekan X: the font files are kept as static assets so SSR and client rendering use the same faces. */
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-UltraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-DemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXFaNum";
+  src: url("../fonts/IRANYekanXFaNum/IRANYekanXFaNum-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-UltraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-DemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IRANYekanXNoEn";
+  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-brand-blue: #1673ff;
+  --color-primary: var(--color-brand-blue);
+  --color-brand-yellow: #fcc040;
+  --color-text-dark: var(--color-text-heading);
+  --color-text-heading: #0f172a;
+  --color-text-body: #475569;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #94a3b8;
+  --color-success-fg: #166534;
+  --color-success-bg: #dcfce7;
+  --color-warning-fg: #854d0e;
+  --color-warning-bg: #fef9c3;
+  --color-danger-fg: #991b1b;
+  --color-danger-bg: #fee2e2;
+  --color-info-fg: #1e40af;
+  --color-info-bg: #dbeafe;
+  --color-neutral-fg: var(--color-text-heading);
+  --color-neutral-bg: #f3f4f6;
+  --color-bg-light: #f8fafc;
+  --blue-dark: var(--color-text-heading);
+  --blue-sky: var(--color-bg-light);
+  --blue-light: var(--color-primary);
+  --blue-bright: var(--color-primary);
+  --gray-50: #f8fafc;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-800: #1e293b;
+  --green-number: var(--color-success-fg);
+  --red-danger: var(--color-danger-fg);
+  --yellow-warning: var(--color-brand-yellow);
+  --font-num: "IRANYekanXFaNum", sans-serif;
+  --font-yekan: "IRANYekanXNoEn", sans-serif;
+  --radius-brand: 12px;
+  --radius-pill: 999px;
+  --radius-card: var(--radius-brand);
+  --radius-dialog: calc(var(--radius-brand) * 1.5);
+  --radius-compact-list-item: calc(var(--radius-brand) * 0.5);
+  --radius-field: var(--radius-brand);
+  --banner-height-mobile: 18rem;
+  --banner-height-desktop: 22rem;
+  --spacing-icon-compact: 0.75rem;
+  --spacing-icon-inline: 1rem;
+  --spacing-icon-action: 1.25rem;
+  --spacing-icon-empty-state: 2rem;
+  --spacing-icon-hero: 3rem;
+  --line-height-metadata: 1.4;
+  --line-height-body: 1.6;
+  --line-height-long-form: 2.1;
+  --shadow-surface: none;
+  --shadow-raised: 0 4px 20px -1px rgb(0 0 0 / 5%), 0 2px 4px -1px rgb(0 0 0 / 3%);
+  --shadow-overlay: 0 16px 40px rgb(15 23 42 / 15%);
+  --shadow-interactive-hover: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
+  --shadow-premium: var(--shadow-raised);
+  --shadow-industrial: var(--shadow-interactive-hover);
+  /* Derived from --color-brand-blue for hover states that need a darker brand blue. */
+  --color-brand-blue-hover: color-mix(in oklab, var(--color-brand-blue) 82%, black);
+}
+
 @source "../../components";
 @source "../../pages";
 @source "../../layouts";
@@ -8,23 +199,14 @@
 @source "../../app.vue";
 @source "../../error.vue";
 
-:root {
-  --color-primary: #1673ff;
-  --color-accent: #fcc040;
-  --color-bg-light: #f8fafc;
-  --color-text-dark: #0f172a;
-  --color-border: #e2e8f0;
-  --radius-brand: 12px;
-  --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-  --shadow-industrial: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-}
+/* Light-only token contract: there is no dark-mode variant or user-facing toggle. */
 
 @layer base {
   body {
     background-color: var(--color-bg-light);
-    color: var(--color-text-dark);
+    color: var(--color-text-heading);
     direction: rtl;
-    font-family: "iran-yekan-num-Regular", "Tahoma", sans-serif;
+    font-family: var(--font-num);
     -webkit-font-smoothing: antialiased;
   }
 }
@@ -47,16 +229,21 @@
   }
 
   .font-num {
-    font-family: "iran-yekan-num-Regular", sans-serif !important;
+    font-family: var(--font-num) !important;
     font-variant-numeric: lining-nums tabular-nums;
   }
 
   .premium-card {
     background-color: white;
-    border-radius: var(--radius-brand);
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-premium);
     transition: all 0.3s ease;
   }
+
+  .surface-card { border-radius: var(--radius-card); box-shadow: var(--shadow-premium); }
+  .surface-dialog { border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); }
+  .surface-compact-list { border-radius: var(--radius-compact-list-item); }
+  .surface-field { border-radius: var(--radius-field); }
 
   .premium-card:hover {
     box-shadow: var(--shadow-industrial);

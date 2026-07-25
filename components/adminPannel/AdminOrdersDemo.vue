@@ -21,7 +21,7 @@
         <div class="price">{{ order.price }}</div>
         <div class="unit">{{ order.unit }}</div>
         <div class="date">{{ order.date }}</div>
-        <div class="id">{{ order.trackingCode }}</div>
+        <div class="id">{{ order.transportId }}</div>
         <div class="status">
           {{ order.status }}
         </div>
@@ -39,7 +39,7 @@ const orders = [
     price: 100000,
     unit: "کیلوگرم",
     date: "1403/12/05",
-    trackingCode: "88461314984",
+    transportId: "transport-88461314984",
     status: "تایید شده",
   },
   {
@@ -48,7 +48,7 @@ const orders = [
     price: 100000,
     unit: "کیلوگرم",
     date: "1403/12/05",
-    trackingCode: "88461314984",
+    transportId: "transport-88461314984",
     status: "تایید شده",
   },
   {
@@ -57,7 +57,7 @@ const orders = [
     price: 100000,
     unit: "کیلوگرم",
     date: "1403/12/05",
-    trackingCode: "88461314984",
+    transportId: "transport-88461314984",
     status: "تایید شده",
   },
   {
@@ -66,7 +66,7 @@ const orders = [
     price: 100000,
     unit: "کیلوگرم",
     date: "1403/12/05",
-    trackingCode: "88461314984",
+    transportId: "transport-88461314984",
     status: "تایید شده",
   },
 ];
@@ -77,11 +77,11 @@ const orders = [
   width: 85%;
   margin: 20px auto;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   padding: 20px;
 }
 .title h2 {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   color: var(--blue-dark);
   font-size: 24px;
 }
@@ -98,7 +98,7 @@ const orders = [
   box-sizing: border-box;
 }
 .header ul li {
-  font-family: "iran-yekan-num-Regular";
+  font-family: var(--font-num);
   font-size: 12px;
   flex: 1 1 0;
   text-align: center;
@@ -156,16 +156,16 @@ const orders = [
   cursor: pointer;
 }
 .transaction * {
-  font-family: "iran-yekan-num-Medium";
+  font-family: var(--font-num);
   color: var(--blue-dark);
   font-size: 12px;
 }
 .transaction .name {
-  font-family: "iran-yekan-Bold";
+  font-family: var(--font-yekan);
   font-size: 12px;
 }
 .transaction .id {
-  font-family: "iran-yekan-num-Bold";
+  font-family: var(--font-num);
   font-size: 12px;
 }
 
@@ -173,8 +173,8 @@ const orders = [
   color: var(--green-number);
   background-color: rgba(0, 186, 0, 0.2);
   padding: 5px;
-  border-radius: 6px;
-  font-family: "iran-yekan-num-Regular";
+  border-radius: var(--radius-compact-list-item);
+  font-family: var(--font-num);
   font-size: 10px;
 }
 @media (max-width: 767px) {
@@ -192,7 +192,7 @@ const orders = [
     gap: 2px;
   }
   .header ul li {
-    font-family: "iran-yekan-num-Regular";
+  font-family: var(--font-num);
     font-size: 9px;
     padding: 0 1px;
     margin: 0 1px;
