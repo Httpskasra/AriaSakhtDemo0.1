@@ -22,7 +22,7 @@ export default defineNuxtConfig({
 
   vite: {
     ssr: {
-      noExternal: ["axios", "form-data", "@nuxt/ui", "@nuxt/icon", "vue"],
+      noExternal: ["axios", "form-data", "@nuxt/ui", "@nuxt/icon", "vue", "entities", "estree-walker"],
     },
     build: {
       commonjsOptions: {
@@ -31,7 +31,7 @@ export default defineNuxtConfig({
       chunkSizeWarningLimit: 2000
     },
     optimizeDeps: {
-      include: ['vue', '@nuxt/ui']
+      include: ['vue', '@nuxt/ui', 'entities', 'estree-walker']
     }
   },
 
