@@ -15,6 +15,9 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: true,
     timing: true,
+    externals: {
+      inline: ['entities']
+    },
     routeRules: {
       "/dashboard": { redirect: "/dashboard/products" },
     },
