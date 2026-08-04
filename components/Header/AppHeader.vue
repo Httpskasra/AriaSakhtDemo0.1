@@ -99,42 +99,47 @@ const handleCartClick = () => {
         <GlobalProductSearch variant="header" class="w-full" />
       </div>
 
-      <USlideover v-model:open="mobileMenuOpen" side="right" title="منوی سایت">
-        <template #body>
-          <nav class="mobile-menu" aria-label="ناوبری موبایل">
-            <NuxtLink to="/products" class="mobile-menu__link" @click="mobileMenuOpen = false">
-              <UIcon name="i-lucide-store" aria-hidden="true" />
-              <span>فروشگاه</span>
-            </NuxtLink>
-            <NuxtLink to="/dashboard/company/register" class="mobile-menu__link" @click="mobileMenuOpen = false">
-              <UIcon name="i-lucide-handshake" aria-hidden="true" />
-              <span>تأمین‌کننده شوید</span>
-            </NuxtLink>
-            <NuxtLink to="/about" class="mobile-menu__link" @click="mobileMenuOpen = false">
-              <UIcon name="i-lucide-building-2" aria-hidden="true" />
-              <span>درباره تجاریس</span>
-            </NuxtLink>
-            <NuxtLink to="/contact" class="mobile-menu__link" @click="mobileMenuOpen = false">
-              <UIcon name="i-lucide-life-buoy" aria-hidden="true" />
-              <span>پشتیبانی</span>
-            </NuxtLink>
-
-            <div v-if="mobileCategories.length" class="mobile-menu__categories">
-              <h2>دسته‌بندی‌ها</h2>
-              <NuxtLink
-                v-for="category in mobileCategories"
-                :key="category._id ?? category.id ?? category.name"
-                :to="categoryPath(category)"
-                class="mobile-menu__category"
-                @click="mobileMenuOpen = false"
-              >
-                <span>{{ category.name }}</span>
-                <UIcon name="i-lucide-chevron-left" aria-hidden="true" />
+      <ClientOnly>
+        <USlideover v-model:open="mobileMenuOpen" side="right" title="منوی سایت">
+          <template #default>
+            <span class="hidden" aria-hidden="true" />
+          </template>
+          <template #body>
+            <nav class="mobile-menu" aria-label="ناوبری موبایل">
+              <NuxtLink to="/products" class="mobile-menu__link" @click="mobileMenuOpen = false">
+                <UIcon name="i-lucide-store" aria-hidden="true" />
+                <span>فروشگاه</span>
               </NuxtLink>
-            </div>
-          </nav>
-        </template>
-      </USlideover>
+              <NuxtLink to="/dashboard/company/register" class="mobile-menu__link" @click="mobileMenuOpen = false">
+                <UIcon name="i-lucide-handshake" aria-hidden="true" />
+                <span>تأمین‌کننده شوید</span>
+              </NuxtLink>
+              <NuxtLink to="/about" class="mobile-menu__link" @click="mobileMenuOpen = false">
+                <UIcon name="i-lucide-building-2" aria-hidden="true" />
+                <span>درباره تجاریس</span>
+              </NuxtLink>
+              <NuxtLink to="/contact" class="mobile-menu__link" @click="mobileMenuOpen = false">
+                <UIcon name="i-lucide-life-buoy" aria-hidden="true" />
+                <span>پشتیبانی</span>
+              </NuxtLink>
+
+              <div v-if="mobileCategories.length" class="mobile-menu__categories">
+                <h2>دسته‌بندی‌ها</h2>
+                <NuxtLink
+                  v-for="category in mobileCategories"
+                  :key="category._id ?? category.id ?? category.name"
+                  :to="categoryPath(category)"
+                  class="mobile-menu__category"
+                  @click="mobileMenuOpen = false"
+                >
+                  <span>{{ category.name }}</span>
+                  <UIcon name="i-lucide-chevron-left" aria-hidden="true" />
+                </NuxtLink>
+              </div>
+            </nav>
+          </template>
+        </USlideover>
+      </ClientOnly>
     </div>
   </header>
 </template>
