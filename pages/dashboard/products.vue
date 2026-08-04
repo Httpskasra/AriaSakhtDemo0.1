@@ -353,7 +353,8 @@ import type {
   ProductImage,
   ProductImageMeta,
 } from "~/types/product";
-import { listAdminProducts } from "~/services/productService";
+import { listAdminProducts, uploadProductImages, createProduct, updateProduct, deleteProduct as removeProduct } from "~/services/productService";
+import { useApiClient } from '~/services/apiClient';
 
 useHead({
   title: "داشبورد | محصولات",
@@ -363,13 +364,6 @@ definePageMeta({
   middleware: ["auth", "permission"],
   permission: { resource: "products", action: "c" },
 });
-
-type PresignItem = {
-  filename: string;
-  contentType: string;
-  presignedUrl: string;
-  publicUrl: string;
-};
 
 const search = ref("");
 const sort = ref("createdAt:desc");
@@ -385,8 +379,6 @@ const products = ref<Product[]>([]);
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.PRODUCTS
 );
-
-const { $axios } = useNuxtApp();
 
 // Categories
 const categoryOptions = ref<{ _id: string; name: string }[]>([]);
@@ -427,7 +419,7 @@ onMounted(() => {
 async function fetchCategories() {
   try {
     categoriesLoading.value = true;
-    const { data } = await $axios.get("/categories");
+    const { data } = await useApiClient().get<Array<{ _id: string; name: string }> | { items: Array<{ _id: string; name: string }> }>("/categories");
     categoryOptions.value = Array.isArray(data) ? data : data?.items || [];
   } catch (e) {
     console.error("خطا در دریافت دسته‌بندی‌ها:", e);
@@ -449,23 +441,7 @@ async function uploadSelectedImages() {
     uploading.value = true;
 
     // ساخت FormData برای آپلود مستقیم
-    const formData = new FormData();
-    formData.append("type", "product");
-
-    // اضافه کردن تمام فایل‌ها به FormData
-    imageFiles.value.forEach((file) => {
-      formData.append("files", file);
-    });
-
-    //console.log("uploading files via POST /api/images/upload");
-
-    // Use the configured backend client so the request uses apiBase and auth.
-    const { data: uploadRes } = await $axios.post<{ items: PresignItem[] }>(
-      "/images/upload",
-      formData
-    );
-
-    const items = uploadRes?.items || [];
+    const items = await uploadProductImages(imageFiles.value);
     if (!items.length) {
       throw new Error("هیچ فایلی آپلود نشد.");
     }
@@ -648,9 +624,9 @@ async function saveProduct() {
 
   try {
     if (editMode.value && selectedId.value) {
-      await $axios.patch(`/products/${selectedId.value}`, cleanPayload);
+      await updateProduct(selectedId.value, cleanPayload);
     } else {
-      await $axios.post("/products", cleanPayload);
+      await createProduct(cleanPayload);
     }
     await fetchProducts();
     closeModal();
@@ -667,7 +643,7 @@ async function deleteProduct(product: Product) {
   if (!product._id) return;
   if (!confirm(`حذف «${product.name}»؟`)) return;
   try {
-    await $axios.delete(`/products/${product._id}`);
+    await removeProduct(product._id);
     await fetchProducts();
   } catch (e) {
     console.error("خطا در حذف محصول:", e);

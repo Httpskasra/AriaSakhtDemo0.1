@@ -14,7 +14,7 @@
         <!-- Product Info -->
         <div class="col-span-12 md:col-span-6 flex items-center gap-4">
           <div class="size-20 bg-gray-100 rounded-field overflow-hidden shrink-0 border border-gray-50">
-            <img :src="item.image || 'https://picsum.photos/seed/cart/100/100'" class="size-full object-cover" />
+            <img :src="item.image || '/products/building-material.jpg'" :alt="item.name || 'محصول سبد خرید'" class="size-full object-cover" width="100" height="100" />
           </div>
           <div class="min-w-0">
             <h3 class="font-bold text-gray-800 truncate mb-1">{{ item.name }}</h3>

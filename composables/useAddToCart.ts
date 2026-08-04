@@ -3,9 +3,11 @@ import { useState } from '#app';
 import type { CartItemDto } from '~/types/product';
 import { addToCart, createCart } from '~/services/cartService';
 import { useUser } from '~/composables/useUser';
+import { useCartStore } from '~/stores/cart';
 
 export const useAddToCart = () => {
   const { user, fetchUser } = useUser();
+  const cartStore = useCartStore();
   const toast = useToast();
   const loading = useState('cart:add:loading', () => false);
   const error = ref<string | null>(null);
@@ -35,6 +37,8 @@ export const useAddToCart = () => {
         response = await addToCart(cartItem);
       }
       success.value = true;
+      if (response.data) cartStore.setCart(response.data);
+      else cartStore.invalidate();
       cartBump.value++;
       toast.add({ title: 'موفقیت', description: 'محصول با موفقیت به سبد خرید اضافه شد', color: 'success' });
       return response.data;

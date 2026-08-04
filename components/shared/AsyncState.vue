@@ -24,7 +24,7 @@ const defaults = {
 </script>
 
 <template>
-  <section class="async-state" :class="`async-state--${props.state}`" role="status" :aria-live="props.state === 'error' ? 'assertive' : 'polite'">
+  <section class="async-state" :class="`async-state--${props.state}`" :role="props.state === 'error' ? 'alert' : 'status'" :aria-busy="props.state === 'loading'" :aria-live="props.state === 'error' ? 'assertive' : 'polite'">
     <template v-if="props.state === 'loading'">
       <div v-for="row in props.skeletonRows" :key="row" class="async-state__skeleton" aria-hidden="true">
         <span class="async-state__skeleton-line async-state__skeleton-line--long" />

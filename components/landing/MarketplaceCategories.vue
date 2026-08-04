@@ -1,14 +1,29 @@
 <template>
-  <section class="py-4">
-    <div class="flex items-end justify-between mb-10">
+  <section aria-labelledby="marketplace-categories-heading" class="py-10 sm:py-12">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-3">دسته‌بندی‌های صنعتی</h2>
-        <p class="text-slate-500 text-sm md:text-base">دسترسی سریع به طیف گسترده کالاهای ساختمانی و تجهیزات فنی</p>
+        <h2 id="marketplace-categories-heading" class="mb-2 text-2xl font-black text-slate-800 md:text-3xl">دسته‌بندی‌های صنعتی</h2>
+        <p class="text-sm text-slate-600 md:text-base">دسترسی سریع به کالاهای ساختمانی و تجهیزات فنی</p>
       </div>
-      <UButton to="/products" variant="link" color="primary" trailing-icon="i-lucide-arrow-left" label="مشاهده همه" />
+      <UButton to="/products" variant="outline" color="primary" trailing-icon="i-lucide-arrow-left" label="مشاهده همه دسته‌ها" />
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+    <div v-if="loading" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div v-for="index in 6" :key="index" class="category-skeleton premium-card p-5">
+        <USkeleton class="mx-auto mb-4 size-16 rounded-card" />
+        <USkeleton class="mx-auto h-4 w-3/4" />
+      </div>
+    </div>
+    <div v-else-if="error" class="category-feedback panel-surface">
+      <UIcon name="i-lucide-circle-alert" class="size-icon-inline text-red-600" aria-hidden="true" />
+      <p>دریافت دسته‌بندی‌ها ناموفق بود.</p>
+      <UButton type="button" size="sm" variant="outline" color="neutral" @click="retryCategories">تلاش مجدد</UButton>
+    </div>
+    <div v-else-if="!categories.length" class="category-feedback panel-surface">
+      <UIcon name="i-lucide-folders" class="size-icon-inline text-slate-500" aria-hidden="true" />
+      <p>هنوز دسته‌بندی‌ای تعریف نشده است.</p>
+    </div>
+    <div v-else class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
       <NuxtLink 
         v-for="cat in categories" 
         :key="categoryId(cat)"
@@ -30,8 +45,9 @@ import { useCategories } from "~/composables/useCategories";
 import type { Category } from "~/services/categories";
 
 const icons = ["i-lucide-building-2", "i-lucide-plug", "i-lucide-droplets", "i-lucide-layers", "i-lucide-wrench", "i-lucide-fan"];
-const { categories: loadedCategories, load } = useCategories();
-await load().catch(() => undefined);
+const { categories: loadedCategories, loading, error, load } = useCategories();
+const retryCategories = () => load().catch(() => undefined);
+await retryCategories();
 
 const categories = computed(() => loadedCategories.value.filter((category) => !category.parentId).slice(0, 6));
 const categoryId = (category: Category) => category._id || category.id || category.slug || category.name;
@@ -42,3 +58,20 @@ const categoryCount = (category: Category) => {
   return typeof count === "number" ? String(count) : "";
 };
 </script>
+
+<style scoped>
+.category-feedback {
+  display: flex;
+  min-height: 9rem;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  padding: 1.5rem;
+  color: #475569;
+  font-size: .875rem;
+}
+
+.category-skeleton {
+  min-height: 9rem;
+}
+</style>

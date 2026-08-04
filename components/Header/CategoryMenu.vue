@@ -13,7 +13,7 @@ const categoryPath = (category: Category) => `/products?categoryIds=${encodeURIC
 </script>
 
 <template>
-  <div class="relative group h-full py-4" @keydown.escape="isOpen = false">
+  <div class="relative group h-full py-3" @keydown.escape="isOpen = false">
     <button
       type="button"
       :aria-expanded="isOpen"
@@ -23,7 +23,7 @@ const categoryPath = (category: Category) => `/products?categoryIds=${encodeURIC
       @keydown.enter.prevent="isOpen = true"
       @keydown.space.prevent="isOpen = true">
       <UIcon name="i-lucide-grid-3x3" class="size-icon-action" />
-      دسته‌بندی کالاها
+      دسته‌بندی‌ها
       <UIcon name="i-lucide-chevron-down" class="size-icon-inline group-hover:rotate-180 transition-transform" />
     </button>
 

@@ -23,7 +23,7 @@
       </div>
       <div class="products">
         <div v-for="(item, idx) in order.items" :key="idx" class="product">
-          <img src="/products/ajor.jpg" alt="محصول" />
+          <img src="/products/building-material.jpg" alt="محصول" width="70" height="70" />
           <p class="product-name">محصول</p>
           <span class="quantity">تعداد: {{ item.quantity }}</span>
           <span class="price">{{ numberFormat(item.price) }} ریال</span>

@@ -1,23 +1,28 @@
 <template>
   <div :class="['global-product-search', variant]">
-    <div class="flex items-center gap-2">
+    <div class="search-control">
       <UInput
         :model-value="searchInput"
         type="search"
-        placeholder="جستجو..."
-        class="w-full"
+        :placeholder="variant === 'header' ? 'جستجو در کل فروشگاه' : 'جستجو...'"
+        :aria-label="variant === 'header' ? 'جستجو در کل فروشگاه' : 'جستجو'"
+        class="search-input"
         @focus="isFocused = true"
         @blur="hideSuggestions"
         @update:model-value="updateSearch"
-        @keyup.enter="handleSearch" />
-      <UButton
-        icon="i-lucide-search"
-        size="sm"
-        color="primary"
-        variant="ghost"
-        square
-        aria-label="جستجو"
-        @click="handleSearch" />
+        @keyup.enter="handleSearch">
+        <template #trailing>
+          <UButton
+            icon="i-lucide-search"
+            size="sm"
+            color="primary"
+            variant="ghost"
+            square
+            class="search-submit"
+            aria-label="جستجو"
+            @click="handleSearch" />
+        </template>
+      </UInput>
     </div>
 
     <div v-if="variant === 'header' && isFocused" class="suggestions">
@@ -92,11 +97,53 @@ const selectSuggestion = async (suggestion: string) => {
 <style scoped>
 .global-product-search {
   position: relative;
-  width: min(100%, 360px);
+  width: 100%;
 }
 
 .global-product-search.header {
-  width: min(100%, 420px);
+  width: 100%;
+  max-width: 40rem;
+}
+
+.search-control {
+  position: relative;
+  width: 100%;
+}
+
+:deep(.search-input) {
+  width: 100%;
+}
+
+:deep(.search-input input) {
+  min-height: 2.75rem;
+  padding-block: 0.625rem;
+  padding-inline-start: 0.875rem;
+  padding-inline-end: 3rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-field);
+  background: #fff;
+}
+
+:deep(.search-input input:focus-visible) {
+  border-color: var(--color-brand-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(22 115 255 / 15%);
+}
+
+:deep(.search-input > span:last-of-type) {
+  inset-inline-end: 0.5rem;
+  padding-inline: 0;
+}
+
+:deep(.search-submit) {
+  min-height: 2rem;
+  width: 2rem;
+  padding: 0;
+}
+
+:deep(.search-submit svg) {
+  width: 1rem;
+  height: 1rem;
 }
 
 .suggestions {

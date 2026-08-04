@@ -26,5 +26,5 @@ const menuItems: SidebarNavItem[] = [
 </script>
 
 <template>
-  <SharedSidebarPanel :items="menuItems" :identity="{ name: 'نام شرکت', subtitle: '09164532683' }" @navigate="emit('update:isMenuOpen', false)" />
+  <SidebarPanel :items="menuItems" :identity="{ name: 'نام شرکت', subtitle: '09164532683' }" @navigate="emit('update:isMenuOpen', false)" />
 </template>

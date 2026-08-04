@@ -2,46 +2,48 @@
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
-import { toInternationalPhone } from "@/utils/PhoneNumber";
-const { $axios } = useNuxtApp();
+import { isValidPhone, toInternationalPhone } from "@/utils/PhoneNumber";
+import { requestSignInOtp } from '~/services/authService';
+import { toUserFacingError, UserFacingApiError } from '~/services/apiClient';
 
 const phoneNumber = ref("");
 const phoneError = ref(false);
+const errorMessage = ref('شماره تماس وارد شده صحیح نمی‌باشد');
 const isLoading = ref(false); // ✅ مرحله 1
+const showSignupAction = ref(false);
 
 const { phoneNumber: globalPhoneNumber } = useAuthData();
-const emit = defineEmits(["onSuccess", "goToSignup"]);
+const emit = defineEmits<{ onSuccess: []; goToSignup: [] }>();
 const { setStep } = useAuthStep();
 
 const validatePhone = (number: string): boolean => {
-  return /^[9]{1}[0-9]{9}$/.test(number);
+  return isValidPhone(number);
 };
 
 const handleSubmit = async () => {
   if (!validatePhone(phoneNumber.value)) {
     phoneError.value = true;
+    errorMessage.value = 'شماره تماس وارد شده صحیح نمی‌باشد';
     return;
   }
 
   phoneError.value = false;
+  showSignupAction.value = false;
   isLoading.value = true; // ✅ مرحله 2
 
   const formattedPhone = toInternationalPhone(phoneNumber.value);
 
   try {
-    const response = await $axios.post("/auth/signin", {
-      phoneNumber: formattedPhone,
-    });
-
-    if (response?.status === 200 || response?.status === 204) {
-      globalPhoneNumber.value = formattedPhone;
-      emit("onSuccess");
-    } else {
-      console.error("Unexpected response", response);
-    }
+    await requestSignInOtp(formattedPhone);
+    globalPhoneNumber.value = formattedPhone;
+    emit("onSuccess");
   } catch (error) {
-    console.error("Login error:", error);
+    const userError = error instanceof UserFacingApiError ? error : toUserFacingError(error);
     phoneError.value = true;
+    showSignupAction.value = userError.info.status === 404;
+    errorMessage.value = showSignupAction.value
+      ? 'این شماره در سامانه ثبت نشده است. لطفاً ابتدا عضو شوید.'
+      : userError.message;
   } finally {
     isLoading.value = false; // ✅ مرحله 3
   }
@@ -73,8 +75,19 @@ const closeModal = () => {
           <span
             class="input-error"
             :class="{ inline: phoneError, hidden: !phoneError }">
-            شماره تماس وارد شده صحیح نمی‌باشد
+          {{ errorMessage }}
           </span>
+          <UButton
+            v-if="showSignupAction"
+            type="button"
+            variant="link"
+            color="primary"
+            size="sm"
+            class="mt-1 self-start"
+            @click="emit('goToSignup')"
+          >
+            رفتن به صفحه عضویت
+          </UButton>
         </div>
 
         <UButton type="submit" color="primary" variant="solid" size="lg" block :disabled="isLoading">

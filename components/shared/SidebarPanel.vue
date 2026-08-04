@@ -11,8 +11,8 @@ const emit = defineEmits<{ navigate: [] }>();
 
 <template>
   <div class="sidebar-panel">
-    <SharedSidebarIdentity v-if="identity" v-bind="identity" />
-    <SharedSidebarNav :items="items" @navigate="emit('navigate')" />
+    <SidebarIdentity v-if="identity" v-bind="identity" />
+    <SidebarNav :items="items" @navigate="emit('navigate')" />
   </div>
 </template>
 

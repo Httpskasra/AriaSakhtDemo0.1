@@ -23,8 +23,8 @@
       </div>
       <div class="products">
         <div v-for="(item, idx) in order.items" :key="idx" class="product">
-          <img src="/products/ajor.jpg" alt="محصول" />
-          <p class="product-name">محصول</p>
+          <img :src="productImage(item)" :alt="productName(item)" width="70" height="70" />
+          <p class="product-name">{{ productName(item) }}</p>
           <span class="quantity">تعداد: {{ item.quantity }}</span>
           <span class="price">{{ numberFormat(item.price) }} ریال</span>
         </div>
@@ -56,6 +56,16 @@ function formatDate(date?: string) {
 function numberFormat(n?: number) {
   if (typeof n !== "number") return "-";
   return n.toLocaleString("fa-IR");
+}
+
+function productName(item: Order['items'][number]) {
+  const product = item.product || (typeof item.productId === 'object' ? item.productId : undefined);
+  return product?.name || 'محصول';
+}
+
+function productImage(item: Order['items'][number]) {
+  const product = item.product || (typeof item.productId === 'object' ? item.productId : undefined);
+  return product?.images?.[0]?.url || '/products/building-material.jpg';
 }
 
 </script>

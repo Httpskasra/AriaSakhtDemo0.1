@@ -2,13 +2,13 @@
   <div class="layout-shell">
   <AppHeader :isScrolled="true" class="header" :menuType="menueType.role" />
     <ActionButton class="drawer-toggle" icon-only icon="i-lucide-menu" tone="ghost" aria-label="باز کردن منوی کناری" @click="isSidebarOpen = true" />
-    <SharedAppDrawer v-model="isSidebarOpen" label="منوی داشبورد">
+    <AppDrawer v-model="isSidebarOpen" label="منوی داشبورد">
       <SideBarT :isMenuOpen="isSidebarOpen" @update:isMenuOpen="isSidebarOpen = $event" />
-    </SharedAppDrawer>
+    </AppDrawer>
     <main class="main-container">
       <slot />
-      <div class="spacer"></div>
     </main>
+    <Footer class="dashboard-footer" />
   </div>
 </template>
 
@@ -29,15 +29,11 @@ const isSidebarOpen = ref(false);
   top: 0;
   z-index: 9999;
 } */
-.layout-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 18rem; grid-template-rows: auto 1fr; grid-template-areas: "header header" "main drawer"; }
+.layout-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-sidebar-width); grid-template-rows: auto 1fr auto; grid-template-areas: "header header" "main drawer" "footer footer"; }
 .header { grid-area: header; }
-.main-container { grid-area: main; min-width: 0; padding: 2rem; box-sizing: border-box; }
+.main-container { grid-area: main; min-width: 0; padding: 2rem; box-sizing: border-box; width: 100%; }
 .drawer-toggle { display: none; }
-.spacer {
-  bottom: 0;
-  height: 280px;
-  width: 100%;
-}
+.dashboard-footer { grid-area: footer; }
 
 @media (max-width: 1023px) {
   .layout-shell { display: block; }

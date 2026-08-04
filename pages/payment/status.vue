@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { getTransactionStatus, type PaymentTransaction } from '~/services/transactionService';
 import { formatDate } from '~/utils/date';
@@ -11,31 +11,62 @@ const trackId = computed(() => String(route.query.trackId || ''));
 const transaction = ref<PaymentTransaction | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
+const isTimedOut = ref(false);
+const controller = ref<AbortController | null>(null);
 
 const status = computed(() => transaction.value?.status?.toLowerCase() || 'unknown');
 const isSuccess = computed(() => ['completed', 'success', 'paid', 'verified'].includes(status.value));
 const isPending = computed(() => ['pending', 'processing'].includes(status.value));
+const normalizedStatus = computed(() => {
+  const raw = status.value;
+  if (isSuccess.value) return 'success';
+  if (isPending.value) return 'pending';
+  if (['failed', 'failure', 'rejected', 'declined'].includes(raw)) return 'failed';
+  if (['canceled', 'cancelled', 'cancel'].includes(raw)) return 'canceled';
+  return 'unknown';
+});
 const statusTitle = computed(() => {
   if (loading.value) return 'در حال بررسی پرداخت';
   if (isSuccess.value) return 'پرداخت موفق';
   if (isPending.value) return 'پرداخت در حال بررسی';
+  if (normalizedStatus.value === 'canceled') return 'پرداخت لغو شد';
+  if (normalizedStatus.value === 'unknown') return 'وضعیت پرداخت نامشخص';
   return 'پرداخت ناموفق';
 });
 
-const loadTransaction = async () => {
-  loading.value = true;
+const loadTransaction = async (showLoading = true) => {
+  if (showLoading) loading.value = true;
   errorMessage.value = '';
+  isTimedOut.value = false;
+  controller.value?.abort();
+  controller.value = new AbortController();
   try {
-    if (!trackId.value) throw new Error('شناسه تراکنش دریافت نشد');
-    transaction.value = await getTransactionStatus(trackId.value);
+    if (!trackId.value) throw new Error('missing');
+    transaction.value = await getTransactionStatus(trackId.value, controller.value.signal);
   } catch {
-    errorMessage.value = 'وضعیت تراکنش از سرور قابل دریافت نیست.';
+    if (!controller.value?.signal.aborted) {
+      isTimedOut.value = true;
+      errorMessage.value = 'وضعیت پرداخت هنوز قابل تأیید نیست؛ از استعلام مجدد استفاده کنید.';
+    }
   } finally {
     loading.value = false;
   }
 };
 
 await loadTransaction();
+let pollTimer: ReturnType<typeof setTimeout> | undefined;
+let pollCount = 0;
+const pollPendingStatus = async () => {
+  if (pollCount >= 5 || !isPending.value || !trackId.value) return;
+  pollCount += 1;
+  pollTimer = setTimeout(async () => {
+    await loadTransaction(false);
+    await pollPendingStatus();
+  }, 2000);
+};
+onMounted(() => { void pollPendingStatus(); });
+onBeforeUnmount(() => controller.value?.abort());
+onBeforeUnmount(() => { if (pollTimer) clearTimeout(pollTimer); });
 </script>
 
 <template>

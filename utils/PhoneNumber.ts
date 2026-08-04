@@ -5,8 +5,12 @@
  * - "9101234567" => "+989101234567"
  * - "989101234567" => "+989101234567"
  */
+export const toEnglishDigits = (value: string): string => value
+  .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 1776))
+  .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 1632));
+
 export const toInternationalPhone = (phone: string): string => {
-  const digits = phone.replace(/\D/g, "");
+  const digits = toEnglishDigits(phone).replace(/\D/g, "");
 
   if (digits.startsWith("0")) return "+98" + digits.slice(1);
   if (digits.startsWith("9")) return "+98" + digits;
@@ -23,7 +27,7 @@ export const toInternationalPhone = (phone: string): string => {
  * - "9101234567" => "09101234567"
  */
 export const toNationalPhone = (phone: string): string => {
-  const digits = phone.replace(/\D/g, "");
+  const digits = toEnglishDigits(phone).replace(/\D/g, "");
 
   // اگر با 98 شروع شود (پیش‌فیکس بین‌المللی)
   if (digits.startsWith("98")) {
@@ -48,7 +52,7 @@ export const toNationalPhone = (phone: string): string => {
  * بررسی می‌کند که شماره معتبر ایرانی است
  */
 export const isValidPhone = (phone: string): boolean => {
-  const digits = phone.replace(/\D/g, "");
+  const digits = toEnglishDigits(phone).replace(/\D/g, "");
 
   // شماره باید 10 یا 12 رقم باشد
   if (digits.length === 10 && digits.startsWith("9")) {

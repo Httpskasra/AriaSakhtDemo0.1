@@ -39,33 +39,34 @@ const formatPrice = (price: number) => {
       </template>
 
       <template v-else-if="products && products.length > 0">
-        <NuxtLink
+        <article
           v-for="product in products"
           :key="product._id"
-          :to="`/products/${product._id}`"
           class="premium-card group flex h-full flex-col overflow-hidden"
         >
-          <div class="relative aspect-square overflow-hidden bg-slate-100">
-            <NuxtImg
-              :src="product.images?.[0]?.url || '/products/building-material.jpg'"
-              :alt="product.name"
-              class="size-full object-cover transition-transform duration-500 group-hover:scale-110"
-              loading="lazy"
-              data-ai-hint="product image"
-            />
-            <div v-if="product.discount" class="absolute left-3 top-3 rounded-compact-list-item bg-red-500 px-2 py-1 font-num text-xs font-bold text-white shadow-lg">
-              {{ product.discount }}٪ تخفیف
+          <NuxtLink :to="`/products/${product._id}`" :aria-label="`مشاهده ${product.name}`">
+            <div class="relative aspect-square overflow-hidden bg-slate-100">
+              <NuxtImg
+                :src="product.images?.[0]?.url || '/products/building-material.jpg'"
+                :alt="product.name"
+                class="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+                data-ai-hint="product image"
+              />
+              <div v-if="product.discount" class="absolute left-3 top-3 rounded-compact-list-item bg-red-500 px-2 py-1 font-num text-xs font-bold text-white shadow-lg">
+                {{ product.discount }}٪ تخفیف
+              </div>
             </div>
-          </div>
+          </NuxtLink>
 
           <div class="flex flex-1 flex-col justify-between p-5">
             <div class="space-y-2">
               <div class="truncate text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                {{ typeof product.companyId === 'object' ? product.companyId.name : 'تامین‌کننده معتبر' }}
+                {{ typeof product.companyId === 'object' ? product.companyId.name : 'تأمین‌کننده معتبر' }}
               </div>
-              <h3 class="h-12 line-clamp-2 font-bold leading-snug text-slate-900 transition-colors group-hover:text-brand-blue">
+              <NuxtLink :to="`/products/${product._id}`" class="block h-12 line-clamp-2 font-bold leading-snug text-slate-900 transition-colors hover:text-brand-blue">
                 {{ product.name }}
-              </h3>
+              </NuxtLink>
             </div>
 
             <div class="mt-4 flex items-center justify-between border-t border-slate-50 pt-4">
@@ -75,7 +76,7 @@ const formatPrice = (price: number) => {
                 </div>
                 <div class="flex items-baseline gap-1 font-num text-lg font-black text-slate-900">
                   {{ formatPrice(product.finalPrice || product.basePrice) }}
-                  <span class="text-[10px] font-medium text-slate-500">تومان</span>
+                  <span class="text-[10px] font-medium text-slate-500">ریال</span>
                 </div>
               </div>
               <UButton
@@ -91,7 +92,7 @@ const formatPrice = (price: number) => {
               />
             </div>
           </div>
-        </NuxtLink>
+        </article>
       </template>
 
       <div v-else class="col-span-full py-20 text-center">

@@ -1,5 +1,9 @@
 import { defineStore } from "pinia";
 import { useState } from "#app";
+import { useCartStore } from '~/stores/cart';
+import { useWalletStore } from '~/stores/wallet';
+import { useNotificationsStore } from '~/stores/notifications';
+import { useFavoritesStore } from '~/stores/favorites';
 
 export const useAuthStore = defineStore("auth", () => {
   // Access and CSRF tokens are request/session state, not persistent cookies.
@@ -7,6 +11,7 @@ export const useAuthStore = defineStore("auth", () => {
   // owns it in an HttpOnly cookie.
   const accessToken = useState<string | null>("auth:access-token", () => null);
   const csrfToken = useState<string | null>("auth:csrf-token", () => null);
+  const sessionCleared = useState<boolean>("auth:session-cleared", () => false);
 
   // F2: Cross-tab synchronization using BroadcastChannel
   let syncChannel: BroadcastChannel | null = null;
@@ -28,6 +33,7 @@ export const useAuthStore = defineStore("auth", () => {
   ) => {
     accessToken.value = newAccessToken;
     csrfToken.value = newCsrfToken;
+    sessionCleared.value = false;
   };
 
   const getAccessToken = () => accessToken.value;
@@ -37,8 +43,14 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const clearTokens = () => {
+    if (sessionCleared.value && !accessToken.value && !csrfToken.value) return;
     accessToken.value = null;
     csrfToken.value = null;
+    sessionCleared.value = true;
+    useCartStore().clear();
+    useWalletStore().clear();
+    useNotificationsStore().clear();
+    useFavoritesStore().clear();
     // Notify other tabs
     if (process.client && syncChannel) {
       syncChannel.postMessage("logout");

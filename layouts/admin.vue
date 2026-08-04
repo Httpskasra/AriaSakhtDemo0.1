@@ -1,11 +1,11 @@
 <template>
   <div class="admin-layout">
-    <SharedAppDrawer v-model="isSidebarOpen" label="منوی مدیریت" width="16rem">
+    <AppDrawer v-model="isSidebarOpen" label="منوی مدیریت" width="16rem">
       <AdminSideBar :isMenuOpen="isSidebarOpen" @update:isMenuOpen="isSidebarOpen = $event" />
-    </SharedAppDrawer>
+    </AppDrawer>
 
     <div class="admin-layout__content">
-      <header class="admin-layout__header">
+      <header class="admin-layout__header" aria-label="سربرگ پنل مدیریت">
         <HeaderIconButton icon="i-lucide-menu" label="باز کردن منوی مدیریت" class="drawer-toggle" @click="isSidebarOpen = true" />
         <h1>پنل مدیریت تجاریس</h1>
         <div class="admin-layout__actions">
@@ -45,7 +45,7 @@ const isSidebarOpen = ref(false);
 }
 
 .admin-layout__header {
-  height: 4rem;
+  height: var(--panel-header-height);
   padding: 0 1.5rem;
   background: #fff;
   border-bottom: 1px solid var(--gray-200);

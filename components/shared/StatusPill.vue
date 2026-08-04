@@ -15,7 +15,7 @@ const style = computed(() => useStatusStyle(props.semantic));
 </script>
 
 <template>
-  <span class="status-pill" :class="`status-pill--${size}`" :style="style">
+  <span class="status-pill" :class="`status-pill--${size}`" :style="style" role="status" :aria-label="label">
     <UIcon v-if="icon" :name="icon" class="status-pill__icon" />
     <span>{{ label }}</span>
   </span>

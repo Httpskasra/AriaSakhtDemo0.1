@@ -31,13 +31,13 @@
       <UTable 
         :rows="filteredProducts" 
         :columns="columns" 
-        :loading="loading"
+        :loading="props.loading"
         class="w-full"
         :ui="{ th: { base: 'bg-gray-50 font-bold' } }"
       >
         <template #image-data="{ row }">
           <div class="size-12 rounded-field border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
-            <img :src="row.images?.[0]?.url || 'https://picsum.photos/seed/inv/50/50'" class="size-full object-cover" />
+            <img :src="row.images?.[0]?.url || '/products/building-material.jpg'" alt="تصویر محصول" width="50" height="50" class="size-full object-cover" />
           </div>
         </template>
 
@@ -85,28 +85,34 @@
 
         <template #actions-data="{ row }">
           <div class="flex gap-1">
-            <UButton color="gray" variant="ghost" icon="i-lucide-edit" size="xs" @click="editProduct(row)" />
-            <UButton color="red" variant="ghost" icon="i-lucide-trash-2" size="xs" @click="deleteProduct(row.id)" />
+            <UButton color="gray" variant="ghost" icon="i-lucide-edit" size="xs" :disabled="busyId !== null" @click="editProduct(row)" />
+            <UButton color="red" variant="ghost" icon="i-lucide-trash-2" size="xs" :loading="busyId === (row.id || row._id)" :disabled="busyId !== null" @click="removeProduct(row.id || row._id)" />
           </div>
         </template>
       </UTable>
 
       <!-- Pagination -->
       <div class="p-4 border-t border-gray-100 flex justify-center bg-gray-50/50">
-        <UPagination v-model="page" :total="totalCount" :page-count="10" />
+        <UPagination v-model="page" :total="props.totalCount" :page-count="10" />
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import type { Product } from '~/types/product'
+import { deleteProduct, updateProduct } from '~/services/productService'
 
-const props = defineProps({
-  products: { type: Array, default: () => [] },
-  loading: Boolean,
-  totalCount: { type: Number, default: 0 }
-})
+const props = defineProps<{ products?: Product[]; loading?: boolean; totalCount?: number }>();
+const localProducts = ref<Product[]>(props.products ? [...props.products] : []);
+watch(() => props.products, value => { localProducts.value = value ? [...value] : []; }, { deep: true });
+/*
+ * The admin page already requires the `all/m` permission. These calls still
+ * rely on the backend's authorization checks and never trust the row alone.
+ */
+const busyId = ref<string | null>(null);
+const toast = useToast();
 
 const searchQuery = ref('')
 const page = ref(1)
@@ -135,16 +141,41 @@ const stockSemantic = (quantity = 0) => {
 }
 
 const filteredProducts = computed(() => {
-  if (!searchQuery.value) return props.products
+  if (!searchQuery.value) return localProducts.value
   const q = searchQuery.value.toLowerCase()
-  return props.products.filter(p => 
+  return localProducts.value.filter(p =>
     p.name.toLowerCase().includes(q) || 
     p.sku.toLowerCase().includes(q) ||
     p.description?.toLowerCase().includes(q)
   )
 })
 
-const updateStatus = (row) => console.log('Updating status', row)
-const editProduct = (row) => console.log('Editing', row)
-const deleteProduct = (id) => console.log('Deleting', id)
+async function updateStatus(row: Product) {
+  const id = row.id || row._id;
+  if (!id || busyId.value) return;
+  const nextStatus = row.status;
+  busyId.value = id;
+  try {
+    await updateProduct(id, { status: nextStatus });
+    toast.add({ title: 'وضعیت محصول به‌روزرسانی شد', color: 'success' });
+  } catch {
+    toast.add({ title: 'به‌روزرسانی وضعیت انجام نشد', color: 'red' });
+  } finally { busyId.value = null; }
+}
+
+function editProduct() {
+  toast.add({ title: 'ویرایش محصول از این پنل در دسترس نیست', description: 'از بخش مدیریت محصولات استفاده کنید.', color: 'gray' });
+}
+
+async function removeProduct(id?: string) {
+  if (!id || busyId.value || !window.confirm('آیا از حذف این محصول مطمئن هستید؟')) return;
+  busyId.value = id;
+  try {
+    await deleteProduct(id);
+    localProducts.value = localProducts.value.filter(product => (product.id || product._id) !== id);
+    toast.add({ title: 'محصول حذف شد', color: 'success' });
+  } catch {
+    toast.add({ title: 'حذف محصول انجام نشد', color: 'red' });
+  } finally { busyId.value = null; }
+}
 </script>

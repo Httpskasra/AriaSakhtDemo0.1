@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useAuthStore } from "~/stores/auth";
 import { useRequestHeaders, useRuntimeConfig } from "#app";
+import { useApiClient } from '~/services/apiClient';
 
 export interface RefreshTokenRequestDto {
   // Kept aligned with the backend contract. The secure browser flow does not
@@ -82,6 +83,14 @@ export const refreshAccessToken = (): Promise<string> => {
   refreshLocks.set(authStore, refreshPromise);
   return refreshPromise;
 };
+
+export interface RequestOtpResponse { message?: string; phoneNumber?: string; }
+
+export async function requestSignInOtp(phoneNumber: string): Promise<RequestOtpResponse> {
+  const api = useApiClient();
+  const { data } = await api.post<RequestOtpResponse>('/auth/signin', { phoneNumber });
+  return data;
+}
 
 export const login = async (email: string, password: string) => {
   const { $axios } = useNuxtApp();

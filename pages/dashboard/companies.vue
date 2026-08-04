@@ -254,7 +254,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Company } from "~/types/company";
-import { listCompanies } from "~/services/companyService";
+import { listCompanies, updateCompany, createCompany, deleteCompany as removeCompany, changeCompanyStatus } from "~/services/companyService";
 useHead({
   title: "داشبورد | شرکت‌ها",
 });
@@ -327,9 +327,7 @@ async function onChangeStatus(e: Event, company: Company) {
 
   try {
     statusLoading.value[company._id] = true;
-    await $axios.patch(`/companies/${company._id}/status`, {
-      status: newStatus,
-    });
+    await changeCompanyStatus(company._id, newStatus);
     // update local object to reflect new status (optimistic)
     company.status = newStatus;
   } catch (err) {
@@ -435,9 +433,9 @@ const saveCompany = async () => {
         image: form.value.image,
       };
       //console.log("PATCH id:", selectedId.value); // برای دیباگ
-      await $axios.patch(`/companies/${selectedId.value}`, cleanData);
+      await updateCompany(selectedId.value, cleanData);
     } else {
-      await $axios.post("/companies", form.value);
+      await createCompany(form.value);
     }
     await fetchCompanies();
     closeModal();
@@ -450,7 +448,7 @@ const deleteCompany = async (company: Company) => {
   if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!confirm("آیا از حذف این شرکت مطمئن هستید؟")) return;
   try {
-    await $axios.delete(`/companies/${company._id}`); // changed from company.id
+    await removeCompany(company._id);
     await fetchCompanies();
   } catch (err) {
     console.error("خطا در حذف شرکت:", err);

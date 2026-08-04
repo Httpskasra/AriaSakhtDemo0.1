@@ -25,6 +25,11 @@ function close() {
   emit("update:modelValue", false);
 }
 
+function updateBodyLock(open: boolean) {
+  if (typeof document === "undefined" || isDesktop.value) return;
+  document.body.style.overflow = open ? "hidden" : "";
+}
+
 function handleKeydown(event: KeyboardEvent) {
   if (!props.modelValue) return;
   if (event.key === "Escape") {
@@ -60,17 +65,23 @@ watch(isOpen, async (open) => {
   }
 });
 
-onBeforeUnmount(() => document.removeEventListener("keydown", handleKeydown));
+watch(() => props.modelValue, updateBodyLock);
+
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", handleKeydown);
+  updateBodyLock(false);
+});
 
 onMounted(() => {
   isDesktop.value = !window.matchMedia("(max-width: 1024px)").matches;
+  updateBodyLock(props.modelValue);
 });
 </script>
 
 <template>
   <div class="app-drawer" :class="{ 'app-drawer--open': isOpen }" :style="{ '--drawer-width': width }">
     <button v-if="isOpen && !isDesktop" class="app-drawer__backdrop" type="button" :aria-label="`${label} را ببندید`" @click="close" />
-    <aside ref="panel" class="app-drawer__panel" :aria-label="label" :aria-hidden="!isOpen" :inert="!isOpen">
+    <aside ref="panel" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
       <slot />
     </aside>
   </div>

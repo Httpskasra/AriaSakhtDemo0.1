@@ -4,13 +4,15 @@
       ref="overlayRef"
       class="modal-overlay"
       role="presentation"
-      @click.self="emit('close')"
+      @click.self="handleBackdropClick"
       @keydown="handleKeydown"
     >
       <div
         ref="modalRef"
         class="modal-content"
         role="dialog"
+        :aria-labelledby="titleId"
+        :aria-busy="busy"
         aria-modal="true"
         tabindex="-1"
       >
@@ -19,6 +21,7 @@
           icon="i-lucide-x"
           tone="ghost"
           aria-label="بستن پنجره"
+          :disabled="busy"
           class="close-btn"
           @click="emit('close')"
         />
@@ -35,6 +38,18 @@ import { nextTick, onMounted, onUnmounted, ref } from "vue";
 const emit = defineEmits<{
   (event: "close"): void;
 }>();
+
+const props = withDefaults(defineProps<{
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
+  titleId?: string;
+  busy?: boolean;
+}>(), {
+  closeOnBackdrop: true,
+  closeOnEscape: true,
+  titleId: undefined,
+  busy: false,
+});
 
 const overlayRef = ref<HTMLElement | null>(null);
 const modalRef = ref<HTMLElement | null>(null);
@@ -61,6 +76,7 @@ const getFocusableElements = () =>
 
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === "Escape") {
+    if (!props.closeOnEscape || props.busy) return;
     event.preventDefault();
     emit("close");
     return;
@@ -85,6 +101,10 @@ const handleKeydown = (event: KeyboardEvent) => {
     event.preventDefault();
     first.focus();
   }
+};
+
+const handleBackdropClick = () => {
+  if (props.closeOnBackdrop && !props.busy) emit("close");
 };
 
 const lockBodyScroll = () => {

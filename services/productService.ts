@@ -1,10 +1,35 @@
 // services/productService.ts
 import type { Product } from "~/types/product";
+import { useApiClient } from '~/services/apiClient';
 
 const useApi = () => {
   const { $axios } = useNuxtApp();
-  return $axios;
+  return useApiClient();
 };
+
+export interface UploadedImageItem { filename: string; contentType: string; publicUrl: string; presignedUrl?: string | null; }
+
+export async function uploadProductImages(files: File[]): Promise<UploadedImageItem[]> {
+  const body = new FormData();
+  body.append('type', 'product');
+  files.forEach(file => body.append('files', file));
+  const { data } = await useApi().post<{ items: UploadedImageItem[] }>('/images/upload', body);
+  return data.items || [];
+}
+
+export async function createProduct(payload: Partial<Product>): Promise<Product> {
+  const { data } = await useApi().post<Product>('/products', payload);
+  return data;
+}
+
+export async function updateProduct(id: string, payload: Partial<Product>): Promise<Product> {
+  const { data } = await useApi().patch<Product>(`/products/${encodeURIComponent(id)}`, payload);
+  return data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await useApi().delete(`/products/${encodeURIComponent(id)}`);
+}
 
 // اگر بک‌اندت ساختار دیگه‌ای برمی‌گردونه، اینو تنظیم کن
 export interface PaginatedResponse<T> {
@@ -113,6 +138,7 @@ export const searchByPriceAndCompany = async (params: {
 
 export interface AdvancedSearchParams {
   query?: string; // متن جستجو (کوئری جستجو)
+  minPrice?: number; // حداقل قیمت
   maxPrice?: number; // حداکثر قیمت
   companyName?: string; // نام شرکت
   categoryIds?: string[]; // آرایه categoryIds
@@ -134,7 +160,7 @@ export const advancedSearchProducts = async (
   const $axios = useApi();
 
   // Filter out undefined values
-  const cleanParams: Record<string, any> = {};
+  const cleanParams: Record<string, string | number | string[]> = {};
 
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
@@ -146,7 +172,7 @@ export const advancedSearchProducts = async (
     const response = await $axios.get<Product[] | PaginatedResponse<Product>>("/products/advanced-search", {
       params: cleanParams,
       paramsSerializer: {
-        serialize: (params: Record<string, any>) => {
+      serialize: (params: Record<string, string | number | string[]>) => {
           const queryParts: string[] = [];
 
           Object.entries(params).forEach(([key, value]) => {

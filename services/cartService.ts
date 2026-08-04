@@ -1,10 +1,8 @@
 // services/cartService.ts
 import type { Cart, CartItemDto } from "~/types/product";
+import { useApiClient } from '~/services/apiClient';
 
-const useApi = () => {
-  const { $axios } = useNuxtApp();
-  return $axios;
-};
+const useApi = useApiClient;
 
 /**
  * دریافت سبد خریدی فعال کاربر
@@ -33,9 +31,7 @@ export const getCartSummary = async () => {
 /**
  * ایجاد سبد خریدی جدید
  */
-export const createCart = async (
-  cartData: { status?: string; items?: any[] } = {}
-) => {
+export const createCart = async (cartData: { status?: Cart['status']; items?: CartItemDto[] } = {}) => {
   const $axios = useApi();
   return await $axios.post<Cart>("/carts", { items: [], ...cartData });
 };
@@ -43,7 +39,7 @@ export const createCart = async (
 /**
  * به‌روزرسانی سبد خریدی
  */
-export const updateCart = async (updates: any) => {
+export const updateCart = async (updates: Partial<Pick<Cart, 'status' | 'items'>>) => {
   const $axios = useApi();
   return await $axios.patch<Cart>("/carts", updates);
 };
@@ -75,7 +71,7 @@ export const clearCart = async () => {
 /**
  * تکمیل خریدار (checkout)
  */
-export const checkoutCart = async (checkoutData: any) => {
+export const checkoutCart = async (checkoutData: { shippingAddress?: string; paymentMethod?: string }) => {
   const $axios = useApi();
   return await $axios.post("/carts/checkout", checkoutData);
 };

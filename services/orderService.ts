@@ -2,6 +2,7 @@
 
 import { getPopulatedCart } from '~/services/cartService';
 import { useUser } from '~/composables/useUser';
+import { useApiClient } from '~/services/apiClient';
 import type {
   Order,
   OrderItemDto,
@@ -35,7 +36,7 @@ export interface CreateOrderOptions {
  * بک‌اند cart فعال را دوباره validate و سفارش‌ها را بر اساس شرکت گروه‌بندی می‌کند.
  */
 export async function createOrder(options: CreateOrderOptions = {}): Promise<Order[]> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { user, fetchUser } = useUser();
 
   if (!user.value?.userId) await fetchUser();
@@ -43,7 +44,7 @@ export async function createOrder(options: CreateOrderOptions = {}): Promise<Ord
   if (!userId) throw new Error('برای ایجاد سفارش باید وارد حساب کاربری شوید.');
 
   const { data: cart } = await getPopulatedCart();
-  const items = (cart.items || []).map((item: any): OrderItemDto => {
+  const items = (cart.items || []).map((item): OrderItemDto => {
     const productId = typeof item.productId === 'string'
       ? item.productId
       : item.productId?._id || item.productId?.id;
@@ -91,7 +92,7 @@ export async function listOrders(params?: {
   page?: number;
   limit?: number;
 }): Promise<Order[] | OrdersListResponse> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.get("/orders", { params });
   return data;
 }
@@ -101,7 +102,7 @@ export async function listOrders(params?: {
  * Regular users can only access their own orders.
  */
 export async function getOrder(id: string): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.get(`/orders/${id}`);
   return data;
 }
@@ -110,7 +111,7 @@ export async function getOrder(id: string): Promise<Order> {
  * علامت‌گذاری سفارش به‌عنوان پرداخت‌شده
  */
 export async function markOrderAsPaid(id: string): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.patch(`/orders/${id}/mark-paid`);
   return data;
 }
@@ -122,7 +123,7 @@ export async function markOrderAsShipped(
   id: string,
   body?: { transportId?: string }
 ): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.patch(`/orders/${id}/mark-shipped`, body || {});
   return data;
 }
@@ -131,7 +132,7 @@ export async function markOrderAsShipped(
  * علامت‌گذاری سفارش به‌عنوان تحویل‌داده‌شده
  */
 export async function markOrderAsDelivered(id: string): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.patch(`/orders/${id}/mark-delivered`);
   return data;
 }
@@ -140,7 +141,7 @@ export async function markOrderAsDelivered(id: string): Promise<Order> {
  * بازپرداخت سفارش
  */
 export async function refundOrder(id: string): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.patch(`/orders/${id}/refund`);
   return data;
 }
@@ -152,7 +153,7 @@ export async function confirmDelivery(
   id: string,
   body?: { confirmation?: boolean }
 ): Promise<Order> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.patch(
     `/orders/${id}/confirm-delivery`,
     body || {}

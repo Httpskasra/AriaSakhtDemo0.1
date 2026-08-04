@@ -187,8 +187,40 @@
   --shadow-interactive-hover: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
   --shadow-premium: var(--shadow-raised);
   --shadow-industrial: var(--shadow-interactive-hover);
+  --panel-header-height: 4rem;
+  --panel-sidebar-width: 18rem;
+  --control-height-sm: 2.25rem;
+  --control-height-md: 2.75rem;
+  --focus-ring: 0 0 0 3px rgb(22 115 255 / 28%);
   /* Derived from --color-brand-blue for hover states that need a darker brand blue. */
   --color-brand-blue-hover: color-mix(in oklab, var(--color-brand-blue) 82%, black);
+}
+
+/* Keep Nuxt UI button colors aligned with the site's light-only design tokens. */
+:root {
+  --ui-primary: var(--color-brand-blue);
+  --ui-color-primary-50: #eff6ff;
+  --ui-color-primary-100: #dbeafe;
+  --ui-color-primary-200: #bfdbfe;
+  --ui-color-primary-300: #93c5fd;
+  --ui-color-primary-400: #60a5fa;
+  --ui-color-primary-500: var(--color-brand-blue);
+  --ui-color-primary-600: #0f5dcc;
+  --ui-color-primary-700: #0b4aa3;
+  --ui-color-primary-800: #123d7a;
+  --ui-color-primary-900: #172554;
+  --ui-color-primary-950: #0f172a;
+  --ui-color-neutral-50: #f8fafc;
+  --ui-color-neutral-100: #f1f5f9;
+  --ui-color-neutral-200: #e2e8f0;
+  --ui-color-neutral-300: #cbd5e1;
+  --ui-color-neutral-400: #94a3b8;
+  --ui-color-neutral-500: #64748b;
+  --ui-color-neutral-600: #475569;
+  --ui-color-neutral-700: #334155;
+  --ui-color-neutral-800: #1e293b;
+  --ui-color-neutral-900: #0f172a;
+  --ui-color-neutral-950: #020617;
 }
 
 @source "../../components";
@@ -209,22 +241,53 @@
     font-family: var(--font-num);
     -webkit-font-smoothing: antialiased;
   }
+
+  :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-brand-blue);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+
+  :where(input, textarea, select)::placeholder {
+    color: var(--color-text-body);
+    opacity: 1;
+  }
+
+  :where(button, a) { min-height: 2.5rem; }
+  :where(button:disabled, [aria-disabled="true"]) { cursor: not-allowed; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
+  /* Neutral solid buttons use a light background in this theme, so their
+     labels and icons must use a dark foreground instead of white. */
+  :where(.bg-inverted.text-inverted) {
+    color: var(--color-text-heading) !important;
+  }
+
+  :where(.bg-inverted.text-inverted svg) {
+    color: currentColor !important;
+  }
+
   .section-container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    max-width: 80rem;
+    padding-inline: 1rem;
+    max-width: 90rem;
   }
 
   @media (min-width: 640px) {
     .section-container {
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
+      padding-inline: 1.5rem;
     }
   }
 
@@ -244,6 +307,24 @@
   .surface-dialog { border-radius: var(--radius-dialog); box-shadow: var(--shadow-overlay); }
   .surface-compact-list { border-radius: var(--radius-compact-list-item); }
   .surface-field { border-radius: var(--radius-field); }
+
+  .panel-surface {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-raised);
+  }
+
+  .panel-content-width {
+    width: min(100%, 90rem);
+    margin-inline: auto;
+  }
+
+  .responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
   .premium-card:hover {
     box-shadow: var(--shadow-industrial);

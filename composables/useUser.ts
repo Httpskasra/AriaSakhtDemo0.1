@@ -1,17 +1,18 @@
 import type { User } from "~/types/permissions";
-import { useNuxtApp, useState } from "#app";
+import { useState } from "#app";
 import { computed } from "vue";
+import { useApiClient } from '~/services/apiClient';
 
 export const useUser = () => {
   const user = useState<User | null>("user", () => null);
   const isUserLoading = useState<boolean>("user-loading", () => true);
 
-  const normalizeUser = (data: any): User => {
+  const normalizeUser = (data: User & { id?: string; _id?: string }): User => {
     const rawId = data?.userId || data?.id || data?._id || "";
     return {
       ...data,
       userId: rawId ? String(rawId) : "",
-    } as User;
+    };
   };
 
   const setUser = (data: User) => {
@@ -32,11 +33,9 @@ export const useUser = () => {
 
     isUserLoading.value = true;
     try {
-      const { $axios } = useNuxtApp();
-      const response = await $axios.get<User>("/auth/me");
+      const response = await useApiClient().get<User>("/auth/me");
       setUser(normalizeUser(response.data));
-    } catch (err) {
-      console.error("Failed to fetch user:", err);
+    } catch (_err) {
       clearUser();
     } finally {
       isUserLoading.value = false;

@@ -20,12 +20,12 @@
         </div>
       </NuxtLink>
 
-      <NuxtLink to="/products" class="group relative flex flex-col justify-center overflow-hidden rounded-card bg-brand-blue p-8 text-white shadow-raised">
+      <NuxtLink to="/contact" class="group relative flex flex-col justify-center overflow-hidden rounded-card bg-brand-blue p-8 text-white shadow-raised">
         <UIcon name="i-lucide-sparkles" class="absolute -top-6 -left-6 size-32 rotate-12 text-white/10" />
-        <h3 class="mb-4 text-2xl font-black leading-snug">درخواست تامین از تجاریس</h3>
-        <p class="mb-8 text-sm leading-relaxed text-slate-100">برای شروع فرایند تامین، کالاهای موجود را بررسی کنید یا از مسیر تماس با ما درخواست خود را ثبت کنید.</p>
+        <h3 class="mb-4 text-2xl font-black leading-snug">درخواست تأمین از تجاریس</h3>
+        <p class="mb-8 text-sm leading-relaxed text-slate-100">اگر کالای موردنیازتان را پیدا نکردید، درخواست تأمین خود را برای تیم تجاریس ارسال کنید.</p>
         <span class="inline-flex w-fit items-center rounded-brand bg-white px-6 py-3 font-bold text-brand-blue transition-colors hover:bg-slate-50">
-          ثبت استعلام جدید
+          ثبت درخواست تأمین
         </span>
       </NuxtLink>
     </div>

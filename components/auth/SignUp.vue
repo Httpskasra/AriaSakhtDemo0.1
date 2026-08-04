@@ -85,7 +85,7 @@
 import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
-import { toInternationalPhone } from "@/utils/PhoneNumber";
+import { isValidPhone, toEnglishDigits, toInternationalPhone } from "@/utils/PhoneNumber";
 
 const { phoneNumber: globalPhoneNumber } = useAuthData();
 const $axios = useNuxtApp().$axios;
@@ -105,14 +105,16 @@ const { setStep } = useAuthStep();
 
 // اعتبارسنجی ساده کد ملی (می‌تونی دقیق‌ترش رو پیاده‌کنی)
 function validateMeli() {
-  const valid = /^[0-9]{10}$/.test(meliCode.value);
+  meliCode.value = toEnglishDigits(meliCode.value).replace(/\D/g, '');
+  const valid = /^\d{10}$/.test(meliCode.value);
   meliError.value = !valid;
   return valid;
 }
 
 // اعتبارسنجی شماره تلفن
 function validatePhone() {
-  const valid = /^[9]{1}[0-9]{9}$/.test(phoneNumber.value);
+  phoneNumber.value = toEnglishDigits(phoneNumber.value);
+  const valid = isValidPhone(phoneNumber.value);
   phoneError.value = !valid;
   return valid;
 }

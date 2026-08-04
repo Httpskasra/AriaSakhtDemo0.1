@@ -23,6 +23,7 @@ const finalTotal = computed(() => {
 });
 
 const handleCheckout = async () => {
+  if (isProcessing.value || loading.value) return;
   isProcessing.value = true;
   try {
     const result = await checkout();

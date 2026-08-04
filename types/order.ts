@@ -10,11 +10,12 @@ export const OrderStatus = {
 export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
 export interface OrderItem {
-  productId: string;
+  productId: string | { id?: string; _id?: string; name?: string; images?: Array<{ url?: string }> };
   companyId: string;
   quantity: number;
   priceAtAdd: number;
   price?: number;
+  product?: { id?: string; _id?: string; name?: string; images?: Array<{ url?: string }> };
   variant?: { name?: string; value?: string };
 }
 

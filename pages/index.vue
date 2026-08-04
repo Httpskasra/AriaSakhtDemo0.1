@@ -1,5 +1,5 @@
 <template>
-  <div class="landing-page space-y-16 pb-20">
+  <div class="landing-page pb-16 sm:pb-20">
     <HeroSection />
     
     <div class="section-container">

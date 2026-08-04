@@ -1,4 +1,4 @@
-import { useNuxtApp } from "#app";
+import { useApiClient } from '~/services/apiClient';
 
 export interface Wallet {
   _id?: string;
@@ -37,13 +37,13 @@ export interface DebitWalletDto {
  */
 
 export async function getWallet(): Promise<Wallet | null> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.get("/wallets");
   return data;
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.get("/transaction");
   if (!Array.isArray(data)) {
     throw new Error("ساختار پاسخ تراکنش‌ها نامعتبر است.");
@@ -54,7 +54,7 @@ export async function getTransactions(): Promise<Transaction[]> {
 export async function creditWallet(
   payload: CreditWalletDto
 ): Promise<Transaction> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.post("/wallets/credit", {
     amount: payload.amount,
   });
@@ -64,7 +64,7 @@ export async function creditWallet(
 export async function debitWallet(
   payload: DebitWalletDto
 ): Promise<Transaction> {
-  const { $axios } = useNuxtApp();
+  const $axios = useApiClient();
   const { data } = await $axios.post("/wallets/debit", {
     amount: payload.amount,
   });

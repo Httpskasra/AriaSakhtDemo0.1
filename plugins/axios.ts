@@ -15,6 +15,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     ? useRequestHeaders(["cookie"]).cookie
     : undefined;
   const cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
+  let redirectPromise: Promise<unknown> | null = null;
 
   const api: AxiosInstance = axios.create({
     baseURL: config.public.apiBase as string,
@@ -52,26 +53,32 @@ export default defineNuxtPlugin((nuxtApp) => {
     (response) => response,
     async (error: AxiosError) => {
       const originalRequest = error.config as any;
+      const requestUrl = String(originalRequest?.url || '');
+      const isAuthBootstrapRequest = /\/auth\/(refresh|csrf|signin|signup|verify-otp)$/.test(requestUrl);
       
       // If 401 Unauthorized and not already retrying
       if (
         error.response?.status === 401 &&
         originalRequest &&
-        !originalRequest._retry
+        !originalRequest._retry &&
+        !isAuthBootstrapRequest
       ) {
         originalRequest._retry = true;
         
         try {
           const accessToken = await refreshAccessToken();
 
-          // Retry original request with new token
+          // The request interceptor attaches the refreshed token on retry.
+          originalRequest.headers = originalRequest.headers || {};
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          console.error("Refresh token session failed:", refreshError);
           authStore.clearTokens();
-          // F1: Robust redirect across SSR/Client
-          return navigateTo("/", { external: true });
+          if (process.client && window.location.pathname !== "/") {
+            redirectPromise ??= navigateTo("/", { replace: true });
+            await redirectPromise;
+          }
+          return Promise.reject(refreshError);
         }
       }
       

@@ -1,12 +1,12 @@
 <template>
   <section class="py-20">
     <div class="section-container">
-      <div class="premium-card bg-blue-600 p-8 md:p-16 text-white flex flex-col lg:flex-row items-center justify-between gap-12 overflow-hidden relative border-0">
+      <div class="premium-card bg-blue-600 p-8 md:p-16 text-white flex flex-col lg:flex-row items-center lg:items-start justify-between gap-10 overflow-hidden relative border-0">
         <UIcon name="i-lucide-building-2" class="absolute -bottom-10 -right-10 size-64 text-white/5 -rotate-12" />
         
         <div class="relative z-10 text-center lg:text-right max-w-2xl">
-          <h2 class="text-3xl md:text-5xl font-black mb-6 leading-tight">شما هم به بازار تخصصی ساختمان تجاریس بپیوندید</h2>
-          <p class="text-lg text-blue-100 leading-relaxed mb-8 opacity-90">فرقی نمی‌کند تولیدکننده هستید یا پیمانکار؛ تجاریس ابزارهای مورد نیاز برای توسعه کسب‌وکار شما را فراهم کرده است.</p>
+          <h2 class="text-3xl md:text-5xl font-black mb-5 leading-tight">به بازار تخصصی ساختمان تجاریس بپیوندید</h2>
+          <p class="text-base text-blue-100 leading-relaxed mb-8 opacity-90">فرقی نمی‌کند تولیدکننده هستید یا پیمانکار؛ تجاریس ابزارهای موردنیاز برای توسعه کسب‌وکار شما را فراهم کرده است.</p>
           <div class="flex flex-wrap justify-center lg:justify-start gap-4">
             <UButton to="/dashboard/company/register" size="xl" color="neutral" variant="solid">ثبت‌نام فروشندگان</UButton>
             <UButton to="/contact" size="xl" color="neutral" variant="outline">مشاوره سازمانی</UButton>

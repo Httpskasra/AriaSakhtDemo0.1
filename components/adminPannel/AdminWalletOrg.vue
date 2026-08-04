@@ -24,7 +24,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -36,7 +36,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -48,7 +48,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -60,7 +60,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -72,7 +72,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -84,7 +84,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
       <div class="transaction">
@@ -96,7 +96,7 @@
         <div class="id">88461314984</div>
         <div class="icon">
           <span>واریز</span>
-          <img src="/public/icons/up-arrow.png" alt="" />
+        <img src="/icons/up-arrow.png" alt="" />
         </div>
       </div>
     </div>

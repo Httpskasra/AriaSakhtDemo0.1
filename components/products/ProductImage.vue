@@ -58,7 +58,7 @@ const props = defineProps({
 
 const hasError = ref(false)
 const isLightboxOpen = ref(false)
-const placeholder = 'https://picsum.photos/seed/prod/600/600'
+const placeholder = '/products/building-material.jpg'
 
 const currentUrl = computed(() => {
   if (!props.src || hasError.value) return placeholder

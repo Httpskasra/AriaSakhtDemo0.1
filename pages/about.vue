@@ -1,117 +1,234 @@
+<script setup lang="ts">
+useHead({ title: 'درباره تجاریس' });
+
+const values = [
+  {
+    icon: 'i-lucide-badge-check',
+    title: 'تأمین‌کنندگان معتبر',
+    description: 'فروشندگان و تولیدکنندگان را با اطلاعات شفاف‌تر و قابل بررسی به خریداران معرفی می‌کنیم.',
+  },
+  {
+    icon: 'i-lucide-search-check',
+    title: 'خرید آگاهانه',
+    description: 'جست‌وجو، مقایسه و دریافت اطلاعات محصول را برای خریدهای صنعتی ساده‌تر می‌کنیم.',
+  },
+  {
+    icon: 'i-lucide-handshake',
+    title: 'ارتباط مستقیم',
+    description: 'مسیر ارتباط کسب‌وکارها با تأمین‌کنندگان را کوتاه و حرفه‌ای طراحی کرده‌ایم.',
+  },
+];
+
+const team = [
+  { name: 'علی رضایی', role: 'مدیرعامل' },
+  { name: 'سارا محمدی', role: 'مدیر فروش' },
+  { name: 'مهدی کریمی', role: 'پشتیبانی' },
+];
+</script>
+
 <template>
-    <div
-      class="bg-gradient-to-br from-[#f8fafc] via-[#f8fafc] to-[#e0e7ef] pt-12 pb-8 text-center rounded-b-3xl shadow-overlay">
-      <div class="flex flex-col items-center">
-        <img
-          src="/logo/logo.png"
-          alt="تجاریس"
-          class="w-[90px] h-[90px] rounded-full mb-4 shadow-raised bg-white object-contain" />
-        <h1 class="text-3xl font-bold text-heading mb-2">
-          درباره <span class="text-primary">تجاریس</span>
-        </h1>
-        <p class="text-muted text-base">
-          خانه‌ای برای بهترین خدمات و محصولات ساختمانی
-        </p>
-      </div>
-    </div>
-    <div class="max-w-3xl mx-auto mt-8 px-4 flex flex-col gap-8">
-      <section
-        class="flex items-start premium-card p-8 gap-6 transition-shadow">
-        <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-primary text-white rounded-full shadow-raised mt-1 transition-all">
-          <UIcon name="i-lucide-flag" class="size-icon-empty-state" />
-        </div>
+  <div class="public-page">
+    <PublicPageHeader
+      icon="i-lucide-building-2"
+      title="درباره تجاریس"
+      description="تجاریس بازار آنلاین تخصصی صنعت و ساختمان است؛ جایی برای پیدا کردن محصول، مقایسه تأمین‌کنندگان و شروع همکاری مطمئن."
+    />
+
+    <main class="section-container public-page__content">
+      <section class="about-intro panel-surface">
+        <div class="about-intro__icon" aria-hidden="true"><UIcon name="i-lucide-target" class="size-icon-action" /></div>
         <div>
-          <h2 class="text-primary mb-2 text-lg font-semibold">ماموریت ما</h2>
-          <p>
-            ارائه محصولات با کیفیت و خدمات مشاوره‌ای به مشتریان عزیز در سراسر
-            کشور، با تکیه بر تخصص و نوآوری.
+          <p class="section-kicker">چرا تجاریس؟</p>
+          <h2 class="section-title">مسیر خرید صنعتی را شفاف‌تر می‌کنیم</h2>
+          <p class="section-copy">
+            هدف ما ایجاد یک بازار تخصصی و قابل اعتماد برای محصولات صنعتی و ساختمانی است؛ بستری که در آن خریداران سریع‌تر به گزینه‌های مناسب برسند و فروشندگان بتوانند محصولات خود را به بازار هدف معرفی کنند.
           </p>
         </div>
       </section>
-      <section
-        class="flex items-start bg-gradient-to-l from-[#f5fafd] via-[#f5fafd] to-[#e3f2fd] rounded-card shadow-raised p-8 gap-6 transition-shadow hover:shadow-interactive-hover">
-        <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-primary text-white rounded-full shadow-raised mt-1 transition-all">
-          <UIcon name="i-lucide-users" class="size-icon-empty-state" />
+
+      <section aria-labelledby="values-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">اصول ما</p>
+            <h2 id="values-title" class="section-title">تجربه‌ای برای همکاری بهتر</h2>
+          </div>
         </div>
-        <div>
-          <h2 class="text-primary mb-2 text-lg font-semibold">تیم ما</h2>
-          <ul class="pr-4 list-none m-0">
-            <li class="mb-1 text-base">
-              <b>علی رضایی</b>
-              <span class="text-muted text-sm mr-2">مدیرعامل</span>
-            </li>
-            <li class="mb-1 text-base">
-              <b>سارا محمدی</b>
-              <span class="text-muted text-sm mr-2">مدیر فروش</span>
-            </li>
-            <li class="mb-1 text-base">
-              <b>مهدی کریمی</b>
-              <span class="text-muted text-sm mr-2">پشتیبانی</span>
-            </li>
-          </ul>
+        <div class="values-grid">
+          <article v-for="value in values" :key="value.title" class="value-card panel-surface">
+            <div class="value-card__icon" aria-hidden="true"><UIcon :name="value.icon" class="size-icon-action" /></div>
+            <h3>{{ value.title }}</h3>
+            <p>{{ value.description }}</p>
+          </article>
         </div>
       </section>
-      <section
-        class="flex items-start premium-card p-8 gap-6 transition-shadow">
-        <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-primary text-white rounded-full shadow-raised mt-1 transition-all">
-          <UIcon name="i-lucide-mail" class="size-icon-empty-state" />
-        </div>
+
+      <section class="team-section panel-surface" aria-labelledby="team-title">
         <div>
-          <h2 class="text-primary mb-2 text-lg font-semibold">
-            ارتباط با ما
-          </h2>
-          <p>
-            برای ارتباط با ما می‌توانید از طریق صفحه
-            <NuxtLink to="/contact" class="text-primary underline font-bold"
-              >تماس با ما</NuxtLink
-            >
-            اقدام کنید.
-          </p>
+          <p class="section-kicker">تیم تجاریس</p>
+          <h2 id="team-title" class="section-title">همراه کسب‌وکار شما</h2>
+          <p class="section-copy">تیم ما برای ساختن تجربه‌ای ساده، پاسخ‌گو و حرفه‌ای در کنار خریداران و فروشندگان فعالیت می‌کند.</p>
         </div>
-      </section>
-      <!-- بخش جدید اعتماد کسب‌وکارها -->
-      <section
-        class="flex items-center bg-gradient-to-l from-[#f8fafc] via-[#f8fafc] to-[#e0f7fa] rounded-card shadow-raised p-8 gap-6 transition-shadow hover:shadow-interactive-hover flex-wrap">
-        <div
-          class="flex items-center justify-center min-w-[56px] min-h-[56px] bg-primary text-white rounded-full shadow-raised transition-all">
-          <UIcon name="i-lucide-badge-check" class="size-icon-empty-state" />
-        </div>
-        <div class="flex-1 w-full">
-          <h2 class="text-primary mb-2 text-lg font-semibold">
-            کسب‌وکارهایی که به ما اعتماد کردند
-          </h2>
-          <div
-            class="flex flex-wrap gap-6 mt-4 items-center justify-start sm:justify-center">
-            <img
-              src="/companies/images.png"
-              alt="لوگو ۱"
-              class="w-20 h-12 object-contain bg-white rounded-field shadow-raised p-2 transition-transform hover:scale-105 hover:-rotate-2" />
-            <img
-              src="/companies/images.png"
-              alt="لوگو ۲"
-              class="w-20 h-12 object-contain bg-white rounded-field shadow-raised p-2 transition-transform hover:scale-105 hover:-rotate-2" />
-            <img
-              src="/companies/images.png"
-              alt="لوگو ۳"
-              class="w-20 h-12 object-contain bg-white rounded-field shadow-raised p-2 transition-transform hover:scale-105 hover:-rotate-2" />
-            <img
-              src="/companies/images.png"
-              alt="لوگو ۴"
-              class="w-20 h-12 object-contain bg-white rounded-field shadow-raised p-2 transition-transform hover:scale-105 hover:-rotate-2" />
+        <div class="team-list">
+          <div v-for="member in team" :key="member.name" class="team-member">
+            <div class="team-member__avatar" aria-hidden="true"><UIcon name="i-lucide-user-round" class="size-icon-inline" /></div>
+            <div>
+              <strong>{{ member.name }}</strong>
+              <span>{{ member.role }}</span>
+            </div>
           </div>
         </div>
       </section>
-    </div>
+
+      <section class="about-cta">
+        <div>
+          <h2>برای شروع همکاری آماده‌اید؟</h2>
+          <p>محصولات را بررسی کنید یا اطلاعات کسب‌وکار خود را برای فروشندگی ثبت کنید.</p>
+        </div>
+        <div class="about-cta__actions">
+          <UButton to="/products" color="primary" size="lg" icon="i-lucide-store">مشاهده فروشگاه</UButton>
+          <UButton to="/dashboard/company/register" color="neutral" variant="outline" size="lg">فروشنده شوید</UButton>
+        </div>
+      </section>
+    </main>
+  </div>
 </template>
 
-<script setup lang="ts">
-useHead({
-  title: "درباره ما",
-});
-</script>
-
 <style scoped>
+.public-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding-block: 2.5rem 4rem;
+}
+
+.about-intro,
+.team-section {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.about-intro__icon,
+.value-card__icon,
+.team-member__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-blue);
+}
+
+.about-intro__icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: .875rem;
+  background: #dbeafe;
+}
+
+.section-kicker {
+  color: var(--color-brand-blue);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.section-title {
+  margin-top: .25rem;
+  color: var(--color-text-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.section-copy {
+  margin-top: .625rem;
+  color: var(--color-text-body);
+  line-height: 2;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.value-card {
+  padding: 1.25rem;
+}
+
+.value-card__icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 1rem;
+  border-radius: .75rem;
+  background: #eff6ff;
+}
+
+.value-card h3 {
+  color: var(--color-text-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.value-card p {
+  margin-top: .5rem;
+  color: var(--color-text-body);
+  font-size: .875rem;
+  line-height: 1.9;
+}
+
+.team-section {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
+  align-items: center;
+}
+
+.team-list {
+  display: grid;
+  gap: .75rem;
+}
+
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-field);
+  padding: .75rem;
+}
+
+.team-member__avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #eff6ff;
+}
+
+.team-member strong,
+.team-member span {
+  display: block;
+}
+
+.team-member strong { color: var(--color-text-heading); font-size: .875rem; }
+.team-member span { margin-top: .125rem; color: var(--color-text-muted); font-size: .75rem; }
+
+.about-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+  background: #eff6ff;
+}
+
+.about-cta h2 { color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
+.about-cta p { margin-top: .375rem; color: var(--color-text-body); font-size: .875rem; }
+.about-cta__actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+
+@media (max-width: 767px) {
+  .public-page__content { gap: 2rem; padding-block: 1.5rem 3rem; }
+  .values-grid,
+  .team-section { grid-template-columns: 1fr; }
+  .about-cta { align-items: flex-start; flex-direction: column; }
+}
 </style>

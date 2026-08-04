@@ -16,6 +16,9 @@ export const useProductSearch = () => {
   const maxPrice = computed(() =>
     route.query.maxPrice ? Number(route.query.maxPrice) : undefined
   );
+  const minPrice = computed(() =>
+    route.query.minPrice ? Number(route.query.minPrice) : undefined
+  );
   const companyName = computed(() => (route.query.companyName as string) || "");
   const categoryIds = computed(() => {
     const cat = route.query.categoryIds;
@@ -32,6 +35,7 @@ export const useProductSearch = () => {
 
     if (searchQuery.value) params.query = searchQuery.value;
     if (maxPrice.value) params.maxPrice = maxPrice.value;
+    if (minPrice.value) params.minPrice = minPrice.value;
     if (companyName.value) params.companyName = companyName.value;
     if (categoryIds.value.length > 0) params.categoryIds = categoryIds.value;
     if (sortOption.value) params.sort = sortOption.value;
@@ -53,7 +57,7 @@ export const useProductSearch = () => {
       }
     };
 
-    ['query', 'maxPrice', 'companyName', 'categoryIds', 'sort'].forEach(updateField);
+    ['query', 'minPrice', 'maxPrice', 'companyName', 'categoryIds', 'sort'].forEach(updateField);
 
     query.page = newParams.page ?? 1;
     query.limit = newParams.limit ?? limit.value;
@@ -66,11 +70,13 @@ export const useProductSearch = () => {
   };
 
   const onFiltersFromSidebar = (filters: {
+    minPrice?: number;
     maxPrice?: number;
     companyName?: string;
     categoryIds?: string[];
   }) => {
     updateQueryString({
+      minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
       companyName: filters.companyName,
       categoryIds: filters.categoryIds,
@@ -90,6 +96,7 @@ export const useProductSearch = () => {
     limit,
     sortOption,
     searchQuery,
+    minPrice,
     maxPrice,
     companyName,
     categoryIds,

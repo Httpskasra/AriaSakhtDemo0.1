@@ -11,6 +11,7 @@ defineProps({
 
 const emit = defineEmits(["update:isMenuOpen"]);
 const router = useRouter();
+const route = useRoute();
 const { getResources } = usePermissions();
 const { clearUser } = useUser();
 const { $axios } = useNuxtApp();
@@ -33,23 +34,29 @@ const resourceLabels: Record<string, string> = {
   [Resource.PRODUCT_STATUS]: "وضعیت محصول",
 };
 
-const navItems = computed<SidebarNavItem[]>(() => [
-  ...getResources()
-    .filter((resource) => resourceLabels[resource])
-    .map((resource) => ({
-      icon: resource,
-      label: resourceLabels[resource],
-      route: `/dashboard/${resource}`,
-      permission: resource,
+const navItems = computed<SidebarNavItem[]>(() => {
+  const items: SidebarNavItem[] = [
+    ...getResources()
+      .filter((resource) => resourceLabels[resource])
+      .map((resource) => ({
+        icon: resource,
+        label: resourceLabels[resource],
+        route: `/dashboard/${resource}`,
+        permission: resource,
+        iconBase: "/dashboardIcons",
+      })),
+    {
+      icon: "logout",
+      label: "خروج",
       iconBase: "/dashboardIcons",
-    })),
-  {
-    icon: "logout",
-    label: "خروج",
-    iconBase: "/dashboardIcons",
-    action: handleLogOut,
-  },
-]);
+      action: handleLogOut,
+    },
+  ];
+
+  return route.path === "/dashboard/company/register"
+    ? items.filter((item) => item.label !== "خروج")
+    : items;
+});
 
 async function handleLogOut() {
   try {
@@ -65,5 +72,5 @@ async function handleLogOut() {
 </script>
 
 <template>
-  <SharedSidebarPanel :items="navItems" @navigate="emit('update:isMenuOpen', false)" />
+  <SidebarPanel :items="navItems" @navigate="emit('update:isMenuOpen', false)" />
 </template>

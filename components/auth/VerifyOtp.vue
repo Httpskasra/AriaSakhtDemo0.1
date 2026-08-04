@@ -175,7 +175,7 @@ const verifyOtp = async () => {
       otp: otpCode.value,
     });
 
-    if (response.status === 201) {
+    if (response.status === 200 || response.status === 201) {
       const authStore = useAuthStore();
       authStore.setTokens(
         response.data.accessToken,

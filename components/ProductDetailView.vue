@@ -7,6 +7,8 @@ const route = useRoute();
 const id = route.params.id as string;
 const { data: product, loading, error } = useProductById(id);
 const { addProductToCart, loading: cartLoading } = useAddToCart();
+const selectedImageIndex = ref(0);
+const localImageFallback = '/products/building-material.jpg';
 
 // C4: Dynamic SEO Meta Tags
 watch(product, (newVal) => {
@@ -16,7 +18,7 @@ watch(product, (newVal) => {
       ogTitle: newVal.name,
       description: newVal.description || `خرید ${newVal.name} با بهترین قیمت در تجاریس`,
       ogDescription: newVal.description,
-      ogImage: newVal.images?.[0]?.url || 'https://picsum.photos/seed/tejaris/600/400',
+      ogImage: newVal.images?.[0]?.url || localImageFallback,
       twitterCard: 'summary_large_image',
     });
   }
@@ -32,9 +34,13 @@ const handleAddToCart = async () => {
   });
 };
 
-const mainImage = computed(() => product.value?.images?.[0]?.url || 'https://picsum.photos/seed/prod/400/400');
+const images = computed(() => product.value?.images?.length ? product.value.images : [{ url: localImageFallback }]);
+const mainImage = computed(() => images.value[selectedImageIndex.value]?.url || localImageFallback);
+const productRating = computed(() => Math.max(0, Math.min(5, Number(product.value?.avgRate || 0))));
 const isOutOfStock = computed(() => (product.value?.stock?.quantity ?? 0) <= 0);
 const isLightboxOpen = ref(false);
+watch(() => product.value?.images, () => { selectedImageIndex.value = 0; }, { immediate: true });
+const selectImage = (index: number) => { selectedImageIndex.value = index; };
 </script>
 
 <template>
@@ -53,7 +59,7 @@ const isLightboxOpen = ref(false);
         <!-- Product Images -->
         <div class="space-y-4">
           <button type="button" class="relative block w-full aspect-square rounded-card overflow-hidden bg-gray-100 cursor-zoom-in border border-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" @click="isLightboxOpen = true" aria-label="مشاهده تصویر بزرگ محصول">
-            <NuxtImg :src="mainImage" class="w-full h-full object-cover" />
+            <NuxtImg :src="mainImage" :alt="`${product.name} - تصویر ${selectedImageIndex + 1}`" class="w-full h-full object-cover" width="800" height="800" />
             <div v-if="isOutOfStock" class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
               ناموجود
             </div>
@@ -62,11 +68,10 @@ const isLightboxOpen = ref(false);
             </div>
           </button>
           
-          <!-- Image Thumbnails Placeholder -->
           <div class="grid grid-cols-4 gap-4">
-            <div v-for="img in product.images" :key="img.url" class="aspect-square rounded-field overflow-hidden bg-gray-100 border border-gray-200">
-              <NuxtImg :src="img.url" class="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity cursor-pointer" />
-            </div>
+            <button v-for="(img, index) in images" :key="`${img.url}-${index}`" type="button" class="aspect-square rounded-field overflow-hidden bg-gray-100 border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" :class="index === selectedImageIndex ? 'border-primary' : 'border-gray-200'" :aria-label="`انتخاب تصویر ${index + 1}`" :aria-pressed="index === selectedImageIndex" @click="selectImage(index)">
+              <NuxtImg :src="img.url" :alt="`${product.name} - تصویر ${index + 1}`" class="w-full h-full object-cover transition-opacity" :class="index === selectedImageIndex ? 'opacity-100' : 'opacity-70 hover:opacity-100'" width="200" height="200" />
+            </button>
           </div>
         </div>
 
@@ -77,9 +82,9 @@ const isLightboxOpen = ref(false);
 
           <div class="flex items-center gap-2 mb-6">
             <div class="flex text-yellow-400">
-              <UIcon name="i-lucide-star" v-for="i in 5" :key="i" class="size-icon-action fill-current" />
+              <UIcon name="i-lucide-star" v-for="i in 5" :key="i" class="size-icon-action" :class="i <= Math.round(productRating) ? 'fill-current' : 'text-gray-300'" />
             </div>
-            <span class="text-sm text-gray-400 font-num">({{ product.totalRatings || 0 }} نظر)</span>
+            <span class="text-sm text-gray-400 font-num" :aria-label="`امتیاز ${productRating} از ۵`">{{ productRating.toFixed(1) }} از ۵ ({{ product.totalRatings || 0 }} نظر)</span>
           </div>
 
           <div class="bg-gray-50 rounded-card p-6 mb-8">
@@ -107,9 +112,7 @@ const isLightboxOpen = ref(false);
             >
               {{ isOutOfStock ? 'ناموجود' : 'افزودن به سبد خرید' }}
             </UButton>
-            <UButton size="xl" variant="soft" color="gray" class="h-14 w-14 p-0 flex items-center justify-center">
-              <UIcon name="i-lucide-heart" class="size-icon-action" />
-            </UButton>
+            <FavoriteButton v-if="product.id || product._id" :product-id="product.id || product._id || ''" class="h-14 w-14" />
           </div>
         </div>
       </div>
@@ -119,7 +122,7 @@ const isLightboxOpen = ref(false);
     <UModal v-model="isLightboxOpen" fullscreen>
       <div class="flex items-center justify-center h-full bg-black/90 relative">
         <UButton color="white" variant="ghost" icon="i-lucide-x" class="absolute top-6 right-6 z-50 scale-150" @click="isLightboxOpen = false" />
-        <NuxtImg :src="mainImage" class="max-w-full max-h-[90vh] object-contain shadow-2xl" />
+        <NuxtImg :src="mainImage" :alt="`${product?.name || 'محصول'} - تصویر بزرگ`" class="max-w-full max-h-[90vh] object-contain shadow-2xl" width="1200" height="1200" />
       </div>
     </UModal>
   </div>

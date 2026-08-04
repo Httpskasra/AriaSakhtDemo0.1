@@ -28,7 +28,7 @@ export interface Product {
   basePrice: number;
   discount?: number;
   currency?: string;
-  categories: any[];
+  categories: Array<string | { _id?: string; id?: string; name?: string }>;
   description: string;
   companyId?: string | { _id: string; name: string };
   stock: {
@@ -48,7 +48,7 @@ export interface Product {
   totalRatings?: number;
   ratingsSummary?: Record<number, number>;
   denormComments?: Array<{
-    userId?: any;
+    userId?: string;
     rating?: number;
     comment?: string;
     createdAt?: string;
@@ -77,8 +77,8 @@ export interface Cart {
   id: string;
   userId: string;
   items: Array<{
-    productId: any;
-    companyId: any;
+    productId: string | { _id?: string; id?: string; name?: string };
+    companyId: string | { _id?: string; id?: string; name?: string };
     quantity: number;
     priceAtAdd: number;
     variant?: { name: string; value: string };

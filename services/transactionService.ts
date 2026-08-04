@@ -1,4 +1,4 @@
-import { useNuxtApp } from '#app';
+import { useApiClient } from '~/services/apiClient';
 
 export interface PaymentTransaction {
   trackId?: string;
@@ -13,8 +13,8 @@ export interface PaymentTransaction {
   ref_id?: string;
 }
 
-export async function getTransactionStatus(trackId: string): Promise<PaymentTransaction> {
-  const { $axios } = useNuxtApp();
-  const { data } = await $axios.get(`/transaction/${encodeURIComponent(trackId)}`);
+export async function getTransactionStatus(trackId: string, signal?: AbortSignal): Promise<PaymentTransaction> {
+  const $axios = useApiClient();
+  const { data } = await $axios.get(`/transaction/${encodeURIComponent(trackId)}`, { signal });
   return data;
 }

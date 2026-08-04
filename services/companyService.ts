@@ -1,6 +1,7 @@
 // services/companyService.ts
 import type { AxiosResponse } from 'axios';
 import type { Company } from '~/types/company';
+import { useApiClient } from '~/services/apiClient';
 
 export interface CreateCompanyDto {
   name: string;
@@ -51,10 +52,23 @@ export const listCompanies = async (
 };
 
 export const createCompany = async (payload: CreateCompanyDto): Promise<Company> => {
-  const { $axios } = useNuxtApp();
-  const { data } = await $axios.post<Company>('/companies', payload);
+  const { data } = await useApiClient().post<Company>('/companies', payload);
   return data;
 };
+
+export async function updateCompany(id: string, payload: Partial<CreateCompanyDto> & { image?: string }): Promise<Company> {
+  const { data } = await useApiClient().patch<Company>(`/companies/${encodeURIComponent(id)}`, payload);
+  return data;
+}
+
+export async function changeCompanyStatus(id: string, status: string): Promise<Company> {
+  const { data } = await useApiClient().patch<Company>(`/companies/${encodeURIComponent(id)}/status`, { status });
+  return data;
+}
+
+export async function deleteCompany(id: string): Promise<void> {
+  await useApiClient().delete(`/companies/${encodeURIComponent(id)}`);
+}
 
 export interface CreateVendorRequestDto {
   companyName: string;

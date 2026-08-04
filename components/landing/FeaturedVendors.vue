@@ -19,25 +19,25 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
 
 <template>
   <section aria-labelledby="featured-vendors-heading" class="space-y-6">
-    <h2 id="featured-vendors-heading" class="text-2xl font-black text-slate-900">تامین‌کنندگان برتر</h2>
+    <h2 id="featured-vendors-heading" class="text-2xl font-black text-slate-900">تأمین‌کنندگان برتر</h2>
 
     <SharedAsyncState
       v-if="pending"
       state="loading"
       title="در حال دریافت تامین‌کنندگان"
-      message="فهرست فروشندگان ثبت‌شده در حال بارگذاری است." />
+      message="فهرست تأمین‌کنندگان ثبت‌شده در حال بارگذاری است." />
 
     <SharedAsyncState
       v-else-if="error"
       state="error"
-      title="نمایش تامین‌کنندگان انجام نشد"
+      title="نمایش تأمین‌کنندگان انجام نشد"
       message="دریافت فهرست فروشندگان با مشکل مواجه شد."
       @retry="refresh" />
 
     <SharedAsyncState
       v-else-if="!vendors.length"
       state="empty"
-      title="تامین‌کننده‌ای برای نمایش وجود ندارد"
+      title="تأمین‌کننده‌ای برای نمایش وجود ندارد"
       message="پس از ثبت شرکت‌های فعال، این بخش به‌صورت خودکار تکمیل می‌شود." />
 
     <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -79,7 +79,7 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
         </div>
 
         <UButton :to="vendorPath(vendor)" block color="neutral" variant="outline" class="font-bold transition-all group-hover:border-brand-blue group-hover:bg-brand-blue group-hover:text-white">
-          مشاهده غرفه تامین‌کننده
+          مشاهده غرفه تأمین‌کننده
         </UButton>
       </div>
     </div>

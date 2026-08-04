@@ -30,8 +30,8 @@
           class="product"
           v-for="(item, idx) in limitedProducts(order.items)"
           :key="idx">
-          <img src="/products/ajor.jpg" alt="محصول" />
-          <p>محصول</p>
+          <img :src="productImage(item)" :alt="productName(item)" width="70" height="70" />
+          <p>{{ productName(item) }}</p>
           <div class="rate">
             <Raiting :size="'16px'" />
           </div>
@@ -69,7 +69,7 @@ const checkScreenSize = () => {
   isMobile.value = window.innerWidth <= 767;
 };
 
-const limitedProducts = (items: any[]) => {
+const limitedProducts = (items: Order['items']) => {
   const limit = isMobile.value ? 2 : 3;
   return items.slice(0, limit);
 };
@@ -99,6 +99,16 @@ function formatTimeOnly(date?: string) {
 function numberFormat(n?: number) {
   if (typeof n !== "number") return "-";
   return n.toLocaleString("fa-IR");
+}
+
+function productName(item: Order['items'][number]) {
+  const product = item.product || (typeof item.productId === 'object' ? item.productId : undefined);
+  return product?.name || 'محصول';
+}
+
+function productImage(item: Order['items'][number]) {
+  const product = item.product || (typeof item.productId === 'object' ? item.productId : undefined);
+  return product?.images?.[0]?.url || '/products/building-material.jpg';
 }
 </script>
 

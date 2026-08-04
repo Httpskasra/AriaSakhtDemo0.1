@@ -1,5 +1,5 @@
 <template>
-  <section class="relative overflow-hidden bg-slate-900 py-20 pb-32">
+  <section aria-labelledby="landing-hero-title" class="relative overflow-hidden bg-slate-900 py-14 pb-24 sm:py-18 sm:pb-28">
     <div class="pointer-events-none absolute inset-0 z-0 opacity-20">
       <NuxtImg
         src="/products/bg.png"
@@ -20,22 +20,22 @@
           <span class="text-xs font-bold tracking-wide text-white">بازار آنلاین تامین‌کنندگان صنعتی و ساختمانی</span>
         </div>
 
-        <h1 class="mb-8 text-4xl font-black leading-[1.2] text-white sm:text-5xl lg:text-6xl">
+        <h1 id="landing-hero-title" class="mb-6 text-4xl font-black leading-[1.2] text-white sm:text-5xl lg:text-6xl">
           هوشمندانه خرید کنید،<br />
           <span class="text-primary-500">حرفه‌ای بسازید.</span>
         </h1>
 
-        <p class="mb-12 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          از میان تامین‌کنندگان معتبر، سریع‌ترین مسیر خرید و استعلام را پیدا کنید.
+        <p class="mb-8 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+          از میان تأمین‌کنندگان معتبر، سریع‌ترین مسیر خرید و استعلام را پیدا کنید.
         </p>
 
-        <div class="mb-16 flex flex-col items-center gap-4 sm:flex-row">
+        <div class="mb-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           <UButton to="/products" size="xl" color="primary" label="شروع خرید" icon="i-lucide-shopping-bag" />
           <UButton to="/dashboard/company/register" size="xl" color="neutral" variant="outline" label="فروشنده شوید" icon="i-lucide-store" />
         </div>
 
         <p class="max-w-2xl text-sm leading-relaxed text-slate-400">
-          جست‌وجوی کالا، ارتباط با فروشندگان ثبت‌شده و ثبت درخواست تامین از یک مسیر واحد انجام می‌شود.
+          جست‌وجوی کالا، ارتباط با فروشندگان ثبت‌شده و ثبت درخواست تأمین از یک مسیر واحد انجام می‌شود.
         </p>
       </div>
     </div>

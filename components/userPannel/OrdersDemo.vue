@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <div class="title"><p>محصولات انتخاب شده</p></div>
-    <div class="orders">
+    <div v-if="orders.length" class="orders">
       <div class="order" v-for="order in orders" :key="order.id">
-        <img src="/products/ajor.jpg" alt="" />
+        <img src="/products/building-material.jpg" alt="محصول" width="106" height="94" />
         <div class="name">
           <p>یک عدد آجر فرد اعلاء</p>
           <span>مصالخ ساختمانی</span>
@@ -22,27 +22,14 @@
 
       <NuxtLink to="/" class="see-more">مشاهده همه</NuxtLink>
     </div>
+    <div v-else class="py-8 text-center text-gray-500">اطلاعات سفارش در این بخش در دسترس نیست.</div>
   </div>
 </template>
 
 <script setup>
-const orders = ref([
-  {
-    id: 1,
-    name: "آجر فرد اعلاء",
-    price: 165000,
-  },
-  {
-    id: 2,
-    name: "آجر فرد اعلاء",
-    price: 165000,
-  },
-  {
-    id: 3,
-    name: "آجر فرد اعلاء",
-    price: 165000,
-  },
-]);
+// This legacy demo is not connected to an orders contract. Keep it truthful
+// when rendered accidentally instead of shipping fabricated order data.
+const orders = ref<{ id: string; name: string; price: number }[]>([]);
 </script>
 
 <style scoped>
