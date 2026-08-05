@@ -4,6 +4,12 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY . .
+# Nuxt embeds public runtime config in the browser bundle at build time.
+# Keep production defaults explicit; override with compose build args when needed.
+ARG API_BASE_URL=https://tejaris.ir/api
+ARG SITE_URL=https://tejaris.ir
+ENV API_BASE_URL=$API_BASE_URL
+ENV SITE_URL=$SITE_URL
 RUN yarn build
 
 # Run Stage
