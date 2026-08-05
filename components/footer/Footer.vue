@@ -53,10 +53,21 @@
 
           <div class="mt-5">
             <h4 class="mb-3 font-bold text-slate-800">نماد اعتماد</h4>
-            <div class="flex max-w-[220px] items-center gap-2 rounded-card border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
-              <UIcon name="i-lucide-shield-check" class="size-icon-inline shrink-0 text-emerald-700" aria-hidden="true" />
-              <span>اطلاعات مجوزها و اعتماد کسب‌وکار</span>
-            </div>
+            <a
+              referrerpolicy="origin"
+              target="_blank"
+              href="https://trustseal.enamad.ir/?id=757913&Code=vD6SnU7LKkt7EG32Ebd2IUcg96mhskZV"
+              aria-label="مشاهده نماد اعتماد تجاریس در سایت اینماد"
+              class="inline-flex items-center rounded-card border border-slate-100 bg-slate-50 p-3 transition-colors hover:border-primary-300"
+            >
+              <img
+                referrerpolicy="origin"
+                src="https://trustseal.enamad.ir/logo.aspx?id=757913&Code=vD6SnU7LKkt7EG32Ebd2IUcg96mhskZV"
+                alt="نماد اعتماد الکترونیکی تجاریس"
+                code="vD6SnU7LKkt7EG32Ebd2IUcg96mhskZV"
+                class="h-auto w-[140px]"
+              />
+            </a>
           </div>
         </div>
       </div>
