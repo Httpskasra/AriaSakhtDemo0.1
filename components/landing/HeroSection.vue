@@ -1,7 +1,7 @@
 <template>
   <section aria-labelledby="landing-hero-title" class="relative overflow-hidden bg-slate-900 py-14 pb-24 sm:py-18 sm:pb-28">
     <div class="pointer-events-none absolute inset-0 z-0 opacity-20">
-      <NuxtImg
+      <img
         src="/products/bg.png"
         alt="نمایش محیط صنعتی و ساخت‌وساز در پلتفرم تجاریس"
         data-ai-hint="industrial construction"

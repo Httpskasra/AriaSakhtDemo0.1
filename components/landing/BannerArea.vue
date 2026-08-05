@@ -5,7 +5,7 @@
         to="/products"
         class="group relative h-[var(--banner-height-mobile)] overflow-hidden rounded-card shadow-raised transition-transform duration-700 hover:-translate-y-1 md:col-span-2 md:h-[var(--banner-height-desktop)]"
       >
-        <NuxtImg
+        <img
           src="/banner/hBanner.webp"
           alt="کاتالوگ کالاهای صنعتی و ساختمانی در پلتفرم تجاریس"
           class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
