@@ -26,6 +26,7 @@
           v-model="inputs[index]"
           ref="otpRefs"
           @input="onInput(index)"
+          @paste.prevent="onPaste(index, $event)"
           @keydown="onKeydown(index, $event)"
           :disabled="expired || loading"
           required
@@ -49,6 +50,8 @@
         </button>
       </div>
 
+      <p v-if="errorMessage" class="otp-error" role="alert">{{ errorMessage }}</p>
+
       <button
         class="otp-submit"
         @click="verifyOtp"
@@ -64,6 +67,9 @@ import { ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { useAuthStore } from "@/stores/auth";
+import { useUser } from "@/composables/useUser";
+import { toEnglishDigits } from "@/utils/PhoneNumber";
+import { toUserFacingError } from "~/services/apiClient";
 
 const { phoneNumber } = useAuthData();
 const inputs = ref(Array(4).fill(""));
@@ -78,6 +84,7 @@ const errorMessage = ref("");
 
 const $axios = useNuxtApp().$axios;
 const toast = useToast();
+const { fetchUser } = useUser();
 
 onMounted(() => {
   startTimer();
@@ -142,14 +149,27 @@ const resetTimer = async () => {
 onUnmounted(clearTimer);
 
 const onInput = async (index: number) => {
-  const value = inputs.value[index];
-  if (!/^\d$/.test(value)) {
+  const value = toEnglishDigits(inputs.value[index] || "").replace(/\D/g, "");
+  inputs.value[index] = value.slice(-1);
+  if (!inputs.value[index]) {
     inputs.value[index] = "";
     return;
   }
   await nextTick();
   const next = otpRefs.value[index + 1];
   if (next) next.focus();
+};
+
+const onPaste = async (index: number, event: ClipboardEvent) => {
+  const pasted = toEnglishDigits(event.clipboardData?.getData("text") || "")
+    .replace(/\D/g, "")
+    .slice(0, inputs.value.length - index);
+  if (!pasted) return;
+  pasted.split("").forEach((digit, offset) => {
+    inputs.value[index + offset] = digit;
+  });
+  await nextTick();
+  otpRefs.value[Math.min(index + pasted.length, inputs.value.length - 1)]?.focus();
 };
 
 const onKeydown = (index: number, e: KeyboardEvent) => {
@@ -181,12 +201,16 @@ const verifyOtp = async () => {
         response.data.accessToken,
         response.data.csrfToken
       );
+      await fetchUser(true);
       emit("onVerified");
     } else {
-      toast.add({ title: "کد وارد شده اشتباه است", color: "error" });
+      errorMessage.value = "کد واردشده معتبر نیست. کد جدید دریافت کنید و دوباره تلاش کنید.";
     }
   } catch (err) {
-    toast.add({ title: "اعتبارسنجی کد ناموفق بود", description: "دوباره تلاش کنید.", color: "error" });
+    const userError = toUserFacingError(err, "اعتبارسنجی کد انجام نشد.");
+    errorMessage.value = userError.info.status === 400 || userError.info.status === 401
+      ? "کد واردشده اشتباه یا منقضی شده است. کد را بررسی کنید یا کد جدید بگیرید."
+      : userError.message;
   } finally {
     loading.value = false;
   }
@@ -273,6 +297,19 @@ const closeModal = () => {
   width: min(100%, 360px);
   min-height: 28px;
   font-size: 0.8125rem;
+}
+
+.otp-error {
+  width: min(100%, 360px);
+  margin: 0;
+  padding: .65rem .8rem;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-field);
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: .8rem;
+  line-height: 1.7;
+  text-align: center;
 }
 
 .otp-timer {

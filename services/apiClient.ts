@@ -27,10 +27,13 @@ export function toUserFacingError(error: unknown, fallback = 'ارتباط با 
   const axiosError = error as AxiosError<ApiErrorPayload>;
   const status = axiosError.response?.status;
   const payload = axiosError.response?.data;
+  const payloadMessage = Array.isArray(payload?.message)
+    ? payload.message.filter((item): item is string => typeof item === 'string').join('، ')
+    : typeof payload?.message === 'string' ? payload.message : undefined;
   return new UserFacingApiError({
     status,
     code: payload?.code,
-    message: (typeof payload?.message === 'string' ? payload.message : undefined)
+    message: payloadMessage
       || (status && messages[status])
       || fallback,
     retryable: !status || status >= 500 || status === 408 || status === 429,

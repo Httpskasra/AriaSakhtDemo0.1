@@ -20,11 +20,11 @@ const handleClick = () => {
     class="auth-login-button font-bold"
     :class="{ 'auth-login-button--compact': compact }"
     :square="compact"
-    :aria-label="compact ? 'ورود یا ثبت‌نام' : 'ورود یا ثبت‌نام'"
-    icon="i-lucide-user"
+    :aria-label="isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
+    :icon="isAuthenticated ? 'i-lucide-user-round-check' : 'i-lucide-user'"
     @click="handleClick"
   >
-    <span v-if="!compact">ورود / ثبت‌نام</span>
+    <span v-if="!compact">{{ isAuthenticated ? 'پروفایل' : 'ورود / ثبت‌نام' }}</span>
   </UButton>
   <ModalWrapper v-if="authStep" />
 </template>

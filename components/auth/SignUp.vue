@@ -74,7 +74,7 @@
         <span
           class="input-error"
           :class="{ inline: serverError, hidden: !serverError }">
-          خطا در ثبت‌نام، دوباره تلاش کنید.
+          {{ serverErrorMessage }}
         </span>
       </form>
     </div>
@@ -86,6 +86,7 @@ import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { isValidPhone, toEnglishDigits, toInternationalPhone } from "@/utils/PhoneNumber";
+import { toUserFacingError } from "~/services/apiClient";
 
 const { phoneNumber: globalPhoneNumber } = useAuthData();
 const $axios = useNuxtApp().$axios;
@@ -98,6 +99,7 @@ const meliError = ref(false);
 const phoneError = ref(false);
 const matchingError = ref(false);
 const serverError = ref(false);
+const serverErrorMessage = ref("");
 const loading = ref(false);
 
 const emit = defineEmits(["onSuccess"]);
@@ -129,6 +131,7 @@ function checkMatching() {
 
 const handleSubmit = async () => {
   serverError.value = false;
+  serverErrorMessage.value = "";
 
   const meliValid = validateMeli();
   const phoneValid = validatePhone();
@@ -156,6 +159,14 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error("Signup error:", error);
     serverError.value = true;
+    const userError = toUserFacingError(error, "ثبت‌نام انجام نشد. لطفاً دوباره تلاش کنید.");
+    serverErrorMessage.value = userError.info.status === 409
+      ? "این شماره یا کد ملی قبلاً ثبت شده است. اگر حساب دارید، از بخش ورود استفاده کنید."
+      : userError.info.status === 400 || userError.info.status === 422
+        ? userError.message
+        : userError.info.status && userError.info.status >= 500
+          ? "سرویس ثبت‌نام موقتاً در دسترس نیست. چند دقیقه بعد دوباره تلاش کنید."
+          : userError.message;
   } finally {
     loading.value = false;
   }
