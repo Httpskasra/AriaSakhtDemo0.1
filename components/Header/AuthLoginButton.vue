@@ -24,7 +24,7 @@ const handleClick = () => {
     :icon="isAuthenticated ? 'i-lucide-user-round-check' : 'i-lucide-user'"
     @click="handleClick"
   >
-    <span v-if="!compact">{{ isAuthenticated ? 'پروفایل' : 'ورود / ثبت‌نام' }}</span>
+    <span v-if="!compact && !isAuthenticated">ورود / ثبت‌نام</span>
   </UButton>
   <ModalWrapper v-if="authStep" />
 </template>
