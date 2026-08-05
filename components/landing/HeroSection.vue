@@ -7,7 +7,7 @@
         data-ai-hint="industrial construction"
         class="h-full w-full object-cover grayscale"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-transparent"></div>
+      <div class="absolute inset-0 bg-linear-to-t from-slate-900 via-slate-900/70 to-transparent"></div>
     </div>
 
     <div class="section-container relative z-10">
@@ -40,6 +40,6 @@
       </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 z-0 h-32 w-full bg-gradient-to-t from-slate-50 to-transparent"></div>
+    <div class="absolute bottom-0 left-0 z-0 h-32 w-full bg-linear-to-t from-slate-50 to-transparent"></div>
   </section>
 </template>

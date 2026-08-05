@@ -17,9 +17,11 @@ withDefaults(
 const { isAuthenticated } = useUser();
 const cartStore = useCartStore();
 const { setStep } = useAuthStep();
-const { data: categories } = await useAsyncData('header-mobile-categories', () => fetchCategories(), { default: () => [] as Array<{ _id?: string; id?: string; name: string }> });
+const { data: categories } = await useAsyncData<Category[]>('header-mobile-categories', () => fetchCategories(), { default: () => [] });
 
-const mobileCategories = computed(() => (Array.isArray(categories.value) ? categories.value.slice(0, 6) : []));
+const mobileCategories = computed(() => (Array.isArray(categories.value)
+  ? categories.value.filter(category => !category.parentId).slice(0, 8)
+  : []));
 const mobileMenuOpen = ref(false);
 const categoryPath = (category: Category) => ({
   path: '/products',
@@ -106,35 +108,45 @@ const handleCartClick = () => {
           </template>
           <template #body>
             <nav class="mobile-menu" aria-label="ناوبری موبایل">
-              <NuxtLink to="/products" class="mobile-menu__link" @click="mobileMenuOpen = false">
-                <UIcon name="i-lucide-store" aria-hidden="true" />
-                <span>فروشگاه</span>
-              </NuxtLink>
-              <NuxtLink to="/dashboard/company/register" class="mobile-menu__link" @click="mobileMenuOpen = false">
-                <UIcon name="i-lucide-handshake" aria-hidden="true" />
-                <span>تأمین‌کننده شوید</span>
-              </NuxtLink>
-              <NuxtLink to="/about" class="mobile-menu__link" @click="mobileMenuOpen = false">
-                <UIcon name="i-lucide-building-2" aria-hidden="true" />
-                <span>درباره تجاریس</span>
-              </NuxtLink>
-              <NuxtLink to="/contact" class="mobile-menu__link" @click="mobileMenuOpen = false">
-                <UIcon name="i-lucide-life-buoy" aria-hidden="true" />
-                <span>پشتیبانی</span>
-              </NuxtLink>
+              <div class="mobile-menu__intro">
+                <span class="mobile-menu__eyebrow">تجاریس</span>
+                <h2>چه چیزی نیاز دارید؟</h2>
+                <p>دسته‌بندی موردنظر را انتخاب کنید یا وارد فروشگاه شوید.</p>
+              </div>
+
+              <div class="mobile-menu__quick-links">
+                <NuxtLink to="/products" class="mobile-menu__quick-card mobile-menu__quick-card--primary" @click="mobileMenuOpen = false">
+                  <span class="mobile-menu__icon"><UIcon name="i-lucide-store" aria-hidden="true" /></span>
+                  <span><strong>فروشگاه</strong><small>مشاهده همه کالاها</small></span>
+                  <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
+                </NuxtLink>
+                <NuxtLink to="/dashboard/company/register" class="mobile-menu__quick-card" @click="mobileMenuOpen = false">
+                  <span class="mobile-menu__icon"><UIcon name="i-lucide-handshake" aria-hidden="true" /></span>
+                  <span><strong>تأمین‌کننده شوید</strong><small>ثبت درخواست همکاری</small></span>
+                  <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
+                </NuxtLink>
+              </div>
 
               <div v-if="mobileCategories.length" class="mobile-menu__categories">
-                <h2>دسته‌بندی‌ها</h2>
-                <NuxtLink
-                  v-for="category in mobileCategories"
-              :key="getCategoryId(category)"
-                  :to="categoryPath(category)"
-                  class="mobile-menu__category"
-                  @click="mobileMenuOpen = false"
-                >
-                  <span>{{ category.name }}</span>
-                  <UIcon name="i-lucide-chevron-left" aria-hidden="true" />
-                </NuxtLink>
+                <div class="mobile-menu__section-heading"><h2>دسته‌بندی‌ها</h2><span>{{ mobileCategories.length }} دسته</span></div>
+                <div class="mobile-menu__category-grid">
+                  <NuxtLink
+                    v-for="category in mobileCategories"
+                    :key="getCategoryId(category)"
+                    :to="categoryPath(category)"
+                    class="mobile-menu__category"
+                    @click="mobileMenuOpen = false"
+                  >
+                    <span class="mobile-menu__category-icon"><UIcon name="i-lucide-layers-3" aria-hidden="true" /></span>
+                    <span class="mobile-menu__category-name">{{ category.name }}</span>
+                    <UIcon name="i-lucide-chevron-left" aria-hidden="true" />
+                  </NuxtLink>
+                </div>
+              </div>
+
+              <div class="mobile-menu__footer-links">
+                <NuxtLink to="/about" @click="mobileMenuOpen = false"><UIcon name="i-lucide-building-2" /> درباره تجاریس</NuxtLink>
+                <NuxtLink to="/contact" @click="mobileMenuOpen = false"><UIcon name="i-lucide-life-buoy" /> پشتیبانی</NuxtLink>
               </div>
             </nav>
           </template>
@@ -179,9 +191,21 @@ const handleCartClick = () => {
 .mobile-menu {
   display: flex;
   flex-direction: column;
-  gap: .375rem;
-  padding: .25rem 0;
+  gap: 1rem;
+  padding: .25rem 0 1rem;
 }
+.mobile-menu__intro { padding:.25rem .25rem .5rem; }
+.mobile-menu__eyebrow { color:#2563eb; font-size:.7rem; font-weight:900; }
+.mobile-menu__intro h2 { margin-top:.25rem; color:#0f172a; font-size:1.15rem; font-weight:900; }
+.mobile-menu__intro p { margin-top:.35rem; color:#64748b; font-size:.75rem; line-height:1.7; }
+.mobile-menu__quick-links { display:grid; gap:.6rem; }
+.mobile-menu__quick-card { display:flex; align-items:center; gap:.65rem; min-height:4rem; padding:.7rem; border:1px solid #e2e8f0; border-radius:1rem; background:#fff; color:#334155; box-shadow:0 .25rem .8rem rgba(15,23,42,.04); }
+.mobile-menu__quick-card--primary { border-color:#bfdbfe; background:linear-gradient(135deg,#eff6ff,#fff); }
+.mobile-menu__quick-card > span:nth-child(2) { display:flex; flex:1; flex-direction:column; gap:.15rem; }
+.mobile-menu__quick-card strong { font-size:.8rem; }
+.mobile-menu__quick-card small { color:#94a3b8; font-size:.65rem; }
+.mobile-menu__quick-card > svg { color:#60a5fa; }
+.mobile-menu__icon,.mobile-menu__category-icon { display:grid; flex:0 0 auto; place-items:center; width:2.25rem; height:2.25rem; border-radius:.75rem; background:#eff6ff; color:#2563eb; }
 
 .mobile-menu__link,
 .mobile-menu__category {
@@ -212,26 +236,25 @@ const handleCartClick = () => {
 }
 
 .mobile-menu__categories {
-  margin-top: .75rem;
   border-top: 1px solid #e2e8f0;
   padding-top: 1rem;
 }
-
-.mobile-menu__categories h2 {
-  margin-bottom: .5rem;
-  color: #64748b;
-  font-size: .75rem;
-  font-weight: 700;
-}
+.mobile-menu__section-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:.65rem; }
+.mobile-menu__section-heading h2 { color:#0f172a; font-size:.85rem; font-weight:900; }
+.mobile-menu__section-heading span { color:#94a3b8; font-size:.65rem; }
+.mobile-menu__category-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; }
 
 .mobile-menu__category {
-  justify-content: space-between;
-  min-height: 2.5rem;
-  border: 1px solid #e2e8f0;
-  margin-top: .375rem;
-  background: #fff;
-  font-size: .8125rem;
+  display:flex; align-items:center; gap:.4rem; min-height:4.25rem; padding:.55rem; border:1px solid #f1f5f9; background:#f8fafc; font-size:.7rem;
 }
+.mobile-menu__category-icon { width:1.8rem; height:1.8rem; border-radius:.6rem; }
+.mobile-menu__category-icon :deep(svg) { width:1rem; }
+.mobile-menu__category-name { flex:1; line-height:1.5; }
+.mobile-menu__category > svg { width:.9rem; color:#94a3b8; }
+.mobile-menu__footer-links { display:flex; gap:1rem; padding-top:.75rem; border-top:1px solid #f1f5f9; }
+.mobile-menu__footer-links a { display:inline-flex; align-items:center; gap:.35rem; color:#64748b; font-size:.72rem; font-weight:700; }
+.mobile-menu__footer-links :deep(svg) { width:1rem; color:#2563eb; }
+@media (max-width: 360px) { .mobile-menu__category-grid { grid-template-columns:1fr; } }
 
 .header-nav-link {
   min-height: 2.75rem;

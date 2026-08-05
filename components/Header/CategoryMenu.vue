@@ -35,33 +35,62 @@ const categoryPath = (category: Category) => ({
 
     <div
       v-if="isOpen"
-      class="absolute top-full start-0 mt-0 w-[80vw] max-w-5xl bg-white shadow-2xl rounded-b-2xl border-x border-b border-slate-100 z-50 p-6 flex gap-8">
-      <div class="w-1/4 border-l border-slate-100 pr-2">
-        <div class="space-y-4">
-          <NuxtLink
-            v-for="category in topLevelCategories"
-            :key="categoryId(category)"
-            :to="categoryPath(category)"
-            class="w-full text-right text-sm font-bold text-slate-700 hover:text-primary-600 transition-colors flex items-center justify-between group/item"
-            @click="isOpen = false">
-            {{ category.name }}
-            <UIcon name="i-lucide-chevron-left" class="size-icon-compact opacity-0 group-hover/item:opacity-100 -translate-x-2 group-hover/item:translate-x-0 transition-all" />
-          </NuxtLink>
+      class="category-mega-menu">
+      <div class="category-mega-menu__header">
+        <div>
+          <span class="category-mega-menu__eyebrow">خرید سریع</span>
+          <h2>دسته‌بندی‌های صنعتی</h2>
         </div>
+        <NuxtLink to="/products" class="category-mega-menu__all" @click="isOpen = false">
+          مشاهده همه <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
+        </NuxtLink>
       </div>
 
-      <div class="flex-grow grid grid-cols-3 gap-8">
-        <div v-for="category in topLevelCategories.slice(0, 3)" :key="`children-${categoryId(category)}`">
-          <NuxtLink :to="categoryPath(category)" class="block font-black text-primary-600 text-sm mb-4" @click="isOpen = false">
-            {{ category.name }}
+      <div class="category-mega-menu__grid">
+        <div v-for="category in topLevelCategories" :key="`children-${categoryId(category)}`" class="category-mega-card">
+          <NuxtLink :to="categoryPath(category)" class="category-mega-card__title" @click="isOpen = false">
+            <span>{{ category.name }}</span>
+            <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
           </NuxtLink>
-          <ul class="space-y-3 text-slate-500 text-xs font-medium">
-            <li v-for="child in childrenOf(category)" :key="categoryId(child)">
-              <NuxtLink :to="categoryPath(child)" class="hover:text-slate-900" @click="isOpen = false">{{ child.name }}</NuxtLink>
+          <ul v-if="childrenOf(category).length" class="category-mega-card__children">
+            <li v-for="child in childrenOf(category).slice(0, 5)" :key="categoryId(child)">
+              <NuxtLink :to="categoryPath(child)" @click="isOpen = false">{{ child.name }}</NuxtLink>
             </li>
           </ul>
+          <span v-else class="category-mega-card__hint">مشاهده محصولات این دسته</span>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.category-mega-menu {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  z-index: 60;
+  width: min(78vw, 72rem);
+  max-width: 72rem;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-top: 0;
+  border-radius: 0 0 1.25rem 1.25rem;
+  background: rgba(255, 255, 255, .98);
+  box-shadow: 0 1.5rem 3rem rgba(15, 23, 42, .14);
+  direction: rtl;
+}
+.category-mega-menu__header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding: .25rem .35rem 1rem; border-bottom:1px solid #f1f5f9; }
+.category-mega-menu__eyebrow { color:#2563eb; font-size:.68rem; font-weight:800; }
+.category-mega-menu__header h2 { margin-top:.2rem; color:#0f172a; font-size:1.05rem; font-weight:900; }
+.category-mega-menu__all { display:inline-flex; align-items:center; gap:.35rem; color:#2563eb; font-size:.75rem; font-weight:800; }
+.category-mega-menu__grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; padding-top:1rem; max-height:24rem; overflow-y:auto; }
+.category-mega-card { min-height:7rem; padding:.8rem; border:1px solid #f1f5f9; border-radius:1rem; background:linear-gradient(145deg,#fff,#f8fbff); }
+.category-mega-card:hover { border-color:#bfdbfe; box-shadow:0 .5rem 1rem rgba(37,99,235,.08); }
+.category-mega-card__title { display:flex; align-items:center; justify-content:space-between; gap:.5rem; color:#1e3a8a; font-size:.82rem; font-weight:900; }
+.category-mega-card__title :deep(svg) { width:1rem; color:#60a5fa; }
+.category-mega-card__children { display:grid; gap:.35rem; margin-top:.65rem; color:#64748b; font-size:.72rem; }
+.category-mega-card__children a:hover { color:#2563eb; }
+.category-mega-card__hint { display:block; margin-top:.7rem; color:#94a3b8; font-size:.68rem; }
+@media (max-width: 1100px) { .category-mega-menu__grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+</style>
