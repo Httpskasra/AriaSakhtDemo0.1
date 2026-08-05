@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type { Category } from "~/services/categories"; // اصلاح مسیر در صورت نیاز
+import { getCategoryFilterIds, getCategoryId, type Category } from "~/services/categories";
 
 const props = defineProps<{
   category: Category;
@@ -52,12 +52,15 @@ function onChildClick(child: Category) {
 }
 
 function categoryPath(category: Category) {
-  return `/products?categoryIds=${encodeURIComponent(getId(category))}`;
+  return {
+    path: "/products",
+    query: { categoryIds: getCategoryFilterIds(category, [props.category, ...props.children]) },
+  };
 }
 
 // helper id provider (پشتیبانی از id یا _id)
 function getId(c: any) {
-  return c._id ?? c.id ?? String(c.name);
+  return getCategoryId(c);
 }
 
 const id = getId(props.category);

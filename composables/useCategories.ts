@@ -1,21 +1,20 @@
 // src/composables/useCategories.ts
-import { ref } from "vue";
+import { computed } from "vue";
 import type { Category } from "~/services/categories";
 import { fetchCategories } from "~/services/categories";
 
-let cache: Category[] | null = null;
 let inflight: Promise<Category[]> | null = null;
 
 export function useCategories() {
-  const categories = ref<Category[]>(cache ?? []);
-  const loading = ref<boolean>(!cache);
-  const error = ref<Error | null>(null);
+  const categories = useState<Category[]>("catalog-categories", () => []);
+  const loading = useState<boolean>("catalog-categories-loading", () => false);
+  const loaded = useState<boolean>("catalog-categories-loaded", () => false);
+  const error = useState<Error | null>("catalog-categories-error", () => null);
 
   async function load() {
-    if (cache) {
-      categories.value = cache;
+    if (loaded.value) {
       loading.value = false;
-      return cache;
+      return categories.value;
     }
     if (inflight) {
       const data = await inflight;
@@ -26,8 +25,8 @@ export function useCategories() {
     loading.value = true;
     inflight = fetchCategories()
       .then((data) => {
-        cache = data;
         categories.value = data;
+        loaded.value = true;
         loading.value = false;
         inflight = null;
         return data;
@@ -42,5 +41,5 @@ export function useCategories() {
     return inflight;
   }
 
-  return { categories, loading, error, load };
+  return { categories, loading: computed(() => loading.value), error, load };
 }

@@ -2,7 +2,7 @@
 import { navigateTo } from '#app';
 import { useUser } from '~/composables/useUser';
 import { useAuthStep } from '~/composables/useAuthStep';
-import { fetchCategories } from '~/services/categories';
+import { fetchCategories, getCategoryFilterIds, getCategoryId, type Category } from '~/services/categories';
 import { useCartStore } from '~/stores/cart';
 
 withDefaults(
@@ -21,10 +21,10 @@ const { data: categories } = await useAsyncData('header-mobile-categories', () =
 
 const mobileCategories = computed(() => (Array.isArray(categories.value) ? categories.value.slice(0, 6) : []));
 const mobileMenuOpen = ref(false);
-const categoryPath = (category: { _id?: string; id?: string; name: string }) => {
-  const categoryId = category._id ?? category.id ?? category.name;
-  return `/products?categoryIds=${encodeURIComponent(categoryId)}`;
-};
+const categoryPath = (category: Category) => ({
+  path: '/products',
+  query: { categoryIds: getCategoryFilterIds(category, categories.value) },
+});
 
 const handleCartClick = () => {
   if (isAuthenticated.value) {
@@ -127,7 +127,7 @@ const handleCartClick = () => {
                 <h2>دسته‌بندی‌ها</h2>
                 <NuxtLink
                   v-for="category in mobileCategories"
-                  :key="category._id ?? category.id ?? category.name"
+              :key="getCategoryId(category)"
                   :to="categoryPath(category)"
                   class="mobile-menu__category"
                   @click="mobileMenuOpen = false"

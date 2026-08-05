@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import { useCategories } from '~/composables/useCategories';
+import { getCategoryId } from '~/services/categories';
 
 const props = withDefaults(defineProps<{
   initialMinPrice?: number;
@@ -98,10 +99,10 @@ const clearFilters = () => {
         <p>هنوز دسته‌بندی‌ای تعریف نشده است.</p>
       </div>
       <div v-else class="category-list custom-scrollbar pe-2">
-        <div v-for="cat in visibleCategories" :key="cat.id || cat._id" class="flex items-center">
+        <div v-for="cat in visibleCategories" :key="getCategoryId(cat)" class="flex items-center">
           <UCheckbox
             v-model="selectedCategories"
-            :value="cat.id || cat._id"
+            :value="getCategoryId(cat)"
             :label="cat.name"
             class="font-num"
           />

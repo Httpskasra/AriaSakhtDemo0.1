@@ -42,16 +42,19 @@
 
 <script setup lang="ts">
 import { useCategories } from "~/composables/useCategories";
-import type { Category } from "~/services/categories";
+import { getCategoryFilterIds, getCategoryId, getParentCategoryId, type Category } from "~/services/categories";
 
 const icons = ["i-lucide-building-2", "i-lucide-plug", "i-lucide-droplets", "i-lucide-layers", "i-lucide-wrench", "i-lucide-fan"];
 const { categories: loadedCategories, loading, error, load } = useCategories();
 const retryCategories = () => load().catch(() => undefined);
 await retryCategories();
 
-const categories = computed(() => loadedCategories.value.filter((category) => !category.parentId).slice(0, 6));
-const categoryId = (category: Category) => category._id || category.id || category.slug || category.name;
-const categoryPath = (category: Category) => `/products?categoryIds=${encodeURIComponent(categoryId(category))}`;
+const categories = computed(() => loadedCategories.value.filter((category) => !getParentCategoryId(category)).slice(0, 6));
+const categoryId = (category: Category) => getCategoryId(category);
+const categoryPath = (category: Category) => ({
+  path: "/products",
+  query: { categoryIds: getCategoryFilterIds(category, loadedCategories.value) },
+});
 const categoryCount = (category: Category) => {
   const count = (category as Category & { productCount?: number; productsCount?: number }).productCount
     ?? (category as Category & { productCount?: number; productsCount?: number }).productsCount;

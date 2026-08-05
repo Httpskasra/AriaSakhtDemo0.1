@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { useCategories } from "~/composables/useCategories";
-import type { Category } from "~/services/categories";
+import { getCategoryFilterIds, getCategoryId, getParentCategoryId, type Category } from "~/services/categories";
 
 const isOpen = ref(false);
 const { categories, load } = useCategories();
 await load().catch(() => undefined);
 
-const topLevelCategories = computed(() => categories.value.filter((category) => !category.parentId));
-const childrenOf = (category: Category) => categories.value.filter((child) => child.parentId === (category._id || category.id));
-const categoryId = (category: Category) => category._id || category.id || category.slug || category.name;
-const categoryPath = (category: Category) => `/products?categoryIds=${encodeURIComponent(categoryId(category))}`;
+const topLevelCategories = computed(() => categories.value.filter((category) => !getParentCategoryId(category)));
+const childrenOf = (category: Category) => {
+  const id = getCategoryId(category);
+  return categories.value.filter((child) => getParentCategoryId(child) === id);
+};
+const categoryId = (category: Category) => getCategoryId(category);
+const categoryPath = (category: Category) => ({
+  path: "/products",
+  query: { categoryIds: getCategoryFilterIds(category, categories.value) },
+});
 </script>
 
 <template>

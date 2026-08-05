@@ -5,10 +5,40 @@ export interface Category {
   name: string;
   slug?: string;
   description?: string;
-  parentId?: string | null;
+  parentId?: string | { _id?: string; id?: string } | null;
   status?: string;
   companyId?: string;
 }
+
+export const getCategoryId = (category: Category): string =>
+  String(category._id || category.id || category.slug || category.name);
+
+export const getParentCategoryId = (category: Category): string | null => {
+  if (!category.parentId) return null;
+  if (typeof category.parentId === "string") return category.parentId;
+  return category.parentId._id || category.parentId.id || null;
+};
+
+export const getCategoryFilterIds = (category: Category, all: Category[]): string[] => {
+  const selected = new Set<string>([getCategoryId(category)]);
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    for (const candidate of all) {
+      const parentId = getParentCategoryId(candidate);
+      if (parentId && selected.has(parentId)) {
+        const id = getCategoryId(candidate);
+        if (!selected.has(id)) {
+          selected.add(id);
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return [...selected];
+};
 
 export async function fetchCategories(): Promise<Category[]> {
   const { $axios } = useNuxtApp();
