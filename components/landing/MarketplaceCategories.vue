@@ -28,12 +28,12 @@
         v-for="cat in categories" 
         :key="categoryId(cat)"
         :to="categoryPath(cat)"
-        class="premium-card p-6 flex flex-col items-center text-center group cursor-pointer"
+        class="premium-card relative overflow-hidden p-5 flex flex-col items-center text-center group cursor-pointer border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lg"
       >
-        <div class="size-16 bg-slate-50 rounded-card flex items-center justify-center mb-5 group-hover:bg-primary-50 transition-colors">
+        <div class="size-16 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl flex items-center justify-center mb-5 ring-1 ring-slate-100 group-hover:from-blue-50 group-hover:to-primary-100 transition-colors">
           <UIcon :name="icons[categories.indexOf(cat) % icons.length]" class="size-icon-empty-state text-slate-600 group-hover:text-primary-600 transition-colors" />
         </div>
-        <h3 class="text-sm font-bold text-slate-800 mb-1.5">{{ cat.name }}</h3>
+        <h3 class="text-sm font-bold text-slate-800 mb-1.5 group-hover:text-primary-700 transition-colors">{{ cat.name }}</h3>
         <span v-if="categoryCount(cat)" class="text-[10px] text-slate-400 font-num uppercase tracking-wider">{{ categoryCount(cat) }} کالا</span>
       </NuxtLink>
     </div>

@@ -43,6 +43,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    serverApiBase: process.env.SERVER_API_BASE_URL || "http://backend:3000/api",
     public: {
       siteUrl: process.env.SITE_URL || "https://tejaris.ir",
       apiBase: process.env.API_BASE_URL || "http://localhost:3001/api",

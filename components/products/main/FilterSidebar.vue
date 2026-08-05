@@ -99,7 +99,12 @@ const clearFilters = () => {
         <p>هنوز دسته‌بندی‌ای تعریف نشده است.</p>
       </div>
       <div v-else class="category-list custom-scrollbar pe-2">
-        <div v-for="cat in visibleCategories" :key="getCategoryId(cat)" class="flex items-center">
+        <div
+          v-for="cat in visibleCategories"
+          :key="getCategoryId(cat)"
+          class="category-option"
+          :class="{ 'category-option--selected': selectedCategories.includes(getCategoryId(cat)) }"
+        >
           <UCheckbox
             v-model="selectedCategories"
             :value="getCategoryId(cat)"
@@ -248,6 +253,27 @@ const clearFilters = () => {
   max-height: 12rem;
   gap: .5rem;
   overflow-y: auto;
+}
+
+.category-option {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: .35rem .5rem;
+  border: 1px solid transparent;
+  border-radius: .75rem;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.category-option:hover {
+  border-color: #dbeafe;
+  background: #f8fbff;
+}
+
+.category-option--selected {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .category-skeleton,

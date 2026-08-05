@@ -7,6 +7,7 @@ const { buildParams, changePage, page, limit, sortOption, searchQuery, minPrice,
 const { categories: availableCategories, load: loadCategories } = useCategories();
 await loadCategories().catch(() => undefined);
 const mobileFiltersOpen = ref(false);
+const productsLoadError = ref<string | null>(null);
 const searchInput = ref(searchQuery.value);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 watch(searchQuery, value => { searchInput.value = value; });
@@ -17,7 +18,14 @@ watch(searchInput, value => {
 onBeforeUnmount(() => { if (searchTimer) clearTimeout(searchTimer); });
 
 const { data: productsData, pending, error, refresh } = await useAsyncData('products-list', async () => {
-  return (await advancedSearchProducts(buildParams())).data;
+  productsLoadError.value = null;
+  try {
+    return (await advancedSearchProducts(buildParams())).data;
+  } catch (cause) {
+    console.error('[ProductsPage] failed to load products', cause);
+    productsLoadError.value = 'دریافت محصولات با مشکل مواجه شد. لطفاً دوباره تلاش کنید.';
+    return { items: [], total: 0, page: page.value, limit: limit.value };
+  }
 }, { watch: [() => useRoute().query], dedupe: 'cancel' });
 
 const activeFilterCount = computed(() => [minPrice.value, maxPrice.value, companyName.value, ...categoryIds.value].filter(Boolean).length);
@@ -122,13 +130,17 @@ const onPageChange = (newPage: number) => {
         <ProductGrid
           :products="productsData?.items || []"
           :loading="pending"
-          :error="Boolean(error)"
+          :error="Boolean(error) || Boolean(productsLoadError)"
           :has-active-filters="activeFilterLabels.length > 0"
           :has-search-query="Boolean(searchQuery)"
           @retry="refresh"
           @clear-filters="clearAllFilters"
           @clear-search="clearSearch"
         />
+
+        <p v-if="productsLoadError" class="products-load-error" role="alert">
+          {{ productsLoadError }}
+        </p>
 
         <div v-if="productsData?.total && productsData.total > limit" class="mt-12 flex justify-center border-t border-gray-100 pt-8">
           <UPagination
@@ -178,6 +190,7 @@ const onPageChange = (newPage: number) => {
 .filter-chip button, button.filter-chip { cursor: pointer; }
 .clear-filters-link { min-height: 2rem; color: #475569; font-size: .75rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .filter-count { display: inline-grid; place-items: center; min-width: 1.35rem; height: 1.35rem; margin-inline-start: .375rem; border-radius: 999px; background: var(--color-brand-blue); color: white; font-size: .7rem; }
+.products-load-error { margin-top: .75rem; color: #b91c1c; font-size: .8125rem; text-align: center; }
 @media (max-width: 639px) {
   .page-container { padding-inline: 1rem !important; }
   .results-layout { display: block; }

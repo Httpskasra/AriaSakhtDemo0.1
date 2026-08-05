@@ -39,6 +39,7 @@ async function performRefresh(
   authStore: ReturnType<typeof useAuthStore>,
 ): Promise<string> {
   const config = useRuntimeConfig();
+  const apiBase = (process.server ? config.serverApiBase : config.public.apiBase) as string;
   const incomingCookie = process.server
     ? useRequestHeaders(["cookie"]).cookie
     : undefined;
@@ -47,7 +48,7 @@ async function performRefresh(
   let csrfToken = authStore.getCsrfToken();
   if (!csrfToken) {
     const csrfResponse = await axios.get<{ csrfToken: string }>(
-      `${config.public.apiBase}/auth/csrf`,
+      `${apiBase}/auth/csrf`,
       { withCredentials: true, headers: cookieHeaders },
     );
     csrfToken = csrfResponse.data.csrfToken;
@@ -56,7 +57,7 @@ async function performRefresh(
 
   const payload: RefreshTokenRequestDto = {};
   const { data } = await axios.post<RefreshTokenResponseDto>(
-    `${config.public.apiBase}/auth/refresh`,
+    `${apiBase}/auth/refresh`,
     payload,
     {
       withCredentials: true,

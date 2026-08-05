@@ -18,7 +18,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   let redirectPromise: Promise<unknown> | null = null;
 
   const api: AxiosInstance = axios.create({
-    baseURL: config.public.apiBase as string,
+    baseURL: (process.server ? config.serverApiBase : config.public.apiBase) as string,
     timeout: 10000,
     withCredentials: true,
     headers: {
