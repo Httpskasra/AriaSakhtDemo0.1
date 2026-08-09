@@ -42,8 +42,24 @@ export const getCategoryFilterIds = (category: Category, all: Category[]): strin
 
 export async function fetchCategories(): Promise<Category[]> {
   const { $axios } = useNuxtApp();
-  const res = await $axios.get("/categories");
-  const categories = Array.isArray(res.data) ? res.data : res.data?.items;
+  let responseData: unknown;
+  try {
+    responseData = (await $axios.get("/categories")).data;
+  } catch (error) {
+    // fetchCategories is used by SSR useAsyncData as well as the shared
+    // composable. Do not let AxiosError escape into Nuxt's serialized payload.
+    const axiosError = error as {
+      message?: unknown;
+      response?: { status?: unknown };
+    };
+    const message = typeof axiosError?.message === "string"
+      ? axiosError.message
+      : "ارتباط با سرور با مشکل مواجه شد.";
+    throw new Error(message);
+  }
+  const categories = Array.isArray(responseData)
+    ? responseData
+    : (responseData as { items?: unknown } | null)?.items;
   if (!Array.isArray(categories)) {
     throw new Error("ساختار پاسخ دسته‌بندی‌ها نامعتبر است.");
   }
