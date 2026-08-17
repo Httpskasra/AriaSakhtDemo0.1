@@ -13,7 +13,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
 const panel = ref<HTMLElement | null>(null);
 const previouslyFocused = ref<HTMLElement | null>(null);
-const isDesktop = ref(true);
+// Keep the drawer closed during SSR. The real viewport is known only after mount.
+const isDesktop = ref(false);
 const isOpen = computed(() => isDesktop.value || props.modelValue);
 
 const focusableSelector = [
@@ -52,6 +53,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 watch(isOpen, async (open) => {
+  if (typeof document === "undefined") return;
   if (open) {
     previouslyFocused.value = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.addEventListener("keydown", handleKeydown);
@@ -96,7 +98,7 @@ onMounted(() => {
   max-width: min(86vw, var(--drawer-width));
   box-sizing: border-box;
 }
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   .app-drawer { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
   .app-drawer--open { pointer-events: auto; }
   .app-drawer__backdrop { display: block; position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: rgb(15 23 42 / 45%); }

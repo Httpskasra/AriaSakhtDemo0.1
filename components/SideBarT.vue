@@ -2,7 +2,7 @@
 import type { SidebarNavItem } from "~/types/sidebar";
 import { usePermissions } from "~/composables/usePermissions";
 import { useAuthStore } from "~/stores/auth";
-import { Resource } from "~/types/permissions";
+import { Action, Resource } from "~/types/permissions";
 
 defineProps({
   isMenuOpen: { type: Boolean, default: false },
@@ -12,7 +12,7 @@ defineProps({
 const emit = defineEmits(["update:isMenuOpen"]);
 const router = useRouter();
 const route = useRoute();
-const { getResources } = usePermissions();
+const { getResources, hasPermission } = usePermissions();
 const { clearUser } = useUser();
 const { $axios } = useNuxtApp();
 const authStore = useAuthStore();
@@ -22,7 +22,6 @@ const resourceLabels: Record<string, string> = {
   [Resource.CATEGORIES]: "دسته‌بندی‌ها",
   [Resource.COMPANIES]: "شرکت‌ها",
   [Resource.ORDERS]: "سفارش‌ها",
-  [Resource.PAYMENT]: "پرداخت‌ها",
   [Resource.PRODUCTS]: "محصولات",
   [Resource.ROLES]: "نقش‌ها",
   [Resource.TICKETING]: "تیکت‌ها",
@@ -34,17 +33,61 @@ const resourceLabels: Record<string, string> = {
   [Resource.PRODUCT_STATUS]: "وضعیت محصول",
 };
 
+const resourceOrder = [
+  Resource.CARTS,
+  Resource.CATEGORIES,
+  Resource.COMPANIES,
+  Resource.PRODUCTS,
+  Resource.PRODUCT_STATUS,
+  Resource.ORDERS,
+  Resource.TRANSACTION,
+  Resource.TRANSPORTING,
+  Resource.USERS,
+  Resource.ROLES,
+  Resource.TICKETING,
+  Resource.WALLETS,
+  Resource.PROFILE,
+];
+
 const navItems = computed<SidebarNavItem[]>(() => {
+  const resourceRoutes: Partial<Record<Resource, string>> = {
+    [Resource.CARTS]: "/dashboard/carts",
+    [Resource.CATEGORIES]: "/dashboard/categories",
+    [Resource.COMPANIES]: "/dashboard/companies",
+    [Resource.PRODUCTS]: "/dashboard/products",
+    [Resource.PRODUCT_STATUS]: "/dashboard/product_status",
+    [Resource.ORDERS]: "/dashboard/orders",
+    [Resource.TRANSACTION]: "/dashboard/transaction",
+    [Resource.TRANSPORTING]: "/dashboard/transporting",
+    [Resource.USERS]: "/dashboard/users",
+    [Resource.TICKETING]: "/dashboard/ticketing",
+    [Resource.WALLETS]: "/dashboard/wallets",
+    [Resource.PROFILE]: "/dashboard/profile",
+  };
+
+  const resourceItems = getResources()
+    .filter((resource) => resourceLabels[resource] && resourceRoutes[resource])
+    .sort((left, right) => resourceOrder.indexOf(left) - resourceOrder.indexOf(right))
+    .map((resource) => ({
+      icon: resource,
+      label: resourceLabels[resource],
+      route: resourceRoutes[resource] as string,
+      permission: resource,
+      iconBase: "/dashboardIcons",
+    }));
+
+  if (hasPermission(Resource.USERS, Action.MANAGE)) {
+    resourceItems.splice(resourceItems.findIndex((item) => item.route === "/dashboard/users") + 1, 0, {
+      icon: Resource.ROLES,
+      label: "نقش‌ها",
+      route: "/dashboard/roles",
+      permission: Resource.USERS,
+      iconBase: "/dashboardIcons",
+    });
+  }
+
   const items: SidebarNavItem[] = [
-    ...getResources()
-      .filter((resource) => resourceLabels[resource])
-      .map((resource) => ({
-        icon: resource,
-        label: resourceLabels[resource],
-        route: `/dashboard/${resource}`,
-        permission: resource,
-        iconBase: "/dashboardIcons",
-      })),
+    ...resourceItems,
     {
       icon: "logout",
       label: "خروج",

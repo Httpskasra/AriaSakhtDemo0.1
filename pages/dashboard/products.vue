@@ -1,9 +1,13 @@
 <template>
   <NuxtLayout name="dashboard">
     <div class="container">
-      <div class="title">
-        <h1>محصولات</h1>
-        <img src="/adminIcon/products.png" alt="" />
+      <div class="page-heading">
+        <div>
+          <p class="page-eyebrow">مدیریت فروشگاه</p>
+          <h1>محصولات</h1>
+          <p class="page-description">محصولات، قیمت و موجودی فروشگاه را مدیریت کنید.</p>
+        </div>
+        <img src="/adminIcon/products.png" alt="" aria-hidden="true" />
       </div>
 
       <div
@@ -36,8 +40,30 @@
         </UButton>
       </div>
 
-      <div class="bg-white rounded-field overflow-hidden">
-        <div class="mb-3 flex flex-wrap items-center gap-2">
+      <div class="products-panel bg-white rounded-field overflow-hidden">
+        <div v-if="!canRead" class="state-card state-card--error">
+          <UIcon name="i-lucide-lock-keyhole" aria-hidden="true" />
+          <h2>دسترسی به محصولات امکان‌پذیر نیست</h2>
+          <p>حساب کاربری شما مجوز مشاهده محصولات را ندارد.</p>
+        </div>
+        <div v-else-if="loading" class="state-card" aria-live="polite">
+          <UIcon name="i-lucide-loader-circle" class="animate-spin" aria-hidden="true" />
+          <h2>در حال دریافت محصولات</h2>
+          <p>لطفاً چند لحظه صبر کنید.</p>
+        </div>
+        <div v-else-if="loadError" class="state-card state-card--error" role="alert">
+          <UIcon name="i-lucide-circle-alert" aria-hidden="true" />
+          <h2>دریافت محصولات انجام نشد</h2>
+          <p>{{ loadError }}</p>
+          <UButton type="button" variant="soft" @click="fetchProducts">تلاش دوباره</UButton>
+        </div>
+        <div v-else-if="products.length === 0" class="state-card">
+          <UIcon name="i-lucide-package-search" aria-hidden="true" />
+          <h2>{{ search ? "محصولی با این جستجو پیدا نشد" : "هنوز محصولی ثبت نشده است" }}</h2>
+          <p>{{ search ? "عبارت جستجو یا فیلترها را تغییر دهید." : "برای شروع، اولین محصول خود را ثبت کنید." }}</p>
+          <UButton v-if="!search && canCreate" type="button" @click="openModal()">افزودن محصول</UButton>
+        </div>
+        <div v-else class="mb-3 flex flex-wrap items-center gap-2">
           <TableScrollContainer>
             <table class="w-full min-w-[36rem]">
           <thead class="bg-gray-100">
@@ -85,10 +111,11 @@
                 </UButton>
                 <UButton
                   v-if="canDelete"
-                  @click="deleteProduct(product)"
+                  @click="requestDelete(product)"
                   size="xs"
                   color="error"
-                  variant="ghost">
+                  variant="ghost"
+                  :loading="deletingId === (product._id || product.id)">
                   حذف
                 </UButton>
               </td>
@@ -104,7 +131,7 @@
       </div>
 
       <!-- Modal -->
-      <BaseModal v-if="showModal" @close="closeModal">
+      <BaseModal v-if="showModal" :busy="saving" @close="closeModal">
         <template #default>
           <h2 class="text-lg font-semibold mb-4">
             {{ editMode ? "ویرایش محصول" : "محصول جدید" }}
@@ -331,12 +358,24 @@
                 variant="soft">
                 انصراف
               </UButton>
-              <UButton type="submit">
+              <UButton type="submit" :loading="saving" :disabled="uploading">
                 ذخیره
               </UButton>
             </div>
           </UForm>
         </template>
+      </BaseModal>
+
+      <BaseModal v-if="deleteTarget" title-id="delete-product-title" @close="cancelDelete">
+        <div class="delete-confirmation">
+          <UIcon name="i-lucide-trash-2" aria-hidden="true" />
+          <h2 id="delete-product-title">حذف محصول</h2>
+          <p>آیا از حذف «{{ deleteTarget.name }}» مطمئن هستید؟ این محصول از فهرست فروشگاه خارج می‌شود.</p>
+          <div class="flex justify-end gap-2">
+            <UButton type="button" color="neutral" variant="soft" :disabled="deleting" @click="cancelDelete">انصراف</UButton>
+            <UButton type="button" color="error" :loading="deleting" @click="confirmDelete">حذف محصول</UButton>
+          </div>
+        </div>
       </BaseModal>
     </div>
   </NuxtLayout>
@@ -362,7 +401,7 @@ useHead({
 
 definePageMeta({
   middleware: ["auth", "permission"],
-  permission: { resource: "products", action: "c" },
+      permission: { resource: "products", action: "r" },
 });
 
 const search = ref("");
@@ -371,6 +410,11 @@ const page = ref(1);
 const limit = ref(25);
 const total = ref(0);
 const loading = ref(false);
+const loadError = ref<string | null>(null);
+const saving = ref(false);
+const deleting = ref(false);
+const deletingId = ref<string | null>(null);
+const deleteTarget = ref<Product | null>(null);
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -419,10 +463,14 @@ onMounted(() => {
 async function fetchCategories() {
   try {
     categoriesLoading.value = true;
-    const { data } = await useApiClient().get<Array<{ _id: string; name: string }> | { items: Array<{ _id: string; name: string }> }>("/categories");
-    categoryOptions.value = Array.isArray(data) ? data : data?.items || [];
+    const { data } = await useApiClient().get<Array<{ _id?: string; id?: string; name: string }> | { items: Array<{ _id?: string; id?: string; name: string }> }>("/categories");
+    const categories = Array.isArray(data) ? data : data?.items || [];
+    categoryOptions.value = categories
+      .map((category) => ({ _id: category._id || category.id || "", name: category.name }))
+      .filter((category) => category._id && category.name);
   } catch (e) {
     console.error("خطا در دریافت دسته‌بندی‌ها:", e);
+    feedback.error("دسته‌بندی‌ها دریافت نشد", errorMessage(e));
   } finally {
     categoriesLoading.value = false;
   }
@@ -430,7 +478,17 @@ async function fetchCategories() {
 
 function handleImageSelection(e: Event) {
   const target = e.target as HTMLInputElement;
-  imageFiles.value = Array.from(target.files || []);
+  const files = Array.from(target.files || []);
+  const maxFileSize = 5 * 1024 * 1024;
+  const validFiles = files.filter((file) => file.type.startsWith("image/") && file.size <= maxFileSize);
+
+  if (validFiles.length !== files.length) {
+    feedback.error("تصویر نامعتبر است", "فقط فایل تصویری با حجم حداکثر ۵ مگابایت قابل انتخاب است.");
+  }
+  imageFiles.value = validFiles.slice(0, 8);
+  if (validFiles.length > 8) {
+    feedback.info("تعداد تصاویر محدود شد", "حداکثر ۸ تصویر در هر بار انتخاب قابل آپلود است.");
+  }
 }
 
 // uploadSelectedImages → POST /api/images/upload (multipart/form-data)
@@ -464,6 +522,7 @@ async function uploadSelectedImages() {
       ...(form.value.imagesMeta || []),
       ...newImagesMeta,
     ];
+    feedback.success("تصاویر آپلود شدند", `${items.length} تصویر با موفقیت اضافه شد.`);
 
     // پاک‌سازی input انتخاب فایل
     imageFiles.value = [];
@@ -509,6 +568,7 @@ function statusFa(s: Product["status"]) {
 async function fetchProducts() {
   if (!canRead.value) return;
   loading.value = true;
+  loadError.value = null;
   try {
     const result = await listAdminProducts({
       page: page.value,
@@ -518,10 +578,17 @@ async function fetchProducts() {
     });
     products.value = result.items;
     total.value = result.total;
+    const lastPage = Math.max(1, Math.ceil(result.total / limit.value));
+    if (page.value > lastPage) {
+      page.value = lastPage;
+      await fetchProducts();
+      return;
+    }
   } catch (e) {
     console.error("خطا در دریافت محصولات:", e);
     products.value = [];
     total.value = 0;
+    loadError.value = errorMessage(e);
   } finally {
     loading.value = false;
   }
@@ -534,18 +601,16 @@ function applyProductFilters() {
   fetchProducts();
 }
 
-function goToProductPage(nextPage: number) {
-  page.value = Math.max(1, Math.min(nextPage, totalPages.value));
-  fetchProducts();
-}
-
 watch([sort, limit], applyProductFilters);
+watch(page, (nextPage, previousPage) => {
+  if (nextPage !== previousPage && !loading.value) fetchProducts();
+});
 
 function openModal(product: Product | null = null) {
   if (product) {
     if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
     editMode.value = true;
-    selectedId.value = product._id || null;
+    selectedId.value = product._id || product.id || null;
     form.value = {
       ...product,
       images: product.images || [],
@@ -577,6 +642,7 @@ function openModal(product: Product | null = null) {
 }
 
 function closeModal() {
+  if (saving.value) return;
   showModal.value = false;
   imageFiles.value = [];
   if (fileInputRef.value) {
@@ -592,16 +658,20 @@ async function saveProduct() {
     if (key && value) form.value.attributes[key] = value;
   });
 
-  const cleanPayload: any = {
+  const validationError = validateProductForm();
+  if (validationError) {
+    feedback.error("اطلاعات محصول کامل نیست", validationError);
+    return;
+  }
+
+  const cleanPayload: Record<string, unknown> = {
     name: form.value.name,
     slug: form.value.slug,
     sku: form.value.sku,
     basePrice: Number(form.value.basePrice) || 0,
     discount:
       form.value.discount !== undefined ? Number(form.value.discount) : 0,
-    categories: Array.isArray(form.value.categories)
-      ? form.value.categories.filter((c) => typeof c === "string")
-      : [],
+    categories: normalizeCategoryIds(form.value.categories),
     description: form.value.description || undefined,
     stock: {
       quantity: Number(form.value.stock?.quantity) || 0,
@@ -623,6 +693,7 @@ async function saveProduct() {
   }
 
   try {
+    saving.value = true;
     if (editMode.value && selectedId.value) {
       await updateProduct(selectedId.value, cleanPayload);
     } else {
@@ -633,21 +704,69 @@ async function saveProduct() {
   } catch (e: any) {
     console.error("خطا در ذخیره محصول:", e);
     const errorMsg =
-      e?.response?.data?.message?.join(", ") || e?.message || "خطای نامشخص";
+      errorMessage(e);
     feedback.error("ذخیره انجام نشد", errorMsg);
+  } finally {
+    saving.value = false;
   }
 }
 
-async function deleteProduct(product: Product) {
+function requestDelete(product: Product) {
   if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
-  if (!product._id) return;
-  if (!confirm(`حذف «${product.name}»؟`)) return;
+  if (!(product._id || product.id)) {
+    return feedback.error("حذف انجام نشد", "شناسه محصول معتبر نیست.");
+  }
+  deleteTarget.value = product;
+}
+
+function cancelDelete() {
+  if (!deleting.value) deleteTarget.value = null;
+}
+
+async function confirmDelete() {
+  const product = deleteTarget.value;
+  const id = product?._id || product?.id;
+  if (!product || !id) return;
+
   try {
-    await removeProduct(product._id);
-    await fetchProducts();
+    deleting.value = true;
+    deletingId.value = id;
+    await removeProduct(id);
+    feedback.success("محصول حذف شد", `محصول «${product.name}» با موفقیت حذف شد.`);
+    deleteTarget.value = null;
+    if (products.value.length === 1 && page.value > 1) {
+      page.value -= 1;
+    } else {
+      await fetchProducts();
+    }
   } catch (e) {
     console.error("خطا در حذف محصول:", e);
+    feedback.error("حذف محصول انجام نشد", errorMessage(e));
+  } finally {
+    deleting.value = false;
+    deletingId.value = null;
   }
+}
+
+function normalizeCategoryIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((category) => typeof category === "string" ? category : (category as { _id?: string; id?: string })?._id || (category as { id?: string })?.id)
+    .filter((id): id is string => Boolean(id));
+}
+
+function validateProductForm(): string | null {
+  if (!form.value.name.trim()) return "نام محصول را وارد کنید.";
+  if (!form.value.slug.trim()) return "نامک محصول را وارد کنید.";
+  if (Number(form.value.basePrice) < 0) return "قیمت پایه نمی‌تواند منفی باشد.";
+  if (Number(form.value.discount) < 0 || Number(form.value.discount) > 100) return "تخفیف باید بین صفر تا صد باشد.";
+  if (Number(form.value.stock?.quantity) < 0) return "موجودی نمی‌تواند منفی باشد.";
+  return null;
+}
+
+function errorMessage(error: unknown): string {
+  const candidate = error as { info?: { message?: string }; message?: string };
+  return candidate.info?.message || candidate.message || "خطای نامشخصی رخ داد. دوباره تلاش کنید.";
 }
 
 function numberFormat(n?: number) {
@@ -659,17 +778,64 @@ function numberFormat(n?: number) {
 <style scoped>
 .container {
   width: 100%;
+  max-width: 92rem;
+  margin-inline: auto;
 }
-.title {
-  color: var(--color-text-dark);
+.page-heading {
+  color: var(--color-text-heading);
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 15px 0;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
 }
-.title img {
-  width: 50px;
-  height: 50px;
+.page-heading h1 {
+  margin: 0.25rem 0;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-weight: 800;
+}
+.page-eyebrow {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.page-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+.page-heading img {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+}
+.products-panel {
+  min-height: 20rem;
+}
+.state-card {
+  min-height: 20rem;
+  padding: 3rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+.state-card > svg { width: 2.5rem; height: 2.5rem; color: var(--blue-dark); }
+.state-card h2 { margin: 0; color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
+.state-card p { margin: 0 0 0.5rem; }
+.state-card--error > svg { color: var(--color-danger-fg); }
+.state-card--error h2 { color: var(--color-danger-fg); }
+.delete-confirmation { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 1rem; }
+.delete-confirmation > svg { width: 2.5rem; height: 2.5rem; color: var(--color-danger-fg); }
+.delete-confirmation h2 { margin: 0; color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
+.delete-confirmation p { margin: 0 0 0.75rem; color: var(--color-text-muted); line-height: 1.8; }
+@media (max-width: 640px) {
+  .page-heading img { width: 2.75rem; height: 2.75rem; }
+  .page-heading { align-items: flex-start; }
 }
 .ltr {
   direction: ltr;

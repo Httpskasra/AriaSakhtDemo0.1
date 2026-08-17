@@ -134,7 +134,7 @@ async function fetchProducts() {
   if (!canRead.value) return;
   try {
     const { data } = await $axios.get("/products/admin/all-products");
-    products.value = Array.isArray(data) ? data : [];
+    products.value = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
   } catch (e) {
     console.error("خطا در دریافت محصولات:", e);
   }

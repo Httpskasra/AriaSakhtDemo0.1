@@ -3,7 +3,7 @@
     <div class="signup-container">
       <img src="/logo/logo.png" alt="Logo" class="logo-img" />
 
-      <form @submit.prevent="handleSubmit" class="signup-form">
+      <form @submit.prevent.stop="handleSubmit" class="signup-form">
         <!-- کد ملی -->
         <div class="input-group">
           <label class="input-label">
@@ -86,10 +86,10 @@ import { ref } from "vue";
 import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { isValidPhone, toEnglishDigits, toInternationalPhone } from "@/utils/PhoneNumber";
-import { toUserFacingError } from "~/services/apiClient";
+import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
 const { phoneNumber: globalPhoneNumber } = useAuthData();
-const $axios = useNuxtApp().$axios;
+const api = useApiClient();
 
 const meliCode = ref("");
 const phoneNumber = ref("");
@@ -145,7 +145,7 @@ const handleSubmit = async () => {
   loading.value = true;
 
   try {
-    const response = await $axios.post("/auth/signup", {
+    const response = await api.post("/auth/signup", {
       phoneNumber: toInternationalPhone(phoneNumber.value),
       nationalId: meliCode.value,
     });

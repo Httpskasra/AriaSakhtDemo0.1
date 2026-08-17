@@ -37,8 +37,7 @@ export function useOrders() {
     try {
       selectedOrder.value = await getOrder(id);
       return selectedOrder.value;
-    } catch (err: any) {
-      console.error("خطا در دریافت سفارش:", err);
+    } catch (err) {
       throw err;
     }
   };

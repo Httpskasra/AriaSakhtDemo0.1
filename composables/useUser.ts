@@ -2,13 +2,10 @@ import type { User } from "~/types/permissions";
 import { useState } from "#app";
 import { computed } from "vue";
 import { useApiClient } from '~/services/apiClient';
-import { useAuthStore } from '~/stores/auth';
 
 export const useUser = () => {
   const user = useState<User | null>("user", () => null);
   const isUserLoading = useState<boolean>("user-loading", () => true);
-  const authStore = useAuthStore();
-
   const normalizeUser = (data: User & { id?: string; _id?: string }): User => {
     const rawId = data?.userId || data?.id || data?._id || "";
     return {
@@ -44,7 +41,10 @@ export const useUser = () => {
     }
   };
 
-  const isAuthenticated = computed(() => !!user.value || !!authStore.getAccessToken());
+  // A token in memory is only a refresh hint; the authenticated session is
+  // established after /auth/me succeeds. Otherwise an expired token can leave
+  // the user on protected pages with an empty permission set.
+  const isAuthenticated = computed(() => !!user.value);
 
   return {
     user,

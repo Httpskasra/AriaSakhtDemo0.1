@@ -59,7 +59,7 @@ const closeModal = () => {
     <div class="signin-container">
       <img src="/logo/logo.png" alt="Logo" class="logo-img" />
 
-      <form @submit.prevent="handleSubmit" class="signin-form">
+      <form @submit.prevent.stop="handleSubmit" class="signin-form">
         <div class="input-group">
           <label class="input-label">
             <input

@@ -4,7 +4,8 @@ import { createVendorRequest } from '~/services/companyService';
 import { useUser } from '~/composables/useUser';
 
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
+  middleware: ['auth'],
 });
 
 const toast = useToast();

@@ -9,7 +9,8 @@ const emit = defineEmits<{ navigate: [] }>();
 const route = useRoute();
 
 function isActive(item: SidebarNavItem) {
-  return Boolean(item.route && route.path === item.route);
+  if (!item.route) return false;
+  return route.path === item.route || route.path.startsWith(`${item.route}/`);
 }
 
 function iconSrc(item: SidebarNavItem) {
@@ -59,12 +60,8 @@ async function handleAction(item: SidebarNavItem) {
   flex: 1;
   overflow-y: auto;
   padding: 1.25rem 0 6.25rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.sidebar-nav::-webkit-scrollbar {
-  display: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 .sidebar-nav__item {
@@ -84,12 +81,25 @@ async function handleAction(item: SidebarNavItem) {
   text-align: right;
   text-decoration: none;
   cursor: pointer;
+  transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.sidebar-nav__item:hover,
+.sidebar-nav__item:focus-visible {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-heading);
+  outline: none;
+}
+
+.sidebar-nav__item:focus-visible {
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 22%);
 }
 
 .sidebar-nav__item--active {
   background-color: var(--blue-sky);
   border-radius: var(--radius-card);
   color: var(--color-text-heading);
+  box-shadow: inset -3px 0 0 var(--blue-dark);
 }
 
 .sidebar-nav__item--button {

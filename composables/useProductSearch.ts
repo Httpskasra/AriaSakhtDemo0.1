@@ -22,8 +22,8 @@ export const useProductSearch = () => {
   const companyName = computed(() => (route.query.companyName as string) || "");
   const categoryIds = computed(() => {
     const cat = route.query.categoryIds;
-    if (Array.isArray(cat)) return cat as string[];
-    return cat ? [cat as string] : [];
+    const values = Array.isArray(cat) ? cat : cat ? [cat] : [];
+    return [...new Set(values.map(String).map((value) => value.trim()).filter(Boolean))];
   });
 
   /* ---------- Build parameters for API call ---------- */

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { advancedSearchProducts } from '~/services/productService';
 import { useCategories } from '~/composables/useCategories';
+import { getCategoryId } from '~/services/categories';
 
 const { buildParams, changePage, page, limit, sortOption, searchQuery, minPrice, maxPrice, companyName, categoryIds, onFiltersFromSidebar, clearAllFilters, updateQueryString, onSortChange } = useProductSearch();
 const { categories: availableCategories, load: loadCategories } = useCategories();
@@ -30,7 +31,7 @@ const { data: productsData, pending, error, refresh } = await useAsyncData('prod
 
 const activeFilterCount = computed(() => [minPrice.value, maxPrice.value, companyName.value, ...categoryIds.value].filter(Boolean).length);
 const categoryLabel = (categoryId: string) => {
-  const category = availableCategories.value.find(item => (item.id || item._id) === categoryId);
+  const category = availableCategories.value.find(item => getCategoryId(item) === categoryId);
   return `دسته: ${category?.name || categoryId}`;
 };
 const activeFilterLabels = computed(() => [

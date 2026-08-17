@@ -69,7 +69,7 @@ import { useAuthData } from "@/composables/useAuthData";
 import { useAuthStore } from "@/stores/auth";
 import { useUser } from "@/composables/useUser";
 import { toEnglishDigits } from "@/utils/PhoneNumber";
-import { toUserFacingError } from "~/services/apiClient";
+import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
 const { phoneNumber } = useAuthData();
 const inputs = ref(Array(4).fill(""));
@@ -82,7 +82,7 @@ const timer = ref<ReturnType<typeof setInterval> | null>(null);
 const loading = ref(false);
 const errorMessage = ref("");
 
-const $axios = useNuxtApp().$axios;
+const api = useApiClient();
 const toast = useToast();
 const { fetchUser } = useUser();
 
@@ -127,7 +127,7 @@ const startTimer = () => {
 const resendOtp = async () => {
   try {
     loading.value = true;
-    await $axios.post("/auth/signin", {
+    await api.post("/auth/signin", {
       phoneNumber: phoneNumber.value,
     });
   } catch (err) {
@@ -190,7 +190,7 @@ const verifyOtp = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await $axios.post("/auth/verify-otp", {
+    const response = await api.post("/auth/verify-otp", {
       phoneNumber: phoneNumber.value,
       otp: otpCode.value,
     });

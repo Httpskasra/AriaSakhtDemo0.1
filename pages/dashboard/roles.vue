@@ -166,8 +166,7 @@ definePageMeta({
   middleware: ["auth", "permission"],
   permission: { resource: "users", action: "m" },
 });
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.ROLES);
-// داده mock برای تست سریع
+const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
 const actionOptions = [
   { value: Action.READ, label: "خواندن" },
   { value: Action.UPDATE, label: "ویرایش" },
