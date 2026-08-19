@@ -39,7 +39,9 @@
             <UButton
               v-if="canUpdate"
               type="submit"
-              size="lg">
+              size="lg"
+              :loading="saving"
+              :disabled="saving">
               ذخیره اطلاعات
             </UButton>
           </div>
@@ -86,6 +88,7 @@ const form = ref<Profile>({
   email: "",
 });
 const id = ref<string | null>(null);
+const saving = ref(false);
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
   if (!canRead.value) return;
@@ -118,14 +121,22 @@ const fetchProfile = async () => {
 
 // ذخیره تغییرات
 const saveProfile = async () => {
+  if (saving.value) return;
   if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
   try {
+    if (!form.value.firstName.trim() || !form.value.lastName.trim() || !form.value.email.trim() || !form.value.address.trim()) {
+      feedback.error("اطلاعات ناقص", "نام، نام خانوادگی، ایمیل و آدرس الزامی هستند.");
+      return;
+    }
+    saving.value = true;
     await $axios.patch(`/profile/${id.value}`, form.value);
     feedback.success("ذخیره شد", "اطلاعات با موفقیت ذخیره شد.");
     await fetchProfile();
   } catch (err) {
     console.error("خطا در ذخیره پروفایل:", err);
     feedback.error("ذخیره انجام نشد", toUserFacingError(err).message);
+  } finally {
+    saving.value = false;
   }
 };
 

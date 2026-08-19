@@ -140,10 +140,11 @@
             type="button"
             @click="closeModal"
             color="neutral"
-            variant="soft">
+            variant="soft"
+            :disabled="saving">
             لغو
           </UButton>
-          <UButton type="submit">
+          <UButton type="submit" :loading="saving" :disabled="saving">
             ذخیره
           </UButton>
         </div>
@@ -207,6 +208,7 @@ const roleColumns = computed(() => [
     : []),
 ]);
 const isModalOpen = ref(false);
+const saving = ref(false);
 const editMode = ref(false);
 const form = ref<Role>({
   id: "",
@@ -262,6 +264,7 @@ const closeModal = () => {
 };
 
 const saveRole = async () => {
+  if (saving.value) return;
   if (!canCreate.value && !editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   if (!canUpdate.value && editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
 
@@ -304,9 +307,8 @@ const saveRole = async () => {
   const topCompanyId = prodPerm ? (prodPerm as any).companyId : undefined;
   if (topCompanyId) body.companyId = topCompanyId;
 
-  // optimistic local save (keep UI responsive)
-  isModalOpen.value = false;
   try {
+    saving.value = true;
     if (editMode.value) {
       // update permissions via dedicated endpoint
       try {
@@ -349,9 +351,12 @@ const saveRole = async () => {
       roles.value.push(newRole);
       feedback.success("ایجاد شد", "نقش با موفقیت ایجاد شد.");
     }
+    isModalOpen.value = false;
   } catch (err) {
     console.error("saveRole failed:", err);
     feedback.error("ذخیره نقش انجام نشد", toUserFacingError(err).message);
+  } finally {
+    saving.value = false;
   }
 };
 

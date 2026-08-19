@@ -177,7 +177,9 @@
                       v-if="canDelete"
                       @click="deleteCompany(company)"
                       size="xs"
-                      color="error">
+                      color="error"
+                      :loading="deletingId === company._id"
+                      :disabled="Boolean(deletingId)">
                       حذف
                     </UButton>
                   </div>
@@ -237,7 +239,7 @@
                 variant="soft">
                 انصراف
               </UButton>
-              <UButton type="submit">
+              <UButton type="submit" :loading="saving" :disabled="saving">
                 ذخیره
               </UButton>
             </div>
@@ -299,6 +301,8 @@ const { $axios } = useNuxtApp();
 
 // small map to track loading state per-company when changing status
 const statusLoading = ref<Record<string, boolean>>({});
+const saving = ref(false);
+const deletingId = ref<string | null>(null);
 
 /**
  * Handle inline status change. Sends PATCH to /companies/:id/status
@@ -416,7 +420,13 @@ function onFileChange(e: Event) {
 }
 
 const saveCompany = async () => {
+  if (saving.value) return;
   try {
+    if (!form.value.name.trim() || !form.value.email.trim()) {
+      feedback.error("اطلاعات ناقص", "نام و ایمیل شرکت الزامی هستند.");
+      return;
+    }
+    saving.value = true;
     if (editMode.value) {
       if (!selectedId.value || selectedId.value.length !== 24) {
         feedback.error("شناسه نامعتبر", "شناسه شرکت معتبر نیست.");
@@ -443,18 +453,24 @@ const saveCompany = async () => {
   } catch (err) {
     console.error("خطا در ذخیره شرکت:", err);
     feedback.error("ذخیره شرکت انجام نشد", toUserFacingError(err).message);
+  } finally {
+    saving.value = false;
   }
 };
 
 const deleteCompany = async (company: Company) => {
+  if (!company._id || deletingId.value) return;
   if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
   if (!confirm("آیا از حذف این شرکت مطمئن هستید؟")) return;
   try {
+    deletingId.value = company._id;
     await removeCompany(company._id);
     await fetchCompanies();
   } catch (err) {
     console.error("خطا در حذف شرکت:", err);
     feedback.error("حذف شرکت انجام نشد", toUserFacingError(err).message);
+  } finally {
+    deletingId.value = null;
   }
 };
 

@@ -33,6 +33,8 @@
                 v-if="canDelete"
                 size="xs"
                 color="error"
+                :loading="deletingId === row.id"
+                :disabled="Boolean(deletingId)"
                 @click="deleteCategory(row.id)">
                 حذف
               </UButton>
@@ -99,7 +101,7 @@
             variant="soft">
             لغو
           </UButton>
-          <UButton type="submit">
+          <UButton type="submit" :loading="saving" :disabled="saving">
             ذخیره
           </UButton>
         </div>
@@ -148,6 +150,8 @@ const categoryColumns = computed(() => [
 const { $axios } = useNuxtApp();
 
 const isModalOpen = ref(false);
+const saving = ref(false);
+const deletingId = ref<string | null>(null);
 const editMode = ref(false);
 const form = ref({
   id: "",
@@ -189,12 +193,15 @@ const deleteCategory = async (id: string) => {
   if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
 
   try {
+    deletingId.value = id;
     await $axios.delete(`/categories/${id}`);
     // بعد از حذف، دوباره fetch کن
     await fetchCategories();
   } catch (err) {
     console.error("خطا در حذف دسته‌بندی:", err);
     feedback.error("حذف دسته‌بندی انجام نشد", toUserFacingError(err).message);
+  } finally {
+    deletingId.value = null;
   }
 };
 
@@ -225,10 +232,16 @@ const filteredCategories = computed(() => {
 });
 
 const saveCategory = async () => {
+  if (saving.value) return;
   if (!canCreate.value && !editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   if (!canUpdate.value && editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
 
   try {
+    if (!form.value.name.trim() || !form.value.slug.trim()) {
+      feedback.error("اطلاعات ناقص", "نام و slug دسته‌بندی الزامی است.");
+      return;
+    }
+    saving.value = true;
     const parentId =
       form.value.parentName === "" ? null : form.value.parentName;
 
@@ -259,6 +272,8 @@ const saveCategory = async () => {
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
     feedback.error("ذخیره دسته‌بندی انجام نشد", toUserFacingError(err).message);
+  } finally {
+    saving.value = false;
   }
 };
 const closeModal = () => {
