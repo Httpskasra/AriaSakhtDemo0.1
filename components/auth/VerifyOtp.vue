@@ -206,7 +206,11 @@ const verifyOtp = async () => {
         response.data.accessToken,
         response.data.csrfToken
       );
-      await fetchUser(true);
+      const sessionResolved = await fetchUser(true);
+      if (!sessionResolved) {
+        errorMessage.value = "ورود انجام شد اما دریافت حساب کاربری ناموفق بود. لطفاً دوباره تلاش کنید.";
+        return;
+      }
       emit("onVerified");
     } else {
       errorMessage.value = "کد واردشده معتبر نیست. کد جدید دریافت کنید و دوباره تلاش کنید.";

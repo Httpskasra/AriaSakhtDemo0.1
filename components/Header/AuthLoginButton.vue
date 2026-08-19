@@ -20,7 +20,7 @@ const handleClick = () => {
     class="auth-login-button font-bold"
     :class="{ 'auth-login-button--compact': compact, 'auth-login-button--profile': isAuthenticated }"
     :square="compact || isAuthenticated || authStatus === 'loading'"
-    :disabled="authStatus === 'loading'"
+    :aria-busy="authStatus === 'loading'"
     :aria-label="authStatus === 'loading' ? 'در حال بررسی حساب کاربری' : isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
     @click="handleClick"
   >

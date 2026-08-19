@@ -7,6 +7,7 @@ export const useUser = () => {
   const user = useState<User | null>("user", () => null);
   const isUserLoading = useState<boolean>("user-loading", () => true);
   const hasResolvedUser = useState<boolean>("user-resolved", () => false);
+  const requestVersion = useState<number>("user-request-version", () => 0);
   const normalizeUser = (data: User & { id?: string; _id?: string }): User => {
     const rawId = data?.userId || data?.id || data?._id || "";
     return {
@@ -22,31 +23,36 @@ export const useUser = () => {
   };
 
   const clearUser = () => {
+    requestVersion.value += 1;
     user.value = null;
     isUserLoading.value = false;
     hasResolvedUser.value = true;
   };
 
-  const fetchUser = async (force = false) => {
+  const fetchUser = async (force = false): Promise<boolean> => {
     if (!force && user.value) {
       isUserLoading.value = false;
       hasResolvedUser.value = true;
-      return;
+      return true;
     }
 
     isUserLoading.value = true;
-    const request = (async () => {
-      try {
-        const response = await useApiClient().get<User>("/auth/me");
-        setUser(normalizeUser(response.data));
-      } catch (_err) {
-        clearUser();
-      } finally {
+    const currentRequest = ++requestVersion.value;
+    try {
+      const response = await useApiClient().get<User>("/auth/me");
+      if (currentRequest !== requestVersion.value) return Boolean(user.value);
+      setUser(normalizeUser(response.data));
+      return true;
+    } catch (_err) {
+      if (currentRequest !== requestVersion.value) return Boolean(user.value);
+      clearUser();
+      return false;
+    } finally {
+      if (currentRequest === requestVersion.value) {
         isUserLoading.value = false;
         hasResolvedUser.value = true;
       }
-    })();
-    await request;
+    }
   };
 
   // A token in memory is only a refresh hint; the authenticated session is

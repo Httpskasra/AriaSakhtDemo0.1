@@ -49,7 +49,7 @@ async function performRefresh(
   if (!csrfToken) {
     const csrfResponse = await axios.get<{ csrfToken: string }>(
       `${apiBase}/auth/csrf`,
-      { withCredentials: true, headers: cookieHeaders },
+      { withCredentials: true, headers: cookieHeaders, timeout: 10000 },
     );
     csrfToken = csrfResponse.data.csrfToken;
     authStore.setCsrfToken(csrfToken);
@@ -61,6 +61,7 @@ async function performRefresh(
     payload,
     {
       withCredentials: true,
+      timeout: 10000,
       headers: { ...cookieHeaders, "X-CSRF-Token": csrfToken },
     },
   );
