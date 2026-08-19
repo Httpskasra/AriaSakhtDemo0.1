@@ -203,6 +203,7 @@ import {
   getTicketComments,
   addTicketComment,
 } from "@/services/ticketService";
+import { toUserFacingError } from "~/services/apiClient";
 
 useHead({ title: "داشبورد | تیکتینگ" });
 definePageMeta({
@@ -250,9 +251,8 @@ const fetchTickets = async () => {
       tickets.value = result.items;
       totalTickets.value = result.total;
     }
-  } catch (err: any) {
-    errorMsg.value =
-      err?.response?.data?.message || err?.message || "خطای نامشخص";
+  } catch (err) {
+    errorMsg.value = toUserFacingError(err, "دریافت تیکت‌ها انجام نشد.").message;
     tickets.value = [];
     totalTickets.value = 0;
   } finally {
@@ -275,10 +275,10 @@ const fetchComments = async () => {
   commentsErrorMsg.value = "";
   try {
     comments.value = await getTicketComments(selectedTicket.value.id);
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در دریافت کامنت‌ها:", err);
     comments.value = [];
-    commentsErrorMsg.value = "دریافت کامنت‌ها با مشکل مواجه شد.";
+    commentsErrorMsg.value = toUserFacingError(err, "دریافت کامنت‌ها انجام نشد.").message;
   } finally {
     loadingComments.value = false;
   }
@@ -295,9 +295,9 @@ const addComment = async () => {
     });
     comments.value.push(comment);
     newComment.value = "";
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در اضافه کردن کامنت:", err);
-    errorMsg.value = "ارسال کامنت با مشکل مواجه شد.";
+    errorMsg.value = toUserFacingError(err, "ارسال کامنت انجام نشد.").message;
   } finally {
     submittingComment.value = false;
   }
@@ -321,9 +321,9 @@ const handleNewTicket = async (payload: Partial<Ticket>) => {
       priority: (payload.priority as TicketPriority) ?? "low",
     });
     tickets.value.unshift(created || (payload as Ticket));
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در ایجاد تیکت:", err);
-    errorMsg.value = "ایجاد تیکت ناموفق بود.";
+    errorMsg.value = toUserFacingError(err, "ایجاد تیکت انجام نشد.").message;
   }
 };
 

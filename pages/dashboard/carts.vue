@@ -11,6 +11,10 @@
         <SharedAsyncState state="loading" />
       </div>
 
+      <div v-else-if="loadError" class="col-products">
+        <SharedAsyncState state="error" :message="loadError" @retry="fetchCart" />
+      </div>
+
       <!-- Empty Cart -->
       <div v-else-if="cartItems.length === 0" class="col-products">
         <SharedAsyncState state="empty" title="سبد خرید خالی است" message="هنوز محصولی به سبد خرید اضافه نشده است." />
@@ -109,6 +113,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useUser } from "~/composables/useUser";
+import { toUserFacingError } from "~/services/apiClient";
 
 definePageMeta({
   middleware: ["auth", "permission"],
@@ -144,6 +149,7 @@ const { $axios } = useNuxtApp();
 const toast = useToast();
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
+const loadError = ref<string | null>(null);
 const isCheckingOut = ref(false);
 const shippingCost = ref(0);
 
@@ -172,6 +178,7 @@ function showNotification(message: string, type: "success" | "error") {
 // API calls
 async function fetchCart() {
   loading.value = true;
+  loadError.value = null;
   try {
     // دریافت کارت فعال
     const { data } = await $axios.get("/carts/active");
@@ -210,6 +217,7 @@ async function fetchCart() {
   } catch (err) {
     console.error("خطا در دریافت سبد:", err);
     cartItems.value = [];
+    loadError.value = toUserFacingError(err, "دریافت سبد خرید انجام نشد.").message;
     showNotification("خطا در بارگذاری سبد خرید", "error");
   } finally {
     loading.value = false;
@@ -239,12 +247,9 @@ async function addToCart(
     });
     await fetchCart();
     showNotification("محصول به سبد افزوده شد", "success");
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در افزودن به سبد:", err);
-    showNotification(
-      err?.response?.data?.message || "خطا در افزودن به سبد",
-      "error"
-    );
+    showNotification(toUserFacingError(err, "افزودن محصول به سبد انجام نشد.").message, "error");
   }
 }
 
@@ -265,9 +270,9 @@ async function updateQuantity(item: CartItem) {
     });
     await fetchCart();
     showNotification("سبد به‌روزرسانی شد", "success");
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در به‌روزرسانی:", err);
-    showNotification("خطا در به‌روزرسانی سبد", "error");
+    showNotification(toUserFacingError(err, "به‌روزرسانی سبد انجام نشد.").message, "error");
     await fetchCart();
   }
 }
@@ -277,9 +282,9 @@ async function removeFromCart(productId: string) {
     await $axios.delete(`/carts/items/${productId}`);
     await fetchCart();
     showNotification("محصول از سبد حذف شد", "success");
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در حذف:", err);
-    showNotification("خطا در حذف محصول", "error");
+    showNotification(toUserFacingError(err, "حذف محصول از سبد انجام نشد.").message, "error");
   }
 }
 
@@ -290,9 +295,9 @@ async function clearCart() {
     await $axios.delete("/carts/clear");
     cartItems.value = [];
     showNotification("سبد خالی شد", "success");
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در خالی کردن سبد:", err);
-    showNotification("خطا در خالی کردن سبد", "error");
+    showNotification(toUserFacingError(err, "خالی کردن سبد انجام نشد.").message, "error");
   }
 }
 
@@ -311,12 +316,9 @@ async function checkout() {
     setTimeout(() => {
       navigateTo(`/orders/${response.data._id}`);
     }, 1500);
-  } catch (err: any) {
+  } catch (err) {
     console.error("خطا در تسویه حساب:", err);
-    showNotification(
-      err?.response?.data?.message || "خطا در ثبت سفارش",
-      "error"
-    );
+    showNotification(toUserFacingError(err, "ثبت سفارش انجام نشد.").message, "error");
   } finally {
     isCheckingOut.value = false;
   }

@@ -159,6 +159,7 @@ import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
 import { toInternationalPhone } from "~/utils/PhoneNumber";
 import { updateUserPermissions } from "~/services/authService";
+import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | نقش‌ها",
 });
@@ -350,7 +351,7 @@ const saveRole = async () => {
     }
   } catch (err) {
     console.error("saveRole failed:", err);
-    feedback.error("ذخیره انجام نشد", "ارسال اطلاعات به سرور با مشکل مواجه شد.");
+    feedback.error("ذخیره نقش انجام نشد", toUserFacingError(err).message);
   }
 };
 

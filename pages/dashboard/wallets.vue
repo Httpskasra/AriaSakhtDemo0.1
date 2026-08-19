@@ -172,6 +172,7 @@ import {
   creditWallet,
   debitWallet,
 } from "~/services/walletService";
+import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | کیف پول",
 });
@@ -251,6 +252,7 @@ const fetchWallet = async () => {
   } catch (err) {
     console.warn("خطا در دریافت کیف پول:", err);
     wallet.value = null;
+    errorMsg.value = toUserFacingError(err, "دریافت کیف پول انجام نشد.").message;
   }
 };
 
@@ -263,6 +265,7 @@ const fetchTransactions = async () => {
   } catch (err) {
     console.warn("خطا در دریافت تاریخچه تراکنش:", err);
     transactions.value = [];
+    errorMsg.value = toUserFacingError(err, "دریافت تراکنش‌ها انجام نشد.").message;
   }
 };
 
@@ -315,8 +318,7 @@ const creditWalletHandler = async () => {
     closeCreditModal();
     feedback.success("شارژ انجام شد", "کیف پول با موفقیت شارژ شد.");
   } catch (err: any) {
-    const message = err?.message || "خطا در شارژ کیف پول. دوباره تلاش کنید.";
-    errorMsg.value = message;
+    errorMsg.value = toUserFacingError(err, "شارژ کیف پول انجام نشد.").message;
     console.error("خطا در شارژ کیف پول:", err);
   } finally {
     creditLoading.value = false;
@@ -342,8 +344,7 @@ const debitWalletHandler = async () => {
     closeDebitModal();
     feedback.success("برداشت انجام شد", "درخواست برداشت با موفقیت ثبت شد.");
   } catch (err: any) {
-    const message = err?.message || "خطا در برداشت. دوباره تلاش کنید.";
-    errorMsg.value = message;
+    errorMsg.value = toUserFacingError(err, "برداشت از کیف پول انجام نشد.").message;
     console.error("خطا در برداشت از کیف پول:", err);
   } finally {
     debitLoading.value = false;
