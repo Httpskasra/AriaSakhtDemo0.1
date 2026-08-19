@@ -45,13 +45,6 @@ const resourceRoutes: Partial<Record<Resource, string>> = {
   [Resource.PROFILE]: "/dashboard/profile",
 };
 
-const canManage = (resource: Resource) => [
-  Action.MANAGE,
-  Action.CREATE,
-  Action.UPDATE,
-  Action.DELETE,
-].some((action) => hasPermission(resource, action));
-
 const linkFor = (resource: Resource): SidebarNavItem | null => {
   const route = resourceRoutes[resource];
   if (!route || !resourceLabels[resource]) return null;
@@ -106,13 +99,15 @@ const navItems = computed<SidebarNavItem[]>(() => {
     Resource.TRANSPORTING,
   ];
   const sellerItems = sellerResources
-    .filter((resource) => hasPermission(resource, Action.READ) || canManage(resource))
+    // Every linked page requires READ at route level. Write-only permissions
+    // must not expose a link that inevitably redirects to /forbidden.
+    .filter((resource) => hasPermission(resource, Action.READ))
     .map(linkFor)
     .filter((item): item is SidebarNavItem => Boolean(item));
   if (sellerItems.length) items.push(section("فروشندگی"), ...sellerItems);
 
   const managementItems: SidebarNavItem[] = [];
-  if (canManage(Resource.CATEGORIES)) {
+  if (hasPermission(Resource.CATEGORIES, Action.READ)) {
     const item = linkFor(Resource.CATEGORIES);
     if (item) managementItems.push(item);
   }
