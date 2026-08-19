@@ -18,9 +18,6 @@ export default defineNuxtConfig({
     externals: {
       inline: ['entities']
     },
-    routeRules: {
-      "/dashboard": { redirect: "/dashboard/products" },
-    },
   },
 
   vite: {
@@ -58,13 +55,6 @@ export default defineNuxtConfig({
   modules: ["@nuxt/icon", "@nuxt/image", "@nuxt/ui", "@pinia/nuxt"],
 
   hooks: {
-    "pages:extend"(pages) {
-      if (process.env.NODE_ENV !== "production" || process.env.ENABLE_TEST_PAGES === "true") return;
-      const productionExcludedPaths = new Set(["/dashboard"]);
-      for (let index = pages.length - 1; index >= 0; index -= 1) {
-        if (productionExcludedPaths.has(pages[index].path)) pages.splice(index, 1);
-      }
-    },
   },
 
   image: {
