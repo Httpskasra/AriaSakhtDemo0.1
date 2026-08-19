@@ -72,6 +72,7 @@ import { ref, computed, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Product } from "~/types/product";
+import { toUserFacingError } from "~/services/apiClient";
 
 useHead({
   title: "داشبورد | وضعیت محصولات",
@@ -137,6 +138,7 @@ async function fetchProducts() {
     products.value = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
   } catch (e) {
     console.error("خطا در دریافت محصولات:", e);
+    feedback.error("دریافت محصولات انجام نشد", toUserFacingError(e).message);
   }
 }
 
@@ -159,8 +161,7 @@ async function updateStatus(
     product.status = newStatus;
   } catch (e: any) {
     console.error("خطا در بروزرسانی وضعیت:", e);
-    const errorMsg = e?.response?.data?.message || e?.message || "خطای نامشخص";
-    feedback.error("تغییر وضعیت انجام نشد", errorMsg);
+    feedback.error("تغییر وضعیت انجام نشد", toUserFacingError(e).message);
     await fetchProducts(); // بازیابی محصولات در صورت خطا
   } finally {
     loadingProductId.value = null;

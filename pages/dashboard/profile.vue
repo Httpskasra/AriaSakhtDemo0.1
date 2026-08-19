@@ -54,6 +54,7 @@ const feedback = useFeedback();
 import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
+import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | حساب کاربری",
 });
@@ -111,6 +112,7 @@ const fetchProfile = async () => {
     };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
+    feedback.error("دریافت پروفایل انجام نشد", toUserFacingError(err).message);
   }
 };
 
@@ -123,7 +125,7 @@ const saveProfile = async () => {
     await fetchProfile();
   } catch (err) {
     console.error("خطا در ذخیره پروفایل:", err);
-    feedback.error("ذخیره انجام نشد", "ذخیره اطلاعات با مشکل مواجه شد.");
+    feedback.error("ذخیره انجام نشد", toUserFacingError(err).message);
   }
 };
 

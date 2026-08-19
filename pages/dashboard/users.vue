@@ -261,6 +261,7 @@ import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { listUsers, type UserListItem } from "~/services/userService";
+import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | کاربران",
 });
@@ -352,10 +353,9 @@ async function fetchUsers() {
     });
     users.value = result.items;
     total.value = result.total;
-  } catch (err: any) {
-    console.error(err);
-    errorMessage.value =
-      err?.response?.data?.message || "خطا در دریافت کاربران";
+  } catch (err) {
+    console.error("خطا در دریافت کاربران:", err);
+    errorMessage.value = toUserFacingError(err, "دریافت کاربران انجام نشد.").message;
   } finally {
     loading.value = false;
   }

@@ -91,6 +91,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { Resource } from "~/types/permissions";
+import { toUserFacingError } from "~/services/apiClient";
 definePageMeta({
   middleware: ["auth", "permission"],
   permission: { resource: "transaction", action: "r" },
@@ -125,7 +126,7 @@ const fetchTransactions = async () => {
     const response = await $axios.get("/transaction");
     data.value = response.data || [];
   } catch (err) {
-    error.value = err;
+    error.value = toUserFacingError(err).message;
     console.error("Error fetching transactions:", err);
   } finally {
     pending.value = false;

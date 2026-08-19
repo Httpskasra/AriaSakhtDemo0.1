@@ -253,6 +253,7 @@ const feedback = useFeedback();
 import { ref, computed, onMounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
+import { toUserFacingError } from "~/services/apiClient";
 import type { Company } from "~/types/company";
 import { listCompanies, updateCompany, createCompany, deleteCompany as removeCompany, changeCompanyStatus } from "~/services/companyService";
 useHead({
@@ -332,7 +333,7 @@ async function onChangeStatus(e: Event, company: Company) {
     company.status = newStatus;
   } catch (err) {
     console.error("خطا در تغییر وضعیت:", err);
-    feedback.error("تغییر وضعیت انجام نشد", "دوباره تلاش کنید.");
+    feedback.error("تغییر وضعیت انجام نشد", toUserFacingError(err).message);
     // rollback select
     select.value = company.status ?? (company.isActive ? "active" : "inactive");
   } finally {
@@ -441,6 +442,7 @@ const saveCompany = async () => {
     closeModal();
   } catch (err) {
     console.error("خطا در ذخیره شرکت:", err);
+    feedback.error("ذخیره شرکت انجام نشد", toUserFacingError(err).message);
   }
 };
 
@@ -452,6 +454,7 @@ const deleteCompany = async (company: Company) => {
     await fetchCompanies();
   } catch (err) {
     console.error("خطا در حذف شرکت:", err);
+    feedback.error("حذف شرکت انجام نشد", toUserFacingError(err).message);
   }
 };
 

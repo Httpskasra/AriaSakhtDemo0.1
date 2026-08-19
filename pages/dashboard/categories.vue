@@ -115,6 +115,7 @@ useHead({
 import { computed, ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
+import { toUserFacingError } from "~/services/apiClient";
 import BaseModal from "~/components/BaseModal.vue";
 const feedback = useFeedback();
 definePageMeta({
@@ -193,6 +194,7 @@ const deleteCategory = async (id: string) => {
     await fetchCategories();
   } catch (err) {
     console.error("خطا در حذف دسته‌بندی:", err);
+    feedback.error("حذف دسته‌بندی انجام نشد", toUserFacingError(err).message);
   }
 };
 
@@ -204,6 +206,7 @@ const fetchCategories = async () => {
     //console.log(data);
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
+    feedback.error("دریافت دسته‌بندی‌ها انجام نشد", toUserFacingError(err).message);
     categories.value = [];
   }
 };
@@ -255,6 +258,7 @@ const saveCategory = async () => {
     await fetchCategories();
   } catch (err) {
     console.error("خطا در ذخیره دسته‌بندی:", err);
+    feedback.error("ذخیره دسته‌بندی انجام نشد", toUserFacingError(err).message);
   }
 };
 const closeModal = () => {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { sendContactInquiry } from '~/services/contactService';
+import { toUserFacingError } from '~/services/apiClient';
 
 const contactForm = reactive({ name: '', email: '', message: '' });
 const loading = ref(false);
@@ -18,8 +19,8 @@ const submit = async () => {
     await sendContactInquiry({ ...contactForm });
     success.value = 'پیام شما با موفقیت ارسال شد. در اولین فرصت با شما تماس می‌گیریم.';
     resetForm();
-  } catch (err: any) {
-    error.value = err.response?.data?.message || err.message || 'ارسال پیام انجام نشد. لطفاً دوباره تلاش کنید.';
+  } catch (err) {
+    error.value = toUserFacingError(err, 'ارسال پیام انجام نشد. لطفاً دوباره تلاش کنید.').message;
   } finally {
     loading.value = false;
   }

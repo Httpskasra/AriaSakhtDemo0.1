@@ -309,6 +309,7 @@ import {
   listTransportings,
   type Transporting,
 } from "~/services/transportService";
+import { toUserFacingError } from "~/services/apiClient";
 
 useHead({
   title: "داشبورد | حمل‌ونقل",
@@ -401,6 +402,7 @@ async function fetchOrders() {
     totalOrders.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت سفارش‌ها:", err);
+    feedback.error("دریافت سفارش‌ها انجام نشد", toUserFacingError(err).message);
     orders.value = [];
     totalOrders.value = 0;
   } finally {
@@ -423,6 +425,7 @@ async function fetchTransportings() {
     totalTransportings.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت حمل‌ونقل‌ها:", err);
+    feedback.error("دریافت حمل‌ونقل‌ها انجام نشد", toUserFacingError(err).message);
     transportings.value = [];
     totalTransportings.value = 0;
   } finally {
@@ -488,7 +491,7 @@ async function updateStatus(
     transporting.status = newStatus;
   } catch (err: any) {
     console.error("خطا در تغییر وضعیت:", err);
-    feedback.error("تغییر وضعیت انجام نشد", "دوباره تلاش کنید.");
+    feedback.error("تغییر وضعیت انجام نشد", toUserFacingError(err).message);
   } finally {
     if (transporting._id) statusLoading.value[transporting._id] = false;
   }
@@ -535,7 +538,7 @@ async function saveTransporting() {
     closeModal();
   } catch (err: any) {
     console.error("خطا در ذخیره حمل‌ونقل:", err);
-    feedback.error("ذخیره انجام نشد", err?.response?.data?.message || "خطا در ذخیره اطلاعات.");
+    feedback.error("ذخیره انجام نشد", toUserFacingError(err).message);
   }
 }
 
@@ -548,7 +551,7 @@ async function deleteTransporting(transporting: Transporting) {
     await fetchTransportings();
   } catch (err: any) {
     console.error("خطا در حذف حمل‌ونقل:", err);
-    feedback.error("حذف انجام نشد", err?.response?.data?.message || "خطا در حذف اطلاعات.");
+    feedback.error("حذف انجام نشد", toUserFacingError(err).message);
   }
 }
 
