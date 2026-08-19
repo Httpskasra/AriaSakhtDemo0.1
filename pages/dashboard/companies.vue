@@ -38,7 +38,18 @@
       </div>
 
       <div class="premium-card border border-gray-100">
-        <div class="overflow-x-auto">
+        <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
+        <SharedAsyncState
+          v-else-if="loadError"
+          state="error"
+          :message="loadError"
+          @retry="fetchCompanies" />
+        <SharedAsyncState
+          v-else-if="!companies.length"
+          state="empty"
+          title="شرکتی پیدا نشد"
+          message="فیلترها را تغییر دهید یا اولین شرکت را اضافه کنید." />
+        <div v-else class="overflow-x-auto">
           <table class="min-w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-gray-600">
@@ -283,6 +294,7 @@ const page = ref(1);
 const limit = ref(25);
 const total = ref(0);
 const loading = ref(false);
+const loadError = ref("");
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -348,6 +360,7 @@ async function onChangeStatus(e: Event, company: Company) {
 const fetchCompanies = async () => {
   if (!canRead.value) return;
   loading.value = true;
+  loadError.value = "";
   try {
     const result = await listCompanies({
       page: page.value,
@@ -358,7 +371,8 @@ const fetchCompanies = async () => {
     companies.value = result.items;
     total.value = result.total;
   } catch (err) {
-    console.warn("API در دسترس نیست.");
+    console.error("خطا در دریافت شرکت‌ها:", err);
+    loadError.value = toUserFacingError(err).message;
     companies.value = [];
     total.value = 0;
   } finally {

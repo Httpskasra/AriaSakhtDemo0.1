@@ -14,7 +14,18 @@
       </div>
 
       <div class="premium-card border border-gray-100 overflow-hidden">
-        <TableScrollContainer>
+        <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
+        <SharedAsyncState
+          v-else-if="loadError"
+          state="error"
+          :message="loadError"
+          @retry="fetchCategories" />
+        <SharedAsyncState
+          v-else-if="filteredCategories.length === 0"
+          state="empty"
+          title="دسته‌بندی‌ای پیدا نشد"
+          message="جستجو را تغییر دهید یا دسته‌بندی جدید بسازید." />
+        <TableScrollContainer v-else>
           <UTable :rows="filteredCategories" :columns="categoryColumns" class="min-w-[32rem]">
           <template #description-data="{ row }">
             {{ row.description || "-" }}
@@ -42,11 +53,6 @@
           </template>
           </UTable>
         </TableScrollContainer>
-        <SharedAsyncState
-          v-if="filteredCategories.length === 0"
-          state="empty"
-          title="دسته‌بندی‌ای پیدا نشد"
-          message="جستجو را تغییر دهید یا دسته‌بندی جدید بسازید." />
       </div>
     </div>
 
@@ -140,6 +146,8 @@ type Category = {
 
 const categories = ref<Category[]>([]);
 const search = ref("");
+const loading = ref(false);
+const loadError = ref("");
 const categoryColumns = computed(() => [
   { key: "name", label: "نام دسته" },
   { key: "description", label: "توضیحات" },
@@ -207,14 +215,18 @@ const deleteCategory = async (id: string) => {
 
 const fetchCategories = async () => {
   if (!canRead.value) return;
+  loading.value = true;
+  loadError.value = "";
   try {
     const { data } = await $axios.get("/categories");
     categories.value = data;
     //console.log(data);
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
-    feedback.error("دریافت دسته‌بندی‌ها انجام نشد", toUserFacingError(err).message);
+    loadError.value = toUserFacingError(err).message;
     categories.value = [];
+  } finally {
+    loading.value = false;
   }
 };
 
