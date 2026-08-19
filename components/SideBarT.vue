@@ -65,7 +65,14 @@ const navItems = computed<SidebarNavItem[]>(() => {
     [Resource.PROFILE]: "/dashboard/profile",
   };
 
-  const resourceItems = getResources()
+  const visibleResources = Array.from(new Set([
+    ...getResources(),
+    // These screens are actionable rather than read-only: keep their menu
+    // visibility aligned with the permission required by the route.
+    ...(hasPermission(Resource.PRODUCT_STATUS, Action.UPDATE) ? [Resource.PRODUCT_STATUS] : []),
+  ])).filter((resource) => resource !== Resource.USERS || hasPermission(Resource.USERS, Action.MANAGE));
+
+  const resourceItems = visibleResources
     .filter((resource) => resourceLabels[resource] && resourceRoutes[resource])
     .sort((left, right) => resourceOrder.indexOf(left) - resourceOrder.indexOf(right))
     .map((resource) => ({

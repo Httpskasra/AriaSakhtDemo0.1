@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 
-const { isAuthenticated } = useUser();
+const { isAuthenticated, authStatus } = useUser();
 const { authStep, setStep } = useAuthStep();
 
 const handleClick = () => {
@@ -19,15 +19,17 @@ const handleClick = () => {
     variant="soft"
     class="auth-login-button font-bold"
     :class="{ 'auth-login-button--compact': compact, 'auth-login-button--profile': isAuthenticated }"
-    :square="compact || isAuthenticated"
-    :aria-label="isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
+    :square="compact || isAuthenticated || authStatus === 'loading'"
+    :disabled="authStatus === 'loading'"
+    :aria-label="authStatus === 'loading' ? 'در حال بررسی حساب کاربری' : isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
     @click="handleClick"
   >
     <UIcon
-      :name="isAuthenticated ? 'i-lucide-user-round-check' : 'i-lucide-user'"
+      :name="authStatus === 'loading' ? 'i-lucide-loader-circle' : isAuthenticated ? 'i-lucide-user-round-check' : 'i-lucide-user'"
       class="size-5"
+      :class="{ 'animate-spin': authStatus === 'loading' }"
       aria-hidden="true" />
-    <span v-if="!compact && !isAuthenticated">ورود / ثبت‌نام</span>
+    <span v-if="!compact && authStatus === 'guest'">ورود / ثبت‌نام</span>
   </UButton>
   <ModalWrapper v-if="authStep" />
 </template>

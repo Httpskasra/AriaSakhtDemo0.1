@@ -12,6 +12,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   const { hasPermission } = usePermissions();
   if (!hasPermission(required.resource, required.action)) {
-    return navigateTo("/dashboard");
+    return navigateTo("/forbidden");
   }
 });

@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { useAuthStore } from "~/stores/auth";
 import { refreshAccessToken } from "~/services/authService";
+import { useUser } from "~/composables/useUser";
 import {
   defineNuxtPlugin,
   useRuntimeConfig,
@@ -74,6 +75,7 @@ export default defineNuxtPlugin((nuxtApp) => {
           return api(originalRequest);
         } catch (refreshError) {
           authStore.clearTokens();
+          useUser().clearUser();
           if (process.client && window.location.pathname !== "/") {
             redirectPromise ??= navigateTo("/", { replace: true });
             await redirectPromise;

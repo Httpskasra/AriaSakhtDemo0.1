@@ -63,7 +63,18 @@ const handleCartClick = () => {
           </div>
 
           <div class="flex shrink-0 items-center gap-3">
-            <HeaderIconButton to="/dashboard/fav" icon="i-lucide-heart" label="علاقه‌مندی‌ها" class="hidden md:flex" />
+            <HeaderIconButton
+              v-if="isAuthenticated"
+              to="/dashboard/fav"
+              icon="i-lucide-heart"
+              label="علاقه‌مندی‌ها"
+              class="hidden md:flex" />
+            <HeaderIconButton
+              v-else
+              icon="i-lucide-heart"
+              label="ورود برای مشاهده علاقه‌مندی‌ها"
+              class="hidden md:flex"
+              @click="setStep('signin')" />
             <div class="relative">
               <HeaderIconButton icon="i-lucide-shopping-cart" label="سبد خرید" @click="handleCartClick" />
               <span v-if="cartStore.itemCount" class="size-4.5 absolute -right-1 -top-1 flex items-center justify-center rounded-full border-2 border-white bg-brand-yellow font-num text-[10px] font-bold text-slate-900 ring-1 ring-slate-100">{{ cartStore.itemCount }}</span>
