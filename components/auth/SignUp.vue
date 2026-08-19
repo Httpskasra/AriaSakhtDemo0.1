@@ -88,7 +88,7 @@ import { useAuthData } from "@/composables/useAuthData";
 import { isValidPhone, toEnglishDigits, toInternationalPhone } from "@/utils/PhoneNumber";
 import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
-const { phoneNumber: globalPhoneNumber } = useAuthData();
+const { phoneNumber: globalPhoneNumber, nationalId: globalNationalId, flow } = useAuthData();
 const api = useApiClient();
 
 const meliCode = ref("");
@@ -152,6 +152,8 @@ const handleSubmit = async () => {
 
     if (response.status === 200 || response.status === 201) {
       globalPhoneNumber.value = toInternationalPhone(phoneNumber.value);
+      globalNationalId.value = meliCode.value;
+      flow.value = "signup";
       emit("onSuccess");
     } else {
       serverError.value = true;
@@ -173,6 +175,7 @@ const handleSubmit = async () => {
 };
 
 const closeModal = () => {
+  flow.value = null;
   setStep(null);
 };
 </script>

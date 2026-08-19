@@ -71,7 +71,7 @@ import { useUser } from "@/composables/useUser";
 import { toEnglishDigits } from "@/utils/PhoneNumber";
 import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
-const { phoneNumber } = useAuthData();
+const { phoneNumber, nationalId, flow } = useAuthData();
 const inputs = ref(Array(4).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
@@ -127,9 +127,14 @@ const startTimer = () => {
 const resendOtp = async () => {
   try {
     loading.value = true;
-    await api.post("/auth/signin", {
-      phoneNumber: phoneNumber.value,
-    });
+    if (flow.value === "signup") {
+      await api.post("/auth/signup", {
+        phoneNumber: phoneNumber.value,
+        nationalId: nationalId.value,
+      });
+    } else {
+      await api.post("/auth/signin", { phoneNumber: phoneNumber.value });
+    }
   } catch (err) {
     toast.add({ title: "ارسال دوباره کد ناموفق بود", description: "لطفاً دوباره تلاش کنید.", color: "error" });
   } finally {
@@ -219,6 +224,7 @@ const verifyOtp = async () => {
 const { setStep } = useAuthStep();
 
 const closeModal = () => {
+  flow.value = null;
   setStep(null);
 };
 </script>

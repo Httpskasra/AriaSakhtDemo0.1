@@ -12,7 +12,7 @@ const errorMessage = ref('شماره تماس وارد شده صحیح نمی‌
 const isLoading = ref(false); // ✅ مرحله 1
 const showSignupAction = ref(false);
 
-const { phoneNumber: globalPhoneNumber } = useAuthData();
+const { phoneNumber: globalPhoneNumber, flow } = useAuthData();
 const emit = defineEmits<{ onSuccess: []; goToSignup: [] }>();
 const { setStep } = useAuthStep();
 
@@ -36,6 +36,7 @@ const handleSubmit = async () => {
   try {
     await requestSignInOtp(formattedPhone);
     globalPhoneNumber.value = formattedPhone;
+    flow.value = "signin";
     emit("onSuccess");
   } catch (error) {
     const userError = error instanceof UserFacingApiError ? error : toUserFacingError(error);
@@ -50,6 +51,7 @@ const handleSubmit = async () => {
 };
 
 const closeModal = () => {
+  flow.value = null;
   setStep(null);
 };
 </script>
