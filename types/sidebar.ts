@@ -6,4 +6,5 @@ export type SidebarNavItem = {
   iconBase: string;
   activeIcon?: string;
   action?: () => void | Promise<void>;
+  section?: boolean;
 };

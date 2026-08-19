@@ -3,7 +3,7 @@
     <header class="dashboard-header">
       <div class="dashboard-header__brand">
         <HeaderBrand compact />
-        <span class="dashboard-header__label">پنل مدیریت</span>
+        <span class="dashboard-header__label">{{ panelTitle }}</span>
       </div>
       <ActionButton class="drawer-toggle" icon-only icon="i-lucide-menu" tone="ghost" aria-label="باز کردن منوی داشبورد" @click="isSidebarOpen = true" />
       <NuxtLink class="dashboard-header__back" to="/" aria-label="بازگشت به سایت">
@@ -21,7 +21,12 @@
 </template>
 
 <script setup lang="ts">
+import { Action, Resource } from "~/types/permissions";
+import { usePermissions } from "~/composables/usePermissions";
+
 const isSidebarOpen = ref(false);
+const { hasPermission } = usePermissions();
+const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ? "پنل مدیریت" : "حساب کاربری");
 </script>
 
 <style scoped>

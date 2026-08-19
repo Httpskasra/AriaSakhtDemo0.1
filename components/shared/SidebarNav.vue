@@ -27,8 +27,11 @@ async function handleAction(item: SidebarNavItem) {
 <template>
   <nav class="sidebar-nav" aria-label="ناوبری کناری">
     <template v-for="item in props.items" :key="`${item.route || item.label}-${item.icon}`">
+      <div v-if="item.section" class="sidebar-nav__section" role="presentation">
+        {{ item.label }}
+      </div>
       <NuxtLink
-        v-if="item.route"
+        v-else-if="item.route"
         :to="item.route"
         class="sidebar-nav__item"
         :class="{ 'sidebar-nav__item--active': isActive(item) }"
@@ -84,6 +87,16 @@ async function handleAction(item: SidebarNavItem) {
   transition: background-color .16s ease, color .16s ease, transform .16s ease;
 }
 
+.sidebar-nav__section {
+  margin: 1.25rem 1.25rem .45rem;
+  color: var(--color-text-muted);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.sidebar-nav__section:first-child { margin-top: .25rem; }
+
 .sidebar-nav__item:hover,
 .sidebar-nav__item:focus-visible {
   background-color: var(--color-bg-light);
@@ -129,5 +142,7 @@ async function handleAction(item: SidebarNavItem) {
     margin-right: 1rem;
     font-size: 0.75rem;
   }
+
+  .sidebar-nav__section { margin-inline: 1rem; }
 }
 </style>
