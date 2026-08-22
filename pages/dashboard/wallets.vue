@@ -10,10 +10,19 @@
     <div class="space-y-4" dir="rtl">
       <!-- Wallet Balance Card -->
       <div class="premium-card border border-gray-100 p-6">
-        <div class="flex justify-between items-center mb-4">
+        <SharedAsyncState
+          v-if="walletLoading"
+          state="loading"
+          :skeleton-rows="1" />
+        <SharedAsyncState
+          v-else-if="walletError"
+          state="error"
+          :message="walletError"
+          @retry="fetchWallet" />
+        <div v-else class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-bold text-gray-800">موجودی کیف پول</h2>
           <div class="text-3xl font-bold text-blue-600">
-            {{ wallet?.balance || 0 }} تومان
+            {{ wallet?.balance ?? 0 }} تومان
           </div>
         </div>
       </div>
@@ -41,7 +50,17 @@
 
       <!-- Transaction History Table -->
       <div class="premium-card border border-gray-100 overflow-hidden">
-        <UTable :rows="filteredTransactions" :columns="walletTransactionColumns">
+        <SharedAsyncState
+          v-if="transactionsLoading"
+          state="loading"
+          :skeleton-rows="5" />
+        <SharedAsyncState
+          v-else-if="transactionsError"
+          state="error"
+          :message="transactionsError"
+          @retry="fetchTransactions" />
+        <template v-else>
+          <UTable :rows="filteredTransactions" :columns="walletTransactionColumns">
           <template #createdAt-data="{ row }">
             {{ formatDate(row.createdAt) }}
           </template>
@@ -62,12 +81,13 @@
           <template #balanceAfter-data="{ row }">
             {{ row.balanceAfter || "—" }} تومان
           </template>
-        </UTable>
-        <SharedAsyncState
-          v-if="filteredTransactions.length === 0"
-          state="empty"
-          title="تراکنشی یافت نشد"
-          message="هنوز تراکنشی برای این کیف پول ثبت نشده است." />
+          </UTable>
+          <SharedAsyncState
+            v-if="filteredTransactions.length === 0"
+            state="empty"
+            title="تراکنشی یافت نشد"
+            message="هنوز تراکنشی برای این کیف پول ثبت نشده است." />
+        </template>
       </div>
 
       <!-- Credit Modal -->
@@ -220,6 +240,10 @@ const showDebitModal = ref(false);
 const creditLoading = ref(false);
 const debitLoading = ref(false);
 const errorMsg = ref("");
+const walletLoading = ref(false);
+const transactionsLoading = ref(false);
+const walletError = ref("");
+const transactionsError = ref("");
 
 const creditForm = ref({
   amount: 0,
@@ -246,26 +270,34 @@ const filteredTransactions = computed(() =>
 // Fetch wallet data
 const fetchWallet = async () => {
   if (!canRead.value) return;
+  walletLoading.value = true;
+  walletError.value = "";
   try {
     const result = await getWallet();
     wallet.value = result;
   } catch (err) {
-    console.warn("خطا در دریافت کیف پول:", err);
+    console.error("خطا در دریافت کیف پول:", err);
     wallet.value = null;
-    errorMsg.value = toUserFacingError(err, "دریافت کیف پول انجام نشد.").message;
+    walletError.value = toUserFacingError(err, "دریافت کیف پول انجام نشد.").message;
+  } finally {
+    walletLoading.value = false;
   }
 };
 
 // Fetch transaction history
 const fetchTransactions = async () => {
   if (!canRead.value) return;
+  transactionsLoading.value = true;
+  transactionsError.value = "";
   try {
     const result = await getTransactions();
     transactions.value = result;
   } catch (err) {
-    console.warn("خطا در دریافت تاریخچه تراکنش:", err);
+    console.error("خطا در دریافت تاریخچه تراکنش:", err);
     transactions.value = [];
-    errorMsg.value = toUserFacingError(err, "دریافت تراکنش‌ها انجام نشد.").message;
+    transactionsError.value = toUserFacingError(err, "دریافت تراکنش‌ها انجام نشد.").message;
+  } finally {
+    transactionsLoading.value = false;
   }
 };
 

@@ -7,7 +7,17 @@
       </div>
 
       <div class="w-full max-w-xl mx-auto">
+        <SharedAsyncState
+          v-if="loading"
+          state="loading"
+          :skeleton-rows="5" />
+        <SharedAsyncState
+          v-else-if="loadError"
+          state="error"
+          :message="loadError"
+          @retry="fetchProfile" />
         <UForm
+          v-else
           :state="form"
           @submit.prevent="saveProfile"
           class="premium-card p-8 flex flex-col gap-6">
@@ -89,9 +99,13 @@ const form = ref<Profile>({
 });
 const id = ref<string | null>(null);
 const saving = ref(false);
+const loading = ref(false);
+const loadError = ref("");
 // گرفتن اطلاعات پروفایل
 const fetchProfile = async () => {
   if (!canRead.value) return;
+  loading.value = true;
+  loadError.value = "";
   //console.log("start fetching");
   try {
     const res = await $axios.get("/profile");
@@ -115,7 +129,9 @@ const fetchProfile = async () => {
     };
   } catch (err) {
     console.error("خطا در دریافت پروفایل:", err);
-    feedback.error("دریافت پروفایل انجام نشد", toUserFacingError(err).message);
+    loadError.value = toUserFacingError(err).message;
+  } finally {
+    loading.value = false;
   }
 };
 
