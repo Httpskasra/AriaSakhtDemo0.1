@@ -5,7 +5,7 @@ import { useAccess } from "~/composables/useAccess";
 import { useOrders } from "~/composables/useOrders";
 
 useHead({ title: "داشبورد | سفارش‌ها" });
-definePageMeta({ middleware: ["auth", "permission"], permission: { resource: "orders", action: "r" } });
+definePageMeta({ layout: "dashboard", middleware: ["auth", "permission"], permission: { resource: "orders", action: "r" } });
 
 const { canRead } = useAccess(Resource.ORDERS);
 const { orders, loading, errorMsg, fetchOrders } = useOrders();
@@ -21,7 +21,6 @@ onMounted(() => { if (canRead.value) void fetchOrders(); });
 </script>
 
 <template>
-  <NuxtLayout name="dashboard">
     <section class="orders-page container" dir="rtl">
       <DashboardPageHeader title="سفارش‌ها" icon="/icons/orders.png" />
       <SharedAsyncState v-if="loading" state="loading" />
@@ -43,7 +42,6 @@ onMounted(() => { if (canRead.value) void fetchOrders(); });
       </div>
       <div v-if="!canRead" class="no-access">شما به این بخش دسترسی ندارید.</div>
     </section>
-  </NuxtLayout>
 </template>
 
 <style scoped>

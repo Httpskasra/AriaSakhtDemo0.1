@@ -12,6 +12,7 @@ useHead({
 });
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth"],
 });
 
@@ -90,7 +91,6 @@ onMounted(loadOverview);
 </script>
 
 <template>
-  <NuxtLayout name="dashboard">
     <section class="dashboard-overview" dir="rtl">
       <div class="dashboard-overview__header">
         <div>
@@ -131,7 +131,6 @@ onMounted(loadOverview);
         </UButton>
       </div>
     </section>
-  </NuxtLayout>
 </template>
 
 <style scoped>

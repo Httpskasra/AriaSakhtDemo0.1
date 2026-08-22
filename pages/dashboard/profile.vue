@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container">
       <div class="title">
         <h1>اطلاعات کاربری</h1>
@@ -58,7 +57,6 @@
         </UForm>
       </div>
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -71,6 +69,7 @@ useHead({
   title: "داشبورد | حساب کاربری",
 });
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "profile", action: "r" },
 });

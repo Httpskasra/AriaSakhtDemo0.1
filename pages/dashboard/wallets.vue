@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container" dir="rtl">
       <div class="title">
         <h1 class="title">کیف پول</h1>
@@ -178,7 +177,6 @@
         </div>
       </BaseModal>
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -198,6 +196,7 @@ useHead({
 });
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "wallets", action: "r" },
 });

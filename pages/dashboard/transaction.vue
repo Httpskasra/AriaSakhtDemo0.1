@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container">
       <!-- عنوان صفحه -->
       <div class="title">
@@ -85,7 +84,6 @@
         title="دسترسی ندارید"
         message="شما اجازه دسترسی ندارید." />
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -93,6 +91,7 @@ import { ref, computed, onMounted } from "vue";
 import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "transaction", action: "r" },
 });

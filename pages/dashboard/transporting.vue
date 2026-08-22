@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container" dir="rtl">
       <div class="title">
         <h1>حمل و نقل</h1>
@@ -301,7 +300,6 @@
         </UForm>
       </BaseModal>
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -322,6 +320,7 @@ useHead({
 });
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "transporting", action: "r" },
 });

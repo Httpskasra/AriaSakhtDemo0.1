@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="title">
       <h1>سبد خرید</h1>
       <img src="/icons/cart.png" alt="" />
@@ -107,7 +106,6 @@
       </div>
     </div>
 
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -116,6 +114,7 @@ import { useUser } from "~/composables/useUser";
 import { toUserFacingError } from "~/services/apiClient";
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "carts", action: "r" },
 });

@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container">
       <div class="title">
         <h1>وضعیت محصولات</h1>
@@ -63,7 +62,6 @@
           message="جستجو را تغییر دهید." />
       </div>
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +77,7 @@ useHead({
 });
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "product_status", action: "u" },
 });

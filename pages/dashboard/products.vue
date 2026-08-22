@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div class="container">
       <div class="page-heading">
         <div>
@@ -378,7 +377,6 @@
         </div>
       </BaseModal>
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -400,6 +398,7 @@ useHead({
 });
 
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
       permission: { resource: "products", action: "r" },
 });

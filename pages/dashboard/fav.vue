@@ -4,7 +4,7 @@ import { useFavoritesStore } from "~/stores/favorites";
 import type { Favorite } from "~/services/favoritesService";
 
 useHead({ title: "داشبورد | علاقه‌مندی‌ها" });
-definePageMeta({ middleware: ["auth"] });
+definePageMeta({ layout: "dashboard", middleware: ["auth"] });
 
 const favorites = useFavoritesStore();
 
@@ -28,7 +28,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <NuxtLayout name="dashboard">
     <section class="favorites-page container" dir="rtl">
       <DashboardPageHeader title="علاقه‌مندی‌ها" icon="/dashboardIcons/products.svg" />
       <SharedAsyncState v-if="favorites.loading" state="loading" />
@@ -48,7 +47,6 @@ onMounted(() => {
         </article>
       </div>
     </section>
-  </NuxtLayout>
 </template>
 
 <style scoped>

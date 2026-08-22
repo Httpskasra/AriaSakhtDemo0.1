@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <div v-if="canRead" class="container">
       <!-- Title -->
       <DashboardPageHeader title="پشتیبانی" icon="/userPannleIcons/support.png" alt="support" />
@@ -183,7 +182,6 @@
     </div>
 
     <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -207,6 +205,7 @@ import { toUserFacingError } from "~/services/apiClient";
 
 useHead({ title: "داشبورد | تیکتینگ" });
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "ticketing", action: "r" },
 });

@@ -1,7 +1,6 @@
 <!-- pages/dashboard/roles.vue -->
 
 <template>
-  <NuxtLayout name="dashboard">
     <DashboardPageHeader title="مدیریت نقش‌ها" icon="/icons/roles.png" alt="roles" />
     <div class="container">
       <div class="header">
@@ -150,7 +149,6 @@
         </div>
       </UForm>
     </BaseModal>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -165,6 +163,7 @@ useHead({
   title: "داشبورد | نقش‌ها",
 });
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "users", action: "m" },
 });

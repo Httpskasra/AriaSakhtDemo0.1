@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="dashboard">
     <DashboardPageHeader title="دسته‌بندی‌ها" icon="/icons/categories.png" alt="categories" />
 
     <div class="container" v-if="canRead">
@@ -113,7 +112,6 @@
         </div>
       </UForm>
     </BaseModal>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -127,6 +125,7 @@ import { toUserFacingError } from "~/services/apiClient";
 import BaseModal from "~/components/BaseModal.vue";
 const feedback = useFeedback();
 definePageMeta({
+  layout: "dashboard",
   middleware: ["auth", "permission"],
   permission: { resource: "categories", action: "r" },
 });
