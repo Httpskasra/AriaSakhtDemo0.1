@@ -68,6 +68,16 @@ const clearFilters = () => {
   selectedCategories.value = [];
   emit('clear');
 };
+
+const toggleCategory = (categoryId: string) => {
+  selectedCategories.value = selectedCategories.value.includes(categoryId)
+    ? selectedCategories.value.filter((id) => id !== categoryId)
+    : [...selectedCategories.value, categoryId];
+};
+
+const clearCategories = () => {
+  selectedCategories.value = [];
+};
 </script>
 
 <template>
@@ -98,20 +108,30 @@ const clearFilters = () => {
       <div v-else-if="!categories.length" class="category-empty">
         <p>هنوز دسته‌بندی‌ای تعریف نشده است.</p>
       </div>
-      <div v-else class="category-list custom-scrollbar pe-2">
+      <div v-else class="category-list custom-scrollbar" role="group" aria-label="انتخاب دسته‌بندی">
         <div
           v-for="cat in visibleCategories"
           :key="getCategoryId(cat)"
           class="category-option"
           :class="{ 'category-option--selected': selectedCategories.includes(getCategoryId(cat)) }"
         >
-          <UCheckbox
-            v-model="selectedCategories"
-            :value="getCategoryId(cat)"
-            :label="cat.name"
-            class="font-num"
-          />
+          <button
+            type="button"
+            class="category-option__button"
+            :aria-pressed="selectedCategories.includes(getCategoryId(cat))"
+            @click="toggleCategory(getCategoryId(cat))"
+          >
+            <span class="category-option__check" aria-hidden="true">
+              <UIcon v-if="selectedCategories.includes(getCategoryId(cat))" name="i-lucide-check" />
+            </span>
+            <span class="category-option__name">{{ cat.name }}</span>
+            <span v-if="selectedCategories.includes(getCategoryId(cat))" class="category-option__selected-label">انتخاب شد</span>
+          </button>
         </div>
+      </div>
+      <div v-if="selectedCategories.length" class="category-selection-summary">
+        <span>{{ selectedCategories.length }} دسته انتخاب شده</span>
+        <button type="button" @click="clearCategories">پاک کردن</button>
       </div>
       <UButton
         v-if="categories.length > visibleCategoryLimit"
@@ -256,10 +276,7 @@ const clearFilters = () => {
 }
 
 .category-option {
-  display: flex;
-  align-items: center;
-  min-height: 2.5rem;
-  padding: .35rem .5rem;
+  min-width: 0;
   border: 1px solid transparent;
   border-radius: .75rem;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
@@ -274,6 +291,68 @@ const clearFilters = () => {
   border-color: #bfdbfe;
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.category-option__button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2.7rem;
+  gap: .65rem;
+  padding: .4rem .55rem;
+  border: 0;
+  border-radius: .7rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: right;
+}
+
+.category-option__button:focus-visible {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: -2px;
+}
+
+.category-option__check {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: .4rem;
+  background: #fff;
+  color: #fff;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.category-option__check :deep(svg) { width: .85rem; height: .85rem; stroke-width: 3; }
+.category-option--selected .category-option__check { border-color: var(--color-brand-blue); background: var(--color-brand-blue); transform: scale(1.04); }
+.category-option__name { min-width: 0; flex: 1; overflow: hidden; font-size: .8rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.category-option__selected-label { flex: 0 0 auto; color: #2563eb; font-size: .62rem; font-weight: 700; }
+
+.category-selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .65rem;
+  padding: .55rem .7rem;
+  border: 1px solid #dbeafe;
+  border-radius: .7rem;
+  background: #f8fbff;
+  color: #475569;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.category-selection-summary button {
+  min-height: 1.75rem;
+  color: #2563eb;
+  font-size: .68rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .category-skeleton,
