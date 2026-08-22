@@ -23,6 +23,7 @@ const mobileCategories = computed(() => (Array.isArray(categories.value)
   ? categories.value.filter(category => !category.parentId).slice(0, 8)
   : []));
 const mobileMenuOpen = ref(false);
+const closeMobileMenu = () => { mobileMenuOpen.value = false; };
 const categoryPath = (category: Category) => ({
   path: '/products',
   query: { categoryIds: getCategoryFilterIds(category, categories.value) },
@@ -101,8 +102,16 @@ const handleCartClick = () => {
     <div v-if="variant !== 'desktop'" class="mobile-header lg:hidden">
       <div class="mobile-header__row">
         <HeaderBrand compact />
+        <UButton
+          icon="i-lucide-menu"
+          variant="soft"
+          color="primary"
+          square
+          class="mobile-header__menu-button"
+          aria-label="باز کردن منوی سایت"
+          :aria-expanded="mobileMenuOpen"
+          @click="mobileMenuOpen = true" />
         <div class="mobile-header__actions">
-          <UButton icon="i-lucide-menu" variant="ghost" color="neutral" square aria-label="باز کردن منوی سایت" @click="mobileMenuOpen = true" />
           <HeaderIconButton icon="i-lucide-shopping-cart" label="سبد خرید" @click="handleCartClick" />
           <AuthLoginButton compact />
         </div>
@@ -129,11 +138,8 @@ const handleCartClick = () => {
       </nav>
 
       <ClientOnly>
-        <USlideover v-model:open="mobileMenuOpen" side="right" title="منوی سایت">
+        <AppDrawer v-model="mobileMenuOpen" label="منوی سایت" width="min(22rem, 92vw)">
           <template #default>
-            <span class="hidden" aria-hidden="true" />
-          </template>
-          <template #body>
             <nav class="mobile-menu" aria-label="ناوبری موبایل">
               <div class="mobile-menu__intro">
                 <span class="mobile-menu__eyebrow">تجاریس</span>
@@ -142,12 +148,12 @@ const handleCartClick = () => {
               </div>
 
               <div class="mobile-menu__quick-links">
-                <NuxtLink to="/products" class="mobile-menu__quick-card mobile-menu__quick-card--primary" @click="mobileMenuOpen = false">
+                <NuxtLink to="/products" class="mobile-menu__quick-card mobile-menu__quick-card--primary" @click="closeMobileMenu">
                   <span class="mobile-menu__icon"><UIcon name="i-lucide-store" aria-hidden="true" /></span>
                   <span><strong>فروشگاه</strong><small>مشاهده همه کالاها</small></span>
                   <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
                 </NuxtLink>
-                <NuxtLink to="/dashboard/company/register" class="mobile-menu__quick-card" @click="mobileMenuOpen = false">
+                <NuxtLink to="/dashboard/company/register" class="mobile-menu__quick-card" @click="closeMobileMenu">
                   <span class="mobile-menu__icon"><UIcon name="i-lucide-handshake" aria-hidden="true" /></span>
                   <span><strong>تأمین‌کننده شوید</strong><small>ثبت درخواست همکاری</small></span>
                   <UIcon name="i-lucide-arrow-left" aria-hidden="true" />
@@ -162,7 +168,7 @@ const handleCartClick = () => {
                     :key="getCategoryId(category)"
                     :to="categoryPath(category)"
                     class="mobile-menu__category"
-                    @click="mobileMenuOpen = false"
+                    @click="closeMobileMenu"
                   >
                     <span class="mobile-menu__category-icon"><UIcon name="i-lucide-layers-3" aria-hidden="true" /></span>
                     <span class="mobile-menu__category-name">{{ category.name }}</span>
@@ -172,12 +178,12 @@ const handleCartClick = () => {
               </div>
 
               <div class="mobile-menu__footer-links">
-                <NuxtLink to="/about" @click="mobileMenuOpen = false"><UIcon name="i-lucide-building-2" /> درباره تجاریس</NuxtLink>
-                <NuxtLink to="/contact" @click="mobileMenuOpen = false"><UIcon name="i-lucide-life-buoy" /> پشتیبانی</NuxtLink>
+                <NuxtLink to="/about" @click="closeMobileMenu"><UIcon name="i-lucide-building-2" /> درباره تجاریس</NuxtLink>
+                <NuxtLink to="/contact" @click="closeMobileMenu"><UIcon name="i-lucide-life-buoy" /> پشتیبانی</NuxtLink>
               </div>
             </nav>
           </template>
-        </USlideover>
+        </AppDrawer>
       </ClientOnly>
     </div>
   </header>
@@ -190,21 +196,33 @@ const handleCartClick = () => {
 }
 
 .mobile-header__row {
+  position: relative;
   display: flex;
   min-width: 0;
   min-height: 3.75rem;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: .75rem;
   padding: .625rem 1rem;
 }
 
 .mobile-header__actions {
+  position: absolute;
+  inset-inline-start: .75rem;
   display: flex;
   min-width: 0;
   flex: 0 0 auto;
   align-items: center;
   gap: .125rem;
+}
+
+.mobile-header__menu-button {
+  position: absolute;
+  inset-inline-end: .75rem;
+  z-index: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: .8rem;
 }
 
 .mobile-header__actions :deep(button) {
@@ -336,6 +354,8 @@ const handleCartClick = () => {
 
 @media (max-width: 359px) {
   .mobile-header__row { padding-inline: .625rem; }
+  .mobile-header__menu-button { inset-inline-end: .625rem; }
+  .mobile-header__actions { inset-inline-start: .625rem; }
   .mobile-header__search { padding-inline: .625rem; }
   .mobile-header__categories { padding-inline: .625rem; }
   .header-brand--compact :deep(.header-brand__name) { display: none; }
