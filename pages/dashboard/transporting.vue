@@ -34,7 +34,10 @@
         </div>
 
         <div class="premium-card border border-gray-100">
-          <div class="overflow-x-auto">
+          <SharedAsyncState v-if="ordersLoading" state="loading" :skeleton-rows="5" />
+          <SharedAsyncState v-else-if="ordersError" state="error" :message="ordersError" @retry="fetchOrders" />
+          <SharedAsyncState v-else-if="!orders.length" state="empty" title="سفارشی پیدا نشد" message="در حال حاضر سفارشی برای حمل‌ونقل وجود ندارد." />
+          <div v-else class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="bg-gray-50 text-gray-600">
@@ -146,7 +149,10 @@
         </div>
 
         <div class="premium-card border border-gray-100">
-          <div class="overflow-x-auto">
+          <SharedAsyncState v-if="transportingsLoading" state="loading" :skeleton-rows="5" />
+          <SharedAsyncState v-else-if="transportingsError" state="error" :message="transportingsError" @retry="fetchTransportings" />
+          <SharedAsyncState v-else-if="!transportings.length" state="empty" title="حمل‌ونقلی پیدا نشد" message="برای این سفارش هنوز حمل‌ونقلی ثبت نشده است." />
+          <div v-else class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="bg-gray-50 text-gray-600">
@@ -342,6 +348,10 @@ const limitTransportings = ref(25);
 const totalOrders = ref(0);
 const totalTransportings = ref(0);
 const loading = ref(false);
+const ordersLoading = ref(false);
+const transportingsLoading = ref(false);
+const ordersError = ref("");
+const transportingsError = ref("");
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
@@ -391,6 +401,8 @@ function numberFormat(n?: number) {
 async function fetchOrders() {
   if (!canRead.value) return;
   loading.value = true;
+  ordersLoading.value = true;
+  ordersError.value = "";
   try {
     const result = await listTransportOrders({
       page: pageOrders.value,
@@ -402,10 +414,11 @@ async function fetchOrders() {
     totalOrders.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت سفارش‌ها:", err);
-    feedback.error("دریافت سفارش‌ها انجام نشد", toUserFacingError(err).message);
+    ordersError.value = toUserFacingError(err).message;
     orders.value = [];
     totalOrders.value = 0;
   } finally {
+    ordersLoading.value = false;
     loading.value = false;
   }
 }
@@ -413,6 +426,8 @@ async function fetchOrders() {
 async function fetchTransportings() {
   if (!canRead.value || !selectedOrder.value) return;
   loading.value = true;
+  transportingsLoading.value = true;
+  transportingsError.value = "";
   try {
     const result = await listTransportings({
       page: pageTransportings.value,
@@ -425,10 +440,11 @@ async function fetchTransportings() {
     totalTransportings.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت حمل‌ونقل‌ها:", err);
-    feedback.error("دریافت حمل‌ونقل‌ها انجام نشد", toUserFacingError(err).message);
+    transportingsError.value = toUserFacingError(err).message;
     transportings.value = [];
     totalTransportings.value = 0;
   } finally {
+    transportingsLoading.value = false;
     loading.value = false;
   }
 }
