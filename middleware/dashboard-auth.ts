@@ -1,7 +1,6 @@
 import { useUser } from "~/composables/useUser";
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (import.meta.server) return;
   if (to.path.startsWith("/dashboard")) {
     const { fetchUser, isAuthenticated } = useUser();
 

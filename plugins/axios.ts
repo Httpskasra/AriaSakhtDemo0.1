@@ -76,7 +76,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch (refreshError) {
           authStore.clearTokens();
           useUser().clearUser();
-          if (process.client && window.location.pathname !== "/") {
+          if (process.client && window.location.pathname.startsWith("/dashboard")) {
             redirectPromise ??= navigateTo("/", { replace: true });
             await redirectPromise;
           }

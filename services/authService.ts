@@ -35,6 +35,15 @@ export interface UpdateUserPermissionsRequestDto {
 
 const refreshLocks = new WeakMap<object, Promise<string>>();
 
+function readCookie(cookieHeader: string | undefined, name: string): string | null {
+  const value = cookieHeader
+    ?.split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${name}=`))
+    ?.slice(name.length + 1);
+  return value ? decodeURIComponent(value) : null;
+}
+
 async function performRefresh(
   authStore: ReturnType<typeof useAuthStore>,
 ): Promise<string> {
@@ -45,13 +54,19 @@ async function performRefresh(
     : undefined;
   const cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
 
-  let csrfToken = authStore.getCsrfToken();
+  const browserCookie = process.client && typeof document !== 'undefined' ? document.cookie : undefined;
+  let csrfToken = authStore.getCsrfToken()
+    || readCookie(incomingCookie || browserCookie, 'csrfToken');
   if (!csrfToken) {
     const csrfResponse = await axios.get<{ csrfToken: string }>(
       `${apiBase}/auth/csrf`,
       { withCredentials: true, headers: cookieHeaders, timeout: 10000 },
     );
     csrfToken = csrfResponse.data.csrfToken;
+    authStore.setCsrfToken(csrfToken);
+  } else {
+    // A fresh Pinia instance after SSR/navigation can still use the CSRF
+    // cookie issued with the refresh token. Do not rotate it unnecessarily.
     authStore.setCsrfToken(csrfToken);
   }
 
