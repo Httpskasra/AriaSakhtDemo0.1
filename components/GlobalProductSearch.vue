@@ -57,7 +57,7 @@ const props = withDefaults(
 const router = useRouter();
 const route = useRoute();
 const searchRoot = ref<HTMLElement | null>(null);
-const searchInput = ref("");
+const searchInput = ref((route.query.query as string) || "");
 const isFocused = ref(false);
 const suggestions = ["سیمان", "میلگرد", "آجر", "کاشی"];
 
@@ -73,6 +73,10 @@ const updateSearch = (value: string | number | null | undefined) => {
   searchInput.value = String(value ?? "");
   isFocused.value = true;
 };
+
+watch(() => route.query.query, (value) => {
+  if (!isFocused.value) searchInput.value = typeof value === "string" ? value : "";
+});
 
 const handleSearch = async () => {
   const searchQuery = searchInput.value.trim();

@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
 const panel = ref<HTMLElement | null>(null);
 const previouslyFocused = ref<HTMLElement | null>(null);
+const previousBodyOverflow = ref<string | null>(null);
 // Keep the drawer closed during SSR. The real viewport is known only after mount.
 const isDesktop = ref(false);
 const isOpen = computed(() => (props.persistentOnDesktop && isDesktop.value) || props.modelValue);
@@ -30,7 +31,13 @@ function close() {
 
 function updateBodyLock(open: boolean) {
   if (typeof document === "undefined" || isDesktop.value) return;
-  document.body.style.overflow = open ? "hidden" : "";
+  if (open) {
+    if (previousBodyOverflow.value === null) previousBodyOverflow.value = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  } else if (previousBodyOverflow.value !== null) {
+    document.body.style.overflow = previousBodyOverflow.value;
+    previousBodyOverflow.value = null;
+  }
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -86,6 +93,9 @@ onMounted(() => {
   <div class="app-drawer" :class="{ 'app-drawer--open': isOpen }" :style="{ '--drawer-width': width }">
     <button v-if="isOpen && !isDesktop" class="app-drawer__backdrop" type="button" :aria-label="`${label} را ببندید`" @click="close" />
     <aside ref="panel" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
+      <button v-if="isOpen && !isDesktop" class="app-drawer__close" type="button" :aria-label="`${label} را ببندید`" @click="close">
+        <UIcon name="i-lucide-x" aria-hidden="true" />
+      </button>
       <slot />
     </aside>
   </div>
@@ -115,6 +125,23 @@ onMounted(() => {
     transition: transform .25s ease;
     background: #fff;
     box-shadow: var(--shadow-overlay);
+    overflow-y: auto;
+    padding: 3.75rem 0.75rem 1rem;
+  }
+  .app-drawer__close {
+    position: absolute;
+    inset-block-start: .75rem;
+    inset-inline-end: .75rem;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: .75rem;
+    background: var(--color-bg-light);
+    color: var(--color-text-heading);
+    cursor: pointer;
   }
   .app-drawer--open .app-drawer__panel { transform: translateX(0); }
 }

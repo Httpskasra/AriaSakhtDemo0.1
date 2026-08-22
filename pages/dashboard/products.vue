@@ -1,13 +1,11 @@
 <template>
     <div class="container">
-      <div class="page-heading">
-        <div>
-          <p class="page-eyebrow">مدیریت فروشگاه</p>
-          <h1>محصولات</h1>
-          <p class="page-description">محصولات، قیمت و موجودی فروشگاه را مدیریت کنید.</p>
-        </div>
-        <img src="/adminIcon/products.png" alt="" aria-hidden="true" />
-      </div>
+      <DashboardPageHeader
+        title="محصولات"
+        subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید."
+        icon="/adminIcon/products.png"
+        alt="محصولات"
+      />
 
       <div
         class="actions flex flex-wrap justify-between items-center gap-2 mb-4 bg-white rounded-field py-2">

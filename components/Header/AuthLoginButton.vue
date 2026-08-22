@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 
-const { isAuthenticated } = useUser();
+const { isAuthenticated, authStatus } = useUser();
 const { setStep } = useAuthStep();
 
 const handleClick = () => {
@@ -14,7 +14,9 @@ const handleClick = () => {
 </script>
 
 <template>
+  <span v-if="authStatus === 'loading'" class="auth-login-placeholder" :class="{ 'auth-login-placeholder--compact': compact }" aria-hidden="true"></span>
   <UButton
+    v-else
     color="primary"
     variant="soft"
     class="auth-login-button font-bold"
@@ -34,4 +36,11 @@ const handleClick = () => {
 .auth-login-button { min-height: 2.5rem; }
 .auth-login-button:not(.auth-login-button--compact) { padding-inline: 1rem; }
 .auth-login-button--compact { width: 2.5rem; padding-inline: 0; }
+.auth-login-placeholder {
+  display: inline-block;
+  width: 7.5rem;
+  min-height: 2.5rem;
+  visibility: hidden;
+}
+.auth-login-placeholder--compact { width: 2.5rem; }
 </style>
