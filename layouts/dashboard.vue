@@ -31,7 +31,8 @@ const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ?
 
 <style scoped>
 .layout-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--panel-sidebar-width);
   grid-template-rows: auto 1fr;
@@ -70,15 +71,15 @@ const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ?
   text-decoration: none;
 }
 .dashboard-header__back:hover { color: var(--blue-dark); }
-.main-container { grid-area: main; min-width: 0; padding: 2rem; box-sizing: border-box; width: 100%; direction: rtl; }
-.app-drawer { direction: rtl; }
+.main-container { grid-area: main; min-width: 0; min-height: 0; padding: 2rem; box-sizing: border-box; width: 100%; direction: rtl; overflow-y: auto; overscroll-behavior: contain; }
+.app-drawer { direction: rtl; min-height: 0; height: 100%; overflow: hidden; }
 .drawer-toggle { display: none; }
 
 @media (max-width: 1024px) {
-  .layout-shell { display: block; }
+  .layout-shell { display: block; height: auto; min-height: 100dvh; }
   .dashboard-header { min-height: 4rem; padding: 0.75rem 1rem; }
   .dashboard-header__back span { display: none; }
-  .main-container { padding: 1rem; }
+  .main-container { padding: 1rem; min-height: calc(100dvh - 4rem); overflow: visible; }
   .drawer-toggle { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: var(--radius-card); background: var(--color-bg-light); color: var(--blue-dark); }
 }
 </style>

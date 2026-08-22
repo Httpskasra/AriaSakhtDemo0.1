@@ -94,6 +94,7 @@ onMounted(() => {
 .app-drawer__backdrop { display: none; }
 .app-drawer__panel {
   height: 100%;
+  min-height: 0;
   width: min(100%, var(--drawer-width));
   max-width: min(86vw, var(--drawer-width));
   box-sizing: border-box;
@@ -106,7 +107,8 @@ onMounted(() => {
     position: absolute;
     inset-block: 0;
     inset-inline-end: 0;
-    height: 100%;
+    height: 100dvh;
+    min-height: 0;
     transform: translateX(100%);
     transition: transform .25s ease;
     background: #fff;

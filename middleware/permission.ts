@@ -7,6 +7,7 @@ type RequiredPermission = {
 };
 
 export default defineNuxtRouteMiddleware((to) => {
+  if (import.meta.server) return;
   const required = to.meta.permission as RequiredPermission | undefined;
   if (!required) return;
 

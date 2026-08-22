@@ -8,6 +8,9 @@ export const useUser = () => {
   const isUserLoading = useState<boolean>("user-loading", () => true);
   const hasResolvedUser = useState<boolean>("user-resolved", () => false);
   const requestVersion = useState<number>("user-request-version", () => 0);
+  // Keep one in-flight profile request for the whole app. The bootstrap
+  // plugin and route middleware can run together during hydration.
+  let userRequest: Promise<boolean> | null = null;
   const normalizeUser = (data: User & { id?: string; _id?: string }): User => {
     const rawId = data?.userId || data?.id || data?._id || "";
     return {
@@ -36,23 +39,33 @@ export const useUser = () => {
       return true;
     }
 
-    isUserLoading.value = true;
-    const currentRequest = ++requestVersion.value;
-    try {
-      const response = await useApiClient().get<User>("/auth/me");
-      if (currentRequest !== requestVersion.value) return Boolean(user.value);
-      setUser(normalizeUser(response.data));
-      return true;
-    } catch (_err) {
-      if (currentRequest !== requestVersion.value) return Boolean(user.value);
-      clearUser();
-      return false;
-    } finally {
-      if (currentRequest === requestVersion.value) {
-        isUserLoading.value = false;
-        hasResolvedUser.value = true;
+    if (!force && userRequest) return userRequest;
+
+    const request = (async () => {
+      isUserLoading.value = true;
+      const currentRequest = ++requestVersion.value;
+      try {
+        const response = await useApiClient().get<User>("/auth/me");
+        if (currentRequest !== requestVersion.value) return Boolean(user.value);
+        setUser(normalizeUser(response.data));
+        return true;
+      } catch (_err) {
+        if (currentRequest !== requestVersion.value) return Boolean(user.value);
+        clearUser();
+        return false;
+      } finally {
+        if (currentRequest === requestVersion.value) {
+          isUserLoading.value = false;
+          hasResolvedUser.value = true;
+        }
       }
-    }
+    })();
+    userRequest = request;
+    request.then(
+      () => { if (userRequest === request) userRequest = null; },
+      () => { if (userRequest === request) userRequest = null; },
+    );
+    return request;
   };
 
   // A token in memory is only a refresh hint; the authenticated session is

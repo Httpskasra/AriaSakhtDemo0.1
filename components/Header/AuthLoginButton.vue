@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 
-const { isAuthenticated, authStatus } = useUser();
+const { isAuthenticated } = useUser();
 const { setStep } = useAuthStep();
 
 const handleClick = () => {
@@ -19,13 +19,11 @@ const handleClick = () => {
     variant="soft"
     class="auth-login-button font-bold"
     :class="{ 'auth-login-button--compact': compact, 'auth-login-button--profile': isAuthenticated }"
-    :square="compact"
-    :aria-busy="authStatus === 'loading'"
-    :aria-label="authStatus === 'loading' ? 'در حال بررسی حساب کاربری' : isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
+    :aria-label="isAuthenticated ? 'پروفایل کاربری' : 'ورود یا ثبت‌نام'"
     @click="handleClick"
   >
     <UIcon
-      :name="isAuthenticated ? 'i-lucide-user-round-check' : 'i-lucide-user'"
+      name="i-lucide-user"
       class="size-5"
       aria-hidden="true" />
     <span v-if="!compact">{{ isAuthenticated ? 'حساب کاربری' : 'ورود / ثبت‌نام' }}</span>

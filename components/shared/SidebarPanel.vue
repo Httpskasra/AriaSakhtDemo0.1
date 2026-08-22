@@ -20,6 +20,7 @@ const emit = defineEmits<{ navigate: [] }>();
 .sidebar-panel {
   width: 100%;
   height: 100%;
+  min-height: 0;
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
   display: flex;
