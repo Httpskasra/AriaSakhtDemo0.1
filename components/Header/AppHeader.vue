@@ -112,6 +112,22 @@ const handleCartClick = () => {
         <GlobalProductSearch variant="header" class="w-full" />
       </div>
 
+      <nav
+        v-if="mobileCategories.length"
+        class="mobile-header__categories"
+        aria-label="دسته‌بندی‌های فروشگاه">
+        <NuxtLink to="/products" class="mobile-header__category-link mobile-header__category-link--all">
+          همه محصولات
+        </NuxtLink>
+        <NuxtLink
+          v-for="category in mobileCategories"
+          :key="`mobile-header-${getCategoryId(category)}`"
+          :to="categoryPath(category)"
+          class="mobile-header__category-link">
+          {{ category.name }}
+        </NuxtLink>
+      </nav>
+
       <ClientOnly>
         <USlideover v-model:open="mobileMenuOpen" side="right" title="منوی سایت">
           <template #default>
@@ -175,6 +191,7 @@ const handleCartClick = () => {
 
 .mobile-header__row {
   display: flex;
+  min-width: 0;
   min-height: 3.75rem;
   align-items: center;
   justify-content: space-between;
@@ -184,6 +201,7 @@ const handleCartClick = () => {
 
 .mobile-header__actions {
   display: flex;
+  min-width: 0;
   flex: 0 0 auto;
   align-items: center;
   gap: .125rem;
@@ -197,6 +215,41 @@ const handleCartClick = () => {
 .mobile-header__search {
   border-top: 1px solid #f1f5f9;
   padding: .5rem 1rem .625rem;
+}
+
+.mobile-header__categories {
+  display: flex;
+  min-width: 0;
+  gap: .5rem;
+  padding: 0 .75rem .625rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-header__categories::-webkit-scrollbar { display: none; }
+.mobile-header__category-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 2rem;
+  padding: .3rem .7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: .7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mobile-header__category-link:focus-visible,
+.mobile-header__category-link:hover,
+.mobile-header__category-link--all {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .mobile-menu {
@@ -284,6 +337,7 @@ const handleCartClick = () => {
 @media (max-width: 359px) {
   .mobile-header__row { padding-inline: .625rem; }
   .mobile-header__search { padding-inline: .625rem; }
+  .mobile-header__categories { padding-inline: .625rem; }
   .header-brand--compact :deep(.header-brand__name) { display: none; }
 }
 </style>
