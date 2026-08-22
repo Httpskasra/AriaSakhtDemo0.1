@@ -203,7 +203,7 @@ const handleCartClick = () => {
   align-items: center;
   justify-content: center;
   gap: .75rem;
-  padding: .625rem 1rem;
+  padding: .625rem 3.25rem;
 }
 
 .mobile-header__actions {
@@ -353,7 +353,7 @@ const handleCartClick = () => {
 }
 
 @media (max-width: 359px) {
-  .mobile-header__row { padding-inline: .625rem; }
+  .mobile-header__row { padding-inline: 2.9rem; }
   .mobile-header__menu-button { inset-inline-end: .625rem; }
   .mobile-header__actions { inset-inline-start: .625rem; }
   .mobile-header__search { padding-inline: .625rem; }

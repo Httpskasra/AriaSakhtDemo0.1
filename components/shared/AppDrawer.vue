@@ -18,6 +18,7 @@ const previouslyFocused = ref<HTMLElement | null>(null);
 const previousBodyOverflow = ref<string | null>(null);
 // Keep the drawer closed during SSR. The real viewport is known only after mount.
 const isDesktop = ref(false);
+let viewportQuery: MediaQueryList | null = null;
 const isOpen = computed(() => (props.persistentOnDesktop && isDesktop.value) || props.modelValue);
 
 const focusableSelector = [
@@ -30,14 +31,20 @@ function close() {
 }
 
 function updateBodyLock(open: boolean) {
-  if (typeof document === "undefined" || isDesktop.value) return;
-  if (open) {
+  if (typeof document === "undefined") return;
+  if (open && !isDesktop.value) {
     if (previousBodyOverflow.value === null) previousBodyOverflow.value = document.body.style.overflow;
     document.body.style.overflow = "hidden";
   } else if (previousBodyOverflow.value !== null) {
     document.body.style.overflow = previousBodyOverflow.value;
     previousBodyOverflow.value = null;
   }
+}
+
+function updateViewportState() {
+  if (!viewportQuery) return;
+  isDesktop.value = !viewportQuery.matches;
+  updateBodyLock(props.modelValue);
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -76,15 +83,18 @@ watch(isOpen, async (open) => {
   }
 });
 
-watch(() => props.modelValue, updateBodyLock);
+watch([() => props.modelValue, isDesktop], ([open]) => updateBodyLock(open));
 
 onBeforeUnmount(() => {
   if (typeof document !== "undefined") document.removeEventListener("keydown", handleKeydown);
+  viewportQuery?.removeEventListener("change", updateViewportState);
   updateBodyLock(false);
 });
 
 onMounted(() => {
-  isDesktop.value = !window.matchMedia("(max-width: 1024px)").matches;
+  viewportQuery = window.matchMedia("(max-width: 1024px)");
+  viewportQuery.addEventListener("change", updateViewportState);
+  updateViewportState();
   updateBodyLock(props.modelValue);
 });
 </script>
@@ -118,10 +128,11 @@ onMounted(() => {
   .app-drawer__panel {
     position: absolute;
     inset-block: 0;
-    inset-inline-end: 0;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
     height: 100dvh;
     min-height: 0;
-    transform: translateX(100%);
+    transform: translateX(-100%);
     transition: transform .25s ease;
     background: #fff;
     box-shadow: var(--shadow-overlay);
@@ -145,12 +156,6 @@ onMounted(() => {
   }
   .app-drawer--open .app-drawer__panel { transform: translateX(0); }
 }
-:global(html[dir="rtl"] .app-drawer__panel) {
-  inset-inline-start: 0;
-  inset-inline-end: auto;
-  transform: translateX(-100%);
-}
-:global(html[dir="rtl"] .app-drawer--open .app-drawer__panel) {
-  transform: translateX(0);
-}
+:global([dir="ltr"] .app-drawer__panel) { inset-inline-end: 0; inset-inline-start: auto; transform: translateX(100%); }
+:global([dir="ltr"] .app-drawer--open .app-drawer__panel) { transform: translateX(0); }
 </style>
