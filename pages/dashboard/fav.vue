@@ -26,8 +26,10 @@ async function remove(productId: string) {
   }
 }
 
+const fetchFavorites = () => favorites.fetch().catch(() => undefined);
+
 onMounted(() => {
-  if (!favorites.initialized) void favorites.fetch();
+  if (!favorites.initialized) void fetchFavorites();
 });
 </script>
 
@@ -35,7 +37,7 @@ onMounted(() => {
     <section class="favorites-page container" dir="rtl">
       <DashboardPageHeader title="علاقه‌مندی‌ها" icon="/dashboardIcons/products.svg" />
       <SharedAsyncState v-if="favorites.loading" state="loading" />
-      <SharedAsyncState v-else-if="favorites.error" state="error" :message="favorites.error" @retry="favorites.fetch" />
+      <SharedAsyncState v-else-if="favorites.error" state="error" :message="favorites.error" @retry="fetchFavorites" />
       <SharedAsyncState v-else-if="!favorites.items.length" state="empty" title="هنوز محصولی ذخیره نشده است" message="محصولات موردعلاقه‌تان را برای دسترسی سریع اینجا ذخیره کنید." />
       <div v-else class="favorites-grid">
         <article v-for="item in favorites.items" :key="item.id || item.productId" class="favorite-card">
