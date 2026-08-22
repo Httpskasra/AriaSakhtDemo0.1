@@ -1,10 +1,5 @@
 <template>
-    <div class="container" dir="rtl">
-      <div class="title">
-        <h1 class="title">کیف پول</h1>
-        <img src="/icons/wallet.png" alt="" />
-      </div>
-    </div>
+    <DashboardPageHeader title="کیف پول" icon="/icons/wallet.png" />
 
     <div class="space-y-4" dir="rtl">
       <!-- Wallet Balance Card -->

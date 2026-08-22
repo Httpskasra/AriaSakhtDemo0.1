@@ -1,15 +1,6 @@
 <template>
     <div class="container">
-      <!-- عنوان صفحه -->
-      <div class="title">
-        <div class="title-left">
-          <h1>تراکنش‌ها</h1>
-          <p class="subtitle">لیست تراکنش‌های کیف پول شما</p>
-        </div>
-        <div class="title-right">
-          <!-- <button class="refresh-btn" @click="refresh">بروزرسانی لیست</button> -->
-        </div>
-      </div>
+      <DashboardPageHeader title="تراکنش‌ها" subtitle="لیست تراکنش‌های کیف پول شما" icon="/icons/transaction.png" />
 
       <!-- فیلتر و سرچ شبیه users -->
       <div class="filter-bar">

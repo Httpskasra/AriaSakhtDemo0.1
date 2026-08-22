@@ -1,8 +1,5 @@
 <template>
-    <div class="title">
-      <h1>سبد خرید</h1>
-      <img src="/icons/cart.png" alt="" />
-    </div>
+    <DashboardPageHeader title="سبد خرید" icon="/icons/cart.png" />
 
     <div class="container" dir="rtl">
       <!-- Loading State -->

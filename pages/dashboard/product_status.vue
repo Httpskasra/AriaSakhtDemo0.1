@@ -1,9 +1,6 @@
 <template>
     <div class="container">
-      <div class="title">
-        <h1>وضعیت محصولات</h1>
-        <img src="/icons/product-delivered.png" alt="" />
-      </div>
+      <DashboardPageHeader title="وضعیت محصولات" icon="/icons/product-delivered.png" />
 
       <div
         class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">

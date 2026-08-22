@@ -1,10 +1,5 @@
 <template>
-    <div class="container" dir="rtl">
-      <div class="title">
-        <h1 class="title">شرکت‌ها</h1>
-        <img src="/icons/company.png" alt="" />
-      </div>
-    </div>
+    <DashboardPageHeader title="شرکت‌ها" icon="/icons/company.png" />
 
     <div class="space-y-4" dir="rtl">
       <div

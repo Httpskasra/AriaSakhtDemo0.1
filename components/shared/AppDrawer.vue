@@ -5,9 +5,11 @@ const props = withDefaults(defineProps<{
   modelValue: boolean;
   label?: string;
   width?: string;
+  persistentOnDesktop?: boolean;
 }>(), {
   label: "منوی کناری",
   width: "18rem",
+  persistentOnDesktop: false,
 });
 
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
@@ -15,7 +17,7 @@ const panel = ref<HTMLElement | null>(null);
 const previouslyFocused = ref<HTMLElement | null>(null);
 // Keep the drawer closed during SSR. The real viewport is known only after mount.
 const isDesktop = ref(false);
-const isOpen = computed(() => isDesktop.value || props.modelValue);
+const isOpen = computed(() => (props.persistentOnDesktop && isDesktop.value) || props.modelValue);
 
 const focusableSelector = [
   "a[href]", "button:not([disabled])", "input:not([disabled])",
@@ -32,7 +34,7 @@ function updateBodyLock(open: boolean) {
 }
 
 function handleKeydown(event: KeyboardEvent) {
-  if (!props.modelValue) return;
+  if (!isOpen.value) return;
   if (event.key === "Escape") {
     event.preventDefault();
     close();
@@ -70,7 +72,7 @@ watch(isOpen, async (open) => {
 watch(() => props.modelValue, updateBodyLock);
 
 onBeforeUnmount(() => {
-  document.removeEventListener("keydown", handleKeydown);
+  if (typeof document !== "undefined") document.removeEventListener("keydown", handleKeydown);
   updateBodyLock(false);
 });
 

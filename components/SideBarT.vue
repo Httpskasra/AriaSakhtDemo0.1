@@ -11,7 +11,6 @@ defineProps({
 
 const emit = defineEmits(["update:isMenuOpen"]);
 const router = useRouter();
-const route = useRoute();
 const { hasPermission } = usePermissions();
 const { clearUser } = useUser();
 const { $axios } = useNuxtApp();
@@ -67,7 +66,6 @@ const section = (label: string): SidebarNavItem => ({
 const navItems = computed<SidebarNavItem[]>(() => {
   const items: SidebarNavItem[] = [
     { icon: "dashboard", label: "داشبورد", route: "/dashboard", iconBase: "/dashboardIcons" },
-    section("حساب کاربری"),
   ];
 
   const accountResources = [
@@ -80,17 +78,22 @@ const navItems = computed<SidebarNavItem[]>(() => {
   ];
   accountResources.forEach((resource) => {
     const item = resource === Resource.CARTS
-      ? { icon: Resource.CARTS, label: "سبد خرید", route: "/dashboard/carts", iconBase: "/dashboardIcons" }
+      ? { icon: Resource.CARTS, label: "سبد خرید", route: "/dashboard/carts", permission: Resource.CARTS, iconBase: "/dashboardIcons" }
       : linkFor(resource);
-    if (item && (resource === Resource.CARTS || hasPermission(resource, Action.READ))) items.push(item);
+    if (item && hasPermission(resource, Action.READ)) items.push(item);
   });
 
-  items.push({
-    icon: "fav",
-    label: "علاقه‌مندی‌ها",
-    route: "/dashboard/fav",
-    iconBase: "/dashboardIcons",
-  });
+  if (hasPermission(Resource.PRODUCTS, Action.READ)) {
+    items.push({
+      icon: "fav",
+      label: "علاقه‌مندی‌ها",
+      route: "/dashboard/fav",
+      permission: Resource.PRODUCTS,
+      iconBase: "/dashboardIcons",
+    });
+  }
+
+  if (items.length > 1) items.splice(1, 0, section("حساب کاربری"));
 
   const sellerResources = [
     Resource.COMPANIES,
@@ -126,9 +129,7 @@ const navItems = computed<SidebarNavItem[]>(() => {
 
   items.push({ icon: "logout", label: "خروج", iconBase: "/dashboardIcons", action: handleLogOut });
 
-  return route.path === "/dashboard/company/register"
-    ? items.filter((item) => item.label !== "خروج")
-    : items;
+  return items;
 });
 
 async function handleLogOut() {

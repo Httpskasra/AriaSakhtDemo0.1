@@ -1,11 +1,5 @@
 <template>
-    <!-- عنوان صفحه -->
-    <div class="container" dir="rtl">
-      <div class="title">
-        <h1>کاربران</h1>
-        <img src="/icons/roles.png" />
-      </div>
-    </div>
+    <DashboardPageHeader title="کاربران" icon="/icons/roles.png" />
 
     <!-- Guard: only render content if user can read -->
     <div v-if="canRead" class="space-y-4" dir="rtl">

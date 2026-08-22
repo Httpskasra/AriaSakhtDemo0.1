@@ -1,11 +1,8 @@
 <template>
-    <div class="container">
-      <div class="title">
-        <h1>اطلاعات کاربری</h1>
-        <img src="/icons/info.png" alt="profile" />
-      </div>
+    <section class="dashboard-page" dir="rtl">
+      <DashboardPageHeader title="اطلاعات کاربری" icon="/icons/info.png" alt="پروفایل" />
 
-      <div class="w-full max-w-xl mx-auto">
+      <div class="profile-card">
         <SharedAsyncState
           v-if="loading"
           state="loading"
@@ -56,7 +53,7 @@
           </div>
         </UForm>
       </div>
-    </div>
+    </section>
 </template>
 
 <script setup lang="ts">
@@ -85,7 +82,7 @@ interface Profile {
   firstName: string;
   lastName: string;
   address: string;
-  email: String;
+  email: string;
 }
 
 const form = ref<Profile>({
@@ -161,20 +158,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container {
-  width: 90%;
-  margin: auto;
+.dashboard-page { width: min(100%, 68rem); margin: 0 auto; }
+.profile-card { width: min(100%, 44rem); margin: 0 auto; }
+.profile-card :deep(.premium-card) {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-card);
 }
-.title {
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0;
+.profile-card :deep(label) { color: var(--color-text-heading); font-weight: 700; }
+.profile-card :deep(input:disabled),
+.profile-card :deep(textarea:disabled) {
+  cursor: not-allowed;
+  opacity: .72;
+  background: var(--color-bg-light);
 }
-.title img {
-  width: 50px;
-  height: 50px;
-}
+@media (max-width: 640px) { .profile-card :deep(.premium-card) { padding: 1rem; } }
 </style>

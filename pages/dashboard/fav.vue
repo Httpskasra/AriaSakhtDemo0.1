@@ -4,7 +4,11 @@ import { useFavoritesStore } from "~/stores/favorites";
 import type { Favorite } from "~/services/favoritesService";
 
 useHead({ title: "داشبورد | علاقه‌مندی‌ها" });
-definePageMeta({ layout: "dashboard", middleware: ["auth"] });
+definePageMeta({
+  layout: "dashboard",
+  middleware: ["auth", "permission"],
+  permission: { resource: "products", action: "r" },
+});
 
 const favorites = useFavoritesStore();
 

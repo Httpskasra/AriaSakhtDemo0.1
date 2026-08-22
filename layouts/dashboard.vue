@@ -5,13 +5,15 @@
         <HeaderBrand compact />
         <span class="dashboard-header__label">{{ panelTitle }}</span>
       </div>
-      <ActionButton class="drawer-toggle" icon-only icon="i-lucide-menu" tone="ghost" aria-label="باز کردن منوی داشبورد" @click="isSidebarOpen = true" />
-      <NuxtLink class="dashboard-header__back" to="/" aria-label="بازگشت به سایت">
-        <UIcon name="i-lucide-arrow-right" aria-hidden="true" />
-        <span>بازگشت به سایت</span>
-      </NuxtLink>
+      <div class="dashboard-header__actions">
+        <ActionButton class="drawer-toggle" icon-only icon="i-lucide-menu" tone="ghost" aria-label="باز کردن منوی داشبورد" @click="isSidebarOpen = true" />
+        <NuxtLink class="dashboard-header__back" to="/" aria-label="بازگشت به سایت">
+          <UIcon name="i-lucide-arrow-right" aria-hidden="true" />
+          <span>بازگشت به سایت</span>
+        </NuxtLink>
+      </div>
     </header>
-    <AppDrawer v-model="isSidebarOpen" label="منوی داشبورد">
+    <AppDrawer v-model="isSidebarOpen" persistent-on-desktop label="منوی داشبورد">
       <SideBarT :isMenuOpen="isSidebarOpen" @update:isMenuOpen="isSidebarOpen = $event" />
     </AppDrawer>
     <main class="main-container">
@@ -53,6 +55,7 @@ const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ?
   direction: rtl;
 }
 .dashboard-header__brand,
+.dashboard-header__actions,
 .dashboard-header__back {
   display: inline-flex;
   align-items: center;
@@ -71,6 +74,7 @@ const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ?
   text-decoration: none;
 }
 .dashboard-header__back:hover { color: var(--blue-dark); }
+.dashboard-header__actions { gap: 1rem; }
 .main-container { grid-area: main; min-width: 0; min-height: 0; padding: 2rem; box-sizing: border-box; width: 100%; direction: rtl; overflow-y: auto; overscroll-behavior: contain; }
 .app-drawer { direction: rtl; min-height: 0; height: 100%; overflow: hidden; }
 .drawer-toggle { display: none; }
@@ -79,6 +83,7 @@ const panelTitle = computed(() => hasPermission(Resource.USERS, Action.MANAGE) ?
   .layout-shell { display: block; height: auto; min-height: 100dvh; }
   .dashboard-header { min-height: 4rem; padding: 0.75rem 1rem; }
   .dashboard-header__back span { display: none; }
+  .dashboard-header__actions { gap: .35rem; }
   .main-container { padding: 1rem; min-height: calc(100dvh - 4rem); overflow: visible; }
   .drawer-toggle { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: var(--radius-card); background: var(--color-bg-light); color: var(--blue-dark); }
 }

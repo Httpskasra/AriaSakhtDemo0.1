@@ -1,10 +1,5 @@
 <template>
-    <div class="container" dir="rtl">
-      <div class="title">
-        <h1>حمل و نقل</h1>
-        <img src="/icons/orders.png" alt="transporting" />
-      </div>
-    </div>
+    <DashboardPageHeader title="حمل و نقل" icon="/icons/orders.png" alt="حمل و نقل" />
 
     <div class="space-y-4" dir="rtl">
       <!-- Orders List (Step 1) -->
