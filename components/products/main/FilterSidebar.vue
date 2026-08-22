@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import { useCategories } from '~/composables/useCategories';
-import { getCategoryId } from '~/services/categories';
+import { getCategoryId, getParentCategoryId } from '~/services/categories';
 
 const props = withDefaults(defineProps<{
   initialMinPrice?: number;
@@ -26,7 +26,23 @@ const emit = defineEmits<{
 const { categories, loading, error, load: loadCategories } = useCategories();
 const isCategoriesExpanded = ref(false);
 const visibleCategoryLimit = 6;
-const visibleCategories = computed(() => isCategoriesExpanded.value ? categories.value : categories.value.slice(0, visibleCategoryLimit));
+const categoryGroups = computed(() => {
+  const all = categories.value;
+  const allIds = new Set(all.map(getCategoryId));
+  const rootCategories = all.filter((category) => {
+    const parentId = getParentCategoryId(category);
+    return !parentId || !allIds.has(parentId);
+  });
+  const groups = rootCategories.map((root) => ({
+    root,
+    children: all.filter((category) => getParentCategoryId(category) === getCategoryId(root)),
+  }));
+
+  return groups;
+});
+const visibleCategoryGroups = computed(() => isCategoriesExpanded.value
+  ? categoryGroups.value
+  : categoryGroups.value.slice(0, visibleCategoryLimit));
 
 const minPrice = ref(props.initialMinPrice || undefined);
 const maxPrice = ref(props.initialMaxPrice || undefined);
@@ -110,23 +126,39 @@ const clearCategories = () => {
       </div>
       <div v-else class="category-list custom-scrollbar" role="group" aria-label="انتخاب دسته‌بندی">
         <div
-          v-for="cat in visibleCategories"
-          :key="getCategoryId(cat)"
-          class="category-option"
-          :class="{ 'category-option--selected': selectedCategories.includes(getCategoryId(cat)) }"
+          v-for="group in visibleCategoryGroups"
+          :key="getCategoryId(group.root)"
+          class="category-group"
         >
           <button
             type="button"
-            class="category-option__button"
-            :aria-pressed="selectedCategories.includes(getCategoryId(cat))"
-            @click="toggleCategory(getCategoryId(cat))"
+            class="category-option__button category-option__button--parent"
+            :class="{ 'category-option__button--selected': selectedCategories.includes(getCategoryId(group.root)) }"
+            :aria-pressed="selectedCategories.includes(getCategoryId(group.root))"
+            @click="toggleCategory(getCategoryId(group.root))"
           >
             <span class="category-option__check" aria-hidden="true">
-              <UIcon v-if="selectedCategories.includes(getCategoryId(cat))" name="i-lucide-check" />
+              <UIcon v-if="selectedCategories.includes(getCategoryId(group.root))" name="i-lucide-check" />
             </span>
-            <span class="category-option__name">{{ cat.name }}</span>
-            <span v-if="selectedCategories.includes(getCategoryId(cat))" class="category-option__selected-label">انتخاب شد</span>
+            <span class="category-option__name">{{ group.root.name }}</span>
+            <span v-if="group.children.length" class="category-option__count">{{ group.children.length }}</span>
           </button>
+          <div v-if="group.children.length" class="category-children">
+            <button
+              v-for="child in group.children"
+              :key="getCategoryId(child)"
+              type="button"
+              class="category-option__button category-option__button--child"
+              :class="{ 'category-option__button--selected': selectedCategories.includes(getCategoryId(child)) }"
+              :aria-pressed="selectedCategories.includes(getCategoryId(child))"
+              @click="toggleCategory(getCategoryId(child))"
+            >
+              <span class="category-option__check" aria-hidden="true">
+                <UIcon v-if="selectedCategories.includes(getCategoryId(child))" name="i-lucide-check" />
+              </span>
+              <span class="category-option__name">{{ child.name }}</span>
+            </button>
+          </div>
         </div>
       </div>
       <div v-if="selectedCategories.length" class="category-selection-summary">
@@ -134,7 +166,7 @@ const clearCategories = () => {
         <button type="button" @click="clearCategories">پاک کردن</button>
       </div>
       <UButton
-        v-if="categories.length > visibleCategoryLimit"
+        v-if="categoryGroups.length > visibleCategoryLimit"
         type="button"
         size="sm"
         variant="ghost"
@@ -142,7 +174,7 @@ const clearCategories = () => {
         class="category-toggle"
         @click="isCategoriesExpanded = !isCategoriesExpanded"
       >
-        {{ isCategoriesExpanded ? 'نمایش کمتر' : `نمایش ${categories.length - visibleCategoryLimit} دسته دیگر` }}
+        {{ isCategoriesExpanded ? 'نمایش کمتر' : `نمایش ${categoryGroups.length - visibleCategoryLimit} گروه دیگر` }}
         <UIcon :name="isCategoriesExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" aria-hidden="true" />
       </UButton>
     </div>
@@ -230,7 +262,10 @@ const clearCategories = () => {
 
 <style scoped>
 .filter-panel {
-  box-shadow: none;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 .5rem 1.5rem rgb(15 23 42 / 5%);
 }
 
 .filter-panel__title {
@@ -270,43 +305,55 @@ const clearCategories = () => {
 
 .category-list {
   display: grid;
-  max-height: 12rem;
-  gap: .5rem;
+  max-height: 18rem;
+  gap: .4rem;
   overflow-y: auto;
+  padding: .25rem;
+  border: 1px solid #f1f5f9;
+  border-radius: .85rem;
+  background: #f8fafc;
 }
 
-.category-option {
+.category-group {
   min-width: 0;
-  border: 1px solid transparent;
-  border-radius: .75rem;
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  border-radius: .7rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 3%);
 }
 
-.category-option:hover {
-  border-color: #dbeafe;
-  background: #f8fbff;
+.category-group:hover {
+  box-shadow: 0 2px 6px rgb(15 23 42 / 6%);
 }
 
-.category-option--selected {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
+.category-children {
+  display: grid;
+  gap: .15rem;
+  margin: 0 .55rem .45rem;
+  padding: .25rem .35rem .1rem;
+  border-top: 1px solid #f1f5f9;
 }
 
 .category-option__button {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 2.7rem;
-  gap: .65rem;
-  padding: .4rem .55rem;
+  min-height: 2.45rem;
+  gap: .55rem;
+  padding: .35rem .55rem;
   border: 0;
   border-radius: .7rem;
   background: transparent;
-  color: inherit;
+  color: #475569;
   cursor: pointer;
   text-align: right;
+  transition: background-color 150ms ease, color 150ms ease;
 }
+
+.category-option__button:hover,
+.category-option__button:focus-visible { background: #f1f5f9; color: #1d4ed8; }
+.category-option__button--parent { color: #1e293b; font-weight: 800; }
+.category-option__button--child { min-height: 2.2rem; padding-inline-start: 1rem; font-size: .75rem; }
+.category-option__button--selected { background: #eff6ff; color: #1d4ed8; }
 
 .category-option__button:focus-visible {
   outline: 2px solid var(--color-brand-blue);
@@ -327,9 +374,10 @@ const clearCategories = () => {
 }
 
 .category-option__check :deep(svg) { width: .85rem; height: .85rem; stroke-width: 3; }
-.category-option--selected .category-option__check { border-color: var(--color-brand-blue); background: var(--color-brand-blue); transform: scale(1.04); }
-.category-option__name { min-width: 0; flex: 1; overflow: hidden; font-size: .8rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.category-option__selected-label { flex: 0 0 auto; color: #2563eb; font-size: .62rem; font-weight: 700; }
+.category-option__button--selected .category-option__check { border-color: var(--color-brand-blue); background: var(--color-brand-blue); transform: scale(1.04); }
+.category-option__name { min-width: 0; flex: 1; overflow: hidden; font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.category-option__button--child .category-option__name { font-weight: 600; }
+.category-option__count { min-width: 1.35rem; padding: .15rem .35rem; border-radius: 999px; background: #f1f5f9; color: #64748b; font-size: .65rem; font-weight: 800; text-align: center; }
 
 .category-selection-summary {
   display: flex;
