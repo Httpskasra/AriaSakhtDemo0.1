@@ -62,6 +62,8 @@ async function handleAction(item: SidebarNavItem) {
 .sidebar-nav {
   width: 100%;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   padding: 1.25rem 0 6.25rem;
   scrollbar-width: thin;
@@ -120,7 +122,7 @@ async function handleAction(item: SidebarNavItem) {
   color: var(--color-danger-fg);
 }
 .sidebar-nav__item--logout {
-  margin-top: 1.5rem;
+  margin-top: auto;
   border-top: 1px solid var(--color-border);
   border-radius: 0;
   padding-top: 1rem;
