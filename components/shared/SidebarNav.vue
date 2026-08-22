@@ -34,7 +34,7 @@ async function handleAction(item: SidebarNavItem) {
         v-else-if="item.route"
         :to="item.route"
         class="sidebar-nav__item"
-        :class="{ 'sidebar-nav__item--active': isActive(item) }"
+        :class="{ 'sidebar-nav__item--active': isActive(item), 'sidebar-nav__item--logout': item.action }"
         @click="emit('navigate')">
         <span class="sidebar-nav__icon">
           <img :src="iconSrc(item)" alt="" />
@@ -47,6 +47,7 @@ async function handleAction(item: SidebarNavItem) {
         variant="ghost"
         color="neutral"
         class="sidebar-nav__item sidebar-nav__item--button"
+        :class="{ 'sidebar-nav__item--logout': item.action }"
         @click="handleAction(item)">
         <span class="sidebar-nav__icon">
           <img :src="iconSrc(item)" alt="" />
@@ -117,6 +118,12 @@ async function handleAction(item: SidebarNavItem) {
 
 .sidebar-nav__item--button {
   color: var(--color-danger-fg);
+}
+.sidebar-nav__item--logout {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  padding-top: 1rem;
 }
 
 .sidebar-nav__icon {

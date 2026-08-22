@@ -13,8 +13,24 @@ const emit = defineEmits(["update:isMenuOpen"]);
 const router = useRouter();
 const { hasPermission } = usePermissions();
 const { clearUser } = useUser();
+const { user } = useUser();
 const { $axios } = useNuxtApp();
 const authStore = useAuthStore();
+
+const identity = computed(() => {
+  const current = user.value as (typeof user.value & {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    profile?: { firstName?: string; lastName?: string; phoneNumber?: string };
+  }) | null;
+  const firstName = current?.firstName || current?.profile?.firstName || "";
+  const lastName = current?.lastName || current?.profile?.lastName || "";
+  return {
+    name: `${firstName} ${lastName}`.trim() || "حساب کاربری",
+    subtitle: current?.phoneNumber || current?.profile?.phoneNumber || "اطلاعات حساب کاربری",
+  };
+});
 
 const resourceLabels: Record<string, string> = {
   [Resource.CATEGORIES]: "دسته‌بندی‌ها",
@@ -146,5 +162,5 @@ async function handleLogOut() {
 </script>
 
 <template>
-  <SidebarPanel :items="navItems" @navigate="emit('update:isMenuOpen', false)" />
+  <SidebarPanel :items="navItems" :identity="identity" @navigate="emit('update:isMenuOpen', false)" />
 </template>

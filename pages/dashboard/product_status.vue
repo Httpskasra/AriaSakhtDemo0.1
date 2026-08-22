@@ -76,7 +76,7 @@ useHead({
 definePageMeta({
   layout: "dashboard",
   middleware: ["auth", "permission"],
-  permission: { resource: "product_status", action: "u" },
+  permission: { resource: "product_status", action: "r" },
 });
 
 const search = ref("");
