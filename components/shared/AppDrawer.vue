@@ -125,7 +125,7 @@ onMounted(() => {
   box-sizing: border-box;
 }
 @media (max-width: 1024px) {
-  .app-drawer { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+  .app-drawer { position: fixed; inset: 0; z-index: 1100; pointer-events: none; }
   .app-drawer--open { pointer-events: auto; }
   .app-drawer__backdrop { display: block; position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: rgb(15 23 42 / 45%); }
   .app-drawer__panel {
@@ -139,7 +139,7 @@ onMounted(() => {
     visibility: hidden;
     pointer-events: none;
     min-height: 0;
-    transform: translateX(-100%);
+    transform: translateX(100%);
     transition: transform .25s ease;
     background: #fff;
     box-shadow: var(--shadow-overlay);
@@ -167,6 +167,6 @@ onMounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .app-drawer__panel { transition: none !important; }
 }
-:global([dir="ltr"] .app-drawer__panel) { inset-inline-end: 0; inset-inline-start: auto; transform: translateX(100%); }
+:global([dir="ltr"] .app-drawer__panel) { inset-inline-end: 0; inset-inline-start: auto; transform: translateX(-100%); }
 :global([dir="ltr"] .app-drawer--open .app-drawer__panel) { transform: translateX(0); }
 </style>

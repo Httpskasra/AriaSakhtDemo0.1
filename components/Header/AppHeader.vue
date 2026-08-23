@@ -81,7 +81,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
 </template>
 
 <style scoped>
-.site-header { position:sticky; top:0; z-index:50; width:100%; max-width:100%; overflow-x:clip; border-bottom:1px solid #e2e8f0; background:rgb(255 255 255 / 94%); backdrop-filter:blur(14px); }
+.site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; border-bottom:1px solid #e2e8f0; background:rgb(255 255 255 / 94%); backdrop-filter:blur(14px); }
 .site-header--scrolled .desktop-header__trust { display:none; }
 .site-header--scrolled .desktop-header__main-inner { min-height:4.25rem; }
 .desktop-header__trust { background:#0f172a; color:#fff; }
