@@ -115,7 +115,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.app-drawer { grid-area: drawer; min-width: 0; }
+.app-drawer { grid-area: drawer; min-width: 0; overflow: clip; }
 .app-drawer__backdrop { display: none; }
 .app-drawer__panel {
   height: 100%;
@@ -136,6 +136,8 @@ onMounted(() => {
     height: 100dvh;
     width: min(var(--drawer-width), calc(100vw - 1rem));
     max-width: calc(100vw - 1rem);
+    visibility: hidden;
+    pointer-events: none;
     min-height: 0;
     transform: translateX(-100%);
     transition: transform .25s ease;
@@ -160,7 +162,7 @@ onMounted(() => {
     color: var(--color-text-heading);
     cursor: pointer;
   }
-  .app-drawer--open .app-drawer__panel { transform: translateX(0); }
+  .app-drawer--open .app-drawer__panel { visibility: visible; pointer-events: auto; transform: translateX(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-drawer__panel { transition: none !important; }
