@@ -7,6 +7,9 @@ type RequiredPermission = {
 };
 
 export default defineNuxtRouteMiddleware((to) => {
+  const { authUnavailable, isUserLoading } = useUser();
+  if (authUnavailable.value || isUserLoading.value) return;
+
   const required = to.meta.permission as RequiredPermission | undefined;
   if (!required) return;
 

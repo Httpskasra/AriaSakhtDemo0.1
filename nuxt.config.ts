@@ -54,7 +54,36 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/icon", "@nuxt/image", "@nuxt/ui", "@pinia/nuxt"],
 
+  // Keep Nuxt Icon's local server endpoint outside the public /api namespace.
+  // Nginx reserves /api/* for the NestJS backend.
+  icon: {
+    localApiEndpoint: "/_nuxt_icon",
+  },
+
   hooks: {
+    "pages:extend"(pages) {
+      const legacyPanelMeta: Record<string, Record<string, unknown>> = {
+        "/dashboard/profile": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "profile", action: "r" } },
+        "/dashboard/orders": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "orders", action: "r" } },
+        "/dashboard/carts": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "carts", action: "r" } },
+        "/dashboard/fav": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "products", action: "r" } },
+        "/dashboard/ticketing": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "ticketing", action: "r" } },
+        "/dashboard/wallets": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "wallets", action: "r" } },
+        "/dashboard/transaction": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "transaction", action: "r" } },
+        "/dashboard/companies": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "companies", action: "r" } },
+        "/dashboard/products": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "products", action: "r" } },
+        "/dashboard/product_status": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "product_status", action: "r" } },
+        "/dashboard/transporting": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "transporting", action: "r" } },
+        "/dashboard/categories": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "categories", action: "r" } },
+        "/dashboard/users": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "users", action: "m" } },
+        "/dashboard/roles": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "users", action: "m" } },
+      };
+
+      for (const page of pages) {
+        const meta = legacyPanelMeta[page.path];
+        if (meta) page.meta = { ...page.meta, ...meta };
+      }
+    },
   },
 
   image: {

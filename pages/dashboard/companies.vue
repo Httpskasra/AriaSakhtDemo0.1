@@ -1,10 +1,11 @@
 <template>
-    <DashboardPageHeader title="شرکت‌ها" icon="/icons/company.png" />
+    <PanelPageHeader title="شرکت‌ها" subtitle="شرکت‌ها و وضعیت فعالیت تأمین‌کنندگان را مدیریت کنید" icon="i-lucide-building-2">
+      <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">افزودن شرکت</UButton></template>
+    </PanelPageHeader>
 
     <div class="space-y-4" dir="rtl">
-      <div
-        class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
-        <div class="flex items-center gap-2">
+      <PanelFilterBar>
+        <div class="filter-group">
           <TableFilterInput
             v-model="search"
             placeholder="جستجوی شرکت..."
@@ -24,12 +25,8 @@
               { label: '۵۰', value: 50 }
             ]" />
         </div>
-        <UButton
-          v-if="canCreate"
-          @click="openModal()">
-          + افزودن
-        </UButton>
-      </div>
+        <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton>
+      </PanelFilterBar>
 
       <div class="premium-card border border-gray-100">
         <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
@@ -153,19 +150,13 @@
 
                     <USelect
                       v-if="canUpdate"
-                      :disabled="statusLoading[company._id || '']"
+                      :model-value="statusDraft[company._id || ''] ?? getCompanyStatus(company)"
+                      :open="statusOpen[company._id || ''] ?? false"
+                      :disabled="Boolean(statusLoading[company._id || ''])"
                       size="xs"
-                      :model-value="
-                        company.status ??
-                        (company.isActive ? 'active' : 'suspended')
-                      "
-                      :items="[
-                        { label: 'فعال', value: 'active' },
-                        { label: 'معلق', value: 'suspended' },
-                        { label: 'در انتظار', value: 'pending' },
-                        { label: 'رد شده', value: 'rejected' }
-                      ]"
-                      @update:model-value="(value) => onChangeStatus({ target: { value } } as unknown as Event, company)" />
+                      :items="statusOptions"
+                      @update:open="(open) => setStatusOpen(company, open)"
+                      @update:model-value="(value) => onChangeStatus(value, company)" />
                   </div>
                 </td>
                 <td class="px-4 py-3" @click.stop>
@@ -231,8 +222,8 @@
               <!-- Specialized upload control: native file input is required for image preview FileReader flow. -->
               <input type="file" @change="onFileChange" />
               <img
-                v-if="form.image"
-                :src="form.image"
+                v-if="imagePreview"
+                :src="imagePreview"
                 class="w-20 h-20 mt-2 rounded-full object-cover" />
             </div>
 
@@ -256,19 +247,14 @@
 
 <script setup lang="ts">
 const feedback = useFeedback();
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, nextTick, onMounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
 import type { Company } from "~/types/company";
-import { listCompanies, updateCompany, createCompany, deleteCompany as removeCompany, changeCompanyStatus } from "~/services/companyService";
+import { listCompanies, updateCompany, createCompany, deleteCompany as removeCompany, changeCompanyStatus, uploadCompanyImage } from "~/services/companyService";
 useHead({
   title: "داشبورد | شرکت‌ها",
-});
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "companies", action: "r" },
 });
 
 // // دسترسی‌ها
@@ -292,6 +278,8 @@ const loadError = ref("");
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
+const selectedImage = ref<File | null>(null);
+const imagePreview = ref("");
 
 const form = ref({
   name: "",
@@ -307,8 +295,27 @@ const { $axios } = useNuxtApp();
 
 // small map to track loading state per-company when changing status
 const statusLoading = ref<Record<string, boolean>>({});
+const statusDraft = ref<Record<string, CompanyStatusValue>>({});
+const statusOpen = ref<Record<string, boolean>>({});
 const saving = ref(false);
 const deletingId = ref<string | null>(null);
+
+type CompanyStatusValue = "active" | "suspended" | "pending" | "rejected";
+const statusOptions = [
+  { label: "فعال", value: "active" },
+  { label: "معلق", value: "suspended" },
+  { label: "در انتظار", value: "pending" },
+  { label: "رد شده", value: "rejected" },
+] satisfies Array<{ label: string; value: CompanyStatusValue }>;
+
+function getCompanyStatus(company: Company): CompanyStatusValue {
+  return company.status ?? (company.isActive ? "active" : "suspended");
+}
+
+function setStatusOpen(company: Company, open: boolean) {
+  if (!company._id || statusLoading.value[company._id]) return;
+  statusOpen.value[company._id] = open;
+}
 
 /**
  * Handle inline status change. Sends PATCH to /companies/:id/status
@@ -318,36 +325,38 @@ const deletingId = ref<string | null>(null);
  * Handle inline status change. Sends PATCH to /companies/:id/status
  * body: { status: 'pending' | 'active' | 'suspended' | 'rejected' }
  */
-async function onChangeStatus(e: Event, company: Company) {
+async function onChangeStatus(value: unknown, company: Company) {
   if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
-  const select = e.target as HTMLSelectElement;
-  const newStatus = select.value as
-    | "active"
-    | "suspended"
-    | "pending"
-    | "rejected";
+  if (!statusOptions.some((option) => option.value === value)) return;
+  const newStatus = value as CompanyStatusValue;
   if (!company._id) {
     return feedback.error("شناسه نامعتبر", "شناسه شرکت موجود نیست.");
   }
-  // optional confirmation for destructive changes
-  if (!confirm("آیا از تغییر وضعیت این شرکت مطمئن هستید؟")) {
-    // rollback select to previous value
-    select.value = company.status ?? (company.isActive ? "active" : "inactive");
+
+  const companyId = company._id;
+  const previousStatus = getCompanyStatus(company);
+  // Close before confirmation. The select is fully controlled, so the
+  // popover cannot be left open by the component's internal update cycle.
+  statusOpen.value[companyId] = false;
+  await nextTick();
+
+  if (!window.confirm("آیا از تغییر وضعیت این شرکت مطمئن هستید؟")) {
+    statusDraft.value[companyId] = previousStatus;
     return;
   }
 
   try {
-    statusLoading.value[company._id] = true;
-    await changeCompanyStatus(company._id, newStatus);
-    // update local object to reflect new status (optimistic)
+    statusDraft.value[companyId] = newStatus;
+    statusLoading.value[companyId] = true;
+    await changeCompanyStatus(companyId, newStatus);
     company.status = newStatus;
   } catch (err) {
     console.error("خطا در تغییر وضعیت:", err);
     feedback.error("تغییر وضعیت انجام نشد", toUserFacingError(err).message);
-    // rollback select
-    select.value = company.status ?? (company.isActive ? "active" : "inactive");
+    statusDraft.value[companyId] = previousStatus;
   } finally {
-    if (company._id) statusLoading.value[company._id] = false;
+    statusLoading.value[companyId] = false;
+    statusOpen.value[companyId] = false;
   }
 }
 
@@ -363,6 +372,9 @@ const fetchCompanies = async () => {
       filter: search.value.trim() || undefined,
     });
     companies.value = result.items;
+    for (const company of result.items) {
+      if (company._id) statusDraft.value[company._id] = getCompanyStatus(company);
+    }
     total.value = result.total;
   } catch (err) {
     console.error("خطا در دریافت شرکت‌ها:", err);
@@ -394,6 +406,8 @@ function openModal(company: any | null = null) {
     editMode.value = true;
     selectedId.value = company._id; // changed from company.id
     form.value = { ...company };
+    selectedImage.value = null;
+    imagePreview.value = company.image || "";
   } else {
     if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
@@ -407,23 +421,30 @@ function openModal(company: any | null = null) {
       // status: "",
       image: "",
     };
+    selectedImage.value = null;
+    imagePreview.value = "";
   }
   showModal.value = true;
 }
 
 function closeModal() {
   showModal.value = false;
+  selectedImage.value = null;
+  imagePreview.value = "";
 }
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
   if (file) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      form.value.image = ev.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (!allowedTypes.has(file.type) || file.size > 10 * 1024 * 1024) {
+      feedback.error("فایل نامعتبر", "لوگو باید PNG، JPG یا WEBP و حداکثر ۱۰ مگابایت باشد.");
+      input.value = "";
+      return;
+    }
+    selectedImage.value = file;
+    imagePreview.value = URL.createObjectURL(file);
   }
 }
 
@@ -435,6 +456,14 @@ const saveCompany = async () => {
       return;
     }
     saving.value = true;
+    // Only persist server-issued URLs. Never send the local preview/data URL
+    // to the API because it is not a durable company image reference.
+    let imageUrl = form.value.image?.startsWith("http")
+      ? form.value.image
+      : undefined;
+    if (selectedImage.value) {
+      imageUrl = await uploadCompanyImage(selectedImage.value);
+    }
     if (editMode.value) {
       if (!selectedId.value || selectedId.value.length !== 24) {
         feedback.error("شناسه نامعتبر", "شناسه شرکت معتبر نیست.");
@@ -449,12 +478,12 @@ const saveCompany = async () => {
         registrationNumber: form.value.registrationNumber,
         address: form.value.address,
         // status: form.value.status,
-        image: form.value.image,
+        image: imageUrl,
       };
       //console.log("PATCH id:", selectedId.value); // برای دیباگ
       await updateCompany(selectedId.value, cleanData);
     } else {
-      await createCompany(form.value);
+      await createCompany({ ...form.value, image: imageUrl });
     }
     await fetchCompanies();
     closeModal();

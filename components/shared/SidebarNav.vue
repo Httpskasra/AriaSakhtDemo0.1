@@ -13,11 +13,6 @@ function isActive(item: SidebarNavItem) {
   return route.path === item.route || route.path.startsWith(`${item.route}/`);
 }
 
-function iconSrc(item: SidebarNavItem) {
-  const iconName = isActive(item) ? item.activeIcon || `${item.icon}-active` : item.icon;
-  return `${item.iconBase}/${iconName}.svg`;
-}
-
 async function handleAction(item: SidebarNavItem) {
   if (item.action) await item.action();
   emit("navigate");
@@ -37,7 +32,7 @@ async function handleAction(item: SidebarNavItem) {
         :class="{ 'sidebar-nav__item--active': isActive(item), 'sidebar-nav__item--logout': item.action }"
         @click="emit('navigate')">
         <span class="sidebar-nav__icon">
-          <img :src="iconSrc(item)" alt="" />
+          <UIcon :name="item.icon" aria-hidden="true" />
         </span>
         <span class="sidebar-nav__label">{{ item.label }}</span>
       </NuxtLink>
@@ -50,7 +45,7 @@ async function handleAction(item: SidebarNavItem) {
         :class="{ 'sidebar-nav__item--logout': item.action }"
         @click="handleAction(item)">
         <span class="sidebar-nav__icon">
-          <img :src="iconSrc(item)" alt="" />
+          <UIcon :name="item.icon" aria-hidden="true" />
         </span>
         <span class="sidebar-nav__label">{{ item.label }}</span>
       </UButton>

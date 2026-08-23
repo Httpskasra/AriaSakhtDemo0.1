@@ -4,10 +4,12 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 const props = withDefaults(defineProps<{
   modelValue: boolean;
   label?: string;
+  panelId?: string;
   width?: string;
   persistentOnDesktop?: boolean;
 }>(), {
   label: "منوی کناری",
+  panelId: "app-drawer-panel",
   width: "18rem",
   persistentOnDesktop: false,
 });
@@ -71,6 +73,7 @@ function handleKeydown(event: KeyboardEvent) {
 watch(isOpen, async (open) => {
   if (typeof document === "undefined") return;
   if (open) {
+    if (isDesktop.value) return;
     previouslyFocused.value = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.addEventListener("keydown", handleKeydown);
     await nextTick();
@@ -102,7 +105,7 @@ onMounted(() => {
 <template>
   <div class="app-drawer" :class="{ 'app-drawer--open': isOpen }" :style="{ '--drawer-width': width }">
     <button v-if="isOpen && !isDesktop" class="app-drawer__backdrop" type="button" :aria-label="`${label} را ببندید`" @click="close" />
-    <aside ref="panel" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
+    <aside ref="panel" :id="panelId" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
       <button v-if="isOpen && !isDesktop" class="app-drawer__close" type="button" :aria-label="`${label} را ببندید`" @click="close">
         <UIcon name="i-lucide-x" aria-hidden="true" />
       </button>
@@ -118,7 +121,7 @@ onMounted(() => {
   height: 100%;
   min-height: 0;
   width: min(100%, var(--drawer-width));
-  max-width: min(86vw, var(--drawer-width));
+  max-width: none;
   box-sizing: border-box;
 }
 @media (max-width: 1024px) {
@@ -131,12 +134,15 @@ onMounted(() => {
     inset-inline-start: 0;
     inset-inline-end: auto;
     height: 100dvh;
+    width: min(var(--drawer-width), calc(100vw - 1rem));
+    max-width: calc(100vw - 1rem);
     min-height: 0;
     transform: translateX(-100%);
     transition: transform .25s ease;
     background: #fff;
     box-shadow: var(--shadow-overlay);
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 3.75rem 0.75rem 1rem;
   }
   .app-drawer__close {
@@ -155,6 +161,9 @@ onMounted(() => {
     cursor: pointer;
   }
   .app-drawer--open .app-drawer__panel { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-drawer__panel { transition: none !important; }
 }
 :global([dir="ltr"] .app-drawer__panel) { inset-inline-end: 0; inset-inline-start: auto; transform: translateX(100%); }
 :global([dir="ltr"] .app-drawer--open .app-drawer__panel) { transform: translateX(0); }

@@ -1,14 +1,10 @@
 <template>
     <div class="container">
-      <DashboardPageHeader
-        title="محصولات"
-        subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید."
-        icon="/adminIcon/products.png"
-        alt="محصولات"
-      />
+      <PanelPageHeader title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
+        <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
+      </PanelPageHeader>
 
-      <div
-        class="actions flex flex-wrap justify-between items-center gap-2 mb-4 bg-white rounded-field py-2">
+      <PanelFilterBar>
         <div class="flex flex-wrap items-center gap-2">
           <TableFilterInput
             v-model="search"
@@ -30,12 +26,8 @@
               { label: '۵۰', value: 50 }
             ]" />
         </div>
-        <UButton
-          v-if="canCreate"
-          @click="openModal()">
-          + محصول جدید
-        </UButton>
-      </div>
+        <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''; applyProductFilters()">حذف فیلتر</UButton>
+      </PanelFilterBar>
 
       <div class="products-panel bg-white rounded-field overflow-hidden">
         <div v-if="!canRead" class="state-card state-card--error">
@@ -395,11 +387,6 @@ useHead({
   title: "داشبورد | محصولات",
 });
 
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-      permission: { resource: "products", action: "r" },
-});
 
 const search = ref("");
 const sort = ref("createdAt:desc");

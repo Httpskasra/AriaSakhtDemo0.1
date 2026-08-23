@@ -1,12 +1,13 @@
 <template>
-    <DashboardPageHeader title="کاربران" icon="/icons/roles.png" />
+    <PanelPageHeader title="کاربران" subtitle="مشاهده کاربران و بررسی سطح دسترسی آن‌ها" icon="i-lucide-users">
+      <template #actions><UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی کاربران" @click="fetchUsers">به‌روزرسانی</UButton></template>
+    </PanelPageHeader>
 
     <!-- Guard: only render content if user can read -->
     <div v-if="canRead" class="space-y-4" dir="rtl">
       <!-- Header / Controls -->
-      <div
-        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
+      <PanelFilterBar>
+        <div class="filter-group">
           <TableFilterInput
             v-model="filter"
             placeholder="جستجوی کاربر..."
@@ -19,7 +20,7 @@
             ]" />
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="filter-group">
           <label for="page-size" class="text-sm text-gray-600"
             >تعداد در صفحه</label
           >
@@ -35,7 +36,8 @@
               { label: '100', value: 100 }
             ]" />
         </div>
-      </div>
+        <UButton v-if="filter" variant="ghost" color="neutral" icon="i-lucide-x" @click="filter = ''">حذف جستجو</UButton>
+      </PanelFilterBar>
 
       <!-- States -->
       <SharedAsyncState v-if="errorMessage" state="error" :message="errorMessage" @retry="fetchUsers" />
@@ -256,11 +258,6 @@ import { listUsers, type UserListItem } from "~/services/userService";
 import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | کاربران",
-});
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "users", action: "m" },
 });
 // Access control
 const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);

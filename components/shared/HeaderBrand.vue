@@ -5,7 +5,7 @@ withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 <template>
   <NuxtLink to="/" class="header-brand" :class="{ 'header-brand--compact': compact }" aria-label="تجاریس">
     <span class="header-brand__mark">
-      <img src="/logo/logo.png" alt="Logo" class="logo-img" />
+      <img src="/logo/logo.png" alt="تجاریس" width="40" height="40" class="logo-img" />
     </span>
     <span class="header-brand__name">تجاریس</span>
   </NuxtLink>
@@ -28,6 +28,13 @@ withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
   border-radius: var(--radius-field);
   /* background: var(--color-primary); */
   /* box-shadow: var(--shadow-raised); */
+}
+
+.logo-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .header-brand__name {

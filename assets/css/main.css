@@ -149,6 +149,9 @@
   --color-neutral-fg: var(--color-text-heading);
   --color-neutral-bg: #f3f4f6;
   --color-bg-light: #f8fafc;
+  --color-bg-app: #f1f5f9;
+  --color-bg-surface: #ffffff;
+  --color-border: #e2e8f0;
   --blue-dark: var(--color-text-heading);
   --blue-sky: var(--color-bg-light);
   --blue-light: var(--color-primary);
@@ -164,7 +167,10 @@
   --red-danger: var(--color-danger-fg);
   --yellow-warning: var(--color-brand-yellow);
   --font-num: "IRANYekanXFaNum", sans-serif;
-  --font-yekan: "IRANYekanXNoEn", sans-serif;
+  /* One panel typeface; the FaNum face keeps Persian digits consistent. */
+  --font-yekan: var(--font-num);
+  --font-body: var(--font-num);
+  --space-page: clamp(1rem, 3vw, 2rem);
   --radius-brand: 12px;
   --radius-pill: 999px;
   --radius-card: var(--radius-brand);
@@ -191,6 +197,9 @@
   --panel-sidebar-width: 18rem;
   --control-height-sm: 2.25rem;
   --control-height-md: 2.75rem;
+  --breakpoint-panel-mobile: 640px;
+  --breakpoint-panel-tablet: 1024px;
+  --breakpoint-panel-wide: 1440px;
   --focus-ring: 0 0 0 3px rgb(22 115 255 / 28%);
   /* Derived from --color-brand-blue for hover states that need a darker brand blue. */
   --color-brand-blue-hover: color-mix(in oklab, var(--color-brand-blue) 82%, black);

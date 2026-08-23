@@ -1,23 +1,21 @@
 <template>
-    <div v-if="canRead" class="container">
-      <!-- Title -->
-      <DashboardPageHeader title="پشتیبانی" icon="/userPannleIcons/support.png" alt="support" />
+    <div v-if="canRead" class="ticket-page container">
+      <PanelPageHeader title="پشتیبانی" subtitle="پیگیری درخواست‌ها و گفت‌وگو با تیم پشتیبانی" icon="i-lucide-life-buoy">
+        <template #actions>
+          <UButton v-if="canCreate" icon="i-lucide-plus" @click="showCreateModal = true">تیکت جدید</UButton>
+          <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی تیکت‌ها" @click="fetchTickets">به‌روزرسانی</UButton>
+        </template>
+      </PanelPageHeader>
 
-      <!-- Header: ساخت تیکت جدید از داخل مودال SupportHeader -->
-      <!-- <SupportHeader :canCreate="canCreate" @submitted="handleNewTicket" /> -->
-
-      <!-- Filter + Search UI (همون استایل قبلی حفظ شده) -->
-      <div class="fillter">
-        <div class="fillter-btn">
-          <ActionButton tone="ghost" type="button" @click="toggleFilters">
-            <span>فیلتر</span>
-          </ActionButton>
-        </div>
-      </div>
+      <PanelFilterBar>
+        <TableFilterInput v-model="searchQuery" placeholder="جستجو در عنوان، توضیحات یا شناسه" aria-label="جستجوی تیکت" />
+        <UButton variant="soft" color="neutral" :icon="showFilters ? 'i-lucide-chevron-up' : 'i-lucide-sliders-horizontal'" @click="toggleFilters">فیلترها</UButton>
+        <UButton v-if="hasFilters" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearFilters">حذف فیلترها</UButton>
+      </PanelFilterBar>
 
       <!-- پنل فیلتر ساده -->
       <transition name="fade">
-        <div v-if="showFilters" class="filter-panel">
+      <div v-if="showFilters" class="filter-panel panel-surface">
           <USelect
             v-model="statusFilter"
             :items="[
@@ -55,11 +53,13 @@
       <div v-else class="tickets-container">
         <!-- لیست تیکت‌ها -->
         <div class="tickets-list">
-          <div
+          <button
             v-for="ticket in filteredTickets"
             :key="ticket.id"
+            type="button"
             class="ticket-card"
             :class="{ active: selectedTicketId === ticket.id }"
+            :aria-pressed="selectedTicketId === ticket.id"
             @click="selectTicket(ticket)">
             <div class="ticket-header">
               <h3>{{ ticket.title }}</h3>
@@ -78,7 +78,7 @@
                 {{ formatDate(ticket.createdAt) }}
               </span>
             </div>
-          </div>
+          </button>
           <UPagination
             v-if="totalTickets > limitTickets"
             v-model="pageTickets"
@@ -182,6 +182,33 @@
     </div>
 
     <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
+
+    <BaseModal v-if="showCreateModal" title-id="create-ticket-title" @close="showCreateModal = false">
+      <form class="create-ticket-form" @submit.prevent="submitNewTicket">
+        <h2 id="create-ticket-title">ایجاد تیکت جدید</h2>
+        <div class="form-field">
+          <label for="ticket-title">عنوان تیکت</label>
+          <UInput id="ticket-title" v-model="newTicketTitle" required placeholder="موضوع درخواست را وارد کنید" />
+        </div>
+        <div class="form-field">
+          <label for="ticket-priority">اولویت</label>
+          <USelect id="ticket-priority" v-model="newTicketPriority" :items="[
+            { label: 'کم', value: 'low' },
+            { label: 'متوسط', value: 'medium' },
+            { label: 'زیاد', value: 'high' },
+            { label: 'فوری', value: 'urgent' }
+          ]" value-key="value" label-key="label" />
+        </div>
+        <div class="form-field">
+          <label for="ticket-description">توضیحات</label>
+          <UTextarea id="ticket-description" v-model="newTicketDescription" required :rows="5" placeholder="جزئیات درخواست را بنویسید" />
+        </div>
+        <div class="create-ticket-actions">
+          <UButton type="button" color="neutral" variant="soft" :disabled="creatingTicket" @click="showCreateModal = false">انصراف</UButton>
+          <UButton type="submit" :loading="creatingTicket">ثبت تیکت</UButton>
+        </div>
+      </form>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -204,11 +231,6 @@ import {
 import { toUserFacingError } from "~/services/apiClient";
 
 useHead({ title: "داشبورد | تیکتینگ" });
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "ticketing", action: "r" },
-});
 
 const { canRead, canCreate } = useAccess(Resource.TICKETING);
 
@@ -222,8 +244,14 @@ const errorMsg = ref("");
 
 // فیلترهای سادهٔ کلاینتی
 const showFilters = ref(false);
+const searchQuery = ref("");
 const statusFilter = ref<string>("");
 const priorityFilter = ref<string>("");
+const showCreateModal = ref(false);
+const creatingTicket = ref(false);
+const newTicketTitle = ref("");
+const newTicketDescription = ref("");
+const newTicketPriority = ref<TicketPriority>("low");
 
 // تیکت انتخاب‌شده
 const selectedTicketId = ref<string | null>(null);
@@ -320,24 +348,46 @@ const handleNewTicket = async (payload: Partial<Ticket>) => {
       priority: (payload.priority as TicketPriority) ?? "low",
     });
     tickets.value.unshift(created || (payload as Ticket));
+    return true;
   } catch (err) {
     console.error("خطا در ایجاد تیکت:", err);
     errorMsg.value = toUserFacingError(err, "ایجاد تیکت انجام نشد.").message;
+    return false;
   }
+};
+
+const submitNewTicket = async () => {
+  if (!newTicketTitle.value.trim() || !newTicketDescription.value.trim() || creatingTicket.value) return;
+  creatingTicket.value = true;
+  const created = await handleNewTicket({
+    title: newTicketTitle.value.trim(),
+    description: newTicketDescription.value.trim(),
+    priority: newTicketPriority.value,
+  });
+  creatingTicket.value = false;
+  if (!created) return;
+  newTicketTitle.value = "";
+  newTicketDescription.value = "";
+  newTicketPriority.value = "low";
+  showCreateModal.value = false;
 };
 
 // اعمال فیلتر
 const filteredTickets = computed(() => {
+  const query = searchQuery.value.trim().toLocaleLowerCase();
   return tickets.value.filter((t) => {
+    const searchable = `${t.id} ${t.title} ${t.description}`.toLocaleLowerCase();
+    const okQuery = !query || searchable.includes(query);
     const okStatus =
       !statusFilter.value ||
       String(t.status || "").toLowerCase() === statusFilter.value;
     const okPriority =
       !priorityFilter.value ||
       String(t.priority || "").toLowerCase() === priorityFilter.value;
-    return okStatus && okPriority;
+    return okQuery && okStatus && okPriority;
   });
 });
+const hasFilters = computed(() => Boolean(searchQuery.value.trim() || statusFilter.value || priorityFilter.value));
 
 watch([pageTickets, limitTickets], fetchTickets);
 
@@ -362,6 +412,7 @@ function toggleFilters() {
 }
 
 function clearFilters() {
+  searchQuery.value = "";
   statusFilter.value = "";
   priorityFilter.value = "";
 }
@@ -757,5 +808,27 @@ onMounted(fetchTickets);
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.ticket-page { display: grid; gap: 1rem; }
+.panel-surface { background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: var(--shadow-raised); }
+.filter-panel { width: auto; margin: 0; padding: 1rem; background: var(--color-bg-surface); border-color: var(--color-border); }
+.filter-panel :deep(button), .filter-panel :deep(input) { min-height: 2.5rem; }
+.tickets-container { width: auto; margin: 0; display: grid; grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.tickets-list, .ticket-details { min-width: 0; max-height: 42rem; padding: 1rem; background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: none; }
+.ticket-card { width: 100%; display: block; color: inherit; text-align: right; background: transparent; }
+.ticket-card:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-brand-blue) 40%, transparent); outline-offset: 2px; }
+.ticket-card.active { border-width: 1px; }
+.ticket-details { overflow-y: auto; }
+.create-ticket-form { display: grid; gap: 1rem; }
+.create-ticket-form h2 { margin: 0; color: var(--color-text-heading); font-size: 1.1rem; }
+.form-field { display: grid; gap: .4rem; }
+.form-field label { color: var(--color-text-heading); font-size: .85rem; font-weight: 600; }
+.create-ticket-actions { display: flex; justify-content: flex-end; gap: .65rem; }
+@media (max-width: 767px) {
+  .tickets-container { grid-template-columns: 1fr; }
+  .tickets-list { max-height: 25rem; }
+  .ticket-details { max-height: none; }
+  .create-ticket-actions { flex-direction: column-reverse; }
 }
 </style>

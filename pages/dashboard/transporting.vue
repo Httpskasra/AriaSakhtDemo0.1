@@ -1,5 +1,7 @@
 <template>
-    <DashboardPageHeader title="حمل و نقل" icon="/icons/orders.png" alt="حمل و نقل" />
+    <PanelPageHeader title="حمل‌ونقل" subtitle="مدیریت سفارش‌های آماده ارسال و وضعیت تحویل" icon="i-lucide-truck">
+      <template #actions><UButton icon="i-lucide-refresh-cw" variant="soft" :loading="ordersLoading || transportingsLoading" aria-label="به‌روزرسانی حمل‌ونقل" @click="selectedOrder ? fetchTransportings() : fetchOrders()">به‌روزرسانی</UButton></template>
+    </PanelPageHeader>
 
     <div class="space-y-4" dir="rtl">
       <!-- Orders List (Step 1) -->
@@ -314,11 +316,6 @@ useHead({
   title: "داشبورد | حمل‌ونقل",
 });
 
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "transporting", action: "r" },
-});
 
 // Permissions
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(

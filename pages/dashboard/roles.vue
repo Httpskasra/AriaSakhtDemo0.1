@@ -1,12 +1,11 @@
 <!-- pages/dashboard/roles.vue -->
 
 <template>
-    <DashboardPageHeader title="مدیریت نقش‌ها" icon="/icons/roles.png" alt="roles" />
+    <PanelPageHeader title="نقش‌ها و دسترسی‌ها" subtitle="مدیریت دسترسی کاربران بر اساس Permission واقعی" icon="i-lucide-shield-check">
+      <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن نقش جدید</UButton></template>
+    </PanelPageHeader>
     <div class="container">
       <div class="header">
-        <UButton v-if="canCreate" size="sm" @click="openCreateModal">
-          افزودن نقش جدید
-        </UButton>
       </div>
       <div v-if="canRead" class="premium-card border border-gray-100 overflow-hidden">
     <TableScrollContainer>
@@ -51,11 +50,11 @@
         {{ editMode ? "ویرایش نقش" : "ایجاد نقش جدید" }}
       </h2>
       <UForm :state="form" class="space-y-5" @submit.prevent="saveRole">
-        <UFormField label="شماره موبایل" name="phoneNumber">
-          <UInput v-model="form.phoneNumber" type="tel" placeholder="+989123456789" />
+        <UFormField label="شماره موبایل" name="phoneNumber" :error="formErrors.phoneNumber">
+          <UInput v-model="form.phoneNumber" type="tel" inputmode="tel" maxlength="14" placeholder="09123456789" @update:model-value="formErrors.phoneNumber = ''" />
         </UFormField>
-        <UFormField label="کد ملی" name="nationalId">
-          <UInput v-model="form.nationalId" placeholder="1234567891" />
+        <UFormField label="کد ملی" name="nationalId" :error="formErrors.nationalId">
+          <UInput v-model="form.nationalId" inputmode="numeric" maxlength="10" placeholder="۱۲۳۴۵۶۷۸۹۱" @update:model-value="formErrors.nationalId = ''" />
         </UFormField>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -156,16 +155,11 @@ const feedback = useFeedback();
 import { computed, ref, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
-import { toInternationalPhone } from "~/utils/PhoneNumber";
+import { isValidPhone, toEnglishDigits, toInternationalPhone } from "~/utils/PhoneNumber";
 import { updateUserPermissions } from "~/services/authService";
 import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | نقش‌ها",
-});
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "users", action: "m" },
 });
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
 const actionOptions = [
@@ -215,6 +209,7 @@ const form = ref<Role>({
   nationalId: "",
   permissions: [],
 });
+const formErrors = ref({ phoneNumber: "", nationalId: "" });
 
 // companies for products selection
 const companies = ref<Array<{ id?: string; _id?: string; name: string }>>([]);
@@ -231,6 +226,7 @@ const openCreateModal = () => {
       actions: [],
     })),
   };
+  formErrors.value = { phoneNumber: "", nationalId: "" };
   isModalOpen.value = true;
 };
 
@@ -255,6 +251,7 @@ const editRole = (role: Role) => {
     nationalId: role.nationalId || "",
     permissions,
   };
+  formErrors.value = { phoneNumber: "", nationalId: "" };
   isModalOpen.value = true;
 };
 
@@ -266,6 +263,20 @@ const saveRole = async () => {
   if (saving.value) return;
   if (!canCreate.value && !editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
   if (!canUpdate.value && editMode.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
+
+  const normalizedPhone = toInternationalPhone(form.value.phoneNumber || "");
+  const normalizedNationalId = toEnglishDigits(form.value.nationalId || "").replace(/\D/g, "");
+  formErrors.value = { phoneNumber: "", nationalId: "" };
+
+  if (!editMode.value && !isValidPhone(normalizedPhone)) {
+    formErrors.value.phoneNumber = "شماره موبایل معتبر ایران وارد کنید؛ مثال: ۰۹۳۶۰۴۰۸۱۷۰";
+  }
+  if (!editMode.value && !isValidIranNationalId(normalizedNationalId)) {
+    formErrors.value.nationalId = "کد ملی باید دقیقاً ۱۰ رقم معتبر باشد.";
+  }
+  if (formErrors.value.phoneNumber || formErrors.value.nationalId) {
+    return feedback.error("اطلاعات نامعتبر", "شماره موبایل یا کد ملی را اصلاح کنید.");
+  }
 
   // Build permissions payload, including companyId when set on permission
   const permissionsPayload = form.value.permissions
@@ -294,8 +305,8 @@ const saveRole = async () => {
     return;
   }
   const body: any = {
-    phoneNumber: toInternationalPhone(form.value.phoneNumber || ""),
-    nationalId: form.value.nationalId,
+    phoneNumber: normalizedPhone,
+    nationalId: normalizedNationalId,
     permissions: permissionsPayload,
     ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),
   };
@@ -358,6 +369,14 @@ const saveRole = async () => {
     saving.value = false;
   }
 };
+
+function isValidIranNationalId(value: string): boolean {
+  if (!/^\d{10}$/.test(value) || /^([0-9])\1{9}$/.test(value)) return false;
+  const checkDigit = Number(value[9]);
+  const weightedSum = value.slice(0, 9).split("").reduce((sum, digit, index) => sum + Number(digit) * (10 - index), 0);
+  const remainder = weightedSum % 11;
+  return remainder < 2 ? checkDigit === remainder : checkDigit === 11 - remainder;
+}
 
 // مدیریت انتخاب اکشن‌ها برای هر resource
 function isChecked(resource: Resource, action: Action) {

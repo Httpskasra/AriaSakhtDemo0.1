@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { addFavorite, listFavorites, removeFavorite, type Favorite } from '~/services/favoritesService';
+import { toUserFacingError } from '~/services/apiClient';
 
 export const useFavoritesStore = defineStore('favorites', () => {
   const items = ref<Favorite[]>([]);
@@ -17,7 +18,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
       items.value = await listFavorites();
       initialized.value = true;
     } catch (requestError) {
-      error.value = requestError instanceof Error ? requestError.message : 'دریافت علاقه‌مندی‌ها ممکن نیست.';
+      error.value = toUserFacingError(requestError, 'دریافت علاقه‌مندی‌ها ممکن نیست.').message;
       throw requestError;
     } finally {
       loading.value = false;

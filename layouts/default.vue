@@ -11,8 +11,8 @@
 <script setup lang="ts">
 const route = useRoute();
 
-// Dashboard pages already render their own dashboard layout. The public
-// company-registration page intentionally keeps the public header/footer.
+// Panel pages use the shared panel layout. The public company-registration
+// page intentionally keeps the public header/footer.
 const showPublicChrome = computed(() => (
   !route.path.startsWith('/dashboard') || route.path === '/dashboard/company/register'
 ));

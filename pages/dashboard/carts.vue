@@ -1,129 +1,88 @@
 <template>
-    <DashboardPageHeader title="سبد خرید" icon="/icons/cart.png" />
+  <section class="cart-page container" dir="rtl">
+    <PanelPageHeader title="سبد خرید" subtitle="محصولات انتخاب‌شده و خلاصه مبلغ سفارش" icon="i-lucide-shopping-cart">
+      <template #actions>
+        <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی سبد خرید" @click="fetchCart">به‌روزرسانی</UButton>
+      </template>
+    </PanelPageHeader>
 
-    <div class="container" dir="rtl">
-      <!-- Loading State -->
-      <div v-if="loading" class="col-products">
-        <SharedAsyncState state="loading" />
-      </div>
+    <SharedAsyncState v-if="loading" state="loading" />
+    <SharedAsyncState v-else-if="loadError" state="error" :message="loadError" @retry="fetchCart" />
+    <SharedAsyncState v-else-if="cartItems.length === 0" state="empty" title="سبد خرید خالی است" message="هنوز محصولی به سبد خرید اضافه نشده است.">
+      <template #actions><UButton to="/products" icon="i-lucide-arrow-left">مشاهده محصولات</UButton></template>
+    </SharedAsyncState>
 
-      <div v-else-if="loadError" class="col-products">
-        <SharedAsyncState state="error" :message="loadError" @retry="fetchCart" />
-      </div>
+    <div v-else class="cart-layout">
+      <div class="cart-items-panel panel-surface">
+        <div class="panel-section-heading">
+          <div>
+            <h2>اقلام سبد</h2>
+            <p>{{ numberFormat(totalItems) }} قلم محصول</p>
+          </div>
+          <UButton color="error" variant="soft" icon="i-lucide-trash-2" @click="showClearConfirm = true">خالی کردن سبد</UButton>
+        </div>
 
-      <!-- Empty Cart -->
-      <div v-else-if="cartItems.length === 0" class="col-products">
-        <SharedAsyncState state="empty" title="سبد خرید خالی است" message="هنوز محصولی به سبد خرید اضافه نشده است." />
-      </div>
-
-      <!-- Cart Items -->
-      <div v-else class="col-products">
         <div class="cart-items">
-          <div
-            v-for="item in cartItems"
-            :key="item.productId"
-            class="cart-item">
+          <article v-for="item in cartItems" :key="item.productId" class="cart-item">
             <div class="item-info">
               <h3>{{ item.productName }}</h3>
-              <p class="sku">SKU: {{ item.sku }}</p>
-              <p v-if="item.variant" class="variant">
-                {{ item.variant.name }}:
-                {{ item.variant.value }}
-              </p>
-              <p v-if="item.companyName" class="company">
-                شرکت: {{ item.companyName }}
-              </p>
-              <p class="quantity">تعداد: {{ item.quantity }}</p>
+              <p class="item-meta ltr">SKU: {{ item.sku }}</p>
+              <p v-if="item.variant" class="item-meta">{{ item.variant.name }}: {{ item.variant.value }}</p>
+              <p v-if="item.companyName" class="item-meta">شرکت: {{ item.companyName }}</p>
             </div>
-            <div class="item-price">
-              <p class="price">{{ numberFormat(item.price) }} تومان</p>
-              <p class="total">
-                جمع: {{ numberFormat((item.price || 0) * item.quantity) }} تومان
-              </p>
-            </div>
-            <div class="item-actions">
-              <UInput
-                v-model.number="item.quantity"
-                type="number"
-                min="1"
-                @change="updateQuantity(item)"
-                class="quantity-input" />
-              <UButton
-                @click="removeFromCart(item.productId)"
-                size="xs"
-                color="error">
-                حذف
-              </UButton>
-            </div>
-          </div>
-        </div>
 
-        <UButton @click="clearCart" color="error" variant="soft" block>
-          خالی کردن سبد
-        </UButton>
+            <div class="item-price">
+              <span>قیمت واحد</span>
+              <strong>{{ numberFormat(item.price) }} ریال</strong>
+              <small>جمع: {{ numberFormat((item.price || 0) * item.quantity) }} ریال</small>
+            </div>
+
+            <div class="item-actions">
+              <label :for="`quantity-${item.productId}`">تعداد</label>
+              <UInput :id="`quantity-${item.productId}`" v-model.number="item.quantity" type="number" min="1" inputmode="numeric" class="quantity-input" @change="updateQuantity(item)" />
+              <UButton color="error" variant="ghost" size="sm" icon="i-lucide-trash-2" :loading="removingId === item.productId" :disabled="Boolean(updatingId || removingId)" :aria-label="`حذف ${item.productName}`" @click="removeFromCart(item.productId)">حذف</UButton>
+            </div>
+          </article>
+        </div>
       </div>
 
-      <!-- Cart Summary (Factor) -->
-      <div class="col-summary" v-if="cartItems.length > 0">
-        <div class="summary-box">
-          <h2>خلاصه سبد</h2>
-
-          <div class="summary-row">
-            <span>تعداد اقلام:</span>
-            <span>{{ totalItems }}</span>
-          </div>
-
-          <div class="summary-row">
-            <span>قیمت کل:</span>
-            <span>{{ numberFormat(totalPrice) }} تومان</span>
-          </div>
-
-          <div class="summary-row">
-            <span>هزینه ارسال:</span>
-            <span>{{ numberFormat(shippingCost) }} تومان</span>
-          </div>
-
-          <div class="summary-row total">
-            <span>جمع نهایی:</span>
-            <span>{{ numberFormat(totalPrice + shippingCost) }} تومان</span>
-          </div>
-
-          <UButton
-            @click="checkout"
-            :disabled="isCheckingOut"
-            size="lg"
-            block>
-            {{ isCheckingOut ? "درحال پردازش..." : "تسویه حساب" }}
-          </UButton>
-
-          <UButton @click="continueShopping" color="neutral" variant="soft" block>
-            ادامه خرید
-          </UButton>
+      <aside class="summary-panel panel-surface" aria-labelledby="cart-summary-title">
+        <h2 id="cart-summary-title">خلاصه سبد</h2>
+        <dl class="summary-list">
+          <div><dt>تعداد اقلام</dt><dd>{{ numberFormat(totalItems) }}</dd></div>
+          <div><dt>قیمت کل</dt><dd>{{ numberFormat(totalPrice) }} ریال</dd></div>
+          <div><dt>هزینه ارسال</dt><dd>{{ numberFormat(shippingCost) }} ریال</dd></div>
+          <div class="summary-total"><dt>جمع نهایی</dt><dd>{{ numberFormat(totalPrice + shippingCost) }} ریال</dd></div>
+        </dl>
+        <div class="summary-actions">
+          <UButton block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">تسویه حساب</UButton>
+          <UButton block color="neutral" variant="soft" icon="i-lucide-arrow-left" to="/products">ادامه خرید</UButton>
         </div>
+      </aside>
+    </div>
+  </section>
+
+  <BaseModal v-if="showClearConfirm" title-id="clear-cart-title" @close="showClearConfirm = false">
+    <div class="confirm-content">
+      <h2 id="clear-cart-title">خالی کردن سبد خرید</h2>
+      <p>همه‌ی اقلام سبد حذف می‌شوند. آیا ادامه می‌دهید؟</p>
+      <div class="confirm-actions">
+        <UButton color="neutral" variant="soft" :disabled="clearing" @click="showClearConfirm = false">انصراف</UButton>
+        <UButton color="error" :loading="clearing" @click="clearCart">خالی کردن سبد</UButton>
       </div>
     </div>
-
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useUser } from "~/composables/useUser";
+import { computed, onMounted, ref } from "vue";
+import { getActiveCart, addToCart as addCartItem, clearCart as clearCartRequest, checkoutCart, removeFromCart as removeCartItem } from "~/services/cartService";
 import { toUserFacingError } from "~/services/apiClient";
+import type { CartItemDto } from "~/types/product";
 
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "carts", action: "r" },
-});
 
-useHead({
-  title: "داشبورد | سبد خرید",
-});
+useHead({ title: "داشبورد | سبد خرید" });
 
-// Get user data
-const { user } = useUser();
-
-// Types
 interface CartItem {
   productId: string;
   productName: string;
@@ -134,467 +93,160 @@ interface CartItem {
   companyId?: string;
   companyName?: string;
   priceAtAdd?: number;
-  discount?: {
-    type: string;
-    value: number;
-  };
 }
 
-// State
-const { $axios } = useNuxtApp();
-const toast = useToast();
+const feedback = useFeedback();
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
 const isCheckingOut = ref(false);
+const clearing = ref(false);
+const showClearConfirm = ref(false);
+const updatingId = ref<string | null>(null);
+const removingId = ref<string | null>(null);
 const shippingCost = ref(0);
 
-// Computed
-const totalItems = computed(() =>
-  cartItems.value.reduce((sum, item) => sum + item.quantity, 0)
-);
+const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
+const totalPrice = computed(() => cartItems.value.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0));
 
-const totalPrice = computed(() =>
-  cartItems.value.reduce(
-    (sum, item) => sum + (item.price || 0) * item.quantity,
-    0
-  )
-);
-
-// Helper functions
-function numberFormat(n?: number) {
-  if (typeof n !== "number") return "-";
-  return n.toLocaleString("fa-IR");
+function numberFormat(value?: number) {
+  return typeof value === "number" ? value.toLocaleString("fa-IR") : "—";
 }
 
-function showNotification(message: string, type: "success" | "error") {
-  toast.add({ title: message, color: type === "success" ? "success" : "error" });
+function normalizeCartItem(item: any): CartItem | null {
+  if (!item?.productId) return null;
+  const product = typeof item.productId === "object" ? item.productId : null;
+  const company = typeof item.companyId === "object" ? item.companyId : null;
+  return {
+    productId: String(product?._id || product?.id || item.productId),
+    productName: product?.name || "محصول نامشخص",
+    sku: product?.sku || "—",
+    price: Number(item.priceAtAdd || product?.finalPrice || product?.basePrice || 0),
+    quantity: Math.max(1, Number(item.quantity) || 1),
+    variant: item.variant,
+    companyId: company?._id || company?.id || item.companyId,
+    companyName: company?.name,
+    priceAtAdd: item.priceAtAdd,
+  };
 }
 
-// API calls
 async function fetchCart() {
   loading.value = true;
   loadError.value = null;
   try {
-    // دریافت کارت فعال
-    const { data } = await $axios.get("/carts/active");
-
-    // Map API response to CartItem format
-    if (data.items && Array.isArray(data.items)) {
-      cartItems.value = data.items
-        .filter((item: any) => item.productId) // فقط items با productId معتبر
-        .map((item: any) => {
-          // productId می‌تواند رشته یا object باشد
-          const productObj =
-            typeof item.productId === "object" ? item.productId : null;
-          const companyObj =
-            typeof item.companyId === "object" ? item.companyId : null;
-
-          return {
-            productId: productObj?._id || item.productId,
-            productName: productObj?.name || "محصول نامشخص",
-            sku: productObj?.sku || "-",
-            price:
-              item.priceAtAdd ||
-              productObj?.finalPrice ||
-              productObj?.basePrice ||
-              0,
-            quantity: item.quantity,
-            variant: item.variant,
-            companyId: companyObj?._id || item.companyId,
-            companyName: companyObj?.name,
-            priceAtAdd: item.priceAtAdd,
-            discount: item.discount,
-          };
-        });
-    } else {
-      cartItems.value = [];
-    }
-  } catch (err) {
-    console.error("خطا در دریافت سبد:", err);
+    const { data } = await getActiveCart();
+    cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
+  } catch (error) {
     cartItems.value = [];
-    loadError.value = toUserFacingError(err, "دریافت سبد خرید انجام نشد.").message;
-    showNotification("خطا در بارگذاری سبد خرید", "error");
+    loadError.value = toUserFacingError(error, "دریافت سبد خرید انجام نشد.").message;
   } finally {
     loading.value = false;
   }
 }
 
-async function addToCart(
-  productId: string,
-  quantity: number,
-  variant?: { name: string; value: string },
-  companyId?: string,
-  priceAtAdd?: number
-) {
+async function addToCart(productId: string, quantity: number, variant?: CartItemDto["variant"], companyId?: string, priceAtAdd?: number) {
   try {
-    if (!user.value?.userId) {
-      showNotification("لطفا وارد سایت شوید", "error");
-      return;
-    }
-
-    // افزودن آیتم به سبد
-    await $axios.post("/carts/items", {
-      productId,
-      quantity,
-      variant,
-      companyId,
-      priceAtAdd,
-    });
+    await addCartItem({ productId, quantity, variant, companyId, priceAtAdd });
     await fetchCart();
-    showNotification("محصول به سبد افزوده شد", "success");
-  } catch (err) {
-    console.error("خطا در افزودن به سبد:", err);
-    showNotification(toUserFacingError(err, "افزودن محصول به سبد انجام نشد.").message, "error");
+    feedback.success("محصول به سبد افزوده شد");
+  } catch (error) {
+    feedback.error(toUserFacingError(error, "افزودن محصول به سبد انجام نشد.").message);
   }
 }
 
 async function updateQuantity(item: CartItem) {
+  const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
+  item.quantity = quantity;
+  updatingId.value = item.productId;
   try {
-    if (!user.value?.userId) {
-      showNotification("لطفا وارد سایت شوید", "error");
-      return;
-    }
-
-    // به‌روزرسانی تعداد محصول
-    await $axios.post("/carts/items", {
-      productId: item.productId,
-      quantity: item.quantity,
-      variant: item.variant,
-      companyId: item.companyId,
-      priceAtAdd: item.priceAtAdd,
-    });
+    await addCartItem({ productId: item.productId, quantity, variant: item.variant, companyId: item.companyId, priceAtAdd: item.priceAtAdd });
     await fetchCart();
-    showNotification("سبد به‌روزرسانی شد", "success");
-  } catch (err) {
-    console.error("خطا در به‌روزرسانی:", err);
-    showNotification(toUserFacingError(err, "به‌روزرسانی سبد انجام نشد.").message, "error");
+    feedback.success("تعداد محصول به‌روزرسانی شد");
+  } catch (error) {
+    feedback.error(toUserFacingError(error, "به‌روزرسانی سبد انجام نشد.").message);
     await fetchCart();
+  } finally {
+    updatingId.value = null;
   }
 }
 
 async function removeFromCart(productId: string) {
+  removingId.value = productId;
   try {
-    await $axios.delete(`/carts/items/${productId}`);
-    await fetchCart();
-    showNotification("محصول از سبد حذف شد", "success");
-  } catch (err) {
-    console.error("خطا در حذف:", err);
-    showNotification(toUserFacingError(err, "حذف محصول از سبد انجام نشد.").message, "error");
+    await removeCartItem(productId);
+    cartItems.value = cartItems.value.filter((item) => item.productId !== productId);
+    feedback.success("محصول از سبد حذف شد");
+  } catch (error) {
+    feedback.error(toUserFacingError(error, "حذف محصول از سبد انجام نشد.").message);
+  } finally {
+    removingId.value = null;
   }
 }
 
 async function clearCart() {
-  if (!confirm("آیا از خالی کردن تمام سبد اطمینان دارید؟")) return;
-
+  clearing.value = true;
   try {
-    await $axios.delete("/carts/clear");
+    await clearCartRequest();
     cartItems.value = [];
-    showNotification("سبد خالی شد", "success");
-  } catch (err) {
-    console.error("خطا در خالی کردن سبد:", err);
-    showNotification(toUserFacingError(err, "خالی کردن سبد انجام نشد.").message, "error");
+    showClearConfirm.value = false;
+    feedback.success("سبد خرید خالی شد");
+  } catch (error) {
+    feedback.error(toUserFacingError(error, "خالی کردن سبد انجام نشد.").message);
+  } finally {
+    clearing.value = false;
   }
 }
 
 async function checkout() {
-  if (cartItems.value.length === 0) {
-    showNotification("سبد خرید خالی است", "error");
-    return;
-  }
-
+  if (!cartItems.value.length || isCheckingOut.value) return;
   isCheckingOut.value = true;
   try {
-    const response = await $axios.post("/carts/checkout");
-    showNotification("سفارش با موفقیت ثبت شد", "success");
+    await checkoutCart({});
     cartItems.value = [];
-    // Redirect to order confirmation or payment page
-    setTimeout(() => {
-      navigateTo(`/orders/${response.data._id}`);
-    }, 1500);
-  } catch (err) {
-    console.error("خطا در تسویه حساب:", err);
-    showNotification(toUserFacingError(err, "ثبت سفارش انجام نشد.").message, "error");
+    feedback.success("سفارش با موفقیت ثبت شد");
+    await navigateTo({ path: "/dashboard/account/orders", query: { checkout: "success" } });
+  } catch (error) {
+    feedback.error(toUserFacingError(error, "ثبت سفارش انجام نشد.").message);
   } finally {
     isCheckingOut.value = false;
   }
 }
 
-function continueShopping() {
-  navigateTo("/products");
-}
+onMounted(fetchCart);
 
-onMounted(() => {
-  fetchCart();
-});
-
-// Export addToCart for external use
-defineExpose({
-  addToCart,
-});
+defineExpose({ addToCart });
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  width: 90%;
-  margin: 20px auto;
-}
-
-.title {
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 16px;
-}
-
-.title h1 {
-  font-size: 36px;
-}
-
-.title img {
-  width: 66px;
-  height: 66px;
-}
-
-.col-products {
-  flex: 1;
-  background: white;
-  border-radius: var(--radius-field);
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-height: 400px;
-}
-
-.col-summary {
-  flex: 0 0 300px;
-  background: white;
-  border-radius: var(--radius-field);
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: fit-content;
-  top: 20px;
-  position: sticky;
-}
-
-.loading-message,
-.empty-message {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--gray-600);
-  font-size: 16px;
-}
-
-.cart-items {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-compact-list-item);
-  background: var(--gray-50);
-}
-
-.item-info {
-  flex: 1;
-}
-
-.item-info h3 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-  color: var(--blue-dark);
-}
-
-.item-info .sku,
-.item-info .quantity,
-.item-info .variant,
-.item-info .company {
-  margin: 4px 0;
-  font-size: 13px;
-  color: var(--gray-600);
-}
-
-.item-price {
-  flex: 0 0 150px;
-  text-align: center;
-}
-
-.item-price .price {
-  margin: 0 0 8px 0;
-  font-weight: bold;
-  color: var(--blue-dark);
-}
-
-.item-price .total {
-  margin: 0;
-  font-size: 14px;
-  color: var(--gray-600);
-}
-
-.item-actions {
-  flex: 0 0 180px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.quantity-input {
-  width: 60px;
-  padding: 6px 8px;
-  border: 1px solid var(--gray-300);
-  border-radius: 4px;
-  text-align: center;
-  font-size: 14px;
-}
-
-/* Summary Box */
-.summary-box h2 {
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-  font-weight: 600;
-  margin-bottom: 20px;
-  font-size: 18px;
-  border-bottom: 2px solid var(--gray-200);
-  padding-bottom: 10px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  font-size: 14px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.summary-row.total {
-  font-weight: bold;
-  font-size: 16px;
-  color: var(--blue-dark);
-  border-bottom: 2px solid var(--blue-dark);
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-/* Notifications */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 16px 24px;
-  border-radius: 4px;
-  font-family: var(--font-yekan);
-  font-weight: 600;
-  z-index: 1000;
-  animation: slideIn 0.3s ease-out;
-}
-
-.notification.success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.notification.error {
-  background-color: #f44336;
-  color: white;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Responsive */
-@media (max-width: 1023px) {
-  .container {
-    gap: 20px;
-  }
-
-  .col-summary {
-    flex: 0 0 min(32vw, 280px);
-  }
-}
-
-@media (max-width: 767px) {
-  .container {
-    width: 95%;
-    margin: 10px auto;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .col-products,
-  .col-summary {
-    flex: 1;
-  }
-
-  .col-summary {
-    position: static;
-    flex: 0 1 auto;
-  }
-
-  .title {
-    width: 100%;
-    justify-content: flex-start;
-    margin: 10px;
-  }
-
-  .title h1 {
-    font-size: 20px;
-  }
-
-  .title img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .cart-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .item-price,
-  .item-actions {
-    width: 100%;
-  }
-
-  .item-actions {
-    display: flex;
-    gap: 10px;
-  }
-
-  .quantity-input {
-    flex: 1;
-  }
-
-  .summary-row {
-    font-size: 13px;
-  }
-
-  .notification {
-    left: 10px;
-    right: 10px;
-    top: auto;
-    bottom: 20px;
-  }
-}
+.cart-page { display: grid; gap: 1rem; }
+.cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem); gap: 1rem; align-items: start; }
+.panel-surface { background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: var(--shadow-raised); }
+.cart-items-panel, .summary-panel { padding: 1.25rem; }
+.summary-panel { position: sticky; top: 1rem; }
+.panel-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.panel-section-heading h2, .summary-panel h2, .confirm-content h2 { margin: 0; color: var(--color-text-heading); font-size: 1.05rem; }
+.panel-section-heading p { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
+.cart-items { display: grid; gap: .75rem; }
+.cart-item { display: grid; grid-template-columns: minmax(0, 1fr) 10rem auto; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-app); }
+.item-info h3 { margin: 0 0 .45rem; color: var(--color-text-heading); font-size: .98rem; }
+.item-meta { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .8rem; }
+.item-price { display: grid; gap: .2rem; text-align: center; color: var(--color-text-muted); font-size: .76rem; }
+.item-price strong { color: var(--color-text-heading); font-size: .9rem; }
+.item-price small { font-size: .75rem; }
+.item-actions { display: flex; align-items: center; gap: .5rem; }
+.item-actions label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.quantity-input { width: 5rem; }
+.summary-panel h2 { padding-bottom: .85rem; border-bottom: 1px solid var(--color-border); }
+.summary-list { display: grid; gap: .25rem; margin: 1rem 0; }
+.summary-list > div { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0; color: var(--color-text-muted); font-size: .88rem; border-bottom: 1px solid var(--color-border); }
+.summary-list dt, .summary-list dd { margin: 0; }
+.summary-list dd { color: var(--color-text-heading); font-weight: 600; }
+.summary-list .summary-total { border-bottom: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 700; }
+.summary-actions { display: grid; gap: .65rem; }
+.confirm-content { display: grid; gap: 1rem; }
+.confirm-content p { margin: 0; color: var(--color-text-body); line-height: 1.8; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: .65rem; }
+.ltr { direction: ltr; text-align: right; }
+@media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } .summary-panel { position: static; } }
+@media (max-width: 640px) { .cart-items-panel, .summary-panel { padding: 1rem; } .panel-section-heading { align-items: flex-start; flex-direction: column; } .cart-item { grid-template-columns: 1fr; gap: .75rem; } .item-price { text-align: right; justify-items: start; } .item-actions { justify-content: space-between; } .confirm-actions { flex-direction: column-reverse; } }
 </style>

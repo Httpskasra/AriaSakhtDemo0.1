@@ -15,6 +15,7 @@ export interface CreateCompanyDto {
     contentType: string;
     size: number;
   };
+  image?: string;
 }
 
 export interface CompanyListParams {
@@ -54,6 +55,21 @@ export const listCompanies = async (
 export const createCompany = async (payload: CreateCompanyDto): Promise<Company> => {
   const { data } = await useApiClient().post<Company>('/companies', payload);
   return data;
+};
+
+export const uploadCompanyImage = async (file: File): Promise<string> => {
+  const { $axios } = useNuxtApp();
+  const formData = new FormData();
+  formData.append('type', 'company');
+  formData.append('files', file);
+  const { data } = await $axios.post<{ items: Array<{ publicUrl: string }> }>(
+    '/images/upload',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+  const publicUrl = data?.items?.[0]?.publicUrl;
+  if (!publicUrl) throw new Error('آدرس عمومی لوگو از سرور دریافت نشد.');
+  return publicUrl;
 };
 
 export async function updateCompany(id: string, payload: Partial<CreateCompanyDto> & { image?: string }): Promise<Company> {

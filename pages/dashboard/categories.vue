@@ -1,16 +1,17 @@
 <template>
-    <DashboardPageHeader title="دسته‌بندی‌ها" icon="/icons/categories.png" alt="categories" />
+    <section class="categories-page" dir="rtl">
+      <PanelPageHeader title="دسته‌بندی‌ها" subtitle="ساختار دسته‌بندی محصولات را مدیریت کنید" icon="i-lucide-tags">
+        <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن دسته‌بندی</UButton></template>
+      </PanelPageHeader>
 
     <div class="container" v-if="canRead">
-      <div class="header">
+      <PanelFilterBar>
         <TableFilterInput
           v-model="search"
-          placeholder="جستجوی دسته‌بندی..." />
-
-        <UButton v-if="canCreate" size="sm" @click="openCreateModal">
-          افزودن دسته‌بندی
-        </UButton>
-      </div>
+          placeholder="جستجوی دسته‌بندی..."
+          aria-label="جستجوی دسته‌بندی" />
+        <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton>
+      </PanelFilterBar>
 
       <div class="premium-card border border-gray-100 overflow-hidden">
         <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
@@ -112,6 +113,7 @@
         </div>
       </UForm>
     </BaseModal>
+    </section>
 </template>
 
 <script setup lang="ts">
@@ -124,11 +126,6 @@ import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
 import BaseModal from "~/components/BaseModal.vue";
 const feedback = useFeedback();
-definePageMeta({
-  layout: "dashboard",
-  middleware: ["auth", "permission"],
-  permission: { resource: "categories", action: "r" },
-});
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.CATEGORIES
