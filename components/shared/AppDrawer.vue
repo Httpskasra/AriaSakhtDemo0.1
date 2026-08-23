@@ -134,8 +134,8 @@ onMounted(() => {
     inset-inline-start: 0;
     inset-inline-end: auto;
     height: 100dvh;
-    width: min(var(--drawer-width), calc(100vw - 1rem));
-    max-width: calc(100vw - 1rem);
+    width: 100vw;
+    max-width: 100vw;
     visibility: hidden;
     pointer-events: none;
     min-height: 0;
