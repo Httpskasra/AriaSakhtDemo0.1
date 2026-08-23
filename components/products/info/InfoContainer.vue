@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="product-info-tabs">
     <div class="header">
       <ul role="tablist" aria-label="اطلاعات محصول">
         <li id="info-tab" role="tab" :aria-selected="show === 'info'" :tabindex="show === 'info' ? 0 : -1" @click="selectTab('info')" @keydown="onTabKeydown($event, 'info')" :class="{ active: show == 'info' }">
@@ -13,7 +13,7 @@
         </li>
       </ul>
     </div>
-    <div class="content" role="tabpanel" :aria-labelledby="`${show}-tab`" tabindex="0">
+    <div class="product-info-tabs__content" role="tabpanel" :aria-labelledby="`${show}-tab`" tabindex="0">
       <InfoProduct class="info-content" v-if="show === 'info'" :data="data" />
       <RulsProduct v-else-if="show === 'rules'" :data="data" />
       <CommentProduct v-else-if="show === 'comments'" :data="data" />
@@ -43,96 +43,58 @@ function onTabKeydown(event: KeyboardEvent, tab: content) {
 }
 </script>
 <style scoped>
-.container {
-  width: 90%;
-  height: 500px;
-  margin: auto;
-  background-color: #fff;
-  border-radius: var(--radius-field);
-  position: relative;
-  bottom: 10px;
+.product-info-tabs {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(100%, 90rem);
+  min-height: 32rem;
+  margin-inline: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
 }
+
 .header {
-  width: 30%;
-  padding: 20px;
-  border-bottom: 3px solid #186be7;
-  margin-right: 20px;
+  width: 100%;
+  padding: .75rem 1rem 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 ul {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-yekan);
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
   color: var(--color-text-muted);
+  font-family: var(--font-body);
+  list-style: none;
 }
-li:hover {
+
+li {
+  min-height: 2.75rem;
+  padding: .65rem .85rem;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
+  font-size: .85rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
-li.active {
-  font-weight: bold;
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-}
-li:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
-.content {
-  /* background-color: red; */
-  width: 100%;
-  height: 70%;
-  margin: auto;
-  margin-top: 50px;
-  /* height: 90%; */
-  overflow-y: scroll;
-  position: relative;
-  /* background-color: #fff; */
-  /* background-color: red; */
-}
-@media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    width: 95%;
-    height: 400px;
-    bottom: 5px;
-  }
-  .header {
-    width: 40%;
-    padding: 15px;
-  }
-  ul {
-    font-size: 13px;
-  }
-  li {
-    font-size: 12px;
-  }
-  .content {
-    height: 65%;
-    margin-top: 30px;
-  }
+
+li:hover { color: var(--color-brand-blue); }
+li.active { color: var(--color-brand-blue); border-bottom-color: var(--color-brand-blue); }
+li:focus-visible { outline: 2px solid var(--color-brand-blue); outline-offset: 3px; }
+
+.product-info-tabs__content {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
 @media (max-width: 767px) {
-  .container {
-    width: 100%;
-    height: auto;
-    bottom: auto;
-  }
-  .header {
-    width: 80%;
-    height: auto;
-  }
-  ul {
-    width: 100%;
-    padding: 0;
-  }
-  li {
-    font-size: 10px;
-  }
-  .content {
-    padding-top: 1rem;
-    height: auto;
-    min-height: 0;
-    background-color: #fff;
-    overflow: visible;
-    position: static;
-  }
+  .product-info-tabs { min-height: 0; }
+  ul { overflow-x: auto; }
+  li { flex: 0 0 auto; font-size: .75rem; }
+  .product-info-tabs__content { padding: .75rem; overflow: visible; }
 }
 </style>

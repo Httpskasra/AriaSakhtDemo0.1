@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container">
+    <article class="product-comment-card">
       <div class="header">
         <div class="user">
           <UIcon name="i-lucide-user" class="size-icon-action text-muted" />
@@ -28,7 +28,7 @@
           {{ getStatusLabel(data.status) }}
         </span>
       </div> -->
-    </div>
+    </article>
   </div>
 </template>
 
@@ -66,33 +66,33 @@ const getStatusLabel = (status: string): string => {
 </script>
 
 <style scoped>
-.container {
+.product-comment-card {
   width: 100%;
   margin: auto;
-  padding: 20px;
-  background-color: #fff;
+  padding: 1.25rem;
+  background-color: var(--color-bg-surface);
   border-radius: var(--radius-field);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
   margin-top: 16px;
-  transition: all 0.3s ease;
+  transition: border-color .16s ease, box-shadow .16s ease;
 }
 
-.container:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.product-comment-card:hover {
+  border-color: var(--color-info-border);
+  box-shadow: var(--shadow-raised);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: .75rem;
 }
 
 .user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: .65rem;
 }
 
 .user svg {
@@ -124,8 +124,8 @@ const getStatusLabel = (status: string): string => {
 
 .title {
   margin: 12px 0;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: .5rem 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title strong {
@@ -134,7 +134,7 @@ const getStatusLabel = (status: string): string => {
 }
 
 .comment {
-  margin: 12px 0;
+  margin: .75rem 0;
 }
 
 .comment p {
@@ -152,29 +152,29 @@ const getStatusLabel = (status: string): string => {
 
 .status-badge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   font-size: 11px;
   font-weight: 600;
 }
 
 .status-pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning-fg);
 }
 
 .status-approved {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--color-success-bg);
+  color: var(--color-success-fg);
 }
 
 .status-rejected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-fg);
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    padding: 16px;
+  .product-comment-card {
+    padding: 1rem;
   }
 
   .username {
@@ -187,9 +187,9 @@ const getStatusLabel = (status: string): string => {
 }
 
 @media (max-width: 767px) {
-  .container {
-    padding: 12px;
-    margin-top: 12px;
+  .product-comment-card {
+    padding: .75rem;
+    margin-top: .75rem;
   }
 
   .header {

@@ -4,7 +4,7 @@
     <PanelPageHeader title="نقش‌ها و دسترسی‌ها" subtitle="مدیریت دسترسی کاربران بر اساس Permission واقعی" icon="i-lucide-shield-check">
       <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن نقش جدید</UButton></template>
     </PanelPageHeader>
-    <div class="container">
+    <div class="roles-page">
       <div class="header">
       </div>
       <div v-if="canRead" class="premium-card border border-gray-100 overflow-hidden">
@@ -517,91 +517,88 @@ function formatPermissions(perms: Permission[] = []) {
 </script>
 
 <style scoped>
-.container {
-  background: #fff;
-  border-radius: var(--radius-field);
-  padding: 20px;
-  width: 90%;
-  margin: auto;
+.roles-page {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 90rem);
+  margin-inline: auto;
 }
-.header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 16px;
+
+.roles-page > .header {
+  min-height: 0;
 }
-.list table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.list thead {
-  background-color: var(--gray-200);
-}
-.list th,
-.list td {
-  padding: 10px;
-  border-bottom: 1px solid var(--gray-300);
-  text-align: right;
-}
+
 .actions {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: .5rem;
 }
+
 .no-access {
-  color: var(--gray-600);
+  padding: 2rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   text-align: center;
-  padding: 20px;
 }
+
 .resources-actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 8px;
+  display: grid;
+  gap: 1rem;
+  margin-top: .5rem;
 }
+
 .resource-block {
-  background: #f9f9f9;
+  display: grid;
+  gap: .75rem;
+  padding: 1rem;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
-  padding: 10px 12px;
-  margin-bottom: 4px;
 }
+
 .resource-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
 }
+
 .resource-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--blue-dark);
-  margin-bottom: 6px;
+  color: var(--color-text-heading);
+  font-size: .9rem;
+  font-weight: 800;
 }
+
 .actions-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 6px;
+  gap: .5rem;
 }
+
 .action-checkbox {
-  display: flex;
+  display: inline-flex;
+  min-height: 2.25rem;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  background: #f6f6f6;
-  padding: 3px 8px;
+  gap: .4rem;
+  padding: .35rem .65rem;
+  color: var(--color-text-body);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-compact-list-item);
+  font-size: .8rem;
 }
+
+.action-checkbox:has(input:checked) {
+  color: var(--color-info-fg);
+  background: var(--color-info-bg);
+  border-color: var(--color-brand-blue);
+}
+
 .action-checkbox input[type="checkbox"] {
-  accent-color: var(--blue-dark);
-  width: 16px;
-  height: 16px;
-}
-@media (max-width: 767px) {
-  .container {
-    width: 95%;
-    padding: 10px;
-  }
-  .list table {
-    font-size: 12px;
-  }
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-brand-blue);
 }
 </style>

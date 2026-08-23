@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="product-comments-panel">
     <FormComments :data="data" />
     <AllComments :data="data" />
   </div>
@@ -14,7 +14,7 @@ const props = defineProps<{
 }>();
 </script>
 <style scoped>
-.container {
+.product-comments-panel {
   width: 100%;
 }
 </style>

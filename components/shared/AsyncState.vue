@@ -46,10 +46,10 @@ const defaults = {
 </template>
 
 <style scoped>
-.async-state { display: grid; gap: .75rem; justify-items: center; padding: 2rem 1rem; text-align: center; color: var(--color-text-body); }
-.async-state h3 { margin: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 700; }
-.async-state p { margin: 0; font-size: .875rem; }
-.async-state__icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: var(--radius-card); background: var(--color-neutral-bg); color: var(--color-neutral-fg); font-weight: 800; }
+.async-state { display: grid; gap: .75rem; justify-items: center; min-height: 13rem; padding: 3rem 1.25rem; text-align: center; color: var(--color-text-body); }
+.async-state h3 { margin: 0; color: var(--color-text-heading); font-size: 1.08rem; font-weight: 800; }
+.async-state p { max-width: 34rem; margin: 0; font-size: .9rem; line-height: 1.9; }
+.async-state__icon { display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-neutral-bg); color: var(--color-neutral-fg); font-size: 1.35rem; font-weight: 800; }
 .async-state--error .async-state__icon { background: var(--color-danger-bg); color: var(--color-danger-fg); }
 .async-state__skeleton { display: grid; gap: .6rem; width: min(100%, 32rem); padding: .85rem; border-radius: var(--radius-compact-list-item); background: var(--color-bg-light); }
 .async-state__skeleton-line { display: block; width: 45%; height: .75rem; border-radius: var(--radius-compact-list-item); background: var(--gray-200); animation: async-state-pulse 1.4s ease-in-out infinite; }

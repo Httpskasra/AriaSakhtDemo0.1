@@ -67,6 +67,20 @@ export const listAdminProducts = async (
   return data;
 };
 
+export const listCompanyProducts = async (
+  companyId: string,
+  params: { page?: number; limit?: number; sort?: string } = {},
+) => {
+  const { data } = await useApi().get<Product[] | PaginatedResponse<Product>>(
+    `/products/company/${encodeURIComponent(companyId)}`,
+    { params },
+  );
+  if (Array.isArray(data)) {
+    return { items: data, total: data.length, page: params.page || 1, limit: params.limit || data.length } satisfies PaginatedResponse<Product>;
+  }
+  return data;
+};
+
 export type ProductSearchResponse = {
   data: PaginatedResponse<Product>;
 };

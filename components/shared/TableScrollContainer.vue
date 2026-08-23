@@ -24,7 +24,7 @@
   height: 100%;
   margin-top: -100%;
   pointer-events: none;
-  background: linear-gradient(to left, rgb(15 23 42 / 10%), transparent);
+  background: linear-gradient(to left, var(--color-overlay), transparent);
   opacity: 0.45;
 }
 

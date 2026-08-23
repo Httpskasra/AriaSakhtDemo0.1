@@ -48,7 +48,7 @@ defineProps<{
   height: 2.75rem;
   object-fit: contain;
   padding: .45rem;
-  border-radius: .75rem;
+  border-radius: var(--radius-compact-list-item);
   background: var(--color-bg-light);
 }
 

@@ -7,7 +7,7 @@
       <!-- Orders List (Step 1) -->
       <div v-if="!selectedOrder" class="space-y-4">
         <div
-          class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+          class="panel-toolbar">
           <div class="flex items-center gap-2">
             <TableFilterInput
               v-model="searchOrders"
@@ -117,7 +117,7 @@
         </div>
 
         <div
-          class="actions flex justify-between items-center mb-4 bg-white rounded-field py-2">
+          class="panel-toolbar">
           <div class="flex items-center gap-2">
             <TableFilterInput
               v-model="searchTransportings"
@@ -566,47 +566,3 @@ onMounted(() => {
   fetchOrders();
 });
 </script>
-
-<style scoped>
-.container {
-  width: 90%;
-  margin: auto;
-}
-
-.title {
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.title h1 {
-  font-size: 28px;
-}
-
-.title img {
-  width: 50px;
-  height: 50px;
-}
-
-.ltr {
-  direction: ltr;
-}
-
-@media (max-width: 767px) {
-  .container {
-    width: 95%;
-  }
-
-  .title h1 {
-    font-size: 18px;
-  }
-
-  .title img {
-    width: 40px;
-    height: 40px;
-  }
-}
-</style>

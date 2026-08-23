@@ -25,8 +25,8 @@ withDefaults(defineProps<{
 
 <style scoped>
 .public-page-header {
-  border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 58%, #fff 100%);
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--ui-color-primary-50) 0%, var(--color-bg-light) 58%, var(--color-bg-surface) 100%);
 }
 
 .public-page-header__inner {
@@ -43,15 +43,15 @@ withDefaults(defineProps<{
   justify-content: center;
   width: 3.5rem;
   height: 3.5rem;
-  border: 1px solid #bfdbfe;
-  border-radius: 1rem;
-  background: #dbeafe;
+  border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-card);
+  background: var(--color-info-bg);
   color: var(--color-brand-blue);
 }
 
 .public-page-header__eyebrow {
   margin-bottom: .375rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   font-size: .75rem;
   font-weight: 600;
 }

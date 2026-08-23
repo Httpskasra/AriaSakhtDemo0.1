@@ -4,7 +4,7 @@
         <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن دسته‌بندی</UButton></template>
       </PanelPageHeader>
 
-    <div class="container" v-if="canRead">
+    <div class="categories-content" v-if="canRead">
       <PanelFilterBar>
         <TableFilterInput
           v-model="search"
@@ -292,48 +292,32 @@ onMounted(() => {
 });
 </script>
 <style scoped>
-.container {
-  background: #fff;
-  border-radius: var(--radius-field);
-  padding: 20px;
-  width: 90%;
-  margin: auto;
+.categories-page {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 90rem);
+  margin-inline: auto;
 }
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+
+.categories-content {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
 }
-.list table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.list thead {
-  background-color: var(--gray-200);
-}
-.list th,
-.list td {
-  padding: 10px;
-  border-bottom: 1px solid var(--gray-300);
-  text-align: right;
-}
+
 .actions {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
 }
+
 .no-access {
-  color: var(--gray-600);
+  padding: 2rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   text-align: center;
-  padding: 20px;
-}
-@media (max-width: 767px) {
-  .container {
-    width: 95%;
-    padding: 10px;
-  }
-  .list table {
-    font-size: 12px;
-  }
 }
 </style>

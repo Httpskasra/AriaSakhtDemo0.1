@@ -72,19 +72,19 @@ const hasChildren = computed(
 
 <style scoped>
 .mobile-category-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--color-bg-light);
 }
 .parent-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  background: none;
+  background: transparent;
   border: none;
-  padding: 12px 16px;
+  padding: .75rem 1rem;
   font-weight: 600;
   cursor: pointer;
-  font-size: 12px;
+  font-size: .75rem;
 }
 .parent-btn .chev {
   transition: transform 0.18s;
@@ -108,14 +108,14 @@ const hasChildren = computed(
   padding: 0 0 8px 12px;
 }
 .child-item {
-  padding: 6px 0;
+  padding: .375rem 0;
 }
 .child-link {
   text-decoration: none;
   color: inherit;
   display: block;
-  padding: 6px 0;
-  font-size: 12px;
+  padding: .375rem 0;
+  font-size: .75rem;
 }
 .child-link:hover {
   text-decoration: underline;

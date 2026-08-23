@@ -38,17 +38,18 @@ export interface DebitWalletDto {
 
 export async function getWallet(): Promise<Wallet | null> {
   const $axios = useApiClient();
-  const { data } = await $axios.get("/wallets");
-  return data;
+  const { data } = await $axios.get<Wallet | { wallet?: Wallet }>("/wallets");
+  return data && "wallet" in data ? data.wallet || null : data;
 }
 
 export async function getTransactions(): Promise<Transaction[]> {
   const $axios = useApiClient();
-  const { data } = await $axios.get("/transaction");
-  if (!Array.isArray(data)) {
+  const { data } = await $axios.get<Transaction[] | { items?: Transaction[] }>("/transaction");
+  const items = Array.isArray(data) ? data : data?.items;
+  if (!Array.isArray(items)) {
     throw new Error("ساختار پاسخ تراکنش‌ها نامعتبر است.");
   }
-  return data;
+  return items;
 }
 
 export async function creditWallet(

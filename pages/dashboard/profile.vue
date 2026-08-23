@@ -164,8 +164,8 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", handleBeforeUnl
 </script>
 
 <style scoped>
-.dashboard-page { width: min(100%, 68rem); margin: 0 auto; }
-.profile-card { width: min(100%, 44rem); margin: 0 auto; }
+.dashboard-page { width: min(100%, 76rem); margin: 0 auto; }
+.profile-card { width: min(100%, 62rem); margin: 0 auto; }
 .profile-form { display:grid; gap:1.5rem; padding:clamp(1rem, 3vw, 2rem); }
 .profile-form__section { display:grid; gap:1rem; }
 .profile-form__section + .profile-form__section { padding-top:1.25rem; border-top:1px solid var(--color-border); }
@@ -173,11 +173,23 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", handleBeforeUnl
 .profile-form__grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; }
 .profile-form__actions { display:flex; justify-content:flex-start; }
 .profile-card :deep(label) { color: var(--color-text-heading); font-weight: 700; }
+.profile-card :deep(input),
+.profile-card :deep(textarea) {
+  border-color: var(--color-border);
+  border-radius: var(--radius-field);
+  background: var(--color-bg-surface);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.profile-card :deep(input:focus),
+.profile-card :deep(textarea:focus) { border-color: var(--color-brand-blue); box-shadow: var(--focus-ring); }
 .profile-card :deep(input:disabled),
 .profile-card :deep(textarea:disabled) {
   cursor: not-allowed;
   opacity: .72;
   background: var(--color-bg-light);
 }
-@media (max-width: 640px) { .profile-form__grid { grid-template-columns:1fr; } }
+@media (max-width: 640px) {
+  .profile-form__grid { grid-template-columns:1fr; }
+  .profile-form__actions :deep(button) { width:100%; }
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="product-rules">
     <p>
       درخواست عودت کالا و یا مرجوع کردن کالاها به دلیل انصراف از خرید تنها در
       صورت پلمپ بودن کالا (کالا نباید باز شده باشد ) امکانپذیر است امکان برگشت
@@ -38,31 +38,30 @@
   </div>
 </template>
 <style scoped>
-.container {
+.product-rules {
   width: 100%;
 }
 p {
-  padding: 10px;
-  padding-top: 60px;
-  font-size: 18px;
+  margin: 0;
+  padding: 1rem;
+  font-size: 1rem;
   line-height: var(--line-height-long-form);
-  font-family: var(--font-yekan);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-text-body);
+  overflow-wrap: anywhere;
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   p {
-    padding: 16px;
-    padding-top: 40px;
-    font-size: 14px;
-    line-height: var(--line-height-long-form);
+    padding: 1rem;
+    font-size: .9rem;
   }
 }
 
 @media (max-width: 767px) {
   p {
-    padding: 10px;
-    font-size: 8px;
-    line-height: var(--line-height-long-form);
+    padding: .75rem;
+    font-size: .85rem;
   }
 }
 </style>

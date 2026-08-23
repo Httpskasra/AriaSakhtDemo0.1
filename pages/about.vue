@@ -121,8 +121,8 @@ const team = [
 .about-intro__icon {
   width: 3rem;
   height: 3rem;
-  border-radius: .875rem;
-  background: #dbeafe;
+  border-radius: var(--radius-field);
+  background: var(--color-info-bg);
 }
 
 .section-kicker {
@@ -159,8 +159,8 @@ const team = [
   width: 2.75rem;
   height: 2.75rem;
   margin-bottom: 1rem;
-  border-radius: .75rem;
-  background: #eff6ff;
+  border-radius: var(--radius-compact-list-item);
+  background: var(--ui-color-primary-50);
 }
 
 .value-card h3 {
@@ -190,7 +190,7 @@ const team = [
   display: flex;
   align-items: center;
   gap: .75rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
   padding: .75rem;
 }
@@ -198,8 +198,8 @@ const team = [
 .team-member__avatar {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
-  background: #eff6ff;
+  border-radius: var(--radius-circle);
+  background: var(--ui-color-primary-50);
 }
 
 .team-member strong,
@@ -215,10 +215,10 @@ const team = [
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--color-info-border);
   border-radius: var(--radius-card);
   padding: 1.5rem;
-  background: #eff6ff;
+  background: var(--ui-color-primary-50);
 }
 
 .about-cta h2 { color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }

@@ -1,5 +1,5 @@
 <template>
-  <section class="cart-page container" dir="rtl">
+  <section class="cart-page" dir="rtl">
     <PanelPageHeader title="سبد خرید" subtitle="محصولات انتخاب‌شده و خلاصه مبلغ سفارش" icon="i-lucide-shopping-cart">
       <template #actions>
         <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی سبد خرید" @click="fetchCart">به‌روزرسانی</UButton>
@@ -19,7 +19,7 @@
             <h2>اقلام سبد</h2>
             <p>{{ numberFormat(totalItems) }} قلم محصول</p>
           </div>
-          <UButton color="error" variant="soft" icon="i-lucide-trash-2" @click="showClearConfirm = true">خالی کردن سبد</UButton>
+          <UButton v-if="canDelete" color="error" variant="soft" icon="i-lucide-trash-2" @click="showClearConfirm = true">خالی کردن سبد</UButton>
         </div>
 
         <div class="cart-items">
@@ -39,8 +39,8 @@
 
             <div class="item-actions">
               <label :for="`quantity-${item.productId}`">تعداد</label>
-              <UInput :id="`quantity-${item.productId}`" v-model.number="item.quantity" type="number" min="1" inputmode="numeric" class="quantity-input" @change="updateQuantity(item)" />
-              <UButton color="error" variant="ghost" size="sm" icon="i-lucide-trash-2" :loading="removingId === item.productId" :disabled="Boolean(updatingId || removingId)" :aria-label="`حذف ${item.productName}`" @click="removeFromCart(item.productId)">حذف</UButton>
+              <UInput :id="`quantity-${item.productId}`" v-model.number="item.quantity" type="number" min="1" inputmode="numeric" class="quantity-input" :disabled="!canUpdate" @change="updateQuantity(item)" />
+              <UButton v-if="canDelete" color="error" variant="ghost" size="sm" icon="i-lucide-trash-2" :loading="removingId === item.productId" :disabled="Boolean(updatingId || removingId)" :aria-label="`حذف ${item.productName}`" @click="removeFromCart(item.productId)">حذف</UButton>
             </div>
           </article>
         </div>
@@ -55,7 +55,8 @@
           <div class="summary-total"><dt>جمع نهایی</dt><dd>{{ numberFormat(totalPrice + shippingCost) }} ریال</dd></div>
         </dl>
         <div class="summary-actions">
-          <UButton block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">تسویه حساب</UButton>
+          <UButton v-if="canUpdate" block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">تسویه حساب</UButton>
+          <p v-else class="permission-note">مجوز تغییر یا ثبت سفارش برای این حساب فعال نیست.</p>
           <UButton block color="neutral" variant="soft" icon="i-lucide-arrow-left" to="/products">ادامه خرید</UButton>
         </div>
       </aside>
@@ -76,9 +77,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { getActiveCart, addToCart as addCartItem, clearCart as clearCartRequest, checkoutCart, removeFromCart as removeCartItem } from "~/services/cartService";
+import { getActiveCart, getPopulatedCart, addToCart as addCartItem, clearCart as clearCartRequest, checkoutCart, removeFromCart as removeCartItem } from "~/services/cartService";
 import { toUserFacingError } from "~/services/apiClient";
-import type { CartItemDto } from "~/types/product";
+import type { Cart, CartItemDto } from "~/types/product";
+import { useAccess } from "~/composables/useAccess";
+import { Resource } from "~/types/permissions";
 
 
 useHead({ title: "داشبورد | سبد خرید" });
@@ -96,6 +99,7 @@ interface CartItem {
 }
 
 const feedback = useFeedback();
+const { canCreate, canUpdate, canDelete } = useAccess(Resource.CARTS);
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
@@ -134,7 +138,13 @@ async function fetchCart() {
   loading.value = true;
   loadError.value = null;
   try {
-    const { data } = await getActiveCart();
+    const { data: activeCart } = await getActiveCart();
+    let populatedCarts: Cart | Cart[] | null = null;
+    try { populatedCarts = (await getPopulatedCart()).data; } catch { /* The active-cart response is enough for an empty or legacy cart. */ }
+    const populatedCart = Array.isArray(populatedCarts)
+      ? populatedCarts.find((candidate) => candidate?._id === activeCart?._id || candidate?.status === "active")
+      : populatedCarts;
+    const data = populatedCart || activeCart;
     cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
   } catch (error) {
     cartItems.value = [];
@@ -145,6 +155,7 @@ async function fetchCart() {
 }
 
 async function addToCart(productId: string, quantity: number, variant?: CartItemDto["variant"], companyId?: string, priceAtAdd?: number) {
+  if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه افزودن محصول به سبد را ندارید.");
   try {
     await addCartItem({ productId, quantity, variant, companyId, priceAtAdd });
     await fetchCart();
@@ -155,6 +166,7 @@ async function addToCart(productId: string, quantity: number, variant?: CartItem
 }
 
 async function updateQuantity(item: CartItem) {
+  if (!canUpdate.value) return;
   const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
   item.quantity = quantity;
   updatingId.value = item.productId;
@@ -171,6 +183,7 @@ async function updateQuantity(item: CartItem) {
 }
 
 async function removeFromCart(productId: string) {
+  if (!canDelete.value) return;
   removingId.value = productId;
   try {
     await removeCartItem(productId);
@@ -184,6 +197,7 @@ async function removeFromCart(productId: string) {
 }
 
 async function clearCart() {
+  if (!canDelete.value) return;
   clearing.value = true;
   try {
     await clearCartRequest();
@@ -198,6 +212,7 @@ async function clearCart() {
 }
 
 async function checkout() {
+  if (!canUpdate.value) return;
   if (!cartItems.value.length || isCheckingOut.value) return;
   isCheckingOut.value = true;
   try {
@@ -243,6 +258,7 @@ defineExpose({ addToCart });
 .summary-list dd { color: var(--color-text-heading); font-weight: 600; }
 .summary-list .summary-total { border-bottom: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 700; }
 .summary-actions { display: grid; gap: .65rem; }
+.permission-note { margin:0; color:var(--color-text-muted); font-size:.8rem; line-height:1.7; }
 .confirm-content { display: grid; gap: 1rem; }
 .confirm-content p { margin: 0; color: var(--color-text-body); line-height: 1.8; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: .65rem; }

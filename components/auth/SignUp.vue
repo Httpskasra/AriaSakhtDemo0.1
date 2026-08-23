@@ -1,46 +1,46 @@
 <template>
   <BaseModal @close="closeModal">
-    <div class="signup-container">
-      <img src="/logo/logo.png" alt="Logo" class="logo-img" />
+    <div class="auth-container">
+      <img src="/logo/logo.png" alt="لوگوی تجاریس" class="auth-logo" />
 
-      <form @submit.prevent.stop="handleSubmit" class="signup-form">
+      <form @submit.prevent.stop="handleSubmit" class="auth-form">
         <!-- کد ملی -->
-        <div class="input-group">
-          <label class="input-label">
+        <div class="auth-input-group">
+          <label class="auth-input-label">
             <input
               type="text"
               v-model="meliCode"
               required
               placeholder="مثال: 2665554789"
-              class="input-field"
+              class="auth-input-field"
               @input="validateMeli" />
-            <div class="input-addon">
+            <div class="auth-input-addon">
               <span>کد ملی</span>
             </div>
           </label>
           <span
-            class="input-error"
+            class="auth-input-error"
             :class="{ inline: meliError, hidden: !meliError }">
             کد ملی وارد شده صحیح نمی باشد
           </span>
         </div>
 
         <!-- شماره تلفن -->
-        <div class="input-group">
-          <label class="input-label">
+        <div class="auth-input-group">
+          <label class="auth-input-label">
             <input
               type="text"
               v-model="phoneNumber"
               required
               placeholder="مثال: 0912345678"
-              class="input-field"
+              class="auth-input-field"
               @input="validatePhone" />
-            <div class="input-addon">
+            <div class="auth-input-addon">
               <span>شماره تلفن</span>
             </div>
           </label>
           <span
-            class="input-error"
+            class="auth-input-error"
             :class="{ inline: phoneError, hidden: !phoneError }">
             شماره تماس وارد شده صحیح نمی باشد
           </span>
@@ -65,14 +65,14 @@
 
         <!-- خطای تطابق -->
         <span
-          class="input-error"
+          class="auth-input-error"
           :class="{ inline: matchingError, hidden: !matchingError }">
           کد ملی وارد شده با شماره تماس مطابقت ندارد
         </span>
 
         <!-- خطای سرور -->
         <span
-          class="input-error"
+          class="auth-input-error"
           :class="{ inline: serverError, hidden: !serverError }">
           {{ serverErrorMessage }}
         </span>
@@ -181,136 +181,7 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-.signup-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 400px;
-  height: 60vh;
-  padding: 16px 0;
-  gap: 16px;
-}
-
-.logo-img {
-  width: 180px;
-  height: 160px;
-  margin-bottom: 10px;
-}
-
-.signup-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  max-width: 370px;
-  gap: 18px;
-  padding: 0 8px;
-}
-
-.input-group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.input-label {
-  /* Specialized auth input shell; shares field radius and typography tokens with Nuxt UI inputs. */
-  font-family: var(--font-num);
-  background: rgba(128, 128, 128, 0.08);
-  width: 100%;
-  height: 48px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  border-radius: var(--radius-field);
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.input-field {
-  background: transparent;
-  height: 100%;
-  width: 100%;
-  padding: 0 12px;
-  font-size: 16px;
-  border: none;
-  outline: none;
-  text-align: left;
-}
-
-.input-addon {
-  background: var(--blue-dark);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  padding: 0 14px;
-  height: 100%;
-  min-width: 90px;
-  border-radius: 0 15px 15px 0;
-}
-
-.input-error {
-  color: #f87171;
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-.rules-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  gap: 6px;
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.rules-checkbox {
-  cursor: pointer;
-  accent-color: var(--blue-dark);
-}
-
-.rules-text {
-  font-size: 12px;
-  margin-right: 2px;
-}
-
-@media (max-width: 768px) {
-  .signup-container {
-    min-height: 250px;
-    height: auto;
-    padding: 8px 0;
-    gap: 10px;
-  }
-  .logo-img {
-    width: 70px;
-    height: 50px;
-    margin-bottom: 4px;
-  }
-  .signup-form {
-    max-width: 95vw;
-    gap: 12px;
-    padding: 0 2px;
-  }
-  .input-label {
-    height: 40px;
-    font-size: 13px;
-  }
-  .input-field {
-    font-size: 14px;
-    padding: 0 6px;
-  }
-  .input-addon {
-    font-size: 11px;
-    min-width: 70px;
-    padding: 0 6px;
-  }
-  .rules-text {
-    font-size: 11px;
-  }
-}
+.rules-label { display:flex; width:100%; align-items:center; gap:.5rem; cursor:pointer; }
+.rules-checkbox { accent-color:var(--color-brand-blue); cursor:pointer; }
+.rules-text { margin-inline-start:.125rem; color:var(--color-text-body); font-size:.8rem; }
 </style>

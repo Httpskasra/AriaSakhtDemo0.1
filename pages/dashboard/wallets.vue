@@ -16,9 +16,9 @@
       <div class="wallet-action-card panel-surface">
         <div><h2>عملیات کیف پول</h2><p>عملیات مالی مجاز را از این بخش انجام دهید.</p></div>
         <div class="wallet-actions">
-          <UButton v-if="canCreate" icon="i-lucide-plus-circle" @click="openCreditModal">شارژ کیف پول</UButton>
-          <UButton v-if="canCreate" color="error" variant="soft" icon="i-lucide-minus-circle" @click="openDebitModal">برداشت</UButton>
-          <p v-if="!canCreate" class="muted-note">مجوز انجام عملیات مالی برای حساب شما فعال نیست.</p>
+          <UButton v-if="canUpdate" icon="i-lucide-plus-circle" @click="openCreditModal">شارژ کیف پول</UButton>
+          <UButton v-if="canUpdate" color="error" variant="soft" icon="i-lucide-minus-circle" @click="openDebitModal">برداشت</UButton>
+          <p v-if="!canUpdate" class="muted-note">مجوز انجام عملیات مالی برای حساب شما فعال نیست.</p>
         </div>
       </div>
     </div>
@@ -77,7 +77,7 @@ import { toUserFacingError } from "~/services/apiClient";
 useHead({ title: "داشبورد | کیف پول" });
 
 const feedback = useFeedback();
-const { canCreate, canRead } = useAccess(Resource.WALLETS);
+const { canUpdate, canRead } = useAccess(Resource.WALLETS);
 type Wallet = { balance: number; currency?: string };
 type Transaction = { type: "credit" | "debit"; amount: number; description?: string; balanceAfter?: number; createdAt?: string };
 const wallet = ref<Wallet | null>(null);
@@ -119,20 +119,20 @@ async function fetchTransactions() {
 }
 async function refreshWallet() { await Promise.all([fetchWallet(), fetchTransactions()]); }
 
-function openCreditModal() { if (!canCreate.value) return; creditForm.value.amount = 0; errorMsg.value = ""; showCreditModal.value = true; }
+function openCreditModal() { if (!canUpdate.value) return; creditForm.value.amount = 0; errorMsg.value = ""; showCreditModal.value = true; }
 function closeCreditModal() { if (creditLoading.value) return; showCreditModal.value = false; errorMsg.value = ""; }
-function openDebitModal() { if (!canCreate.value) return; debitForm.value = { amount: 0, description: "" }; errorMsg.value = ""; showDebitModal.value = true; }
+function openDebitModal() { if (!canUpdate.value) return; debitForm.value = { amount: 0, description: "" }; errorMsg.value = ""; showDebitModal.value = true; }
 function closeDebitModal() { if (debitLoading.value) return; showDebitModal.value = false; errorMsg.value = ""; }
 
 async function creditWalletHandler() {
-  if (!canCreate.value || creditForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
+  if (!canUpdate.value || creditForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
   creditLoading.value = true; errorMsg.value = "";
   try { await creditWallet({ amount: creditForm.value.amount }); await refreshWallet(); showCreditModal.value = false; feedback.success("شارژ انجام شد", "کیف پول با موفقیت شارژ شد."); }
   catch (error) { errorMsg.value = toUserFacingError(error, "شارژ کیف پول انجام نشد.").message; }
   finally { creditLoading.value = false; }
 }
 async function debitWalletHandler() {
-  if (!canCreate.value || debitForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
+  if (!canUpdate.value || debitForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
   if ((wallet.value?.balance || 0) < debitForm.value.amount) { errorMsg.value = "موجودی کیف پول کافی نیست."; return; }
   debitLoading.value = true; errorMsg.value = "";
   try { await debitWallet({ amount: debitForm.value.amount }); await refreshWallet(); showDebitModal.value = false; feedback.success("برداشت انجام شد", "درخواست برداشت با موفقیت ثبت شد."); }
@@ -157,7 +157,7 @@ onMounted(refreshWallet);
 .wallet-action-card h2, .transactions-section h2, .wallet-form h2 { margin: 0; color: var(--color-text-heading); font-size: 1.05rem; }
 .wallet-action-card p, .transactions-section p { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
 .wallet-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
-.muted-note { margin: 0 !important; }
+.muted-note { margin: 0; }
 .section-heading { margin-bottom: 1rem; }
 .ltr { direction: ltr; text-align: right; }
 .long-text { display: block; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; }

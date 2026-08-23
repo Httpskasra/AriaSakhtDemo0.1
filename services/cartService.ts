@@ -17,7 +17,7 @@ export const getActiveCart = async () => {
  */
 export const getPopulatedCart = async () => {
   const $axios = useApi();
-  return await $axios.get<Cart>("/carts/populated");
+  return await $axios.get<Cart | Cart[]>("/carts/populated");
 };
 
 /**

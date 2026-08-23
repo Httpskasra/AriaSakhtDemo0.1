@@ -255,15 +255,15 @@ const closeModal = () => {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: var(--font-yekan);
+  font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.8;
 }
 
 .otp-phone {
   font-family: var(--font-num);
-  color: var(--blue-dark);
-  border-bottom: 1px solid var(--blue-dark);
+  color: var(--color-text-heading);
+  border-bottom: 1px solid var(--color-brand-blue);
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -279,9 +279,9 @@ const closeModal = () => {
 .otp-input {
   width: clamp(40px, 13vw, 45px);
   height: clamp(44px, 14vw, 50px);
-  border: 2px solid #9ca3af;
+  border: 2px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  color: var(--blue-dark);
+  color: var(--color-text-heading);
   direction: ltr;
   font-family: var(--font-num);
   font-size: 1.25rem;
@@ -291,11 +291,12 @@ const closeModal = () => {
 }
 
 .otp-input:focus {
-  border-color: var(--blue-dark);
+  border-color: var(--color-brand-blue);
+  box-shadow: var(--focus-ring);
 }
 
 .otp-input:disabled {
-  background-color: #e5e7eb;
+  background-color: var(--color-neutral-bg);
   cursor: not-allowed;
 }
 
@@ -313,22 +314,22 @@ const closeModal = () => {
   width: min(100%, 360px);
   margin: 0;
   padding: .65rem .8rem;
-  border: 1px solid #fecaca;
+  border: 1px solid color-mix(in srgb, var(--color-danger-fg) 30%, var(--color-bg-surface));
   border-radius: var(--radius-field);
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--color-danger-bg);
+  color: var(--color-danger-fg);
   font-size: .8rem;
   line-height: 1.7;
   text-align: center;
 }
 
 .otp-timer {
-  color: #1f2937;
+  color: var(--color-text-heading);
   font-family: var(--font-num);
 }
 
 .otp-expired {
-  color: #ef4444;
+  color: var(--color-danger-fg);
 }
 
 .otp-resend {
@@ -344,7 +345,7 @@ const closeModal = () => {
 }
 
 .otp-resend:disabled {
-  color: #9ca3af;
+  color: var(--color-text-disabled);
   cursor: not-allowed;
   text-decoration: none;
 }
@@ -352,8 +353,8 @@ const closeModal = () => {
 .otp-submit {
   border: 0;
   border-radius: var(--radius-field);
-  background: #3b82f6;
-  color: #fff;
+  background: var(--color-brand-blue);
+  color: var(--color-bg-surface);
   cursor: pointer;
   font-size: 1rem;
   padding: 10px 20px;
@@ -361,7 +362,7 @@ const closeModal = () => {
 }
 
 .otp-submit:disabled {
-  background: #9ca3af;
+  background: var(--color-text-disabled);
   cursor: not-allowed;
 }
 

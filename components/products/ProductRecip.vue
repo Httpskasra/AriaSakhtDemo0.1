@@ -104,20 +104,20 @@ const copyProductLink = () => {
 </script>
 <style scoped>
 .container-recip {
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
   width: 340px;
   height: 380px;
   position: relative;
-  padding: 15px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
 }
 
 .recip-header {
   margin-bottom: 15px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 10px;
 }
 
@@ -125,7 +125,7 @@ const copyProductLink = () => {
   margin: 0;
   color: var(--color-text-heading);
   font-family: var(--font-yekan);
-  font-size: 18px;
+  font-size: 1.05rem;
 }
 
 ul {
@@ -144,8 +144,8 @@ li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: .75rem 0;
 }
 
 li:last-child {
@@ -153,14 +153,14 @@ li:last-child {
 }
 
 .title {
-  font-size: 14px;
+  font-size: .82rem;
   color: var(--color-text-muted);
   font-family: var(--font-yekan);
   font-weight: bold;
 }
 
 .val {
-  font-size: 14px;
+  font-size: .82rem;
   color: var(--color-brand-blue);
   font-family: var(--font-num);
   text-align: left;
@@ -180,16 +180,16 @@ li:last-child {
 }
 
 .val.status {
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: .2rem .5rem;
+  border-radius: var(--radius-pill);
+  font-size: .72rem;
 }
 
 @media (max-width: 767px) {
   .container-recip {
     width: 100%;
     height: auto;
-    padding: 15px;
+    padding: 1rem;
   }
 
   .recip-header {
@@ -198,7 +198,7 @@ li:last-child {
   }
 
   .recip-header h3 {
-    font-size: 16px;
+    font-size: .95rem;
   }
 
   ul {
@@ -207,35 +207,35 @@ li:last-child {
 
   li {
     height: auto;
-    padding: 8px 0;
+    padding: .6rem 0;
   }
 
   .title {
-    font-size: 12px;
+    font-size: .75rem;
   }
 
   .val {
-    font-size: 12px;
+    font-size: .75rem;
   }
 
 }
 
 @media (max-width: 480px) {
   .container-recip {
-    padding: 10px;
+    padding: .75rem;
   }
 
   .recip-header h3 {
-    font-size: 14px;
+    font-size: .9rem;
   }
 
   li {
-    padding: 6px 0;
+    padding: .5rem 0;
   }
 
   .title,
   .val {
-    font-size: 11px;
+    font-size: .7rem;
   }
 
 }

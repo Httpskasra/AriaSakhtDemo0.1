@@ -27,24 +27,24 @@ const limitedAttributes = computed(() => {
 </script>
 <style scoped>
 .container-future-demo {
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
   width: 100%;
   max-width: 900px;
-  padding: 20px;
+  padding: 1.25rem;
   margin: auto;
 }
 
 .no-attributes {
   text-align: center;
-  padding: 30px;
-  color: #999;
+  padding: 2rem 1.25rem;
+  color: var(--color-text-muted);
 }
 
 .no-attributes p {
   font-family: var(--font-yekan);
-  font-size: 14px;
+  font-size: .85rem;
 }
 
 ul {
@@ -54,28 +54,28 @@ ul {
 }
 
 li {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 15px;
+  border: 1px solid var(--color-border);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 8px;
   border-radius: var(--radius-field);
-  background-color: #f9f9f9;
-  transition: all 0.3s;
+  background-color: var(--color-bg-light);
+  transition: transform .16s ease, border-color .16s ease, background-color .16s ease;
 }
 
 li:hover {
   border-color: var(--color-brand-blue);
-  background-color: #f0f5ff;
+  background-color: var(--color-info-bg);
   transform: translateY(-2px);
 }
 
 .title {
   color: var(--color-text-muted);
   font-family: var(--font-yekan);
-  font-size: 13px;
+  font-size: .78rem;
   font-weight: bold;
   text-align: center;
 }
@@ -83,7 +83,7 @@ li:hover {
 .val {
   color: var(--color-brand-blue);
   font-family: var(--font-num);
-  font-size: 14px;
+  font-size: .85rem;
   font-weight: bold;
   text-align: center;
 }
@@ -91,24 +91,24 @@ li:hover {
 @media (max-width: 767px) {
   .container-future-demo {
     width: 90%;
-    padding: 15px;
+    padding: 1rem;
   }
 
   ul {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    gap: .65rem;
   }
 
   li {
-    padding: 10px;
+    padding: .75rem;
   }
 
   .title {
-    font-size: 11px;
+    font-size: .7rem;
   }
 
   .val {
-    font-size: 12px;
+    font-size: .75rem;
   }
 }
 </style>

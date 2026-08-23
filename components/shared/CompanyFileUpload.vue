@@ -199,21 +199,21 @@ const processFile = async (file: File) => {
 <style scoped>
 .company-dropzone {
   min-height: 10rem;
-  border: 2px dashed #94a3b8;
-  background: #f8fafc;
+  border: 2px dashed var(--color-border-strong);
+  background: var(--color-bg-light);
   outline: none;
 }
 
 .company-dropzone:hover,
 .company-dropzone:focus-visible {
   border-color: var(--color-brand-blue);
-  background: #eff6ff;
-  box-shadow: 0 0 0 3px rgb(22 115 255 / 15%);
+  background: var(--color-info-bg);
+  box-shadow: var(--focus-ring);
 }
 
 .company-dropzone--dragging {
   border-color: var(--color-brand-blue);
-  background: #dbeafe;
+  background: var(--color-info-bg);
 }
 
 .company-file-meta {
@@ -223,8 +223,8 @@ const processFile = async (file: File) => {
   gap: 1rem;
   margin-top: .75rem;
   padding: .75rem 1rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  background: #fff;
+  background: var(--color-bg-surface);
 }
 </style>

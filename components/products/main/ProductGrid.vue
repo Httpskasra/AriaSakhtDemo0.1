@@ -103,7 +103,7 @@ const emptyState = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .empty-results__icon {
@@ -112,9 +112,9 @@ const emptyState = computed(() => {
   height: 4.5rem;
   place-items: center;
   margin-bottom: 1rem;
-  border: 1px solid #dbeafe;
-  border-radius: 1.5rem;
-  background: #eff6ff;
+  border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-dialog);
+  background: var(--color-info-bg);
   color: var(--color-brand-blue);
   font-size: 2.25rem;
 }
@@ -123,7 +123,7 @@ const emptyState = computed(() => {
   display: grid;
   gap: 0.375rem;
   margin-top: 1rem;
-        color: #475569;
+  color: var(--color-text-body);
   font-size: 0.75rem;
   line-height: 1.75;
 }
@@ -136,7 +136,7 @@ const emptyState = computed(() => {
 
 .empty-results__suggestions :deep(svg) {
   flex: 0 0 auto;
-  color: #16a34a;
+  color: var(--color-success-fg);
   font-size: 0.875rem;
 }
 

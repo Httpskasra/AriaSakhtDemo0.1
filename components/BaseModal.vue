@@ -148,8 +148,8 @@ onUnmounted(() => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
+  background-color: var(--color-overlay);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,13 +160,13 @@ onUnmounted(() => {
 
 .modal-content {
   position: relative;
-  background-color: #fff;
+  background-color: var(--color-bg-surface);
   border-radius: var(--radius-dialog);
-  max-width: min(100%, 600px);
-  width: min(100%, 600px);
-  max-height: min(100vh, 760px);
+  max-width: min(100%, 720px);
+  width: min(100%, 720px);
+  max-height: min(calc(100dvh - 2rem), 820px);
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
   box-sizing: border-box;
   box-shadow: var(--shadow-overlay);
   margin: auto;
@@ -174,8 +174,9 @@ onUnmounted(() => {
 
 .close-btn {
   position: absolute;
-  top: 18px;
-  left: 18px;
+  top: 1rem;
+  right: 1rem;
+  left: auto;
   background: transparent;
   border: none;
   font-size: var(--spacing-icon-empty-state);
@@ -189,5 +190,15 @@ onUnmounted(() => {
 
 .close-btn:hover {
   color: var(--color-text-heading);
+}
+
+@media (max-width: 640px) {
+  .modal-overlay { padding: .5rem; align-items: flex-end; }
+  .modal-content {
+    width: 100%;
+    max-height: calc(100dvh - 1rem);
+    border-radius: var(--radius-dialog) var(--radius-dialog) var(--radius-card) var(--radius-card);
+    padding: 1.25rem;
+  }
 }
 </style>

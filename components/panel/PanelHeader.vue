@@ -29,7 +29,7 @@ const emit = defineEmits<{ openMenu: []; toggleSidebar: [] }>();
 </template>
 
 <style scoped>
-.panel-header { min-height: var(--panel-header-height); padding: .75rem clamp(1rem, 3vw, 2rem); display:flex; align-items:center; justify-content:space-between; gap:1rem; background:var(--color-bg-surface, #fff); border-bottom:1px solid var(--color-border, var(--gray-200)); }
+.panel-header { min-height: var(--panel-header-height); padding: .75rem clamp(1rem, 3vw, 2rem); display:flex; align-items:center; justify-content:space-between; gap:1rem; background:var(--color-bg-surface); border-bottom:1px solid var(--color-border); }
 .panel-header__leading, .panel-header__actions { display:flex; align-items:center; gap:.75rem; min-width:0; }
 .panel-header__divider { height:1.5rem; width:1px; background:var(--gray-200); }
 .panel-header__title { margin:0; color:var(--color-text-heading); font-size:1rem; font-weight:700; white-space:nowrap; }

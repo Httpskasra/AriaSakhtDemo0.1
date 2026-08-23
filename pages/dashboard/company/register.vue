@@ -245,7 +245,7 @@ const onSubmit = async () => {
 .company-card {
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-card);
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .seller-page__content {
@@ -261,10 +261,10 @@ const onSubmit = async () => {
 
 .form-guidance {
   padding: .75rem 1rem;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--color-info-border);
   border-radius: var(--radius-field);
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: var(--color-info-bg);
+  color: var(--color-info-fg);
   font-size: .8125rem;
   line-height: 1.75;
 }
@@ -300,10 +300,10 @@ const onSubmit = async () => {
   min-height: 4.25rem;
   align-items: center;
   gap: .75rem;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
   padding: .75rem 1rem;
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-heading);
   text-align: right;
   transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
@@ -312,7 +312,7 @@ const onSubmit = async () => {
 .seller-type-option:hover,
 .seller-type-option:focus-visible {
   border-color: var(--color-brand-blue);
-  background: #f8fbff;
+  background: var(--color-bg-light);
 }
 
 .seller-type-option:focus-visible {
@@ -322,8 +322,8 @@ const onSubmit = async () => {
 
 .seller-type-option--active {
   border-color: var(--color-brand-blue);
-  background: #eff6ff;
-  box-shadow: 0 0 0 2px rgb(22 115 255 / 12%);
+  background: var(--color-info-bg);
+  box-shadow: var(--focus-ring);
 }
 
 .seller-type-icon {
@@ -333,8 +333,8 @@ const onSubmit = async () => {
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: .75rem;
-  background: #dbeafe;
+  border-radius: var(--radius-compact-list-item);
+  background: var(--color-info-bg);
   color: var(--color-brand-blue);
 }
 
@@ -352,7 +352,7 @@ const onSubmit = async () => {
 }
 
 .seller-type-copy small {
-  color: #475569;
+  color: var(--color-text-body);
   font-size: .75rem;
 }
 
@@ -373,7 +373,7 @@ const onSubmit = async () => {
   top: 50%;
   width: 1.125rem;
   height: 1.125rem;
-  color: #475569;
+  color: var(--color-text-body);
   pointer-events: none;
   transform: translateY(-50%);
 }
@@ -384,17 +384,17 @@ const onSubmit = async () => {
   padding-block: 0.6875rem;
   padding-inline-start: 3.25rem;
   padding-inline-end: 0.875rem;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-heading);
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
 :deep(.company-input:hover input:not(:disabled)),
 :deep(.company-textarea:hover textarea:not(:disabled)) {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--gray-400);
+  background: var(--color-bg-light);
 }
 
 :deep(.company-input input:focus-visible),
@@ -414,9 +414,9 @@ const onSubmit = async () => {
   min-height: 7rem;
   width: 100%;
   padding: 0.75rem 0.875rem;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  background: #fff;
+  background: var(--color-bg-surface);
   color: var(--color-text-heading);
   resize: vertical;
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
@@ -438,25 +438,25 @@ const onSubmit = async () => {
 }
 
 .company-submit {
-  background: var(--color-brand-blue) !important;
-  color: #fff !important;
+  background: var(--color-brand-blue);
+  color: var(--color-bg-surface);
 }
 
 .company-submit :deep(svg) {
-  color: #fff !important;
+  color: var(--color-bg-surface);
 }
 
 .company-submit:not(:disabled):hover {
-  background: #0f5dcc !important;
+  background: var(--ui-color-primary-600);
 }
 
 .company-submit:disabled {
-  color: #64748b !important;
-  background: #e2e8f0 !important;
+  color: var(--color-text-muted);
+  background: var(--color-border);
 }
 
 .company-submit:disabled :deep(svg) {
-  color: #64748b !important;
+  color: var(--color-text-muted);
 }
 
 .company-upload :deep(> div:last-child) {
@@ -468,9 +468,9 @@ const onSubmit = async () => {
   min-width: 7rem;
   height: 7rem;
   overflow: hidden;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  background: var(--gray-50);
+  background: var(--color-bg-light);
 }
 
 @media (max-width: 767px) {

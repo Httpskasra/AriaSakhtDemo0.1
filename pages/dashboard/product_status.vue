@@ -33,10 +33,12 @@
 </template>
 
 <script setup lang="ts">
+const props = withDefaults(defineProps<{ sellerOnly?: boolean }>(), { sellerOnly: false });
 import { computed, onMounted, ref } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Product } from "~/types/product";
+import { listCompanyProducts } from "~/services/productService";
 import { toUserFacingError } from "~/services/apiClient";
 
 useHead({ title: "داشبورد | وضعیت محصولات" });
@@ -44,6 +46,7 @@ useHead({ title: "داشبورد | وضعیت محصولات" });
 const feedback = useFeedback();
 const { canUpdate, canRead } = useAccess(Resource.PRODUCT_STATUS);
 const { $axios } = useNuxtApp();
+const { user } = useUser();
 const search = ref("");
 const products = ref<Product[]>([]);
 const loading = ref(false);
@@ -56,8 +59,19 @@ function productStatusSemantic(status: Product["status"]) { return getStatusSema
 function numberFormat(value?: number) { return typeof value === "number" ? value.toLocaleString("fa-IR") : "—"; }
 async function fetchProducts() {
   if (!canRead.value) return;
+  const currentUser = user.value as (typeof user.value & { companyId?: string; profile?: { companyId?: string } }) | null;
+  const sellerCompanyId = currentUser?.companyId || currentUser?.profile?.companyId || "";
+  if (props.sellerOnly && !sellerCompanyId) { products.value = []; loadError.value = "برای مشاهده وضعیت محصولات، ابتدا شرکت خود را ثبت کنید."; return; }
   loading.value = true; loadError.value = "";
-  try { const { data } = await $axios.get("/products/admin/all-products"); products.value = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : []; }
+  try {
+    if (props.sellerOnly) {
+      const result = await listCompanyProducts(sellerCompanyId, { limit: 100, sort: "createdAt:desc" });
+      products.value = result.items;
+    } else {
+      const { data } = await $axios.get("/products/admin/all-products");
+      products.value = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
+    }
+  }
   catch (error) { products.value = []; loadError.value = toUserFacingError(error, "دریافت وضعیت محصولات انجام نشد.").message; }
   finally { loading.value = false; }
 }

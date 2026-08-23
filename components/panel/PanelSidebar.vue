@@ -9,14 +9,18 @@ const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
     <SidebarPanel :items="items" :identity="identity" @navigate="emit('update:modelValue', false)" />
   </AppDrawer>
 </div>
+</template>
 
 <style scoped>
 .panel-sidebar { width:100%; height:100%; min-height:0; }
+.panel-sidebar :deep(.sidebar-identity) { display:none; }
 .panel-sidebar--collapsed :deep(.sidebar-nav__label),
 .panel-sidebar--collapsed :deep(.sidebar-nav__section),
 .panel-sidebar--collapsed :deep(.sidebar-identity__text) { display:none; }
 .panel-sidebar--collapsed :deep(.sidebar-nav__item) { justify-content:center; margin-inline:.5rem; width:calc(100% - 1rem); padding-inline:0; }
 .panel-sidebar--collapsed :deep(.sidebar-nav__icon) { width:1.5rem; height:1.5rem; }
-@media (max-width:1024px) { .panel-sidebar { position:fixed; inset:0; z-index:60; width:0; height:0; pointer-events:none; } }
+@media (max-width:1024px) {
+  .panel-sidebar { position:fixed; inset:0; z-index:60; width:0; height:0; pointer-events:none; }
+  .panel-sidebar :deep(.sidebar-identity) { display:flex; }
+}
 </style>
-</template>

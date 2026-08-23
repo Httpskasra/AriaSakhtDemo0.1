@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="products-page">
       <PanelPageHeader title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
         <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
       </PanelPageHeader>
@@ -370,6 +370,7 @@
 </template>
 
 <script setup lang="ts">
+const props = withDefaults(defineProps<{ sellerOnly?: boolean }>(), { sellerOnly: false });
 const feedback = useFeedback();
 import { ref, computed, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
@@ -380,7 +381,7 @@ import type {
   ProductImage,
   ProductImageMeta,
 } from "~/types/product";
-import { listAdminProducts, uploadProductImages, createProduct, updateProduct, deleteProduct as removeProduct } from "~/services/productService";
+import { listAdminProducts, listCompanyProducts, uploadProductImages, createProduct, updateProduct, deleteProduct as removeProduct } from "~/services/productService";
 import { useApiClient } from '~/services/apiClient';
 
 useHead({
@@ -403,6 +404,7 @@ const showModal = ref(false);
 const editMode = ref(false);
 const selectedId = ref<string | null>(null);
 const products = ref<Product[]>([]);
+const { user } = useUser();
 
 const { canCreate, canRead, canUpdate, canDelete } = useAccess(
   Resource.PRODUCTS
@@ -551,15 +553,20 @@ function statusFa(s: Product["status"]) {
 
 async function fetchProducts() {
   if (!canRead.value) return;
+  const currentUser = user.value as (typeof user.value & { companyId?: string; profile?: { companyId?: string } }) | null;
+  const sellerCompanyId = currentUser?.companyId || currentUser?.profile?.companyId || "";
+  if (props.sellerOnly && !sellerCompanyId) {
+    products.value = [];
+    total.value = 0;
+    loadError.value = "برای مشاهده محصولات، ابتدا شرکت خود را ثبت کنید.";
+    return;
+  }
   loading.value = true;
   loadError.value = null;
   try {
-    const result = await listAdminProducts({
-      page: page.value,
-      limit: limit.value,
-      sort: sort.value,
-      filter: search.value.trim() || undefined,
-    });
+    const result = props.sellerOnly
+      ? await listCompanyProducts(sellerCompanyId, { page: page.value, limit: limit.value, sort: sort.value })
+      : await listAdminProducts({ page: page.value, limit: limit.value, sort: sort.value, filter: search.value.trim() || undefined });
     products.value = result.items;
     total.value = result.total;
     const lastPage = Math.max(1, Math.ceil(result.total / limit.value));
@@ -760,7 +767,7 @@ function numberFormat(n?: number) {
 </script>
 
 <style scoped>
-.container {
+.products-page {
   width: 100%;
   max-width: 92rem;
   margin-inline: auto;

@@ -47,18 +47,18 @@ const options = [
   min-height: 2.75rem;
   align-items: center;
   gap: .5rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
   padding: .25rem .75rem;
-  background: #fff;
-  color: #334155;
+  background: var(--color-bg-surface);
+  color: var(--color-text-body);
   direction: rtl;
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
 .sort-filter:hover:not(.sort-filter--disabled) {
-  border-color: #94a3b8;
-  background: #f8fafc;
+  border-color: var(--gray-400);
+  background: var(--color-bg-light);
 }
 
 .sort-filter:focus-within:not(.sort-filter--disabled) {
@@ -78,7 +78,7 @@ const options = [
   white-space: nowrap;
   font-size: .8125rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--color-text-body);
 }
 
 .sort-filter__select {
@@ -89,7 +89,7 @@ const options = [
   outline: 0;
   padding: .375rem 0;
   background: transparent;
-  color: #0f172a;
+  color: var(--color-text-heading);
   cursor: pointer;
   font-size: .8125rem;
   font-weight: 700;
@@ -103,7 +103,7 @@ const options = [
   flex: 0 0 auto;
   width: 1rem;
   height: 1rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   pointer-events: none;
 }
 

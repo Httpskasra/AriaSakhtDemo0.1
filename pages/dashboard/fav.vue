@@ -41,7 +41,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <section class="favorites-page container" dir="rtl">
+    <section class="favorites-page" dir="rtl">
       <PanelPageHeader title="علاقه‌مندی‌ها" subtitle="محصولاتی که برای دسترسی سریع ذخیره کرده‌اید" icon="i-lucide-heart">
         <template #actions>
           <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="favorites.loading" aria-label="به‌روزرسانی علاقه‌مندی‌ها" @click="fetchFavorites">به‌روزرسانی</UButton>

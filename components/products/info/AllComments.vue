@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <section class="product-comments-list">
     <div v-if="loading" class="loading">
       <p>درحال بارگیری نقدهای محصول...</p>
     </div>
@@ -14,7 +14,7 @@
       v-for="rating in ratings"
       :key="rating._id || rating.id"
       :data="rating" />
-  </div>
+  </section>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
@@ -52,36 +52,36 @@ onMounted(() => {
 });
 </script>
 <style scoped>
-.container {
+.product-comments-list {
   width: 100%;
   margin-top: 40px;
 }
 
 .loading {
   text-align: center;
-  padding: 40px 20px;
+  padding: 2.5rem 1.25rem;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: .85rem;
 }
 
 .error-message {
-  padding: 15px;
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  padding: 1rem;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-fg);
+  border: 1px solid color-mix(in srgb, var(--color-danger-fg) 25%, var(--color-bg-surface));
   border-radius: var(--radius-field);
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .no-comments {
   text-align: center;
-  padding: 30px 20px;
-  color: #999;
-  font-size: 14px;
-  background-color: #f9f9f9;
+  padding: 2rem 1.25rem;
+  color: var(--color-text-muted);
+  font-size: .85rem;
+  background-color: var(--color-bg-light);
   border-radius: var(--radius-field);
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border);
 }
 
 .comment {
@@ -89,8 +89,8 @@ onMounted(() => {
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    margin-top: 30px;
+  .product-comments-list {
+    margin-top: 1.5rem;
   }
 
   .comment {
@@ -99,8 +99,8 @@ onMounted(() => {
 }
 
 @media (max-width: 767px) {
-  .container {
-    margin-top: 30px;
+  .product-comments-list {
+    margin-top: 1.5rem;
   }
 
   .comment {

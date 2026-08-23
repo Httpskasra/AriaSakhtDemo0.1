@@ -53,32 +53,32 @@
                   نام
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   ایمیل
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   تلفن
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   شماره ثبت
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   آدرس
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100">
                   وضعیت
                 </th>
                 <th
-                  v-if="canCreate && canUpdate"
+                  v-if="canRead"
                   class="text-right font-medium px-4 py-3 border-b border-gray-100 w-40">
                   عملیات
                 </th>
@@ -101,25 +101,25 @@
                 </td>
                 <td
                   class="px-4 py-3 text-gray-700"
-                  v-if="canCreate && canUpdate">
+                  v-if="canRead">
                   {{ company.email }}
                 </td>
                 <td
                   class="px-4 py-3 text-gray-700"
-                  v-if="canCreate && canUpdate">
+                  v-if="canRead">
                   {{ company.phone }}
                 </td>
                 <td
                   class="px-4 py-3 text-gray-700"
-                  v-if="canCreate && canUpdate">
+                  v-if="canRead">
                   {{ company.registrationNumber }}
                 </td>
                 <td
                   class="px-4 py-3 text-gray-700 truncate max-w-[150px]"
-                  v-if="canCreate && canUpdate">
+                  v-if="canRead">
                   {{ company.address || "—" }}
                 </td>
-                <td class="px-4 py-3" v-if="canCreate && canUpdate">
+                <td class="px-4 py-3" v-if="canRead">
                   <!-- Status badge + inline select for quick status change -->
                   <div class="flex items-center gap-2">
                     <span
@@ -217,14 +217,15 @@
               <UTextarea v-model="form.address" />
             </UFormField>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">لوگو</label>
-              <!-- Specialized upload control: native file input is required for image preview FileReader flow. -->
-              <input type="file" @change="onFileChange" />
-              <img
-                v-if="imagePreview"
-                :src="imagePreview"
-                class="w-20 h-20 mt-2 rounded-full object-cover" />
+            <div class="company-upload-field">
+              <label for="company-logo-input">لوگوی شرکت</label>
+              <input id="company-logo-input" ref="fileInputRef" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" @change="onFileChange" />
+              <div class="company-upload-control">
+                <span>{{ selectedImage?.name || "فایلی انتخاب نشده است" }}</span>
+                <UButton type="button" color="neutral" variant="soft" icon="i-lucide-upload" @click="fileInputRef?.click()">انتخاب فایل</UButton>
+              </div>
+              <img v-if="imagePreview" :src="imagePreview" alt="پیش‌نمایش لوگوی شرکت" class="company-logo-preview" />
+              <p>فرمت JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت</p>
             </div>
 
             <div class="flex justify-end gap-2 pt-4">
@@ -280,6 +281,7 @@ const editMode = ref(false);
 const selectedId = ref<string | null>(null);
 const selectedImage = ref<File | null>(null);
 const imagePreview = ref("");
+const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const form = ref({
   name: "",
@@ -431,6 +433,7 @@ function closeModal() {
   showModal.value = false;
   selectedImage.value = null;
   imagePreview.value = "";
+  if (fileInputRef.value) fileInputRef.value.value = "";
 }
 
 function onFileChange(e: Event) {
@@ -517,20 +520,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container {
-  width: 90%;
-  margin: auto;
-}
-.title {
-  color: var(--blue-dark);
-  font-family: var(--font-yekan);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 15px 0;
-}
-.title img {
-  width: 50px;
-  height: 50px;
-}
+.company-upload-field { display:grid; gap:.45rem; }
+.company-upload-field > label { color:var(--color-text-heading); font-size:.85rem; font-weight:700; }
+.company-upload-control { display:flex; align-items:center; justify-content:space-between; gap:.75rem; min-height:2.75rem; padding:.5rem .65rem; border:1px dashed var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); color:var(--color-text-muted); }
+.company-upload-field p { margin:0; color:var(--color-text-muted); font-size:.75rem; }
+.company-logo-preview { width:5rem; height:5rem; border-radius:var(--radius-field); object-fit:cover; border:1px solid var(--color-border); }
+@media (max-width: 640px) { .company-upload-control { align-items:stretch; flex-direction:column; } }
 </style>

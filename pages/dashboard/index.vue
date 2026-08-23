@@ -139,7 +139,7 @@ onMounted(loadOverview);
   place-items: center;
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-bg-light);
   color: var(--blue-dark);
   font-size: 1.75rem;

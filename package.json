@@ -6,6 +6,11 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "lint": "yarn lint:eslint && yarn lint:style && yarn lint:design",
+    "lint:eslint": "eslint . --cache=false",
+    "lint:style": "stylelint \"assets/**/*.css\" \"components/**/*.vue\" \"layouts/**/*.vue\" \"pages/**/*.vue\"",
+    "lint:design": "node scripts/check-design-system.mjs",
+    "typecheck": "nuxi typecheck",
     "preview": "nuxt preview",
     "postinstall": "npx nuxi prepare"
   },
@@ -28,6 +33,15 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.119",
-    "@types/node": "^26.1.1"
+    "@types/node": "^26.1.1",
+    "@eslint/js": "^9.31.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-vue": "^10.3.0",
+    "postcss-html": "^1.8.0",
+    "stylelint": "^16.22.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vue-eslint-parser": "^10.3.0",
+    "vue-tsc": "^2.2.12"
   }
 }

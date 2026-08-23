@@ -46,7 +46,7 @@ withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 .header-brand--compact .header-brand__mark {
   width: 2.25rem;
   height: 2.25rem;
-  box-shadow: none;
+  box-shadow: var(--shadow-none);
 }
 
 .header-brand--compact .header-brand__name {

@@ -146,12 +146,18 @@
   --color-danger-bg: #fee2e2;
   --color-info-fg: #1e40af;
   --color-info-bg: #dbeafe;
+  --color-info-border: #bfdbfe;
   --color-neutral-fg: var(--color-text-heading);
   --color-neutral-bg: #f3f4f6;
   --color-bg-light: #f8fafc;
   --color-bg-app: #f1f5f9;
   --color-bg-surface: #ffffff;
+  --color-bg-surface-translucent: rgb(255 255 255 / 94%);
+  --color-bg-surface-mobile: rgb(255 255 255 / 97%);
+  --color-overlay: rgb(15 23 42 / 45%);
+  --color-overlay-strong: rgb(0 0 0 / 90%);
   --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
   --blue-dark: var(--color-text-heading);
   --blue-sky: var(--color-bg-light);
   --blue-light: var(--color-primary);
@@ -172,6 +178,9 @@
   --font-body: var(--font-num);
   --space-page: clamp(1rem, 3vw, 2rem);
   --radius-brand: 12px;
+  --radius-none: 0;
+  --radius-control: 0.75rem;
+  --radius-circle: 50%;
   --radius-pill: 999px;
   --radius-card: var(--radius-brand);
   --radius-dialog: calc(var(--radius-brand) * 1.5);
@@ -189,6 +198,8 @@
   --line-height-long-form: 2.1;
   --shadow-surface: none;
   --shadow-raised: 0 4px 20px -1px rgb(0 0 0 / 5%), 0 2px 4px -1px rgb(0 0 0 / 3%);
+  --shadow-none: none;
+  --shadow-sidebar-active: inset -3px 0 0 var(--blue-dark);
   --shadow-overlay: 0 16px 40px rgb(15 23 42 / 15%);
   --shadow-interactive-hover: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
   --shadow-premium: var(--shadow-raised);
@@ -201,6 +212,7 @@
   --breakpoint-panel-tablet: 1024px;
   --breakpoint-panel-wide: 1440px;
   --focus-ring: 0 0 0 3px rgb(22 115 255 / 28%);
+  --focus-ring-danger: 0 0 0 3px rgb(153 27 27 / 15%);
   /* Derived from --color-brand-blue for hover states that need a darker brand blue. */
   --color-brand-blue-hover: color-mix(in oklab, var(--color-brand-blue) 82%, black);
 }
@@ -240,6 +252,99 @@
 @source "../../app.vue";
 @source "../../error.vue";
 
+@layer components {
+  .auth-container {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    width: min(100%, 28rem);
+    margin-inline: auto;
+    padding: .5rem 0;
+    direction: rtl;
+  }
+
+  .auth-logo {
+    width: min(9rem, 42vw);
+    height: auto;
+    max-height: 7rem;
+    object-fit: contain;
+  }
+
+  .auth-form {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .auth-input-group {
+    display: grid;
+    gap: .4rem;
+    width: 100%;
+  }
+
+  .auth-input-label {
+    display: flex;
+    min-height: var(--control-height-md);
+    align-items: stretch;
+    width: 100%;
+    overflow: hidden;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-field);
+    transition: border-color .16s ease, box-shadow .16s ease;
+  }
+
+  .auth-input-label:focus-within {
+    border-color: var(--color-brand-blue);
+    box-shadow: var(--focus-ring);
+  }
+
+  .auth-input-field {
+    min-width: 0;
+    flex: 1;
+    padding: .65rem .8rem;
+    color: var(--color-text-heading);
+    background: transparent;
+    border: 0;
+    outline: 0;
+    direction: ltr;
+    font-family: var(--font-num);
+    font-size: .9rem;
+    text-align: left;
+  }
+
+  .auth-input-field::placeholder { color: var(--color-text-muted); opacity: 1; }
+
+  .auth-input-addon {
+    display: inline-flex;
+    min-width: 5.75rem;
+    align-items: center;
+    justify-content: center;
+    padding-inline: .8rem;
+    color: var(--color-bg-surface);
+    background: var(--color-brand-blue);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .auth-input-error {
+    min-height: 1.25rem;
+    margin: 0;
+    color: var(--color-danger-fg);
+    font-size: .76rem;
+    line-height: 1.7;
+  }
+
+  .auth-input-error.hidden { visibility: hidden; }
+  .auth-signup-hint { color: var(--color-text-body); font-size: .8rem; text-align: center; line-height: 1.8; }
+
+  @media (max-width: 640px) {
+    .auth-container { width: 100%; }
+    .auth-logo { width: 6.5rem; max-height: 5rem; }
+    .auth-input-addon { min-width: 5rem; padding-inline: .6rem; font-size: .72rem; }
+  }
+}
+
 /* Light-only token contract: there is no dark-mode variant or user-facing toggle. */
 
 @layer base {
@@ -267,10 +372,10 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
-      scroll-behavior: auto !important;
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      scroll-behavior: auto;
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
     }
   }
 }
@@ -279,11 +384,11 @@
   /* Neutral solid buttons use a light background in this theme, so their
      labels and icons must use a dark foreground instead of white. */
   :where(.bg-inverted.text-inverted) {
-    color: var(--color-text-heading) !important;
+    color: var(--color-text-heading);
   }
 
   :where(.bg-inverted.text-inverted svg) {
-    color: currentColor !important;
+    color: currentColor;
   }
 
   .section-container {
@@ -301,7 +406,7 @@
   }
 
   .font-num {
-    font-family: var(--font-num) !important;
+    font-family: var(--font-num);
     font-variant-numeric: lining-nums tabular-nums;
   }
 
@@ -318,7 +423,7 @@
   .surface-field { border-radius: var(--radius-field); }
 
   .panel-surface {
-    background: #fff;
+    background: var(--color-bg-surface);
     border: 1px solid var(--gray-200);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-raised);
@@ -333,6 +438,88 @@
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Shared panel table contract for legacy admin/seller screens. */
+  .panel-layout .premium-card {
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .panel-layout .premium-card table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    direction: rtl;
+  }
+
+  .panel-layout .premium-card thead tr {
+    background: var(--color-bg-light);
+  }
+
+  .panel-layout .premium-card th,
+  .panel-layout .premium-card td {
+    padding: .85rem 1rem;
+    text-align: right;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+
+  .panel-layout .premium-card th {
+    color: var(--color-text-muted);
+    font-size: .78rem;
+    font-weight: 800;
+  }
+
+  .panel-layout .premium-card td {
+    color: var(--color-text-body);
+    font-size: .86rem;
+  }
+
+  .panel-layout .premium-card tbody tr {
+    transition: background-color .16s ease;
+  }
+
+  .panel-layout .premium-card tbody tr:hover {
+    background: var(--color-bg-light);
+  }
+
+  .panel-layout .premium-card tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .panel-layout .panel-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-surface);
+    direction: rtl;
+  }
+
+  .panel-layout .panel-toolbar > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .65rem;
+  }
+
+  @media (max-width: 640px) {
+    .panel-layout .panel-toolbar,
+    .panel-layout .panel-toolbar > div {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .panel-layout .panel-toolbar > div,
+    .panel-layout .panel-toolbar :where(input, select) {
+      width: 100%;
+    }
   }
 
   .premium-card:hover {

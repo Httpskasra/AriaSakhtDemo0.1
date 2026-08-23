@@ -92,7 +92,7 @@ onMounted(() => { if (canRead.value) void fetchOrders(); });
 
 <style scoped>
 .orders-page { display: grid; gap: 1rem; }
-.ltr { direction: ltr; text-align: left !important; }
+.ltr { direction: ltr; text-align: left; }
 .status-filter { min-width: 12rem; }
 .order-details { display:grid; gap:1rem; }
 .order-details h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; }

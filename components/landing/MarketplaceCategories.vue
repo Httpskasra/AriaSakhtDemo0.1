@@ -70,7 +70,7 @@ const categoryCount = (category: Category) => {
   justify-content: center;
   gap: .75rem;
   padding: 1.5rem;
-  color: #475569;
+  color: var(--color-text-body);
   font-size: .875rem;
 }
 

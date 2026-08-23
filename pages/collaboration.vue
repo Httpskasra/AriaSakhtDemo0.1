@@ -1,81 +1,80 @@
 <template>
-    <div
-      class="bg-gradient-to-br from-[#f8fafc] via-[#f8fafc] to-[#e0e7ef] pt-12 pb-8 text-center rounded-b-3xl shadow-lg">
-      <div class="flex flex-col items-center">
-        <UIcon name="i-lucide-handshake" class="text-primary size-icon-hero mb-2" />
-        <h1 class="text-3xl font-bold text-[var(--color-text-heading)] mb-2">همکاری با ما</h1>
-        <p class="text-[var(--color-text-body)] text-base">
+    <div class="collaboration-hero">
+      <div class="collaboration-hero__content">
+        <UIcon name="i-lucide-handshake" class="collaboration-hero__icon" />
+        <h1>همکاری با ما</h1>
+        <p>
           اگر صاحب کسب‌وکار هستید و تمایل به همکاری با تجاریس دارید، اطلاعات
           شرکت خود را ثبت کنید تا کارشناسان ما با شما تماس بگیرند.
         </p>
       </div>
     </div>
-    <div class="mx-auto mt-8 px-4 w-full md:w-3/4">
+    <div class="collaboration-content">
       <form
         @submit.prevent="submit"
-        class="premium-card p-8 flex flex-col gap-6">
+        class="collaboration-form premium-card">
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >نام شرکت</label
           >
           <input
             v-model="form.name"
             type="text"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="تجاریس" />
         </div>
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >ایمیل</label
           >
           <input
             v-model="form.email"
             type="email"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="email@example.com" />
         </div>
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >شماره تماس</label
           >
           <input
             v-model="form.phone"
             type="text"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="09123456789" />
         </div>
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >کدملی</label
           >
           <input
             v-model="form.nationalId"
             type="text"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="1234567891" />
         </div>
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >شماره ثبت شرکت</label
           >
           <input
             v-model="form.registrationNumber"
             type="text"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="10002110222" />
         </div>
         <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >آدرس</label
           >
           <input
             v-model="form.address"
             type="text"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            class="collaboration-form__input"
             placeholder="شیراز،..." />
         </div>
         <!-- <div>
-          <label class="block mb-2 text-right font-semibold text-primary"
+          <label class="collaboration-form__label"
             >فعال است؟</label
           >
           <select
@@ -94,13 +93,13 @@
             ref="fileInput"
             type="file"
             accept="image/*"
-            class="w-full rounded-field border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-primary transition" />
+            class="collaboration-form__input" />
         </div>
 
-        <div v-if="error" class="text-red-600 text-sm text-right">
+        <div v-if="error" class="collaboration-feedback collaboration-feedback--error">
           {{ error }}
         </div>
-        <div v-if="success" class="text-green-600 text-sm text-right">
+        <div v-if="success" class="collaboration-feedback collaboration-feedback--success">
           {{ success }}
         </div>
 
@@ -207,7 +206,29 @@ async function submit() {
 </script>
 
 <style scoped>
-* {
-  font-family: var(--font-yekan);
+.collaboration-hero {
+  padding: 3rem 1rem 2rem;
+  border-radius: var(--radius-none) var(--radius-none) var(--radius-dialog) var(--radius-dialog);
+  background: linear-gradient(135deg, var(--color-bg-light), var(--color-bg-surface));
+  box-shadow: var(--shadow-raised);
+  text-align: center;
+}
+
+.collaboration-hero__content { display: grid; justify-items: center; gap: .5rem; max-width: 52rem; margin-inline: auto; }
+.collaboration-hero__icon { color: var(--color-brand-blue); font-size: var(--spacing-icon-empty-state); }
+.collaboration-hero h1 { color: var(--color-text-heading); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.collaboration-hero p { color: var(--color-text-body); line-height: 1.9; }
+.collaboration-content { width: min(100% - 2rem, 52rem); margin: 2rem auto 0; }
+.collaboration-form { display: grid; gap: 1.25rem; padding: clamp(1.25rem, 4vw, 2rem); }
+.collaboration-form__label { display: block; margin-bottom: .45rem; color: var(--color-brand-blue); font-size: .875rem; font-weight: 700; text-align: right; }
+.collaboration-form__input { width: 100%; min-height: var(--control-height-md); border: 1px solid var(--color-border); border-radius: var(--radius-field); padding: .75rem; background: var(--color-bg-surface); color: var(--color-text-heading); transition: border-color .16s ease, box-shadow .16s ease; }
+.collaboration-form__input:focus-visible { border-color: var(--color-brand-blue); outline: none; box-shadow: var(--focus-ring); }
+.collaboration-feedback { font-size: .875rem; text-align: right; }
+.collaboration-feedback--error { color: var(--color-danger-fg); }
+.collaboration-feedback--success { color: var(--color-success-fg); }
+
+@media (max-width: 640px) {
+  .collaboration-hero { padding-block: 2rem 1.5rem; }
+  .collaboration-content { width: min(100% - 1rem, 52rem); margin-top: 1rem; }
 }
 </style>
