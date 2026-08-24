@@ -21,13 +21,27 @@ const popularCategories = computed(() => topCategories.value.slice(0, 5));
 const categoryPath = (category: Category) => ({ path: "/products", query: { categoryIds: getCategoryFilterIds(category, categories.value) } });
 const cartCountLabel = computed(() => cartStore.itemCount > 99 ? "99+" : String(cartStore.itemCount));
 const supportPhone = "021-12345678";
+let scrollFrame = 0;
 
 function handleCartClick() { return isAuthenticated.value ? navigateTo("/dashboard/account/cart") : setStep("signin"); }
 function closeMobileMenu() { mobileMenuOpen.value = false; }
 function openAuth() { setStep("signin"); closeMobileMenu(); }
-function handleScroll() { isScrolledLocal.value = window.scrollY > 24; }
+function handleScroll() {
+  if (scrollFrame) return;
+  scrollFrame = window.requestAnimationFrame(() => {
+    const scrollY = Math.max(window.scrollY, 0);
+    // Hysteresis prevents the collapsing header from toggling itself while
+    // the browser is recalculating the sticky layout near the threshold.
+    const next = isScrolledLocal.value ? scrollY > 8 : scrollY > 48;
+    if (next !== isScrolledLocal.value) isScrolledLocal.value = next;
+    scrollFrame = 0;
+  });
+}
 onMounted(() => { handleScroll(); window.addEventListener("scroll", handleScroll, { passive: true }); });
-onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
+  if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+});
 </script>
 
 <template>
@@ -63,7 +77,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
         <UButton id="mobile-site-menu-trigger" icon="i-lucide-menu" variant="soft" color="primary" square class="mobile-header__menu-button" aria-label="باز کردن منوی سایت" aria-controls="mobile-site-drawer" :aria-expanded="mobileMenuOpen" @click="mobileMenuOpen = true" />
       </div>
       <div class="mobile-header__search"><GlobalProductSearch variant="header" class="w-full" /></div>
-      <nav v-if="popularCategories.length && !effectiveScrolled" class="mobile-header__categories" aria-label="دسته‌بندی‌های محبوب فروشگاه">
+      <nav v-if="popularCategories.length" class="mobile-header__categories" aria-label="دسته‌بندی‌های محبوب فروشگاه">
         <NuxtLink to="/products" class="mobile-header__category-link mobile-header__category-link--all" :aria-current="route.path === '/products' ? 'page' : undefined">همه دسته‌بندی‌ها</NuxtLink>
         <NuxtLink v-for="category in popularCategories" :key="getCategoryId(category)" :to="categoryPath(category)" class="mobile-header__category-link">{{ category.name }}</NuxtLink>
       </nav>
@@ -81,7 +95,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
 </template>
 
 <style scoped>
-.site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; border-bottom:1px solid var(--color-border); background:var(--color-bg-surface-translucent); backdrop-filter:blur(14px); }
+.site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; isolation:isolate; border-bottom:1px solid var(--color-border); background:var(--color-bg-surface-translucent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
 .site-header--scrolled .desktop-header__trust { display:none; }
 .site-header--scrolled .desktop-header__main-inner { min-height:4.25rem; }
 .desktop-header__trust { background:var(--color-text-heading); color:var(--color-bg-surface); }
