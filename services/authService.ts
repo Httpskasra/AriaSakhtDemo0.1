@@ -1,7 +1,7 @@
 // services/authService.ts
 import axios from "axios";
 import { useAuthStore } from "~/stores/auth";
-import { useRequestHeaders, useRuntimeConfig } from "#app";
+import { useCookie, useRequestHeaders, useRuntimeConfig } from "#app";
 import { useApiClient } from '~/services/apiClient';
 
 export interface RefreshTokenRequestDto {
@@ -44,6 +44,17 @@ function readCookie(cookieHeader: string | undefined, name: string): string | nu
   return value ? decodeURIComponent(value) : null;
 }
 
+function upsertCookie(cookieHeader: string | undefined, name: string, value: string): string {
+  const cookies = (cookieHeader || '')
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !part.startsWith(`${name}=`));
+
+  cookies.push(`${name}=${encodeURIComponent(value)}`);
+  return cookies.join('; ');
+}
+
 async function performRefresh(
   authStore: ReturnType<typeof useAuthStore>,
 ): Promise<string> {
@@ -52,11 +63,25 @@ async function performRefresh(
   const incomingCookie = process.server
     ? useRequestHeaders(["cookie"]).cookie
     : undefined;
-  const cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
+  let cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
+
+  // Create this before the first await so the Nuxt SSR context is captured
+  // while the request composable context is active. The value is written only
+  // when SSR had to mint a missing CSRF cookie.
+  const serverCsrfCookie = process.server
+    ? useCookie<string | null>('csrfToken', {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 48 * 60 * 60,
+    })
+    : null;
 
   const browserCookie = process.client && typeof document !== 'undefined' ? document.cookie : undefined;
-  let csrfToken = authStore.getCsrfToken()
-    || readCookie(incomingCookie || browserCookie, 'csrfToken');
+  // The backend validates the double-submit pair. A token in Pinia/Nuxt state
+  // without its matching cookie is not usable, so the cookie is authoritative.
+  let csrfToken = readCookie(incomingCookie || browserCookie, 'csrfToken');
   if (!csrfToken) {
     const csrfResponse = await axios.get<{ csrfToken: string }>(
       `${apiBase}/auth/csrf`,
@@ -64,9 +89,16 @@ async function performRefresh(
     );
     csrfToken = csrfResponse.data.csrfToken;
     authStore.setCsrfToken(csrfToken);
+
+    if (process.server) {
+      // Axios on the server does not maintain a browser-like cookie jar. Add
+      // the freshly issued CSRF cookie to the internal refresh request too.
+      const cookieHeader = upsertCookie(incomingCookie, 'csrfToken', csrfToken);
+      cookieHeaders = { Cookie: cookieHeader };
+      if (serverCsrfCookie) serverCsrfCookie.value = csrfToken;
+    }
   } else {
-    // A fresh Pinia instance after SSR/navigation can still use the CSRF
-    // cookie issued with the refresh token. Do not rotate it unnecessarily.
+    // Reuse the CSRF cookie already present on the incoming request/browser.
     authStore.setCsrfToken(csrfToken);
   }
 

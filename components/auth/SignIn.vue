@@ -51,7 +51,6 @@ const handleSubmit = async () => {
 };
 
 const closeModal = () => {
-  flow.value = null;
   setStep(null);
 };
 </script>

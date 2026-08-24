@@ -63,13 +63,6 @@
           {{ loading ? "در حال ارسال..." : "عضویت" }}
         </UButton>
 
-        <!-- خطای تطابق -->
-        <span
-          class="auth-input-error"
-          :class="{ inline: matchingError, hidden: !matchingError }">
-          کد ملی وارد شده با شماره تماس مطابقت ندارد
-        </span>
-
         <!-- خطای سرور -->
         <span
           class="auth-input-error"
@@ -97,7 +90,6 @@ const acceptedRules = ref(false);
 
 const meliError = ref(false);
 const phoneError = ref(false);
-const matchingError = ref(false);
 const serverError = ref(false);
 const serverErrorMessage = ref("");
 const loading = ref(false);
@@ -121,14 +113,6 @@ function validatePhone() {
   return valid;
 }
 
-// چک تطابق شماره و کد ملی (مثال ساده، باید API بهتر باشه)
-function checkMatching() {
-  // فرض کن فقط شماره شروع‌شده با 09 و کد ملی معتبر رو تطابق می‌ده
-  // اگر منطق پیچیده‌تری داری جایگزین کن
-  matchingError.value = false;
-  return true;
-}
-
 const handleSubmit = async () => {
   serverError.value = false;
   serverErrorMessage.value = "";
@@ -136,9 +120,8 @@ const handleSubmit = async () => {
   const meliValid = validateMeli();
   const phoneValid = validatePhone();
   const rulesAccepted = acceptedRules.value;
-  const isMatching = checkMatching();
 
-  if (!meliValid || !phoneValid || !rulesAccepted || !isMatching) {
+  if (!meliValid || !phoneValid || !rulesAccepted) {
     return;
   }
 
@@ -175,7 +158,6 @@ const handleSubmit = async () => {
 };
 
 const closeModal = () => {
-  flow.value = null;
   setStep(null);
 };
 </script>

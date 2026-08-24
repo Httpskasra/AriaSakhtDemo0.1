@@ -7,9 +7,16 @@ export const useAuthData = () => {
   const nationalId = useState<string>("auth:national-id", () => "");
   const flow = useState<AuthFlow>("auth:flow", () => null);
 
+  const clearAuthData = () => {
+    phoneNumber.value = "";
+    nationalId.value = "";
+    flow.value = null;
+  };
+
   return {
     phoneNumber,
     nationalId,
     flow,
+    clearAuthData,
   };
 };

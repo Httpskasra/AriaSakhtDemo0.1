@@ -35,7 +35,7 @@ export default defineNuxtPlugin({
   api.interceptors.request.use(
     (requestConfig) => {
       const accessToken = authStore.getAccessToken();
-      if (accessToken) {
+      if (accessToken && !requestConfig.headers?.Authorization) {
         requestConfig.headers = requestConfig.headers || {};
         requestConfig.headers.Authorization = `Bearer ${accessToken}`;
       }
@@ -64,6 +64,7 @@ export default defineNuxtPlugin({
         error.response?.status === 401 &&
         originalRequest &&
         !originalRequest._retry &&
+        !originalRequest._skipAuthRefresh &&
         !isAuthBootstrapRequest
       ) {
         originalRequest._retry = true;

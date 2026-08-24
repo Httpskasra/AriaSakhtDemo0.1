@@ -48,6 +48,7 @@ const sections: Array<{ label: string; items: PanelNavDefinition[] }> = [
 
 export function usePanelNavigation() {
   const { user, clearUser } = useUser();
+  const { markPending, clearPending } = usePendingLogout();
   const { hasPermission } = usePermissions();
   const authStore = useAuthStore();
   const router = useRouter();
@@ -109,8 +110,11 @@ export function usePanelNavigation() {
   async function handleLogOut() {
     try {
       await $axios.post("/auth/signout");
+      clearPending();
     } catch (error) {
-      // Session cleanup must complete even if the API is unavailable.
+      // The HttpOnly refresh cookie cannot be removed by client JavaScript.
+      // Persist the intent so the next app bootstrap retries server logout.
+      markPending();
       console.warn("Sign out request failed", error);
     } finally {
       authStore.clearTokens();

@@ -4,6 +4,7 @@ import { useCartStore } from '~/stores/cart';
 import { useWalletStore } from '~/stores/wallet';
 import { useNotificationsStore } from '~/stores/notifications';
 import { useFavoritesStore } from '~/stores/favorites';
+import { useAuthStep } from '~/composables/useAuthStep';
 
 export const useAuthStore = defineStore("auth", () => {
   // Access and CSRF tokens are request/session state, not persistent cookies.
@@ -43,6 +44,9 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const clearTokens = () => {
+    // Auth-flow state can contain the national ID and OTP phone number even
+    // when token state was already cleared by another tab/interceptor.
+    useAuthStep().setStep(null);
     if (sessionCleared.value && !accessToken.value && !csrfToken.value) return;
     accessToken.value = null;
     csrfToken.value = null;

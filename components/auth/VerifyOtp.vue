@@ -68,6 +68,7 @@ import { useAuthStep } from "@/composables/useAuthStep";
 import { useAuthData } from "@/composables/useAuthData";
 import { useAuthStore } from "@/stores/auth";
 import { useUser } from "@/composables/useUser";
+import { usePendingLogout } from "@/composables/usePendingLogout";
 import { toEnglishDigits } from "@/utils/PhoneNumber";
 import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
@@ -85,6 +86,7 @@ const errorMessage = ref("");
 const api = useApiClient();
 const toast = useToast();
 const { fetchUser } = useUser();
+const { clearPending: clearPendingLogout } = usePendingLogout();
 
 onMounted(() => {
   startTimer();
@@ -135,7 +137,7 @@ const resendOtp = async () => {
     } else {
       await api.post("/auth/signin", { phoneNumber: phoneNumber.value });
     }
-  } catch (err) {
+  } catch {
     toast.add({ title: "ارسال دوباره کد ناموفق بود", description: "لطفاً دوباره تلاش کنید.", color: "error" });
   } finally {
     loading.value = false;
@@ -201,16 +203,22 @@ const verifyOtp = async () => {
     });
 
     if (response.status === 200 || response.status === 201) {
+      // A successful new login supersedes any logout retry from an older
+      // session; otherwise the pending marker could log the new session out.
+      clearPendingLogout();
+      const sessionResolved = await fetchUser(true, response.data.accessToken);
+      if (!sessionResolved) {
+        // The token is still only a local variable. Keep the refresh cookie
+        // available for a later bootstrap/retry, but do not commit a partial
+        // access-token session while /auth/me has not resolved.
+        errorMessage.value = "ورود انجام شد اما دریافت حساب کاربری ناموفق بود. لطفاً دوباره تلاش کنید.";
+        return;
+      }
       const authStore = useAuthStore();
       authStore.setTokens(
         response.data.accessToken,
         response.data.csrfToken
       );
-      const sessionResolved = await fetchUser(true);
-      if (!sessionResolved) {
-        errorMessage.value = "ورود انجام شد اما دریافت حساب کاربری ناموفق بود. لطفاً دوباره تلاش کنید.";
-        return;
-      }
       emit("onVerified");
     } else {
       errorMessage.value = "کد واردشده معتبر نیست. کد جدید دریافت کنید و دوباره تلاش کنید.";
@@ -228,7 +236,6 @@ const verifyOtp = async () => {
 const { setStep } = useAuthStep();
 
 const closeModal = () => {
-  flow.value = null;
   setStep(null);
 };
 </script>
