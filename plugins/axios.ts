@@ -74,11 +74,20 @@ export default defineNuxtPlugin((nuxtApp) => {
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          authStore.clearTokens();
-          useUser().clearUser();
-          if (process.client && window.location.pathname.startsWith("/dashboard")) {
-            redirectPromise ??= navigateTo("/", { replace: true });
-            await redirectPromise;
+          const refreshStatus = (refreshError as AxiosError)?.response?.status
+            ?? (refreshError as { info?: { status?: number } })?.info?.status;
+          const sessionIsInvalid = refreshStatus === 400 || refreshStatus === 401 || refreshStatus === 403;
+
+          // A timeout, network outage or 5xx response must not destroy a
+          // valid local session. Only an explicit invalid refresh session is
+          // allowed to clear stores and redirect the user.
+          if (sessionIsInvalid) {
+            authStore.clearTokens();
+            useUser().clearUser();
+            if (process.client && window.location.pathname.startsWith("/dashboard")) {
+              redirectPromise ??= navigateTo("/", { replace: true });
+              await redirectPromise;
+            }
           }
           return Promise.reject(refreshError);
         }

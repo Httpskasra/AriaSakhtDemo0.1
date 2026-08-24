@@ -3,6 +3,11 @@ import { useState } from "#app";
 import { computed } from "vue";
 import { useApiClient } from '~/services/apiClient';
 
+// The auth bootstrap plugin and protected-route middleware can call useUser()
+// during the same hydration cycle. Keep one request per Nuxt runtime so they
+// cannot race each other and invalidate a valid session.
+let clientUserRequest: Promise<boolean> | null = null;
+
 export const useUser = () => {
   const user = useState<User | null>("user", () => null);
   const isUserLoading = useState<boolean>("user-loading", () => true);
@@ -12,9 +17,9 @@ export const useUser = () => {
   // merely because /auth/me was temporarily unavailable.
   const authUnavailable = useState<boolean>("user-auth-unavailable", () => false);
   const requestVersion = useState<number>("user-request-version", () => 0);
-  // Keep one in-flight profile request for the whole app. The bootstrap
-  // plugin and route middleware can run together during hydration.
-  let userRequest: Promise<boolean> | null = null;
+  // Server-side requests must remain local to this composable invocation so
+  // one SSR request can never share a user/profile Promise with another.
+  let serverUserRequest: Promise<boolean> | null = null;
   const normalizeUser = (data: User & { id?: string; _id?: string }): User => {
     const rawId = data?.userId || data?.id || data?._id || "";
     return {
@@ -45,7 +50,8 @@ export const useUser = () => {
       return true;
     }
 
-    if (!force && userRequest) return userRequest;
+    const activeRequest = process.client ? clientUserRequest : serverUserRequest;
+    if (!force && activeRequest) return activeRequest;
 
     const request = (async () => {
       isUserLoading.value = true;
@@ -80,11 +86,14 @@ export const useUser = () => {
         }
       }
     })();
-    userRequest = request;
-    request.then(
-      () => { if (userRequest === request) userRequest = null; },
-      () => { if (userRequest === request) userRequest = null; },
-    );
+    if (process.client) clientUserRequest = request;
+    else serverUserRequest = request;
+
+    const clearRequest = () => {
+      if (process.client && clientUserRequest === request) clientUserRequest = null;
+      if (process.server && serverUserRequest === request) serverUserRequest = null;
+    };
+    request.then(clearRequest, clearRequest);
     return request;
   };
 
