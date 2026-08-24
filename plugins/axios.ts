@@ -9,7 +9,9 @@ import {
   navigateTo,
 } from "#app";
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin({
+  name: "axios",
+  setup(nuxtApp) {
   const config = useRuntimeConfig();
   const authStore = useAuthStore();
   const incomingCookie = process.server
@@ -98,5 +100,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   );
 
   // Provide axios instance globally
-  nuxtApp.provide("axios", api);
+    nuxtApp.provide("axios", api);
+  },
 });

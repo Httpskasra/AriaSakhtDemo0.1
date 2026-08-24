@@ -8,6 +8,8 @@ useHead({ title: "داشبورد | علاقه‌مندی‌ها" });
 const favorites = useFavoritesStore();
 const search = ref("");
 const removingId = ref<string | null>(null);
+const authLoading = ref(true);
+const { fetchUser } = useUser();
 
 const productName = (item: Favorite) => item.product?.name || "محصول ذخیره‌شده";
 const productLink = (item: Favorite) => {
@@ -36,7 +38,11 @@ const hasFilters = computed(() => Boolean(search.value.trim()));
 const clearFilters = () => { search.value = ""; };
 
 onMounted(() => {
-  if (!favorites.initialized) void fetchFavorites();
+  void (async () => {
+    const authenticated = await fetchUser();
+    authLoading.value = false;
+    if (authenticated && !favorites.initialized) await fetchFavorites();
+  })();
 });
 </script>
 
@@ -47,7 +53,7 @@ onMounted(() => {
           <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="favorites.loading" aria-label="به‌روزرسانی علاقه‌مندی‌ها" @click="fetchFavorites">به‌روزرسانی</UButton>
         </template>
       </PanelPageHeader>
-      <SharedAsyncState v-if="favorites.loading" state="loading" />
+      <SharedAsyncState v-if="authLoading || favorites.loading" state="loading" />
       <SharedAsyncState v-else-if="favorites.error" state="error" :message="favorites.error" @retry="fetchFavorites" />
       <SharedAsyncState v-else-if="!favorites.items.length" state="empty" title="هنوز محصولی ذخیره نشده است" message="محصولات موردعلاقه‌تان را برای دسترسی سریع اینجا ذخیره کنید." />
       <template v-else>

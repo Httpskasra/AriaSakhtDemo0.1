@@ -65,6 +65,7 @@ const search = ref("");
 const typeFilter = ref("");
 const statusFilter = ref("");
 const selectedTransaction = ref<Transaction | null>(null);
+let transactionsRequest: Promise<void> | null = null;
 const typeOptions = [{ label: "همه انواع", value: "" }, { label: "واریز", value: "credit" }, { label: "برداشت", value: "debit" }, { label: "انتقال", value: "transfer" }];
 const statusOptions = [{ label: "همه وضعیت‌ها", value: "" }, { label: "در انتظار", value: "pending" }, { label: "موفق", value: "success" }, { label: "ناموفق", value: "failed" }];
 const hasFilters = computed(() => Boolean(search.value.trim() || typeFilter.value || statusFilter.value));
@@ -79,11 +80,22 @@ const filteredTransactions = computed(() => {
 });
 
 async function fetchTransactions() {
-  if (!canRead.value) return;
-  pending.value = true; error.value = "";
-  try { transactions.value = await getTransactions(); }
-  catch (requestError) { transactions.value = []; error.value = toUserFacingError(requestError, "دریافت تراکنش‌ها انجام نشد.").message; }
-  finally { pending.value = false; }
+  if (transactionsRequest) return transactionsRequest;
+
+  const request = (async () => {
+    if (!canRead.value) return;
+    pending.value = true; error.value = "";
+    try { transactions.value = await getTransactions(); }
+    catch (requestError) { transactions.value = []; error.value = toUserFacingError(requestError, "دریافت تراکنش‌ها انجام نشد.").message; }
+    finally { pending.value = false; }
+  })();
+
+  transactionsRequest = request;
+  try {
+    await request;
+  } finally {
+    if (transactionsRequest === request) transactionsRequest = null;
+  }
 }
 function clearFilters() { search.value = ""; typeFilter.value = ""; statusFilter.value = ""; }
 function formatAmount(amount: unknown) { const value = Number(amount); return Number.isFinite(value) ? `${value.toLocaleString("fa-IR")} ریال` : "—"; }

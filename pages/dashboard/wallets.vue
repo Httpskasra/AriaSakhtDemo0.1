@@ -94,6 +94,7 @@ const debitLoading = ref(false);
 const errorMsg = ref("");
 const creditForm = ref({ amount: 0 });
 const debitForm = ref({ amount: 0, description: "" });
+let walletRequest: Promise<void> | null = null;
 
 const filteredTransactions = computed(() => {
   const query = search.value.trim().toLocaleLowerCase();
@@ -117,7 +118,16 @@ async function fetchTransactions() {
   catch (error) { transactions.value = []; transactionsError.value = toUserFacingError(error, "دریافت تراکنش‌ها انجام نشد.").message; }
   finally { transactionsLoading.value = false; }
 }
-async function refreshWallet() { await Promise.all([fetchWallet(), fetchTransactions()]); }
+async function refreshWallet() {
+  if (walletRequest) return walletRequest;
+  const request = Promise.all([fetchWallet(), fetchTransactions()]).then(() => undefined);
+  walletRequest = request;
+  try {
+    await request;
+  } finally {
+    if (walletRequest === request) walletRequest = null;
+  }
+}
 
 function openCreditModal() { if (!canUpdate.value) return; creditForm.value.amount = 0; errorMsg.value = ""; showCreditModal.value = true; }
 function closeCreditModal() { if (creditLoading.value) return; showCreditModal.value = false; errorMsg.value = ""; }

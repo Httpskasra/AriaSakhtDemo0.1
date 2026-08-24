@@ -446,6 +446,13 @@ onMounted(fetchTickets);
   min-height: var(--control-height-md);
 }
 
+.filter-panel :deep(input),
+.filter-panel :deep(select),
+.filter-panel :deep(button) {
+  max-width: 100%;
+  min-width: 0;
+}
+
 .tickets-container {
   display: grid;
   grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
@@ -511,6 +518,7 @@ onMounted(fetchTickets);
 .ticket-meta,
 .ticket-badges {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: .5rem;
 }
@@ -566,6 +574,8 @@ onMounted(fetchTickets);
 }
 
 .details-header {
+  display: grid;
+  gap: .75rem;
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -711,9 +721,21 @@ onMounted(fetchTickets);
 
 .create-ticket-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   gap: .65rem;
   padding-top: .35rem;
+}
+
+@media (max-width: 900px) {
+  .tickets-container {
+    grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr);
+  }
+
+  .tickets-list,
+  .ticket-details {
+    max-height: 36rem;
+  }
 }
 
 @media (max-width: 767px) {
@@ -731,6 +753,7 @@ onMounted(fetchTickets);
 
   .ticket-details {
     max-height: none;
+    min-height: 18rem;
   }
 
   .info-grid {
@@ -747,6 +770,28 @@ onMounted(fetchTickets);
 
   .btn-submit-comment {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .tickets-list,
+  .ticket-details,
+  .filter-panel {
+    padding: .75rem;
+  }
+
+  .ticket-card {
+    padding: .75rem;
+  }
+
+  .details-header h2 {
+    font-size: 1rem;
+  }
+
+  .comment-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .25rem;
   }
 }
 </style>

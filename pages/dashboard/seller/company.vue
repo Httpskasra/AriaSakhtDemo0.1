@@ -71,6 +71,7 @@ const showEdit = ref(false);
 const saving = ref(false);
 const formError = ref("");
 const form = ref({ name: "", email: "", phone: "", registrationNumber: "", address: "" });
+let companyRequest: Promise<void> | null = null;
 
 const companyId = () => {
   const current = user.value as (typeof user.value & { companyId?: string; profile?: { companyId?: string } }) | null;
@@ -78,12 +79,23 @@ const companyId = () => {
 };
 
 async function fetchCompany() {
-  const id = companyId();
-  if (!id) { company.value = null; errorMessage.value = ""; return; }
-  loading.value = true; errorMessage.value = "";
-  try { company.value = await getMyCompany(id); }
-  catch (error) { company.value = null; errorMessage.value = toUserFacingError(error, "دریافت اطلاعات شرکت انجام نشد.").message; }
-  finally { loading.value = false; }
+  if (companyRequest) return companyRequest;
+
+  const request = (async () => {
+    const id = companyId();
+    if (!id) { company.value = null; errorMessage.value = ""; return; }
+    loading.value = true; errorMessage.value = "";
+    try { company.value = await getMyCompany(id); }
+    catch (error) { company.value = null; errorMessage.value = toUserFacingError(error, "دریافت اطلاعات شرکت انجام نشد.").message; }
+    finally { loading.value = false; }
+  })();
+
+  companyRequest = request;
+  try {
+    await request;
+  } finally {
+    if (companyRequest === request) companyRequest = null;
+  }
 }
 
 function statusLabel(status?: Company["status"]) { return ({ active: "فعال", pending: "در انتظار بررسی", suspended: "معلق", rejected: "رد شده" } as Record<string, string>)[status || ""] || "نامشخص"; }
@@ -105,10 +117,10 @@ watch(isReady, (ready) => { if (ready) fetchCompany(); }, { once: true });
 
 <style scoped>
 .seller-company-page, .company-content { display:grid; gap:1rem; }
-.company-summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.25rem; }
-.company-summary__identity { display:flex; align-items:center; gap:1rem; min-width:0; }
+.company-summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-width:0; padding:1.25rem; }
+.company-summary__identity { display:flex; align-items:center; gap:1rem; min-width:0; flex:1 1 auto; }
 .company-summary h2, .company-details h2, .company-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight:800; }
-.company-summary p, .company-details p { margin:.35rem 0 0; color:var(--color-text-muted); font-size:.85rem; }
+.company-summary p, .company-details p { margin:.35rem 0 0; color:var(--color-text-muted); font-size:.85rem; overflow-wrap:anywhere; }
 .company-logo { display:grid; place-items:center; width:4rem; height:4rem; flex:none; border-radius:var(--radius-field); object-fit:cover; background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.75rem; }
 .company-details { padding:1.25rem; }
 .section-heading { margin-bottom:1rem; }
@@ -119,9 +131,22 @@ watch(isReady, (ready) => { if (ready) fetchCompany(); }, { once: true });
 .details-grid dd { margin:.4rem 0 0; color:var(--color-text-heading); font-weight:700; overflow-wrap:anywhere; }
 .company-form { display:grid; gap:1rem; direction:rtl; }
 .company-form h2 { padding-inline-end:2.5rem; }
-.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; min-width:0; }
 .form-grid__wide { grid-column:1/-1; }
 .form-error { margin:0; padding:.7rem; color:var(--color-danger-fg); background:var(--color-danger-bg); border-radius:var(--radius-field); }
-.ltr { direction:ltr; text-align:right; }
-@media (max-width:640px) { .company-summary { align-items:flex-start; flex-direction:column; } .details-grid, .form-grid { grid-template-columns:1fr; } .details-grid__wide, .form-grid__wide { grid-column:auto; } .modal-actions { flex-direction:column-reverse; } }
+.ltr { direction:ltr; text-align:right; overflow-wrap:anywhere; }
+@media (max-width:720px) {
+  .company-summary { align-items:flex-start; flex-direction:column; }
+  .company-summary > :deep(.status-pill) { align-self:flex-start; }
+  .details-grid, .form-grid { grid-template-columns:1fr; }
+  .details-grid__wide, .form-grid__wide { grid-column:auto; }
+}
+@media (max-width:640px) {
+  .company-summary, .company-details { padding:1rem; }
+  .company-summary__identity { width:100%; }
+  .company-summary__identity > div { min-width:0; }
+  .company-summary h2 { overflow-wrap:anywhere; }
+  .modal-actions { flex-direction:column-reverse; align-items:stretch; }
+  .modal-actions :deep(button) { width:100%; }
+}
 </style>

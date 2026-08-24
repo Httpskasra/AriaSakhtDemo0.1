@@ -8,20 +8,37 @@ export const useFavoritesStore = defineStore('favorites', () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const initialized = ref(false);
+  let fetchRequest: Promise<void> | null = null;
+  let requestVersion = 0;
 
   const productIds = computed(() => new Set(items.value.map(item => item.productId)));
 
   async function fetch(): Promise<void> {
-    loading.value = true;
-    error.value = null;
+    if (fetchRequest) return fetchRequest;
+
+    const request = (async () => {
+      const currentRequest = ++requestVersion;
+      loading.value = true;
+      error.value = null;
+      try {
+        const nextItems = await listFavorites();
+        if (currentRequest !== requestVersion) return;
+        items.value = nextItems;
+        initialized.value = true;
+      } catch (requestError) {
+        if (currentRequest !== requestVersion) return;
+        error.value = toUserFacingError(requestError, 'دریافت علاقه‌مندی‌ها ممکن نیست.').message;
+        throw requestError;
+      } finally {
+        if (currentRequest === requestVersion) loading.value = false;
+      }
+    })();
+
+    fetchRequest = request;
     try {
-      items.value = await listFavorites();
-      initialized.value = true;
-    } catch (requestError) {
-      error.value = toUserFacingError(requestError, 'دریافت علاقه‌مندی‌ها ممکن نیست.').message;
-      throw requestError;
+      await request;
     } finally {
-      loading.value = false;
+      if (fetchRequest === request) fetchRequest = null;
     }
   }
 
@@ -38,7 +55,13 @@ export const useFavoritesStore = defineStore('favorites', () => {
     return true;
   }
 
-  function clear(): void { items.value = []; initialized.value = false; error.value = null; }
+  function clear(): void {
+    requestVersion += 1;
+    fetchRequest = null;
+    items.value = [];
+    initialized.value = false;
+    error.value = null;
+  }
 
   return { items, loading, error, initialized, productIds, fetch, toggle, clear };
 });

@@ -50,6 +50,11 @@ export const useUser = () => {
       return true;
     }
 
+    // Do not immediately repeat a failed auth bootstrap from every route
+    // middleware/page in the same outage window. A forced call (login or an
+    // explicit retry) can still attempt the request again.
+    if (!force && authUnavailable.value) return false;
+
     const activeRequest = process.client ? clientUserRequest : serverUserRequest;
     if (!force && activeRequest) return activeRequest;
 

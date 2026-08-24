@@ -6,7 +6,7 @@
       </template>
     </PanelPageHeader>
 
-    <SharedAsyncState v-if="loading" state="loading" />
+    <SharedAsyncState v-if="!isReady || loading" state="loading" />
     <SharedAsyncState v-else-if="loadError" state="error" :message="loadError" @retry="fetchCart" />
     <SharedAsyncState v-else-if="cartItems.length === 0" state="empty" title="سبد خرید خالی است" message="هنوز محصولی به سبد خرید اضافه نشده است.">
       <template #actions><UButton to="/products" icon="i-lucide-arrow-left">مشاهده محصولات</UButton></template>
@@ -99,7 +99,8 @@ interface CartItem {
 }
 
 const feedback = useFeedback();
-const { canCreate, canUpdate, canDelete } = useAccess(Resource.CARTS);
+const { fetchUser } = useUser();
+const { canCreate, canUpdate, canDelete, isReady } = useAccess(Resource.CARTS);
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
@@ -109,6 +110,7 @@ const showClearConfirm = ref(false);
 const updatingId = ref<string | null>(null);
 const removingId = ref<string | null>(null);
 const shippingCost = ref(0);
+let cartRequest: Promise<void> | null = null;
 
 const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
 const totalPrice = computed(() => cartItems.value.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0));
@@ -135,22 +137,33 @@ function normalizeCartItem(item: any): CartItem | null {
 }
 
 async function fetchCart() {
-  loading.value = true;
-  loadError.value = null;
+  if (cartRequest) return cartRequest;
+
+  const request = (async () => {
+    loading.value = true;
+    loadError.value = null;
+    try {
+      const { data: activeCart } = await getActiveCart();
+      let populatedCarts: Cart | Cart[] | null = null;
+      try { populatedCarts = (await getPopulatedCart()).data; } catch { /* The active-cart response is enough for an empty or legacy cart. */ }
+      const populatedCart = Array.isArray(populatedCarts)
+        ? populatedCarts.find((candidate) => candidate?._id === activeCart?._id || candidate?.status === "active")
+        : populatedCarts;
+      const data = populatedCart || activeCart;
+      cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
+    } catch (error) {
+      cartItems.value = [];
+      loadError.value = toUserFacingError(error, "دریافت سبد خرید انجام نشد.").message;
+    } finally {
+      loading.value = false;
+    }
+  })();
+
+  cartRequest = request;
   try {
-    const { data: activeCart } = await getActiveCart();
-    let populatedCarts: Cart | Cart[] | null = null;
-    try { populatedCarts = (await getPopulatedCart()).data; } catch { /* The active-cart response is enough for an empty or legacy cart. */ }
-    const populatedCart = Array.isArray(populatedCarts)
-      ? populatedCarts.find((candidate) => candidate?._id === activeCart?._id || candidate?.status === "active")
-      : populatedCarts;
-    const data = populatedCart || activeCart;
-    cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
-  } catch (error) {
-    cartItems.value = [];
-    loadError.value = toUserFacingError(error, "دریافت سبد خرید انجام نشد.").message;
+    await request;
   } finally {
-    loading.value = false;
+    if (cartRequest === request) cartRequest = null;
   }
 }
 
@@ -227,7 +240,10 @@ async function checkout() {
   }
 }
 
-onMounted(fetchCart);
+onMounted(async () => {
+  const authenticated = await fetchUser();
+  if (authenticated) await fetchCart();
+});
 
 defineExpose({ addToCart });
 </script>
