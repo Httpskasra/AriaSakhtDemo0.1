@@ -25,10 +25,23 @@ export interface Transaction {
 
 export interface CreditWalletDto {
   amount: number;
+  correlationId?: string;
 }
 
 export interface DebitWalletDto {
   amount: number;
+  correlationId?: string;
+}
+
+export interface WalletTopUpRequest {
+  amount: number;
+}
+
+export interface WalletTopUpResponse {
+  transactionId?: string;
+  localId?: string;
+  trackId?: string;
+  paymentUrl?: string;
 }
 
 /**
@@ -58,6 +71,7 @@ export async function creditWallet(
   const $axios = useApiClient();
   const { data } = await $axios.post("/wallets/credit", {
     amount: payload.amount,
+    ...(payload.correlationId ? { correlationId: payload.correlationId } : {}),
   });
   return data;
 }
@@ -68,6 +82,22 @@ export async function debitWallet(
   const $axios = useApiClient();
   const { data } = await $axios.post("/wallets/debit", {
     amount: payload.amount,
+    ...(payload.correlationId ? { correlationId: payload.correlationId } : {}),
   });
+  return data;
+}
+
+/**
+ * Starts an online wallet top-up. The wallet is credited only by the server
+ * after the Zibal callback is verified.
+ */
+export async function initiateWalletTopUp(
+  payload: WalletTopUpRequest,
+): Promise<WalletTopUpResponse> {
+  const $axios = useApiClient();
+  const { data } = await $axios.post<WalletTopUpResponse>(
+    "/payment/wallet/initiate",
+    { amount: payload.amount },
+  );
   return data;
 }

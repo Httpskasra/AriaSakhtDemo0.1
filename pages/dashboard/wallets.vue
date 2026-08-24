@@ -7,6 +7,11 @@
     <div class="wallet-overview">
       <div class="balance-card panel-surface">
         <SharedAsyncState v-if="!isReady || walletLoading" state="loading" :skeleton-rows="1" />
+        <div v-else-if="!canRead" class="permission-state" role="status">
+          <UIcon name="i-lucide-lock-keyhole" aria-hidden="true" />
+          <strong>دسترسی به کیف پول محدود است</strong>
+          <p>برای مشاهده موجودی و تراکنش‌ها، مجوز مشاهده کیف پول لازم است.</p>
+        </div>
         <SharedAsyncState v-else-if="walletError" state="error" :message="walletError" @retry="fetchWallet" />
         <div v-else class="balance-content">
           <div><span class="eyebrow">موجودی قابل استفاده</span><strong>{{ formatAmount(wallet?.balance) }}</strong><span class="currency">{{ wallet?.currency || "ریال" }}</span></div>
@@ -26,6 +31,11 @@
     <div class="transactions-section panel-surface">
       <div class="section-heading"><div><h2>تاریخچه تراکنش‌ها</h2><p>آخرین تغییرات موجودی کیف پول</p></div></div>
       <SharedAsyncState v-if="!isReady || transactionsLoading" state="loading" :skeleton-rows="5" />
+      <div v-else-if="!canRead" class="permission-state" role="status">
+        <UIcon name="i-lucide-lock-keyhole" aria-hidden="true" />
+        <strong>تاریخچه تراکنش‌ها قابل نمایش نیست</strong>
+        <p>مجوز مشاهده تراکنش‌های کیف پول برای این حساب فعال نیست.</p>
+      </div>
       <SharedAsyncState v-else-if="transactionsError" state="error" :message="transactionsError" @retry="fetchTransactions" />
       <template v-else>
         <PanelFilterBar><TableFilterInput v-model="search" placeholder="جستجو در شرح یا نوع تراکنش" aria-label="جستجوی تراکنش‌های کیف پول" /><UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton></PanelFilterBar>
@@ -50,7 +60,7 @@
   <BaseModal v-if="showCreditModal" title-id="credit-wallet-title" :busy="creditLoading" @close="closeCreditModal">
     <form class="wallet-form" @submit.prevent="creditWalletHandler">
       <h2 id="credit-wallet-title">شارژ کیف پول</h2>
-      <div class="form-field"><label for="credit-amount">مبلغ ({{ wallet?.currency || "ریال" }})</label><UInput id="credit-amount" v-model.number="creditForm.amount" type="number" min="1" required /></div>
+      <div class="form-field"><label for="credit-amount">مبلغ ({{ wallet?.currency || "ریال" }})</label><UInput id="credit-amount" v-model.number="creditForm.amount" type="number" min="1001" inputmode="numeric" required /><small>حداقل مبلغ شارژ آنلاین ۱۰۰۱ ریال است.</small></div>
       <p v-if="errorMsg" class="form-error" role="alert">{{ errorMsg }}</p>
       <div class="modal-actions"><UButton type="button" color="neutral" variant="soft" :disabled="creditLoading" @click="closeCreditModal">انصراف</UButton><UButton type="submit" :loading="creditLoading">شارژ کیف پول</UButton></div>
     </form>
@@ -59,7 +69,7 @@
   <BaseModal v-if="showDebitModal" title-id="debit-wallet-title" :busy="debitLoading" @close="closeDebitModal">
     <form class="wallet-form" @submit.prevent="debitWalletHandler">
       <h2 id="debit-wallet-title">برداشت از کیف پول</h2>
-      <div class="form-field"><label for="debit-amount">مبلغ ({{ wallet?.currency || "ریال" }})</label><UInput id="debit-amount" v-model.number="debitForm.amount" type="number" min="1" :max="wallet?.balance || 0" required /></div>
+      <div class="form-field"><label for="debit-amount">مبلغ ({{ wallet?.currency || "ریال" }})</label><UInput id="debit-amount" v-model.number="debitForm.amount" type="number" min="1" :max="wallet?.balance || 0" inputmode="numeric" required /></div>
       <div class="form-field"><label for="debit-description">شرح (اختیاری)</label><UTextarea id="debit-description" v-model="debitForm.description" :rows="3" /></div>
       <p v-if="errorMsg" class="form-error" role="alert">{{ errorMsg }}</p>
       <div class="modal-actions"><UButton type="button" color="neutral" variant="soft" :disabled="debitLoading" @click="closeDebitModal">انصراف</UButton><UButton type="submit" color="error" :loading="debitLoading">برداشت</UButton></div>
@@ -71,8 +81,9 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
-import { creditWallet, debitWallet, getTransactions, getWallet } from "~/services/walletService";
+import { debitWallet, getTransactions, getWallet, initiateWalletTopUp } from "~/services/walletService";
 import { toUserFacingError } from "~/services/apiClient";
+import { getValidatedPaymentUrl } from "~/utils/paymentRedirect";
 
 useHead({ title: "داشبورد | کیف پول" });
 
@@ -135,9 +146,15 @@ function openDebitModal() { if (!canUpdate.value) return; debitForm.value = { am
 function closeDebitModal() { if (debitLoading.value) return; showDebitModal.value = false; errorMsg.value = ""; }
 
 async function creditWalletHandler() {
-  if (!canUpdate.value || creditForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
+  if (!canUpdate.value || creditForm.value.amount < 1001) { errorMsg.value = "مبلغ شارژ باید بیشتر از ۱۰۰۰ ریال باشد."; return; }
   creditLoading.value = true; errorMsg.value = "";
-  try { await creditWallet({ amount: creditForm.value.amount }); await refreshWallet(); showCreditModal.value = false; feedback.success("شارژ انجام شد", "کیف پول با موفقیت شارژ شد."); }
+  try {
+    const response = await initiateWalletTopUp({ amount: creditForm.value.amount });
+    const paymentUrl = getValidatedPaymentUrl(response.paymentUrl);
+    if (!paymentUrl) throw new Error("آدرس درگاه پرداخت از سرور دریافت نشد.");
+    showCreditModal.value = false;
+    window.location.assign(paymentUrl);
+  }
   catch (error) { errorMsg.value = toUserFacingError(error, "شارژ کیف پول انجام نشد.").message; }
   finally { creditLoading.value = false; }
 }
@@ -145,7 +162,12 @@ async function debitWalletHandler() {
   if (!canUpdate.value || debitForm.value.amount <= 0) { errorMsg.value = "مبلغ باید بزرگ‌تر از صفر باشد."; return; }
   if ((wallet.value?.balance || 0) < debitForm.value.amount) { errorMsg.value = "موجودی کیف پول کافی نیست."; return; }
   debitLoading.value = true; errorMsg.value = "";
-  try { await debitWallet({ amount: debitForm.value.amount }); await refreshWallet(); showDebitModal.value = false; feedback.success("برداشت انجام شد", "درخواست برداشت با موفقیت ثبت شد."); }
+  try {
+    await debitWallet({ amount: debitForm.value.amount, correlationId: crypto.randomUUID() });
+    await refreshWallet();
+    showDebitModal.value = false;
+    feedback.success("برداشت انجام شد", "مبلغ از موجودی کیف پول کسر شد.");
+  }
   catch (error) { errorMsg.value = toUserFacingError(error, "برداشت از کیف پول انجام نشد.").message; }
   finally { debitLoading.value = false; }
 }
@@ -154,7 +176,7 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 </script>
 
 <style scoped>
-.wallet-page { display: grid; gap: 1rem; }
+.wallet-page { display: grid; gap: 1rem; min-width: 0; }
 .wallet-overview { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(18rem, .9fr); gap: 1rem; }
 .balance-card, .wallet-action-card, .transactions-section { padding: 1.25rem; }
 .balance-content { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 8rem; }
@@ -168,13 +190,26 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 .wallet-action-card p, .transactions-section p { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
 .wallet-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .65rem; }
 .muted-note { margin: 0; }
+.permission-state { display: grid; justify-items: center; gap: .5rem; min-height: 8rem; padding: 1.25rem; color: var(--color-text-muted); text-align: center; }
+.permission-state > :first-child { color: var(--color-warning-fg); font-size: 1.4rem; }
+.permission-state strong { color: var(--color-text-heading); }
+.permission-state p { max-width: 34rem; margin: 0; font-size: .85rem; }
 .section-heading { margin-bottom: 1rem; }
 .ltr { direction: ltr; text-align: right; }
 .long-text { display: block; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; }
 .wallet-form { display: grid; gap: 1rem; }
 .form-field { display: grid; gap: .4rem; }
 .form-field label { color: var(--color-text-heading); font-size: .85rem; font-weight: 600; }
+.form-field small { color: var(--color-text-muted); font-size: .75rem; }
 .form-error { margin: 0; padding: .65rem .75rem; color: var(--color-danger-fg); background: var(--color-danger-bg); border-radius: var(--radius-field); font-size: .82rem; }
 @media (max-width: 800px) { .wallet-overview { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .balance-card, .wallet-action-card, .transactions-section { padding: 1rem; } .balance-content { align-items: flex-start; } .wallet-actions { flex-direction: column; align-items: stretch; } .modal-actions { flex-direction: column-reverse; } }
+@media (max-width: 560px) {
+  .balance-card, .wallet-action-card, .transactions-section { padding: 1rem; }
+  .balance-content { align-items: flex-start; flex-direction: column-reverse; }
+  .balance-content > div { width: 100%; }
+  .wallet-actions { flex-direction: column; align-items: stretch; }
+  .wallet-actions :deep(button) { width: 100%; }
+  .modal-actions { flex-direction: column-reverse; }
+  .wallet-form { min-width: 0; }
+}
 </style>
