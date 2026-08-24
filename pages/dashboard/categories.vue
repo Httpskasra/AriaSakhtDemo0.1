@@ -164,10 +164,10 @@ const search = ref("");
 const loading = ref(false);
 const loadError = ref("");
 const categoryColumns = computed(() => [
-  { key: "name", label: "نام دسته" },
-  { key: "description", label: "توضیحات" },
+  { accessorKey: "name", header: "نام دسته" },
+  { accessorKey: "description", header: "توضیحات" },
   ...(canUpdate.value || canDelete.value
-    ? [{ key: "actions", label: "عملیات" }]
+    ? [{ accessorKey: "actions", header: "عملیات" }]
     : []),
 ]);
 const { $axios } = useNuxtApp();
