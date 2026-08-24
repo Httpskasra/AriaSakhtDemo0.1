@@ -11,26 +11,26 @@
         <SharedAsyncState v-else-if="rolesError" state="error" :message="rolesError" @retry="fetchRoles" />
         <SharedAsyncState v-else-if="roles.length === 0" state="empty" title="نقشی پیدا نشد" message="هنوز نقشی برای نمایش وجود ندارد." />
         <TableScrollContainer v-else>
-          <UTable :rows="roles" :columns="roleColumns" class="min-w-[34rem]">
-          <template #phoneNumber-data="{ row }">
-            {{ row.phoneNumber || "-" }}
+          <UTable :data="roles" :columns="roleColumns" class="min-w-[34rem]">
+          <template #phoneNumber-cell="{ row }">
+            {{ row.original.phoneNumber || "-" }}
           </template>
-          <template #nationalId-data="{ row }">
-            {{ row.nationalId || "-" }}
+          <template #nationalId-cell="{ row }">
+            {{ row.original.nationalId || "-" }}
           </template>
-          <template #permissions-data="{ row }">
+          <template #permissions-cell="{ row }">
             <span class="permissions-cell">
-              {{ formatPermissions(row.permissions) || "-" }}
+              {{ formatPermissions(row.original.permissions) || "-" }}
             </span>
           </template>
-          <template #actions-data="{ row }">
+          <template #actions-cell="{ row }">
             <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
                 color="warning"
                 variant="soft"
-                @click="editRole(row)">
+                @click="editRole(row.original)">
                 ویرایش
               </UButton>
             </div>
@@ -192,11 +192,11 @@ const roles = ref<Role[]>([]);
 const rolesLoading = ref(false);
 const rolesError = ref("");
 const roleColumns = computed(() => [
-  { key: "phoneNumber", label: "شماره تماس" },
-  { key: "nationalId", label: "کد ملی" },
-  { key: "permissions", label: "دسترسی‌ها" },
+  { accessorKey: "phoneNumber", header: "شماره تماس" },
+  { accessorKey: "nationalId", header: "کد ملی" },
+  { accessorKey: "permissions", header: "دسترسی‌ها" },
   ...(canUpdate.value
-    ? [{ key: "actions", label: "عملیات" }]
+    ? [{ accessorKey: "actions", header: "عملیات" }]
     : []),
 ]);
 const isModalOpen = ref(false);
