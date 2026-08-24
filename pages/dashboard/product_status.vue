@@ -3,7 +3,7 @@
     <PanelPageHeader title="وضعیت محصولات" subtitle="وضعیت تأیید و انتشار محصولات خود را پیگیری کنید" icon="i-lucide-badge-check">
       <template #actions><UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی وضعیت محصولات" @click="fetchProducts">به‌روزرسانی</UButton></template>
     </PanelPageHeader>
-    <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
+    <SharedAsyncState v-if="!isReady || loading" state="loading" :skeleton-rows="5" />
     <SharedAsyncState v-else-if="loadError" state="error" :message="loadError" @retry="fetchProducts" />
     <div v-else-if="!canRead" class="forbidden-state" role="alert"><UIcon name="i-lucide-lock-keyhole" aria-hidden="true" /><h2>دسترسی به وضعیت محصولات امکان‌پذیر نیست</h2><p>حساب کاربری شما مجوز مشاهده این بخش را ندارد.</p></div>
     <template v-else>
@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 const props = withDefaults(defineProps<{ sellerOnly?: boolean }>(), { sellerOnly: false });
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Product } from "~/types/product";
@@ -44,7 +44,7 @@ import { toUserFacingError } from "~/services/apiClient";
 useHead({ title: "داشبورد | وضعیت محصولات" });
 
 const feedback = useFeedback();
-const { canUpdate, canRead } = useAccess(Resource.PRODUCT_STATUS);
+const { canUpdate, canRead, isReady } = useAccess(Resource.PRODUCT_STATUS);
 const { $axios } = useNuxtApp();
 const { user } = useUser();
 const search = ref("");
@@ -82,7 +82,8 @@ async function updateStatus(product: Product, status: Product["status"]) {
   catch (error) { feedback.error("تغییر وضعیت انجام نشد", toUserFacingError(error, "تغییر وضعیت محصول انجام نشد.").message); await fetchProducts(); }
   finally { loadingProductId.value = null; }
 }
-onMounted(fetchProducts);
+onMounted(() => { if (isReady.value) fetchProducts(); });
+watch(isReady, (ready) => { if (ready) fetchProducts(); }, { once: true });
 </script>
 
 <style scoped>

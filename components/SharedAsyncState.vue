@@ -21,5 +21,7 @@ defineEmits<{ retry: [] }>();
     :retry-label="retryLabel"
     :skeleton-rows="skeletonRows"
     @retry="$emit('retry')"
-  />
+  >
+    <slot />
+  </AsyncState>
 </template>

@@ -41,6 +41,7 @@ const defaults = {
       <UButton v-if="props.state === 'error'" type="button" @click="emit('retry')">
         {{ props.retryLabel }}
       </UButton>
+      <slot />
     </template>
   </section>
 </template>

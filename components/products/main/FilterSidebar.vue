@@ -97,9 +97,9 @@ const clearCategories = () => {
 </script>
 
 <template>
-  <div class="filter-panel bg-white p-6 rounded-field space-y-8 sticky top-24 border border-gray-100">
+  <div class="filter-panel">
     <div class="flex items-center justify-between">
-      <h3 class="filter-panel__title font-yekan font-bold text-lg text-blue-dark">فیلترهای جستجو</h3>
+      <h3 class="filter-panel__title">فیلترهای جستجو</h3>
       <ActionButton
         v-if="hasActiveFilters"
         tone="ghost"
@@ -112,10 +112,10 @@ const clearCategories = () => {
     </div>
 
     <!-- Category Filter -->
-    <div class="space-y-4">
-        <h4 class="filter-group__title font-yekan font-semibold text-blue-dark">دسته‌بندی‌ها</h4>
+    <div class="filter-group">
+        <h4 class="filter-group__title">دسته‌بندی‌ها</h4>
       <div v-if="loading" class="category-skeleton" aria-label="در حال بارگذاری دسته‌بندی‌ها">
-        <USkeleton v-for="index in 4" :key="index" class="h-5 w-full rounded-field" />
+        <USkeleton v-for="index in 4" :key="index" class="category-skeleton__line" />
       </div>
       <div v-else-if="error" class="category-empty">
         <p>دریافت دسته‌بندی‌ها ناموفق بود.</p>
@@ -180,8 +180,8 @@ const clearCategories = () => {
     </div>
 
     <!-- Price Filter -->
-      <div class="filter-field space-y-4">
-        <span class="filter-label font-yekan font-semibold text-blue-dark">محدوده قیمت</span>
+      <div class="filter-field">
+        <span class="filter-label">محدوده قیمت</span>
         <div class="price-fields">
           <div class="filter-input-group">
           <UInput
@@ -226,8 +226,8 @@ const clearCategories = () => {
     </div>
 
     <!-- Company Filter -->
-      <div class="filter-field space-y-4">
-        <label :for="`${props.inputIdPrefix}-company-name`" class="filter-label font-yekan font-semibold text-blue-dark">نام تأمین‌کننده</label>
+      <div class="filter-field">
+        <label :for="`${props.inputIdPrefix}-company-name`" class="filter-label">نام تأمین‌کننده</label>
         <div class="filter-input-wrapper">
           <UInput
             :id="`${props.inputIdPrefix}-company-name`"
@@ -253,7 +253,7 @@ const clearCategories = () => {
       size="lg"
       :disabled="!hasChanges"
       @click="applyFilters"
-      class="apply-filters-button font-yekan font-semibold"
+      class="apply-filters-button"
     >
       اعمال فیلترها
     </UButton>
@@ -263,22 +263,40 @@ const clearCategories = () => {
 <style scoped>
 .filter-panel {
   box-sizing: border-box;
+  position: sticky;
+  top: 6rem;
+  display: grid;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-raised);
 }
 
 .filter-panel__title {
+  margin: 0;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  font-weight: 800;
   font-size: 1.25rem;
   line-height: 1.5;
 }
 
 .filter-group__title {
+  margin: 0;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 0.9375rem;
   line-height: 1.5;
 }
 
 .filter-label {
+  display: block;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: 0.8125rem;
   line-height: 1.5;
 }
@@ -287,6 +305,10 @@ const clearCategories = () => {
   min-height: 2.75rem;
   color: var(--color-bg-surface);
 }
+
+.filter-group,
+.filter-field { display: grid; gap: 1rem; }
+.category-skeleton__line { display: block; width: 100%; height: 1.25rem; border-radius: var(--radius-field); }
 
 .apply-filters-button:disabled {
   color: var(--color-text-muted);

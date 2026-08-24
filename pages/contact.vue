@@ -160,8 +160,6 @@ useHead({ title: 'تماس با تجاریس' });
 }
 .contact-info { padding: clamp(1.25rem, 3vw, 2rem); }
 
-.section-kicker { color: var(--color-brand-blue); font-size: .75rem; font-weight: 700; }
-.section-title { margin-top: .25rem; color: var(--color-text-heading); font-size: 1.25rem; font-weight: 800; }
 .section-copy { margin-top: .625rem; color: var(--color-text-body); line-height: 2; }
 
 .contact-info__list {

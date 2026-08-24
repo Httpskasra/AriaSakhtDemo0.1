@@ -5,19 +5,19 @@
     </div>
     <ul>
       <li v-if="data.sku">
-        <span class="title">کد محصول</span>
+        <span class="product-recip__label">کد محصول</span>
         <span class="val">{{ data.sku }}</span>
       </li>
       <li v-if="data.basePrice">
-        <span class="title">قیمت پایه</span>
+        <span class="product-recip__label">قیمت پایه</span>
         <span class="val">{{ formatPrice(data.basePrice) }}</span>
       </li>
       <li v-if="data.discount">
-        <span class="title">تخفیف</span>
+        <span class="product-recip__label">تخفیف</span>
         <span class="val discount">{{ data.discount }}%</span>
       </li>
       <li v-if="data.stock?.quantity !== undefined">
-        <span class="title">موجودی</span>
+        <span class="product-recip__label">موجودی</span>
         <span
           class="val"
           :class="data.stock.quantity > 0 ? 'available' : 'unavailable'">
@@ -25,12 +25,12 @@
         </span>
       </li>
       <li v-if="getCategoryNames.length > 0">
-        <span class="title">دسته‌بندی</span>
+        <span class="product-recip__label">دسته‌بندی</span>
         <span class="val">{{ getCategoryNames.join(", ") }}</span>
       </li>
       <li v-if="data.status">
-        <span class="title">وضعیت</span>
-        <span class="val status" :style="useStatusStyle(data.status)">{{ statusLabel }}</span>
+        <span class="product-recip__label">وضعیت</span>
+        <PanelStatusBadge :label="statusLabel" :status="data.status" size="compact" />
       </li>
     </ul>
     <ActionButton class="sub" tone="secondary" @click="copyProductLink">کپی لینک محصول</ActionButton>
@@ -152,7 +152,7 @@ li:last-child {
   border: none;
 }
 
-.title {
+.product-recip__label {
   font-size: .82rem;
   color: var(--color-text-muted);
   font-family: var(--font-yekan);
@@ -177,12 +177,6 @@ li:last-child {
 
 .val.unavailable {
   color: var(--color-danger-fg);
-}
-
-.val.status {
-  padding: .2rem .5rem;
-  border-radius: var(--radius-pill);
-  font-size: .72rem;
 }
 
 @media (max-width: 767px) {
@@ -210,7 +204,7 @@ li:last-child {
     padding: .6rem 0;
   }
 
-  .title {
+  .product-recip__label {
     font-size: .75rem;
   }
 
@@ -233,7 +227,7 @@ li:last-child {
     padding: .5rem 0;
   }
 
-  .title,
+  .product-recip__label,
   .val {
     font-size: .7rem;
   }

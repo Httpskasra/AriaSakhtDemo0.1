@@ -428,13 +428,6 @@ onMounted(fetchTickets);
   margin-inline: auto;
 }
 
-.panel-surface {
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-raised);
-}
-
 .filter-panel {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -260,7 +260,7 @@ useHead({
   title: "داشبورد | کاربران",
 });
 // Access control
-const { canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
+const { canRead, canUpdate, canDelete, isReady } = useAccess(Resource.USERS);
 // const { canRead, canUpdate, canDelete } = {
 //   canRead: true,
 //   canDelete: true,
@@ -376,7 +376,6 @@ watch([limit, page, sort], () => {
   fetchUsers();
 });
 
-onMounted(() => {
-  fetchUsers();
-});
+onMounted(() => { if (isReady.value) fetchUsers(); });
+watch(isReady, (ready) => { if (ready) fetchUsers(); }, { once: true });
 </script>

@@ -75,8 +75,8 @@ export default defineNuxtConfig({
         "/dashboard/product_status": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "product_status", action: "r" } },
         "/dashboard/transporting": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "transporting", action: "r" } },
         "/dashboard/categories": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "categories", action: "r" } },
-        "/dashboard/users": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "users", action: "m" } },
-        "/dashboard/roles": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "users", action: "m" } },
+        "/dashboard/users": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "all", action: "m" } },
+        "/dashboard/roles": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "all", action: "m" } },
       };
 
       for (const page of pages) {

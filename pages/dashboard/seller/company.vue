@@ -8,7 +8,7 @@
       </template>
     </PanelPageHeader>
 
-    <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="3" />
+    <SharedAsyncState v-if="!isReady || loading" state="loading" :skeleton-rows="3" />
     <SharedAsyncState v-else-if="errorMessage" state="error" :message="errorMessage" @retry="fetchCompany" />
     <SharedAsyncState v-else-if="!company" state="empty" title="هنوز شرکتی برای حساب شما ثبت نشده است" message="برای شروع فروشندگی، اطلاعات شرکت خود را ثبت کنید.">
       <template #actions><UButton to="/dashboard/company/register" icon="i-lucide-arrow-left">ثبت شرکت</UButton></template>
@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Company } from "~/types/company";
@@ -63,7 +63,7 @@ definePageMeta({ layout: "panel", middleware: ["auth", "permission"], permission
 useHead({ title: "داشبورد | شرکت من" });
 
 const { user } = useUser();
-const { canUpdate } = useAccess(Resource.COMPANIES);
+const { canUpdate, isReady } = useAccess(Resource.COMPANIES);
 const company = ref<Company | null>(null);
 const loading = ref(false);
 const errorMessage = ref("");
@@ -99,12 +99,12 @@ async function saveCompany() {
   finally { saving.value = false; }
 }
 
-onMounted(fetchCompany);
+onMounted(() => { if (isReady.value) fetchCompany(); });
+watch(isReady, (ready) => { if (ready) fetchCompany(); }, { once: true });
 </script>
 
 <style scoped>
 .seller-company-page, .company-content { display:grid; gap:1rem; }
-.panel-surface { background:var(--color-bg-surface); border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); }
 .company-summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.25rem; }
 .company-summary__identity { display:flex; align-items:center; gap:1rem; min-width:0; }
 .company-summary h2, .company-details h2, .company-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight:800; }
@@ -121,7 +121,6 @@ onMounted(fetchCompany);
 .company-form h2 { padding-inline-end:2.5rem; }
 .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
 .form-grid__wide { grid-column:1/-1; }
-.modal-actions { display:flex; justify-content:flex-start; gap:.65rem; padding-top:1rem; border-top:1px solid var(--color-border); }
 .form-error { margin:0; padding:.7rem; color:var(--color-danger-fg); background:var(--color-danger-bg); border-radius:var(--radius-field); }
 .ltr { direction:ltr; text-align:right; }
 @media (max-width:640px) { .company-summary { align-items:flex-start; flex-direction:column; } .details-grid, .form-grid { grid-template-columns:1fr; } .details-grid__wide, .form-grid__wide { grid-column:auto; } .modal-actions { flex-direction:column-reverse; } }

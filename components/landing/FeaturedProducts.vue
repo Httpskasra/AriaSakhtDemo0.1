@@ -21,18 +21,18 @@ const formatPrice = (price: number) => {
 
 <template>
   <section aria-labelledby="featured-products-heading" class="space-y-6">
-    <h2 id="featured-products-heading" class="text-2xl font-black text-slate-900">محصولات ویژه</h2>
+    <h2 id="featured-products-heading" class="featured-products__heading">محصولات ویژه</h2>
 
     <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
       <template v-if="loading">
         <div v-for="i in 4" :key="i" class="premium-card overflow-hidden">
-          <div class="aspect-square animate-pulse bg-slate-200"></div>
+          <div class="featured-product-skeleton__image"></div>
           <div class="space-y-3 p-5">
-            <div class="h-5 w-3/4 animate-pulse rounded bg-slate-200"></div>
-            <div class="h-4 w-1/2 animate-pulse rounded bg-slate-100"></div>
+            <div class="featured-product-skeleton__line featured-product-skeleton__line--wide"></div>
+            <div class="featured-product-skeleton__line featured-product-skeleton__line--medium"></div>
             <div class="flex justify-between pt-4">
-              <div class="h-6 w-24 animate-pulse rounded bg-slate-200"></div>
-              <div class="h-6 w-12 animate-pulse rounded bg-slate-200"></div>
+              <div class="featured-product-skeleton__line featured-product-skeleton__line--price"></div>
+              <div class="featured-product-skeleton__line featured-product-skeleton__line--small"></div>
             </div>
           </div>
         </div>
@@ -45,7 +45,7 @@ const formatPrice = (price: number) => {
           class="premium-card group flex h-full flex-col overflow-hidden"
         >
           <NuxtLink :to="`/products/${product._id}`" :aria-label="`مشاهده ${product.name}`">
-            <div class="relative aspect-square overflow-hidden bg-slate-100">
+            <div class="featured-product__image">
               <NuxtImg
                 :src="product.images?.[0]?.url || '/products/building-material.jpg'"
                 :alt="product.name"
@@ -53,7 +53,7 @@ const formatPrice = (price: number) => {
                 loading="lazy"
                 data-ai-hint="product image"
               />
-              <div v-if="product.discount" class="absolute left-3 top-3 rounded-compact-list-item bg-red-500 px-2 py-1 font-num text-xs font-bold text-white shadow-lg">
+              <div v-if="product.discount" class="featured-product__discount font-num">
                 {{ product.discount }}٪ تخفیف
               </div>
             </div>
@@ -61,22 +61,22 @@ const formatPrice = (price: number) => {
 
           <div class="flex flex-1 flex-col justify-between p-5">
             <div class="space-y-2">
-              <div class="truncate text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              <div class="featured-product__vendor">
                 {{ typeof product.companyId === 'object' ? product.companyId.name : 'تأمین‌کننده معتبر' }}
               </div>
-              <NuxtLink :to="`/products/${product._id}`" class="block h-12 line-clamp-2 font-bold leading-snug text-slate-900 transition-colors hover:text-brand-blue">
+              <NuxtLink :to="`/products/${product._id}`" class="featured-product__name">
                 {{ product.name }}
               </NuxtLink>
             </div>
 
-            <div class="mt-4 flex items-center justify-between border-t border-slate-50 pt-4">
+            <div class="featured-product__footer">
               <div class="space-y-0.5 text-left rtl:text-right">
-                <div v-if="product.discount" class="font-num text-[10px] text-slate-400 line-through decoration-red-400/50">
+                <div v-if="product.discount" class="featured-product__old-price font-num">
                   {{ formatPrice(product.basePrice) }}
                 </div>
-                <div class="flex items-baseline gap-1 font-num text-lg font-black text-slate-900">
+                <div class="featured-product__price font-num">
                   {{ formatPrice(product.finalPrice || product.basePrice) }}
-                  <span class="text-[10px] font-medium text-slate-500">ریال</span>
+                  <span class="featured-product__currency">ریال</span>
                 </div>
               </div>
               <UButton
@@ -88,17 +88,41 @@ const formatPrice = (price: number) => {
                 square
                 aria-label="افزودن به سبد خرید"
                 @click.prevent.stop="addFeaturedProductToCart(product)"
-                class="transition-colors group-hover:bg-brand-blue group-hover:text-white"
+                class="featured-product__cart"
               />
             </div>
           </div>
         </article>
       </template>
 
-      <div v-else class="col-span-full py-20 text-center">
-        <UIcon name="i-lucide-package-search" class="mx-auto mb-4 size-icon-hero text-slate-200" />
-        <h3 class="heading-md text-slate-400">محصولی یافت نشد</h3>
+      <div v-else class="featured-products__empty">
+        <UIcon name="i-lucide-package-search" />
+        <h3>محصولی یافت نشد</h3>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.featured-products__heading { margin: 0; color: var(--color-text-heading); font-size: 1.5rem; font-weight: 900; }
+.featured-product-skeleton__image { aspect-ratio: 1; background: var(--color-border-strong); animation: featured-pulse 1.4s ease-in-out infinite; }
+.featured-product-skeleton__line { height: .75rem; border-radius: var(--radius-compact-list-item); background: var(--color-border-strong); animation: featured-pulse 1.4s ease-in-out infinite; }
+.featured-product-skeleton__line--wide { width: 75%; height: 1.25rem; }
+.featured-product-skeleton__line--medium { width: 50%; }
+.featured-product-skeleton__line--price { width: 6rem; height: 1.5rem; }
+.featured-product-skeleton__line--small { width: 3rem; }
+.featured-product__image { position: relative; overflow: hidden; aspect-ratio: 1; background: var(--color-bg-light); }
+.featured-product__discount { position: absolute; inset-block-start: .75rem; inset-inline-start: .75rem; padding: .25rem .5rem; border-radius: var(--radius-compact-list-item); color: var(--color-bg-surface); background: var(--color-danger-fg); font-size: .7rem; font-weight: 800; box-shadow: var(--shadow-raised); }
+.featured-product__vendor { overflow: hidden; color: var(--color-text-muted); font-size: .65rem; font-weight: 800; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.featured-product__name { display: block; height: 3rem; overflow: hidden; color: var(--color-text-heading); font-weight: 800; line-height: 1.5; transition: color .16s ease; }
+.featured-product__name:hover { color: var(--color-brand-blue); }
+.featured-product__footer { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
+.featured-product__old-price { color: var(--color-text-muted); font-size: .65rem; text-decoration: line-through; text-decoration-color: var(--color-danger-fg); }
+.featured-product__price { color: var(--color-text-heading); font-size: 1.1rem; font-weight: 900; }
+.featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: 600; }
+.featured-product__cart { transition: background-color .16s ease, color .16s ease; }
+.featured-product__empty { grid-column: 1 / -1; padding-block: 5rem; color: var(--color-text-disabled); text-align: center; }
+.featured-product__empty :deep(svg) { width: var(--spacing-icon-hero); height: var(--spacing-icon-hero); margin-inline: auto; margin-bottom: 1rem; }
+.featured-product__empty h3 { margin: 0; color: var(--color-text-muted); font-size: 1.1rem; font-weight: 800; }
+@keyframes featured-pulse { 50% { opacity: .45; } }
+</style>

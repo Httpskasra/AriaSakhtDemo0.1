@@ -1,10 +1,11 @@
 <template>
     <section class="categories-page" dir="rtl">
       <PanelPageHeader title="دسته‌بندی‌ها" subtitle="ساختار دسته‌بندی محصولات را مدیریت کنید" icon="i-lucide-tags">
-        <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن دسته‌بندی</UButton></template>
+        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" @click="openCreateModal">افزودن دسته‌بندی</UButton></template>
       </PanelPageHeader>
 
-    <div class="categories-content" v-if="canRead">
+    <PanelPermissionGuard :allowed="canRead" :ready="isReady">
+    <div class="categories-content">
       <PanelFilterBar>
         <TableFilterInput
           v-model="search"
@@ -13,7 +14,7 @@
         <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton>
       </PanelFilterBar>
 
-      <div class="premium-card border border-gray-100 overflow-hidden">
+      <div class="premium-card panel-table-card">
         <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
         <SharedAsyncState
           v-else-if="loadError"
@@ -31,7 +32,7 @@
             {{ row.description || "-" }}
           </template>
           <template #actions-data="{ row }">
-            <div class="actions">
+            <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
@@ -55,12 +56,11 @@
         </TableScrollContainer>
       </div>
     </div>
-
-    <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
+    </PanelPermissionGuard>
 
     <!-- مودال ساخت/ویرایش -->
     <BaseModal v-if="isModalOpen" @close="closeModal">
-      <h2 class="text-xl font-bold mb-6 text-gray-800">
+      <h2 class="panel-modal-title">
         {{ editMode ? "ویرایش دسته‌بندی" : "ایجاد دسته‌بندی جدید" }}
       </h2>
 
@@ -99,7 +99,7 @@
         </UFormField>
 
         <!-- دکمه‌ها -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div class="modal-actions">
           <UButton
             type="button"
             @click="closeModal"
@@ -113,6 +113,14 @@
         </div>
       </UForm>
     </BaseModal>
+    <PanelConfirmModal
+      v-if="deleteTarget"
+      title="حذف دسته‌بندی"
+      :message="`آیا از حذف «${deleteTarget.name}» مطمئن هستید؟`"
+      confirm-label="حذف دسته‌بندی"
+      :busy="Boolean(deletingId)"
+      @close="deleteTarget = null"
+      @confirm="confirmDelete" />
     </section>
 </template>
 
@@ -120,14 +128,14 @@
 useHead({
   title: "داشبورد | دسته‌بندی‌ها",
 });
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
 import BaseModal from "~/components/BaseModal.vue";
 const feedback = useFeedback();
 
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+const { canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
   Resource.CATEGORIES
 );
 
@@ -156,6 +164,7 @@ const { $axios } = useNuxtApp();
 const isModalOpen = ref(false);
 const saving = ref(false);
 const deletingId = ref<string | null>(null);
+const deleteTarget = ref<Category | null>(null);
 const editMode = ref(false);
 const form = ref({
   id: "",
@@ -194,12 +203,18 @@ const editCategory = (cat: Category) => {
 
 const deleteCategory = async (id: string) => {
   if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
-  if (!confirm("آیا از حذف این دسته‌بندی مطمئن هستید؟")) return;
+  const category = categories.value.find((item) => item.id === id);
+  if (!category) return feedback.error("حذف انجام نشد", "دسته‌بندی موردنظر پیدا نشد.");
+  deleteTarget.value = category;
+};
 
+const confirmDelete = async () => {
+  const id = deleteTarget.value?.id;
+  if (!id) return;
   try {
     deletingId.value = id;
     await $axios.delete(`/categories/${id}`);
-    // بعد از حذف، دوباره fetch کن
+    deleteTarget.value = null;
     await fetchCategories();
   } catch (err) {
     console.error("خطا در حذف دسته‌بندی:", err);
@@ -287,9 +302,8 @@ const saveCategory = async () => {
 const closeModal = () => {
   isModalOpen.value = false;
 };
-onMounted(() => {
-  fetchCategories();
-});
+onMounted(() => { if (isReady.value) fetchCategories(); });
+watch(isReady, (ready) => { if (ready) fetchCategories(); }, { once: true });
 </script>
 <style scoped>
 .categories-page {
@@ -305,19 +319,4 @@ onMounted(() => {
   min-width: 0;
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: .5rem;
-}
-
-.no-access {
-  padding: 2rem;
-  color: var(--color-text-muted);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  text-align: center;
-}
 </style>

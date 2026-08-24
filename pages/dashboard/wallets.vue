@@ -6,7 +6,7 @@
 
     <div class="wallet-overview">
       <div class="balance-card panel-surface">
-        <SharedAsyncState v-if="walletLoading" state="loading" :skeleton-rows="1" />
+        <SharedAsyncState v-if="!isReady || walletLoading" state="loading" :skeleton-rows="1" />
         <SharedAsyncState v-else-if="walletError" state="error" :message="walletError" @retry="fetchWallet" />
         <div v-else class="balance-content">
           <div><span class="eyebrow">موجودی قابل استفاده</span><strong>{{ formatAmount(wallet?.balance) }}</strong><span class="currency">{{ wallet?.currency || "ریال" }}</span></div>
@@ -25,7 +25,7 @@
 
     <div class="transactions-section panel-surface">
       <div class="section-heading"><div><h2>تاریخچه تراکنش‌ها</h2><p>آخرین تغییرات موجودی کیف پول</p></div></div>
-      <SharedAsyncState v-if="transactionsLoading" state="loading" :skeleton-rows="5" />
+      <SharedAsyncState v-if="!isReady || transactionsLoading" state="loading" :skeleton-rows="5" />
       <SharedAsyncState v-else-if="transactionsError" state="error" :message="transactionsError" @retry="fetchTransactions" />
       <template v-else>
         <PanelFilterBar><TableFilterInput v-model="search" placeholder="جستجو در شرح یا نوع تراکنش" aria-label="جستجوی تراکنش‌های کیف پول" /><UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton></PanelFilterBar>
@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { creditWallet, debitWallet, getTransactions, getWallet } from "~/services/walletService";
@@ -77,7 +77,7 @@ import { toUserFacingError } from "~/services/apiClient";
 useHead({ title: "داشبورد | کیف پول" });
 
 const feedback = useFeedback();
-const { canUpdate, canRead } = useAccess(Resource.WALLETS);
+const { canUpdate, canRead, isReady } = useAccess(Resource.WALLETS);
 type Wallet = { balance: number; currency?: string };
 type Transaction = { type: "credit" | "debit"; amount: number; description?: string; balanceAfter?: number; createdAt?: string };
 const wallet = ref<Wallet | null>(null);
@@ -139,12 +139,12 @@ async function debitWalletHandler() {
   catch (error) { errorMsg.value = toUserFacingError(error, "برداشت از کیف پول انجام نشد.").message; }
   finally { debitLoading.value = false; }
 }
-onMounted(refreshWallet);
+onMounted(() => { if (isReady.value) refreshWallet(); });
+watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 </script>
 
 <style scoped>
 .wallet-page { display: grid; gap: 1rem; }
-.panel-surface { background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: var(--shadow-raised); }
 .wallet-overview { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(18rem, .9fr); gap: 1rem; }
 .balance-card, .wallet-action-card, .transactions-section { padding: 1.25rem; }
 .balance-content { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 8rem; }
@@ -165,7 +165,6 @@ onMounted(refreshWallet);
 .form-field { display: grid; gap: .4rem; }
 .form-field label { color: var(--color-text-heading); font-size: .85rem; font-weight: 600; }
 .form-error { margin: 0; padding: .65rem .75rem; color: var(--color-danger-fg); background: var(--color-danger-bg); border-radius: var(--radius-field); font-size: .82rem; }
-.modal-actions { display: flex; justify-content: flex-end; gap: .65rem; }
 @media (max-width: 800px) { .wallet-overview { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .balance-card, .wallet-action-card, .transactions-section { padding: 1rem; } .balance-content { align-items: flex-start; } .wallet-actions { flex-direction: column; align-items: stretch; } .modal-actions { flex-direction: column-reverse; } }
 </style>

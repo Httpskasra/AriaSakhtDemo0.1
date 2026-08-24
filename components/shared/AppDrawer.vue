@@ -7,11 +7,13 @@ const props = withDefaults(defineProps<{
   panelId?: string;
   width?: string;
   persistentOnDesktop?: boolean;
+  teleportOnMobile?: boolean;
 }>(), {
   label: "منوی کناری",
   panelId: "app-drawer-panel",
   width: "18rem",
   persistentOnDesktop: false,
+  teleportOnMobile: false,
 });
 
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
@@ -103,15 +105,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="app-drawer" :class="{ 'app-drawer--open': isOpen }" :style="{ '--drawer-width': width }">
-    <button v-if="isOpen && !isDesktop" class="app-drawer__backdrop" type="button" :aria-label="`${label} را ببندید`" @click="close" />
-    <aside ref="panel" :id="panelId" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
-      <button v-if="isOpen && !isDesktop" class="app-drawer__close" type="button" :aria-label="`${label} را ببندید`" @click="close">
-        <UIcon name="i-lucide-x" aria-hidden="true" />
-      </button>
-      <slot />
-    </aside>
-  </div>
+  <Teleport to="body" :disabled="!teleportOnMobile || isDesktop">
+    <div class="app-drawer" :class="{ 'app-drawer--open': isOpen }" :style="{ '--drawer-width': width }">
+      <button v-if="isOpen && !isDesktop" class="app-drawer__backdrop" type="button" :aria-label="`${label} را ببندید`" @click="close" />
+      <aside ref="panel" :id="panelId" class="app-drawer__panel" role="dialog" :aria-label="label" :aria-modal="!isDesktop" :aria-hidden="!isOpen" :inert="!isOpen">
+        <button v-if="isOpen && !isDesktop" class="app-drawer__close" type="button" :aria-label="`${label} را ببندید`" @click="close">
+          <UIcon name="i-lucide-x" aria-hidden="true" />
+        </button>
+        <slot />
+      </aside>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -125,21 +129,21 @@ onMounted(() => {
   box-sizing: border-box;
 }
 @media (max-width: 1024px) {
-  .app-drawer { position: fixed; inset: 0; z-index: 1100; pointer-events: none; }
+  .app-drawer { position: fixed; inset: 0; z-index: 1100; pointer-events: none; overflow: visible; }
   .app-drawer--open { pointer-events: auto; }
   .app-drawer__backdrop { display: block; position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--color-overlay); }
   .app-drawer__panel {
     position: absolute;
     inset-block: 0;
-    inset-inline-start: 0;
-    inset-inline-end: auto;
+    left: auto;
+    right: 0;
     height: 100dvh;
-    width: 100vw;
-    max-width: 100vw;
+    width: 100%;
+    max-width: none;
     visibility: hidden;
     pointer-events: none;
     min-height: 0;
-    transform: translateX(100%);
+    transform: translate3d(100%, 0, 0);
     transition: transform .25s ease;
     background: var(--color-bg-surface);
     box-shadow: var(--shadow-overlay);
@@ -162,11 +166,11 @@ onMounted(() => {
     color: var(--color-text-heading);
     cursor: pointer;
   }
-  .app-drawer--open .app-drawer__panel { visibility: visible; pointer-events: auto; transform: translateX(0); }
+  .app-drawer--open .app-drawer__panel { visibility: visible; pointer-events: auto; transform: translate3d(0, 0, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-drawer__panel { transition: none; }
 }
-:global([dir="ltr"] .app-drawer__panel) { inset-inline-end: 0; inset-inline-start: auto; transform: translateX(-100%); }
-:global([dir="ltr"] .app-drawer--open .app-drawer__panel) { transform: translateX(0); }
+:global(html[dir="ltr"] .app-drawer__panel) { left: 0; right: auto; transform: translate3d(-100%, 0, 0); }
+:global(html[dir="ltr"] .app-drawer--open .app-drawer__panel) { transform: translate3d(0, 0, 0); }
 </style>

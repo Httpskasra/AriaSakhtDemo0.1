@@ -1,7 +1,7 @@
 <template>
     <div class="products-page">
       <PanelPageHeader title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
-        <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
+        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
       </PanelPageHeader>
 
       <PanelFilterBar>
@@ -29,68 +29,62 @@
         <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''; applyProductFilters()">حذف فیلتر</UButton>
       </PanelFilterBar>
 
-      <div class="products-panel bg-white rounded-field overflow-hidden">
-        <div v-if="!canRead" class="state-card state-card--error">
-          <UIcon name="i-lucide-lock-keyhole" aria-hidden="true" />
-          <h2>دسترسی به محصولات امکان‌پذیر نیست</h2>
-          <p>حساب کاربری شما مجوز مشاهده محصولات را ندارد.</p>
-        </div>
-        <div v-else-if="loading" class="state-card" aria-live="polite">
-          <UIcon name="i-lucide-loader-circle" class="animate-spin" aria-hidden="true" />
-          <h2>در حال دریافت محصولات</h2>
-          <p>لطفاً چند لحظه صبر کنید.</p>
-        </div>
-        <div v-else-if="loadError" class="state-card state-card--error" role="alert">
-          <UIcon name="i-lucide-circle-alert" aria-hidden="true" />
-          <h2>دریافت محصولات انجام نشد</h2>
-          <p>{{ loadError }}</p>
-          <UButton type="button" variant="soft" @click="fetchProducts">تلاش دوباره</UButton>
-        </div>
-        <div v-else-if="products.length === 0" class="state-card">
-          <UIcon name="i-lucide-package-search" aria-hidden="true" />
-          <h2>{{ search ? "محصولی با این جستجو پیدا نشد" : "هنوز محصولی ثبت نشده است" }}</h2>
-          <p>{{ search ? "عبارت جستجو یا فیلترها را تغییر دهید." : "برای شروع، اولین محصول خود را ثبت کنید." }}</p>
+      <PanelPermissionGuard :allowed="canRead" :ready="isReady" title="دسترسی به محصولات امکان‌پذیر نیست" message="حساب کاربری شما مجوز مشاهده محصولات را ندارد.">
+        <div class="products-panel panel-surface">
+        <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
+        <SharedAsyncState
+          v-else-if="loadError"
+          state="error"
+          title="دریافت محصولات انجام نشد"
+          :message="loadError"
+          @retry="fetchProducts" />
+        <SharedAsyncState
+          v-else-if="products.length === 0"
+          state="empty"
+          :title="search ? 'محصولی با این جستجو پیدا نشد' : 'هنوز محصولی ثبت نشده است'"
+          :message="search ? 'عبارت جستجو یا فیلترها را تغییر دهید.' : 'برای شروع، اولین محصول خود را ثبت کنید.'">
           <UButton v-if="!search && canCreate" type="button" @click="openModal()">افزودن محصول</UButton>
-        </div>
-        <div v-else class="mb-3 flex flex-wrap items-center gap-2">
+        </SharedAsyncState>
+        <div v-else class="products-table-wrap">
           <TableScrollContainer>
-            <table class="w-full min-w-[36rem]">
-          <thead class="bg-gray-100">
+            <table class="panel-table products-table">
+          <thead>
             <tr>
-              <th class="p-3 text-right">تصویر</th>
-              <th class="p-3 text-right">نام</th>
-              <th class="p-3 text-right">SKU</th>
-              <th class="p-3 text-right">قیمت پایه</th>
-              <th class="p-3 text-right">موجودی</th>
-              <!-- <th class="p-3 text-right">شرکت</th> -->
-              <th class="p-3 text-right">وضعیت</th>
-              <th class="p-3 text-right">اقدامات</th>
+              <th>تصویر</th>
+              <th>نام</th>
+              <th>SKU</th>
+              <th>قیمت پایه</th>
+              <th>موجودی</th>
+              <th>وضعیت</th>
+              <th>اقدامات</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="product in products"
-              :key="product._id"
-              class="border-b hover:bg-gray-50">
-              <td class="p-3">
+              :key="product._id || product.id">
+              <td>
                 <img
                   v-if="product.images && product.images.length"
                   :src="product.images[0].url"
-                  class="w-12 h-12 rounded object-cover" />
+                  class="products-table__image"
+                  alt="" />
+                <span v-else class="products-table__image products-table__image--empty" aria-hidden="true">
+                  <UIcon name="i-lucide-image-off" />
+                </span>
               </td>
-              <td class="p-3">{{ product.name }}</td>
-              <td class="p-3 ltr">{{ product.sku }}</td>
-              <td class="p-3">{{ numberFormat(product.basePrice) }}</td>
-              <td class="p-3">{{ product.stock?.quantity ?? 0 }}</td>
-              <!-- <td class="p-3 ltr text-xs">{{ product.companyId }}</td> -->
-              <!-- <td class="p-3 ltr text-xs">ID</td> -->
-              <td class="p-3">
-                <StatusPill
+              <td class="products-table__name">{{ product.name }}</td>
+              <td class="ltr">{{ product.sku || "-" }}</td>
+              <td class="font-num">{{ numberFormat(product.basePrice) }}</td>
+              <td class="font-num">{{ (product.stock?.quantity ?? 0).toLocaleString("fa-IR") }}</td>
+              <td>
+                <PanelStatusBadge
                   :label="statusFa(product.status)"
                   :semantic="getStatusSemantic(product.status)"
                   size="compact" />
               </td>
-              <td class="p-3 flex gap-2">
+              <td>
+                <div class="panel-row-actions">
                 <UButton
                   v-if="canUpdate"
                   @click="openModal(product)"
@@ -107,13 +101,15 @@
                   :loading="deletingId === (product._id || product.id)">
                   حذف
                 </UButton>
+                </div>
               </td>
             </tr>
           </tbody>
             </table>
           </TableScrollContainer>
         </div>
-      </div>
+        </div>
+      </PanelPermissionGuard>
 
       <div v-if="total > limit" class="flex justify-center py-4">
         <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
@@ -166,7 +162,7 @@
                   :options="categoryOptions"
                   value-attribute="_id"
                   option-attribute="name" />
-                <div class="text-xs text-gray-500">
+                <div class="products-form-hint">
                   از لیست بالا یکی را انتخاب کن؛
                 </div>
               </div>
@@ -191,7 +187,7 @@
                   multiple
                   accept="image/*"
                   @change="handleImageSelection"
-                  class="block text-sm text-gray-600" />
+                  class="products-file-input" />
 
                 <!-- Upload button / state -->
                 <div
@@ -205,7 +201,7 @@
                     @click="uploadSelectedImages">
                     آپلود تصاویر
                   </UButton>
-                  <span v-else class="text-blue-600">در حال آپلود...</span>
+                  <span v-else class="products-upload-status">در حال آپلود...</span>
                 </div>
 
                 <!-- Preview of form.images -->
@@ -355,17 +351,14 @@
         </template>
       </BaseModal>
 
-      <BaseModal v-if="deleteTarget" title-id="delete-product-title" @close="cancelDelete">
-        <div class="delete-confirmation">
-          <UIcon name="i-lucide-trash-2" aria-hidden="true" />
-          <h2 id="delete-product-title">حذف محصول</h2>
-          <p>آیا از حذف «{{ deleteTarget.name }}» مطمئن هستید؟ این محصول از فهرست فروشگاه خارج می‌شود.</p>
-          <div class="flex justify-end gap-2">
-            <UButton type="button" color="neutral" variant="soft" :disabled="deleting" @click="cancelDelete">انصراف</UButton>
-            <UButton type="button" color="error" :loading="deleting" @click="confirmDelete">حذف محصول</UButton>
-          </div>
-        </div>
-      </BaseModal>
+      <PanelConfirmModal
+        v-if="deleteTarget"
+        title="حذف محصول"
+        :message="`آیا از حذف «${deleteTarget.name}» مطمئن هستید؟ این محصول از فهرست فروشگاه خارج می‌شود.`"
+        confirm-label="حذف محصول"
+        :busy="deleting"
+        @close="cancelDelete"
+        @confirm="confirmDelete" />
     </div>
 </template>
 
@@ -406,7 +399,7 @@ const selectedId = ref<string | null>(null);
 const products = ref<Product[]>([]);
 const { user } = useUser();
 
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+const { canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
   Resource.PRODUCTS
 );
 
@@ -442,9 +435,16 @@ const tagsInput = ref("");
 const attributesPairs = ref<{ key: string; value: string }[]>([]);
 
 onMounted(() => {
-  fetchProducts();
-  fetchCategories();
+  if (!isReady.value) return;
+  if (canRead.value) fetchProducts();
+  if (canCreate.value || canUpdate.value) fetchCategories();
 });
+
+watch(isReady, (ready) => {
+  if (!ready) return;
+  if (canRead.value) fetchProducts();
+  if (canCreate.value || canUpdate.value) fetchCategories();
+}, { once: true });
 
 async function fetchCategories() {
   try {
@@ -767,67 +767,17 @@ function numberFormat(n?: number) {
 </script>
 
 <style scoped>
-.products-page {
-  width: 100%;
-  max-width: 92rem;
-  margin-inline: auto;
-}
-.page-heading {
-  color: var(--color-text-heading);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0 0 1.5rem;
-}
-.page-heading h1 {
-  margin: 0.25rem 0;
-  font-size: clamp(1.5rem, 2vw, 2rem);
-  font-weight: 800;
-}
-.page-eyebrow {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
-.page-description {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-.page-heading img {
-  width: 3.5rem;
-  height: 3.5rem;
-  object-fit: contain;
-}
-.products-panel {
-  min-height: 20rem;
-}
-.state-card {
-  min-height: 20rem;
-  padding: 3rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0.75rem;
-  color: var(--color-text-muted);
-  text-align: center;
-}
-.state-card > svg { width: 2.5rem; height: 2.5rem; color: var(--blue-dark); }
-.state-card h2 { margin: 0; color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
-.state-card p { margin: 0 0 0.5rem; }
-.state-card--error > svg { color: var(--color-danger-fg); }
-.state-card--error h2 { color: var(--color-danger-fg); }
-.delete-confirmation { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 1rem; }
-.delete-confirmation > svg { width: 2.5rem; height: 2.5rem; color: var(--color-danger-fg); }
-.delete-confirmation h2 { margin: 0; color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
-.delete-confirmation p { margin: 0 0 0.75rem; color: var(--color-text-muted); line-height: 1.8; }
-@media (max-width: 640px) {
-  .page-heading img { width: 2.75rem; height: 2.75rem; }
-  .page-heading { align-items: flex-start; }
-}
+.products-page { width: 100%; max-width: 92rem; margin-inline: auto; }
+.products-panel { min-height: 20rem; overflow: hidden; }
+.products-table-wrap { overflow: hidden; }
+.products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
+.products-form-hint { color: var(--color-text-muted); font-size: .75rem; }
+.products-file-input { display: block; color: var(--color-text-body); font-size: .875rem; }
+.products-table__image { display: block; width: 3rem; height: 3rem; border-radius: var(--radius-compact-list-item); object-fit: cover; }
+.products-table__image--empty { display: grid; place-items: center; color: var(--color-text-disabled); background: var(--color-bg-light); }
+.products-table__name { max-width: 16rem; color: var(--color-text-heading); font-weight: 700; white-space: normal; }
+.products-table td { white-space: nowrap; }
+@media (max-width: 640px) { .products-table__name { max-width: 10rem; } }
 .ltr {
   direction: ltr;
 }

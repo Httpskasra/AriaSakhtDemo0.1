@@ -67,7 +67,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
         <NuxtLink to="/products" class="mobile-header__category-link mobile-header__category-link--all" :aria-current="route.path === '/products' ? 'page' : undefined">همه دسته‌بندی‌ها</NuxtLink>
         <NuxtLink v-for="category in popularCategories" :key="getCategoryId(category)" :to="categoryPath(category)" class="mobile-header__category-link">{{ category.name }}</NuxtLink>
       </nav>
-      <ClientOnly><AppDrawer v-model="mobileMenuOpen" panel-id="mobile-site-drawer" label="منوی سایت" width="min(22rem, 88vw)"><nav class="mobile-menu" aria-label="ناوبری موبایل">
+      <ClientOnly><AppDrawer v-model="mobileMenuOpen" panel-id="mobile-site-drawer" label="منوی سایت" teleport-on-mobile width="min(22rem, 88vw)"><nav class="mobile-menu" aria-label="ناوبری موبایل">
         <div class="mobile-menu__account">
           <NuxtLink v-if="isAuthenticated" to="/dashboard" class="mobile-menu__link mobile-menu__link--primary" @click="closeMobileMenu"><UIcon name="i-lucide-user" aria-hidden="true" /><span>حساب کاربری</span><small>{{ user?.userId || "پنل کاربری" }}</small></NuxtLink>
           <div v-else class="mobile-menu__guest-status" role="status"><UIcon name="i-lucide-log-in" aria-hidden="true" /><span>ورود به حساب</span><small>برای خرید وارد شوید</small></div>

@@ -1,17 +1,26 @@
 import { useUser } from "~/composables/useUser";
 import { Action, Resource, type Permission } from "~/types/permissions";
+import { computed } from "vue";
 
 const CRUD_ACTIONS = [Action.READ, Action.CREATE, Action.UPDATE, Action.DELETE];
 
 export function usePermissions() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  // A failed /auth/me request must not leave the panel in an endless blank
+  // state. Once loading ends, pages can render their own API error or
+  // forbidden state instead of waiting forever for permission data.
+  const isReady = computed(() => !isUserLoading.value);
+  const normalizedPermissions = computed<Permission[]>(() =>
+    (Array.isArray(user.value?.permissions) ? user.value.permissions : [])
+      .filter((permission): permission is Permission => Boolean(permission?.resource && Array.isArray(permission.actions))),
+  );
 
   const expandsAction = (actions: Action[], action: Action): boolean =>
     actions.includes(action) ||
     (actions.includes(Action.MANAGE) && CRUD_ACTIONS.includes(action));
 
   const matchingPermissions = (resource: Resource): Permission[] => {
-    const permissions = user.value?.permissions ?? [];
+    const permissions = normalizedPermissions.value;
     return permissions.filter(
       (perm) => perm.resource === resource || perm.resource === Resource.ALL,
     );
@@ -51,5 +60,6 @@ export function usePermissions() {
     hasPermission,
     getResources,
     getActionsFor,
+    isReady,
   };
 }

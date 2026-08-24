@@ -235,7 +235,6 @@ defineExpose({ addToCart });
 <style scoped>
 .cart-page { display: grid; gap: 1rem; }
 .cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem); gap: 1rem; align-items: start; }
-.panel-surface { background: var(--color-bg-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); box-shadow: var(--shadow-raised); }
 .cart-items-panel, .summary-panel { padding: 1.25rem; }
 .summary-panel { position: sticky; top: 1rem; }
 .panel-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }

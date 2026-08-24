@@ -1,6 +1,6 @@
 <template>
   <div class="product-info-tabs">
-    <div class="header">
+    <div class="product-info-tabs__header">
       <ul role="tablist" aria-label="اطلاعات محصول">
         <li id="info-tab" role="tab" :aria-selected="show === 'info'" :tabindex="show === 'info' ? 0 : -1" @click="selectTab('info')" @keydown="onTabKeydown($event, 'info')" :class="{ active: show == 'info' }">
           مشخصات
@@ -54,7 +54,7 @@ function onTabKeydown(event: KeyboardEvent, tab: content) {
   border-radius: var(--radius-card);
 }
 
-.header {
+.product-info-tabs__header {
   width: 100%;
   padding: .75rem 1rem 0;
   border-bottom: 1px solid var(--color-border);

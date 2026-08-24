@@ -1,18 +1,11 @@
 <template>
   <div class="product-description">
-    <!-- <ul>
-      <li><span class="title">ابعاد</span><span class="val">14*14</span></li>
-      <li><span class="title">ابعاد</span><span class="val">14*14</span></li>
-      <li><span class="title">ابعاد</span><span class="val">14*14</span></li>
-      <li><span class="title">ابعاد</span><span class="val">14*14</span></li>
-      <li><span class="title">ابعاد</span><span class="val">14*14</span></li>
-    </ul> -->
-    <p>{{ data.description }}</p>
+    <p class="product-description__text">{{ props.data.description || "توضیحی برای این محصول ثبت نشده است." }}</p>
   </div>
 </template>
 <script setup lang="ts">
 import type { Product } from "~/types/product";
-const prop = defineProps<{
+const props = defineProps<{
   data: Product;
 }>();
 </script>
@@ -20,7 +13,7 @@ const prop = defineProps<{
 .product-description {
   width: 100%;
 }
-p {
+.product-description__text {
   margin: 0;
   padding: 1rem;
   font-size: 1rem;
@@ -31,14 +24,14 @@ p {
   overflow-wrap: anywhere;
 }
 @media (min-width: 768px) and (max-width: 1024px) {
-  p {
+  .product-description__text {
     padding: 1rem;
     font-size: .9rem;
   }
 }
 
 @media (max-width: 767px) {
-  p {
+  .product-description__text {
     padding: .75rem;
     font-size: .85rem;
   }

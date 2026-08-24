@@ -4,7 +4,7 @@
       <template #actions><UButton icon="i-lucide-refresh-cw" variant="soft" :loading="pending" aria-label="به‌روزرسانی تراکنش‌ها" @click="fetchTransactions">به‌روزرسانی</UButton></template>
     </PanelPageHeader>
 
-    <SharedAsyncState v-if="pending" state="loading" />
+    <SharedAsyncState v-if="!isReady || pending" state="loading" />
     <SharedAsyncState v-else-if="error" state="error" :message="error" @retry="fetchTransactions" />
     <SharedAsyncState v-else-if="!transactions.length" state="empty" title="تراکنشی ثبت نشده است" message="تراکنش‌های مالی شما پس از ثبت در این بخش نمایش داده می‌شوند." />
     <template v-else>
@@ -49,14 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Resource } from "~/types/permissions";
 import { getTransactions } from "~/services/walletService";
 import { toUserFacingError } from "~/services/apiClient";
 
 useHead({ title: "داشبورد | تراکنش‌ها" });
 
-const { canRead } = useAccess(Resource.TRANSACTION);
+const { canRead, isReady } = useAccess(Resource.TRANSACTION);
 type Transaction = Record<string, any>;
 const transactions = ref<Transaction[]>([]);
 const pending = ref(false);
@@ -93,7 +93,8 @@ function typeLabel(type: unknown) { return type === "credit" ? "واریز" : ty
 function typeSemantic(type: unknown) { return type === "credit" ? "success" : type === "debit" ? "danger" : "info"; }
 function statusLabel(status: unknown) { return status === "success" || status === "completed" ? "موفق" : status === "failed" || status === "error" ? "ناموفق" : status === "pending" ? "در انتظار" : "نامشخص"; }
 function statusSemantic(status: unknown) { return status === "success" || status === "completed" ? "success" : status === "failed" || status === "error" ? "danger" : status === "pending" ? "warning" : "neutral"; }
-onMounted(fetchTransactions);
+onMounted(() => { if (isReady.value) fetchTransactions(); });
+watch(isReady, (ready) => { if (ready) fetchTransactions(); }, { once: true });
 </script>
 
 <style scoped>

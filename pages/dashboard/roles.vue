@@ -2,14 +2,16 @@
 
 <template>
     <PanelPageHeader title="نقش‌ها و دسترسی‌ها" subtitle="مدیریت دسترسی کاربران بر اساس Permission واقعی" icon="i-lucide-shield-check">
-      <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openCreateModal">افزودن نقش جدید</UButton></template>
+      <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" @click="openCreateModal">افزودن نقش جدید</UButton></template>
     </PanelPageHeader>
+    <PanelPermissionGuard :allowed="canRead" :ready="isReady">
     <div class="roles-page">
-      <div class="header">
-      </div>
-      <div v-if="canRead" class="premium-card border border-gray-100 overflow-hidden">
-    <TableScrollContainer>
-      <UTable :rows="roles" :columns="roleColumns" class="min-w-[34rem]">
+      <div class="premium-card panel-table-card">
+        <SharedAsyncState v-if="rolesLoading" state="loading" :skeleton-rows="5" />
+        <SharedAsyncState v-else-if="rolesError" state="error" :message="rolesError" @retry="fetchRoles" />
+        <SharedAsyncState v-else-if="roles.length === 0" state="empty" title="نقشی پیدا نشد" message="هنوز نقشی برای نمایش وجود ندارد." />
+        <TableScrollContainer v-else>
+          <UTable :rows="roles" :columns="roleColumns" class="min-w-[34rem]">
           <template #phoneNumber-data="{ row }">
             {{ row.phoneNumber || "-" }}
           </template>
@@ -22,7 +24,7 @@
             </span>
           </template>
           <template #actions-data="{ row }">
-            <div class="actions">
+            <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
@@ -33,20 +35,15 @@
               </UButton>
             </div>
           </template>
-      </UTable>
-    </TableScrollContainer>
-        <SharedAsyncState
-          v-if="roles.length === 0"
-          state="empty"
-          title="نقشی پیدا نشد"
-          message="هنوز نقشی برای نمایش وجود ندارد." />
+          </UTable>
+        </TableScrollContainer>
       </div>
-      <div v-else class="no-access">شما به این بخش دسترسی ندارید.</div>
     </div>
+    </PanelPermissionGuard>
 
     <!-- مودال ساخت/ویرایش نقش -->
     <BaseModal v-if="isModalOpen" @close="closeModal">
-      <h2 class="text-xl font-bold mb-6 text-gray-800">
+      <h2 class="panel-modal-title">
         {{ editMode ? "ویرایش نقش" : "ایجاد نقش جدید" }}
       </h2>
       <UForm :state="form" class="space-y-5" @submit.prevent="saveRole">
@@ -57,7 +54,7 @@
           <UInput v-model="form.nationalId" inputmode="numeric" maxlength="10" placeholder="۱۲۳۴۵۶۷۸۹۱" @update:model-value="formErrors.nationalId = ''" />
         </UFormField>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
+          <label class="roles-permissions-label"
             >دسترسی‌ها</label
           >
           <div class="resources-actions-list">
@@ -107,15 +104,15 @@
                     placeholder="جستجو شرکت..."
                     class="mb-2" />
                 </UFormField>
-                <div class="max-h-40 overflow-auto border rounded" role="listbox" aria-label="انتخاب شرکت">
+                <div class="company-options" role="listbox" aria-label="انتخاب شرکت">
                   <div
                     v-for="c in filteredCompanies"
                     :key="c._id || c.id"
-                    class="p-2 hover:bg-gray-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    class="company-option"
                     role="option"
                     :aria-selected="selectedCompanyIdForResource(resource.value) === String(c._id || c.id)"
                     tabindex="0"
-                    @keydown="onCompanyKeydown($event, c, filteredCompanies)"
+                    @keydown="onCompanyKeydown($event, resource.value, c, filteredCompanies)"
                     @click="
                       setCompanyForResource(
                         resource.value,
@@ -125,7 +122,7 @@
                     {{ c.name }}
                   </div>
                 </div>
-                <div class="mt-2 text-sm text-gray-600">
+                <div class="selected-company">
                   انتخاب شده:
                   {{ selectedCompanyNameForResource(resource.value) || "هیچ" }}
                 </div>
@@ -133,7 +130,7 @@
             </div>
           </div>
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div class="modal-actions">
           <UButton
             type="button"
             @click="closeModal"
@@ -152,7 +149,7 @@
 
 <script setup lang="ts">
 const feedback = useFeedback();
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { Action, Resource, type Permission } from "~/types/permissions";
 import { isValidPhone, toEnglishDigits, toInternationalPhone } from "~/utils/PhoneNumber";
@@ -161,7 +158,7 @@ import { toUserFacingError } from "~/services/apiClient";
 useHead({
   title: "داشبورد | نقش‌ها",
 });
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(Resource.USERS);
+const { canCreate, canRead, canUpdate, isReady } = useAccess(Resource.ROLES);
 const actionOptions = [
   { value: Action.READ, label: "خواندن" },
   { value: Action.UPDATE, label: "ویرایش" },
@@ -192,11 +189,13 @@ type Role = {
 };
 // NOTE: mock roles removed. Fetch real data from API in onMounted.
 const roles = ref<Role[]>([]);
+const rolesLoading = ref(false);
+const rolesError = ref("");
 const roleColumns = computed(() => [
   { key: "phoneNumber", label: "شماره تماس" },
   { key: "nationalId", label: "کد ملی" },
   { key: "permissions", label: "دسترسی‌ها" },
-  ...(canUpdate.value || canDelete.value
+  ...(canUpdate.value
     ? [{ key: "actions", label: "عملیات" }]
     : []),
 ]);
@@ -234,16 +233,14 @@ const editRole = (role: Role) => {
   editMode.value = true;
   // اطمینان از وجود همه resourceها در فرم
   const permissions: Permission[] = resourceOptions.map((r) => {
-    const found: any = role.permissions.find(
-      (p: any) => p.resource === r.value
-    );
+    const found = role.permissions.find((p) => p.resource === r.value);
     return found
       ? ({
           resource: r.value,
           actions: [...found.actions],
           ...(found.companyId ? { companyId: found.companyId } : {}),
-        } as any)
-      : ({ resource: r.value, actions: [] } as any);
+        })
+      : ({ resource: r.value, actions: [] });
   });
   form.value = {
     id: role.id,
@@ -278,23 +275,18 @@ const saveRole = async () => {
     return feedback.error("اطلاعات نامعتبر", "شماره موبایل یا کد ملی را اصلاح کنید.");
   }
 
-  // Build permissions payload, including companyId when set on permission
+  // Build the API payload from the selected permissions only.
   const permissionsPayload = form.value.permissions
     .filter((p) => p.actions && p.actions.length > 0)
-    .map((p) => {
-      // @ts-ignore
-      const companyId = (p as any).companyId;
-      const out: any = { resource: p.resource, actions: p.actions };
-      if (companyId) out.companyId = companyId;
-      return out;
-    });
+    .map(({ resource, actions, companyId }) => ({
+      resource,
+      actions,
+      ...(companyId ? { companyId } : {}),
+    }));
   const prodPerm = form.value.permissions.find(
     (p) => p.resource === Resource.PRODUCTS
   );
-  // @ts-ignore
-  const companyIdFromProducts = prodPerm
-    ? (prodPerm as any).companyId
-    : undefined;
+  const companyIdFromProducts = prodPerm?.companyId;
   if (
     prodPerm &&
     prodPerm.actions &&
@@ -304,29 +296,23 @@ const saveRole = async () => {
     feedback.error("اطلاعات ناقص", "برای دسترسی محصولات، انتخاب شرکت الزامی است.");
     return;
   }
-  const body: any = {
+  const body = {
     phoneNumber: normalizedPhone,
     nationalId: normalizedNationalId,
     permissions: permissionsPayload,
     ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),
   };
 
-  // If any top-level companyId selected (e.g., from products permission), set it
-
-  // @ts-ignore
-  const topCompanyId = prodPerm ? (prodPerm as any).companyId : undefined;
-  if (topCompanyId) body.companyId = topCompanyId;
-
   try {
     saving.value = true;
     if (editMode.value) {
       // update permissions via dedicated endpoint
       try {
-        const targetId = meUserId.value || form.value.id;
-        const payload: any = { permissions: permissionsPayload };
-        if (companyIdFromProducts) {
-          payload.companyId = companyIdFromProducts;
-        }
+        const targetId = form.value.id || meUserId.value;
+        const payload = {
+          permissions: permissionsPayload,
+          ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),
+        };
         await updateUserPermissions(targetId, payload);
 
         // به‌روزرسانی UI محلی
@@ -411,19 +397,9 @@ function toggleAll(resource: Resource) {
     perm.actions = actionOptions.map((a) => a.value);
   }
 }
-import { computed } from "vue";
 const nuxtApp = useNuxtApp();
 const axios = nuxtApp.$axios;
 const meUserId = ref<string | null>(null);
-
-// const { canCreate, canRead, canUpdate, canDelete } = {
-//   canCreate: true,
-//   canRead: true,
-//   canUpdate: true,
-//   canDelete: true,
-// };
-
-// note: phone/national are stored on `form` (bound to inputs) so no separate refs
 
 const filteredCompanies = computed(() => {
   const q = companySearch.value.trim().toLowerCase();
@@ -434,21 +410,19 @@ const filteredCompanies = computed(() => {
 function setCompanyForResource(resource: Resource, companyId: string) {
   const perm = form.value.permissions.find((p) => p.resource === resource);
   if (!perm) return;
-  // attach companyId to this permission
-  // @ts-ignore
-  (perm as any).companyId = companyId;
+  perm.companyId = companyId;
 }
 
 function selectedCompanyIdForResource(resource: Resource) {
   const perm = form.value.permissions.find((p) => p.resource === resource);
-  return perm ? String((perm as any).companyId || "") : "";
+  return perm ? String(perm.companyId || "") : "";
 }
 
-function onCompanyKeydown(event: KeyboardEvent, company: any, options: any[]) {
+function onCompanyKeydown(event: KeyboardEvent, resource: Resource, company: { id?: string; _id?: string; name: string }, options: Array<{ id?: string; _id?: string; name: string }>) {
   const index = options.indexOf(company);
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
-    setCompanyForResource(resource.value, String(company._id || company.id));
+    setCompanyForResource(resource, String(company._id || company.id));
   } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     const next = options[(index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length];
@@ -458,31 +432,16 @@ function onCompanyKeydown(event: KeyboardEvent, company: any, options: any[]) {
 
 function selectedCompanyNameForResource(resource: Resource) {
   const perm = form.value.permissions.find((p) => p.resource === resource);
-  // @ts-ignore
-  const cid = perm ? (perm as any).companyId : undefined;
+  const cid = perm?.companyId;
   if (!cid) return "";
   const found = companies.value.find((c) => (c._id || c.id) === cid);
   return found ? found.name : "";
 }
 
-onMounted(async () => {
-  try {
-    const { data } = await axios.get("/auth/me");
-    const id = data?.userId || data?.id || data?._id || null;
-    meUserId.value = id ? String(id) : null;
-  } catch (err) {
-    console.error("Failed to fetch /me:", err);
-  }
-
-  // fetch companies from /companies
-  try {
-    const { data } = await axios.get("/companies");
-    // expect data to be array of companies
-    companies.value = Array.isArray(data) ? data : data.data || [];
-  } catch (err) {
-    console.error("Failed to fetch companies:", err);
-  }
-  // fetch users and populate roles list
+async function fetchRoles() {
+  if (!canRead.value) return;
+  rolesLoading.value = true;
+  rolesError.value = "";
   try {
     const { data } = await axios.get("/users/created-by-super");
     // response shape: { items: [...], total }
@@ -502,9 +461,37 @@ onMounted(async () => {
       permissions: Array.isArray(u.permissions) ? u.permissions : [],
     }));
   } catch (err) {
-    console.error("Failed to fetch users:", err);
+    console.error("Failed to fetch roles:", err);
+    rolesError.value = toUserFacingError(err).message;
+  } finally {
+    rolesLoading.value = false;
   }
-});
+}
+
+async function initializeRoles() {
+  if (!isReady.value || !canRead.value) return;
+  try {
+    const { data } = await axios.get("/auth/me");
+    const id = data?.userId || data?.id || data?._id || null;
+    meUserId.value = id ? String(id) : null;
+  } catch (err) {
+    console.error("Failed to fetch /me:", err);
+  }
+
+  if (canCreate.value || canUpdate.value) {
+    try {
+      const { data } = await axios.get("/companies");
+      companies.value = Array.isArray(data) ? data : data.data || [];
+    } catch (err) {
+      console.error("Failed to fetch companies:", err);
+    }
+  }
+
+  await fetchRoles();
+}
+
+onMounted(initializeRoles);
+watch(isReady, (ready) => { if (ready) initializeRoles(); }, { once: true });
 
 function formatPermissions(perms: Permission[] = []) {
   return perms
@@ -522,25 +509,6 @@ function formatPermissions(perms: Permission[] = []) {
   gap: 1rem;
   width: min(100%, 90rem);
   margin-inline: auto;
-}
-
-.roles-page > .header {
-  min-height: 0;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-}
-
-.no-access {
-  padding: 2rem;
-  color: var(--color-text-muted);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  text-align: center;
 }
 
 .resources-actions-list {
@@ -570,6 +538,13 @@ function formatPermissions(perms: Permission[] = []) {
   font-size: .9rem;
   font-weight: 800;
 }
+
+.roles-permissions-label { display: block; margin-bottom: .35rem; color: var(--color-text-heading); font-size: .875rem; font-weight: 700; }
+.company-options { max-height: 10rem; overflow: auto; border: 1px solid var(--color-border); border-radius: var(--radius-field); }
+.company-option { padding: .5rem .65rem; color: var(--color-text-body); cursor: pointer; }
+.company-option:hover, .company-option:focus-visible { color: var(--color-text-heading); background: var(--color-bg-light); outline: none; }
+.company-option:focus-visible { box-shadow: var(--focus-ring); }
+.selected-company { margin-top: .5rem; color: var(--color-text-muted); font-size: .8rem; }
 
 .actions-list {
   display: flex;

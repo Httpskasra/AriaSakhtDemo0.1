@@ -40,8 +40,8 @@ const sections: Array<{ label: string; items: PanelNavDefinition[] }> = [
     items: [
       { icon: icon("tags"), label: "دسته‌بندی‌ها", route: "/dashboard/admin/categories", permission: Resource.CATEGORIES },
       { icon: icon("building"), label: "شرکت‌ها", route: "/dashboard/companies", permission: Resource.COMPANIES },
-      { icon: icon("users"), label: "کاربران", route: "/dashboard/admin/users", permission: Resource.USERS, requiredAction: Action.MANAGE },
-      { icon: icon("shield-check"), label: "نقش‌ها و دسترسی‌ها", route: "/dashboard/admin/roles", permission: Resource.USERS, requiredAction: Action.MANAGE },
+      { icon: icon("users"), label: "کاربران", route: "/dashboard/admin/users", permission: Resource.ALL, requiredAction: Action.MANAGE },
+      { icon: icon("shield-check"), label: "نقش‌ها و دسترسی‌ها", route: "/dashboard/admin/roles", permission: Resource.ALL, requiredAction: Action.MANAGE },
     ],
   },
 ];
@@ -86,7 +86,6 @@ export function usePanelNavigation() {
 
   const isManagement = computed(() => (
     hasPermission(Resource.ALL, Action.MANAGE) ||
-    hasPermission(Resource.USERS, Action.MANAGE) ||
     hasPermission(Resource.CATEGORIES, Action.CREATE) ||
     hasPermission(Resource.CATEGORIES, Action.UPDATE) ||
     hasPermission(Resource.CATEGORIES, Action.DELETE)

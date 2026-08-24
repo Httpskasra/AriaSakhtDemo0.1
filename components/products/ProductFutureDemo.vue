@@ -2,7 +2,7 @@
   <div class="container-future-demo">
     <ul v-if="attributes && Object.keys(attributes).length > 0">
       <li v-for="(value, key) in limitedAttributes" :key="key">
-        <span class="title">{{ key }}</span>
+        <span class="product-future__label">{{ key }}</span>
         <span class="val">{{ value }}</span>
       </li>
     </ul>
@@ -72,7 +72,7 @@ li:hover {
   transform: translateY(-2px);
 }
 
-.title {
+.product-future__label {
   color: var(--color-text-muted);
   font-family: var(--font-yekan);
   font-size: .78rem;
@@ -103,7 +103,7 @@ li:hover {
     padding: .75rem;
   }
 
-  .title {
+  .product-future__label {
     font-size: .7rem;
   }
 

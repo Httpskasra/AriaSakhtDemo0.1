@@ -141,7 +141,7 @@ onMounted(loadOverview);
   height: 3.5rem;
   border-radius: var(--radius-pill);
   background: var(--color-bg-light);
-  color: var(--blue-dark);
+  color: var(--color-text-heading);
   font-size: 1.75rem;
 }
 .dashboard-empty-state h1 { margin: 0; color: var(--color-text-heading); font-size: 1.5rem; font-weight: 800; }

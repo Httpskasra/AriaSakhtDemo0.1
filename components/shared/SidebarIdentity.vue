@@ -30,7 +30,7 @@ withDefaults(defineProps<{
   align-items: center;
   justify-content: space-around;
   gap: 1rem;
-  background-color: var(--blue-sky);
+  background-color: var(--color-bg-light);
   flex: none;
 }
 

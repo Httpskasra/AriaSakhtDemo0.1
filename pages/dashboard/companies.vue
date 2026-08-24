@@ -259,7 +259,7 @@ useHead({
 });
 
 // // دسترسی‌ها
-const { canCreate, canRead, canUpdate, canDelete } = useAccess(
+const { canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
   Resource.COMPANIES
 );
 // const { canCreate, canRead, canUpdate, canDelete } = {
@@ -514,9 +514,8 @@ const deleteCompany = async (company: Company) => {
   }
 };
 
-onMounted(() => {
-  fetchCompanies();
-});
+onMounted(() => { if (isReady.value) fetchCompanies(); });
+watch(isReady, (ready) => { if (ready) fetchCompanies(); }, { once: true });
 </script>
 
 <style scoped>

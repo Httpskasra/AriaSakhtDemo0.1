@@ -113,7 +113,7 @@ const onSubmit = async () => {
     <div class="section-container seller-page__content">
 
     <UCard class="company-card">
-      <form @submit.prevent="onSubmit" class="company-form space-y-6 text-right text-slate-800" dir="rtl">
+      <form @submit.prevent="onSubmit" class="company-form" dir="rtl">
         <div class="form-guidance" role="note">
           فیلدهای دارای ستاره (*) الزامی هستند. فیلدهای اختیاری: شناسه ملی/کد ملی، شماره تماس ثابت، آدرس دفتر مرکزی و لوگوی کسب‌وکار.
         </div>
@@ -198,13 +198,13 @@ const onSubmit = async () => {
         <UFormField label="لوگو یا تصویر کسب‌وکار (اختیاری)" class="company-field company-field--full" description="فرمت‌های JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت.">
           <div class="company-upload">
             <div v-if="logoUrl" class="company-logo-preview">
-              <img :src="logoUrl" alt="پیش‌نمایش لوگوی کسب‌وکار" class="h-full w-full object-cover" />
+              <img :src="logoUrl" alt="پیش‌نمایش لوگوی کسب‌وکار" class="company-logo-preview__image" />
             </div>
             <CompanyFileUpload type="company" @success="onLogoUploaded" @clear="onLogoCleared" />
           </div>
         </UFormField>
 
-        <div class="company-actions flex justify-start gap-3 border-t pt-4">
+        <div class="company-actions">
           <UButton
             type="submit" 
             color="primary" 
@@ -230,10 +230,10 @@ const onSubmit = async () => {
       </form>
     </UCard>
 
-    <div class="seller-help mt-8 bg-blue-50 p-4 rounded-field flex items-start gap-3 border border-blue-100">
-      <UIcon name="i-lucide-info" class="size-icon-action text-blue-600 shrink-0 mt-0.5" />
-      <div class="text-sm text-blue-800 leading-relaxed">
-        <p class="font-bold mb-1">راهنما:</p>
+    <div class="seller-help">
+      <UIcon name="i-lucide-info" class="seller-help__icon" />
+      <div>
+        <p class="seller-help__title">راهنما:</p>
         <p>پس از ارسال درخواست، کارشناسان ما ظرف مدت ۲۴ ساعت کاری مدارک شما را بررسی و پنل فروشندگی شما را فعال خواهند کرد. در صورت نیاز به راهنمایی بیشتر با پشتیبانی تماس بگیرید.</p>
       </div>
     </div>
@@ -258,6 +258,8 @@ const onSubmit = async () => {
   font-size: 0.875rem;
   font-weight: 600;
 }
+
+.company-form { display: grid; gap: 1.5rem; color: var(--color-text-heading); text-align: right; }
 
 .form-guidance {
   padding: .75rem 1rem;
@@ -429,7 +431,11 @@ const onSubmit = async () => {
 }
 
 .company-actions {
-  border-color: var(--gray-200);
+  display: flex;
+  justify-content: flex-start;
+  gap: .75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .company-submit,
@@ -472,6 +478,13 @@ const onSubmit = async () => {
   border-radius: var(--radius-field);
   background: var(--color-bg-light);
 }
+
+.company-logo-preview__image { width: 100%; height: 100%; object-fit: cover; }
+
+.seller-help { display: flex; align-items: flex-start; gap: .75rem; margin-top: 2rem; padding: 1rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-info-fg); background: var(--color-info-bg); line-height: var(--line-height-long-form); }
+.seller-help__icon { width: var(--spacing-icon-action); height: var(--spacing-icon-action); flex: none; margin-top: .125rem; }
+.seller-help__title { margin: 0 0 .25rem; font-weight: 800; }
+.seller-help p:last-child { margin: 0; }
 
 @media (max-width: 767px) {
   .seller-type-options {

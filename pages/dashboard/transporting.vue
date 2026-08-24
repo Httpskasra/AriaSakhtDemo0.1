@@ -74,11 +74,7 @@
                     {{ numberFormat(order.totalAmount) }}
                   </td>
                   <td class="px-4 py-3">
-                    <span
-                      class="px-2 py-1 rounded text-xs"
-                      :style="useStatusStyle(order.status)">
-                      {{ orderStatusText(order.status) }}
-                    </span>
+                    <PanelStatusBadge :label="orderStatusText(order.status)" :status="order.status" size="compact" />
                   </td>
                   <td class="px-4 py-3">
                     <UButton
@@ -201,12 +197,7 @@
                       ]"
                       :disabled="statusLoading[transporting._id || '']"
                       @update:model-value="(value) => updateStatus(transporting, value as any)" />
-                    <span
-                      v-else
-                      class="px-2 py-1 rounded text-xs"
-                      :style="useStatusStyle(transporting.status)">
-                      {{ statusText(transporting.status) }}
-                    </span>
+                    <PanelStatusBadge v-else :label="statusText(transporting.status)" :status="transporting.status" size="compact" />
                   </td>
                   <td class="px-4 py-3 flex gap-2">
                     <UButton

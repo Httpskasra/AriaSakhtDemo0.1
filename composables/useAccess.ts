@@ -3,7 +3,7 @@ import { usePermissions } from "~/composables/usePermissions";
 import { computed } from "vue";
 
 export function useAccess(resource: Resource) {
-  const { hasPermission, getActionsFor } = usePermissions();
+  const { hasPermission, getActionsFor, isReady } = usePermissions();
 
   const canManage = computed(() => hasPermission(resource, Action.MANAGE));
 
@@ -21,5 +21,6 @@ export function useAccess(resource: Resource) {
     canDelete,
     canManage,
     allActions,
+    isReady,
   };
 }

@@ -109,7 +109,7 @@ async function handleAction(item: SidebarNavItem) {
 }
 
 .sidebar-nav__item--active {
-  background-color: var(--blue-sky);
+  background-color: var(--color-bg-light);
   border-radius: var(--radius-card);
   color: var(--color-text-heading);
   box-shadow: var(--shadow-sidebar-active);

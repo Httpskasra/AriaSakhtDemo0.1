@@ -11,14 +11,14 @@ const end = computed(() => Math.min(props.page * props.limit, props.total));
 </script>
 
 <template>
-  <div v-if="total > 0 || hasSearchContext" class="text-sm text-gray-500 font-num">
+  <div v-if="total > 0 || hasSearchContext" class="record-count font-num">
     <template v-if="total > 0">
       نمایش 
-      <span class="font-yekan font-semibold text-blue-dark">{{ start }}</span>
+      <span class="record-count__value font-num">{{ start }}</span>
       تا
-      <span class="font-yekan font-semibold text-blue-dark">{{ end }}</span>
+      <span class="record-count__value font-num">{{ end }}</span>
       از
-      <span class="font-yekan font-semibold text-blue-dark">{{ total }}</span>
+      <span class="record-count__value font-num">{{ total }}</span>
       نتیجه
     </template>
     <template v-else-if="hasSearchContext">
@@ -26,3 +26,8 @@ const end = computed(() => Math.min(props.page * props.limit, props.total));
     </template>
   </div>
 </template>
+
+<style scoped>
+.record-count { color: var(--color-text-muted); font-size: .875rem; }
+.record-count__value { color: var(--color-text-heading); font-weight: 700; }
+</style>
