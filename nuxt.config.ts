@@ -58,6 +58,14 @@ export default defineNuxtConfig({
   // Nginx reserves /api/* for the NestJS backend.
   icon: {
     localApiEndpoint: "/_nuxt_icon",
+    // Bundle the Lucide collection into the Nuxt server and disable the
+    // external Iconify fallback. This keeps icons working under the site's
+    // `connect-src 'self'` CSP and avoids route freezes when Iconify is slow.
+    provider: "server",
+    serverBundle: {
+      collections: ["lucide"],
+    },
+    fallbackToApi: false,
   },
 
   hooks: {

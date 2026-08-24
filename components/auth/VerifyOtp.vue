@@ -88,6 +88,11 @@ const toast = useToast();
 const { fetchUser } = useUser();
 const { clearPending: clearPendingLogout } = usePendingLogout();
 
+interface VerifyOtpResponse {
+  accessToken: string;
+  csrfToken?: string | null;
+}
+
 onMounted(() => {
   startTimer();
   // resendOtp();
@@ -197,7 +202,7 @@ const verifyOtp = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await api.post("/auth/verify-otp", {
+    const response = await api.post<VerifyOtpResponse>("/auth/verify-otp", {
       phoneNumber: phoneNumber.value,
       otp: otpCode.value,
     });

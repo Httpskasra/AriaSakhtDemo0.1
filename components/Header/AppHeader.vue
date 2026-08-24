@@ -14,34 +14,16 @@ const cartStore = useCartStore();
 const { categories, loading: categoriesLoading, load } = useCategories();
 await load().catch(() => undefined);
 const mobileMenuOpen = ref(false);
-const isScrolledLocal = ref(false);
-const effectiveScrolled = computed(() => props.isScrolled || isScrolledLocal.value);
+const effectiveScrolled = computed(() => props.isScrolled);
 const topCategories = computed(() => categories.value.filter(category => !getParentCategoryId(category)));
 const popularCategories = computed(() => topCategories.value.slice(0, 5));
 const categoryPath = (category: Category) => ({ path: "/products", query: { categoryIds: getCategoryFilterIds(category, categories.value) } });
 const cartCountLabel = computed(() => cartStore.itemCount > 99 ? "99+" : String(cartStore.itemCount));
 const supportPhone = "021-12345678";
-let scrollFrame = 0;
 
 function handleCartClick() { return isAuthenticated.value ? navigateTo("/dashboard/account/cart") : setStep("signin"); }
 function closeMobileMenu() { mobileMenuOpen.value = false; }
 function openAuth() { setStep("signin"); closeMobileMenu(); }
-function handleScroll() {
-  if (scrollFrame) return;
-  scrollFrame = window.requestAnimationFrame(() => {
-    const scrollY = Math.max(window.scrollY, 0);
-    // Hysteresis prevents the collapsing header from toggling itself while
-    // the browser is recalculating the sticky layout near the threshold.
-    const next = isScrolledLocal.value ? scrollY > 8 : scrollY > 48;
-    if (next !== isScrolledLocal.value) isScrolledLocal.value = next;
-    scrollFrame = 0;
-  });
-}
-onMounted(() => { handleScroll(); window.addEventListener("scroll", handleScroll, { passive: true }); });
-onBeforeUnmount(() => {
-  window.removeEventListener("scroll", handleScroll);
-  if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
-});
 </script>
 
 <template>
@@ -96,8 +78,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; isolation:isolate; border-bottom:1px solid var(--color-border); background:var(--color-bg-surface-translucent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
-.site-header--scrolled .desktop-header__trust { display:none; }
-.site-header--scrolled .desktop-header__main-inner { min-height:4.25rem; }
+.site-header--scrolled .desktop-header__trust { display:block; }
+.site-header--scrolled .desktop-header__main-inner { min-height:5.25rem; }
 .desktop-header__trust { background:var(--color-text-heading); color:var(--color-bg-surface); }
 .desktop-header__trust-inner,.desktop-header__trust-links { display:flex; min-height:2rem; align-items:center; justify-content:space-between; }
 .desktop-header__trust-links { gap:1.5rem; font-size:.7rem; font-weight:700; }

@@ -34,6 +34,13 @@ export interface UpdateUserPermissionsRequestDto {
 }
 
 const refreshLocks = new WeakMap<object, Promise<string>>();
+const csrfCookieOptions = {
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  path: '/',
+  maxAge: 48 * 60 * 60,
+};
 
 function readCookie(cookieHeader: string | undefined, name: string): string | null {
   const value = cookieHeader
@@ -55,63 +62,112 @@ function upsertCookie(cookieHeader: string | undefined, name: string, value: str
   return cookies.join('; ');
 }
 
+function responseData(error: unknown): { status?: number; code?: string; message?: string } {
+  const axiosError = error as {
+    response?: { status?: number; data?: { code?: unknown; message?: unknown } };
+  };
+  const data = axiosError.response?.data;
+  return {
+    status: axiosError.response?.status,
+    code: typeof data?.code === 'string' ? data.code : undefined,
+    message: typeof data?.message === 'string' ? data.message : undefined,
+  };
+}
+
+const isCsrfFailure = (error: unknown): boolean => {
+  const details = responseData(error);
+  return details.code === 'AUTH_CSRF_INVALID'
+    || (details.status === 400 && details.message?.toLowerCase().includes('csrf') === true);
+};
+
+/**
+ * Only this explicit backend code is allowed to turn a refresh failure into
+ * a logout. Infrastructure failures must leave the local session intact so a
+ * later request can retry refresh.
+ */
+export const isInvalidRefreshSession = (error: unknown): boolean => {
+  const details = responseData(error);
+  return details.code === 'AUTH_SESSION_INVALID'
+    || (details.status === 401 && !details.code);
+};
+
 async function performRefresh(
   authStore: ReturnType<typeof useAuthStore>,
 ): Promise<string> {
   const config = useRuntimeConfig();
   const apiBase = (process.server ? config.serverApiBase : config.public.apiBase) as string;
-  const incomingCookie = process.server
-    ? useRequestHeaders(["cookie"]).cookie
-    : undefined;
-  let cookieHeaders = incomingCookie ? { Cookie: incomingCookie } : {};
+  const incomingHeaders = process.server
+    ? useRequestHeaders(["cookie", "user-agent"])
+    : {};
+  const incomingCookie = incomingHeaders.cookie;
+  const incomingUserAgent = incomingHeaders['user-agent'];
+  let upstreamHeaders: Record<string, string> = {
+    ...(incomingCookie ? { Cookie: incomingCookie } : {}),
+    // The backend binds refresh sessions to the browser User-Agent. Preserve
+    // it when SSR performs the internal refresh on behalf of that browser.
+    ...(incomingUserAgent ? { 'User-Agent': incomingUserAgent } : {}),
+  };
 
-  // Create this before the first await so the Nuxt SSR context is captured
-  // while the request composable context is active. The value is written only
-  // when SSR had to mint a missing CSRF cookie.
-  const serverCsrfCookie = process.server
-    ? useCookie<string | null>('csrfToken', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      path: '/',
-      maxAge: 48 * 60 * 60,
-    })
-    : null;
+  // Create this before the first await so the Nuxt SSR context is captured.
+  // Writing it on both server and client also covers browsers where the
+  // cross-origin Set-Cookie response is delayed or not persisted.
+  const csrfCookie = useCookie<string | null>('csrfToken', csrfCookieOptions);
 
   const browserCookie = process.client && typeof document !== 'undefined' ? document.cookie : undefined;
   // The backend validates the double-submit pair. A token in Pinia/Nuxt state
   // without its matching cookie is not usable, so the cookie is authoritative.
-  let csrfToken = readCookie(incomingCookie || browserCookie, 'csrfToken');
-  if (!csrfToken) {
+  let csrfToken = readCookie(incomingCookie || browserCookie, 'csrfToken') || csrfCookie.value;
+
+  const issueCsrfCookie = async (): Promise<void> => {
     const csrfResponse = await axios.get<{ csrfToken: string }>(
       `${apiBase}/auth/csrf`,
-      { withCredentials: true, headers: cookieHeaders, timeout: 10000 },
+      { withCredentials: true, headers: upstreamHeaders, timeout: 10000 },
     );
     csrfToken = csrfResponse.data.csrfToken;
     authStore.setCsrfToken(csrfToken);
+    csrfCookie.value = csrfToken;
 
     if (process.server) {
       // Axios on the server does not maintain a browser-like cookie jar. Add
       // the freshly issued CSRF cookie to the internal refresh request too.
       const cookieHeader = upsertCookie(incomingCookie, 'csrfToken', csrfToken);
-      cookieHeaders = { Cookie: cookieHeader };
-      if (serverCsrfCookie) serverCsrfCookie.value = csrfToken;
+      upstreamHeaders = { ...upstreamHeaders, Cookie: cookieHeader };
     }
+  };
+
+  if (!csrfToken) {
+    await issueCsrfCookie();
   } else {
     // Reuse the CSRF cookie already present on the incoming request/browser.
     authStore.setCsrfToken(csrfToken);
   }
 
   const payload: RefreshTokenRequestDto = {};
-  const { data } = await axios.post<RefreshTokenResponseDto>(
-    `${apiBase}/auth/refresh`,
-    payload,
-    {
-      withCredentials: true,
-      timeout: 10000,
-      headers: { ...cookieHeaders, "X-CSRF-Token": csrfToken },
-    },
-  );
+  let csrfRetried = false;
+  let data: RefreshTokenResponseDto;
+  while (true) {
+    try {
+      ({ data } = await axios.post<RefreshTokenResponseDto>(
+        `${apiBase}/auth/refresh`,
+        payload,
+        {
+          withCredentials: true,
+          timeout: 10000,
+          headers: { ...upstreamHeaders, "X-CSRF-Token": csrfToken },
+        },
+      ));
+      break;
+    } catch (error) {
+      // A rotated/stale CSRF cookie is recoverable. Mint one replacement and
+      // retry exactly once; never clear an otherwise valid login for this.
+      if (!csrfRetried && isCsrfFailure(error)) {
+        csrfRetried = true;
+        await issueCsrfCookie();
+        continue;
+      }
+      throw error;
+    }
+  }
 
   authStore.setTokens(data.accessToken, data.csrfToken || csrfToken);
   return data.accessToken;

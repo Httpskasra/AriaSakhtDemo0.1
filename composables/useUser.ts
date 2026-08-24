@@ -87,7 +87,9 @@ export const useUser = () => {
         if (currentRequest !== requestVersion.value) return Boolean(user.value);
 
         const status = error?.info?.status ?? error?.response?.status;
-        const isInvalidSession = status === 401 || status === 403;
+        // A 403 can be a permission/API problem and must not erase a valid
+        // login. Only an explicit authentication failure is session-invalid.
+        const isInvalidSession = status === 401;
 
         if (isInvalidSession) {
           // Only an explicit authentication/authorization failure is allowed

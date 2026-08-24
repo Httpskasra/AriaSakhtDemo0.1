@@ -1,6 +1,6 @@
-import axios, { type AxiosInstance, type AxiosError } from "axios";
+import axios, { type AxiosError, type AxiosInstance } from "axios";
 import { useAuthStore } from "~/stores/auth";
-import { refreshAccessToken } from "~/services/authService";
+import { isInvalidRefreshSession, refreshAccessToken } from "~/services/authService";
 import { useUser } from "~/composables/useUser";
 import {
   defineNuxtPlugin,
@@ -77,18 +77,17 @@ export default defineNuxtPlugin({
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
-          const refreshStatus = (refreshError as AxiosError)?.response?.status
-            ?? (refreshError as { info?: { status?: number } })?.info?.status;
-          const sessionIsInvalid = refreshStatus === 400 || refreshStatus === 401 || refreshStatus === 403;
+          const sessionIsInvalid = isInvalidRefreshSession(refreshError);
 
-          // A timeout, network outage or 5xx response must not destroy a
-          // valid local session. Only an explicit invalid refresh session is
-          // allowed to clear stores and redirect the user.
+          // A timeout, network outage, Redis outage, CSRF repair failure or
+          // 5xx response must not destroy a valid local session. Only an
+          // explicit AUTH_SESSION_INVALID response is allowed to clear
+          // stores and redirect the user.
           if (sessionIsInvalid) {
             authStore.clearTokens();
             useUser().clearUser();
             if (process.client && window.location.pathname.startsWith("/dashboard")) {
-              redirectPromise ??= navigateTo("/", { replace: true });
+              redirectPromise ??= Promise.resolve(navigateTo("/", { replace: true }));
               await redirectPromise;
             }
           }

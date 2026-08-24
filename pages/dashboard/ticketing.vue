@@ -16,27 +16,25 @@
       <!-- پنل فیلتر ساده -->
       <transition name="fade">
       <div v-if="showFilters" class="filter-panel panel-surface">
-          <USelect
-            v-model="statusFilter"
-            :items="[
-              { label: 'همه وضعیت‌ها', value: '' },
-              { label: 'باز', value: 'open' },
-              { label: 'در حال رسیدگی', value: 'in_progress' },
-              { label: 'حل‌شده', value: 'resolved' },
-              { label: 'بسته', value: 'closed' },
-              { label: 'دوباره بازشده', value: 'reopened' },
-              { label: 'ارجاع‌شده', value: 'escalated' }
-            ]" />
+          <label class="sr-only" for="ticket-status-filter">فیلتر وضعیت تیکت</label>
+          <select id="ticket-status-filter" v-model="statusFilter" class="ticket-select" dir="rtl">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="open">باز</option>
+            <option value="in_progress">در حال رسیدگی</option>
+            <option value="resolved">حل‌شده</option>
+            <option value="closed">بسته</option>
+            <option value="reopened">دوباره بازشده</option>
+            <option value="escalated">ارجاع‌شده</option>
+          </select>
 
-          <USelect
-            v-model="priorityFilter"
-            :items="[
-              { label: 'همه اولویت‌ها', value: '' },
-              { label: 'کم', value: 'low' },
-              { label: 'متوسط', value: 'medium' },
-              { label: 'زیاد', value: 'high' },
-              { label: 'فوری', value: 'urgent' }
-            ]" />
+          <label class="sr-only" for="ticket-priority-filter">فیلتر اولویت تیکت</label>
+          <select id="ticket-priority-filter" v-model="priorityFilter" class="ticket-select" dir="rtl">
+            <option value="">همه اولویت‌ها</option>
+            <option value="low">کم</option>
+            <option value="medium">متوسط</option>
+            <option value="high">زیاد</option>
+            <option value="urgent">فوری</option>
+          </select>
 
           <ActionButton tone="ghost" class="filter-clear" @click="clearFilters">
             حذف فیلترها
@@ -192,12 +190,12 @@
         </div>
         <div class="form-field">
           <label for="ticket-priority">اولویت</label>
-          <USelect id="ticket-priority" v-model="newTicketPriority" :items="[
-            { label: 'کم', value: 'low' },
-            { label: 'متوسط', value: 'medium' },
-            { label: 'زیاد', value: 'high' },
-            { label: 'فوری', value: 'urgent' }
-          ]" value-key="value" label-key="label" />
+          <select id="ticket-priority" v-model="newTicketPriority" class="ticket-select ticket-priority-select" dir="rtl">
+            <option value="low">کم</option>
+            <option value="medium">متوسط</option>
+            <option value="high">زیاد</option>
+            <option value="urgent">فوری</option>
+          </select>
         </div>
         <div class="form-field">
           <label for="ticket-description">توضیحات</label>
@@ -451,6 +449,40 @@ onMounted(fetchTickets);
 .filter-panel :deep(button) {
   max-width: 100%;
   min-width: 0;
+}
+
+.ticket-select {
+  width: 100%;
+  min-height: var(--control-height-md);
+  padding: .55rem .75rem;
+  color: var(--color-text-body);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-field);
+  font: inherit;
+  line-height: 1.4;
+  text-align: right;
+  cursor: pointer;
+}
+
+.ticket-select:hover {
+  border-color: var(--color-brand-blue);
+}
+
+.ticket-select:focus-visible {
+  outline: none;
+  border-color: var(--color-brand-blue);
+  box-shadow: var(--focus-ring);
+}
+
+.ticket-select:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-light);
+  cursor: not-allowed;
+}
+
+.ticket-priority-select {
+  min-height: var(--control-height-md);
 }
 
 .tickets-container {
