@@ -10,33 +10,31 @@
         <SharedAsyncState v-if="rolesLoading" state="loading" :skeleton-rows="5" />
         <SharedAsyncState v-else-if="rolesError" state="error" :message="rolesError" @retry="fetchRoles" />
         <SharedAsyncState v-else-if="roles.length === 0" state="empty" title="نقشی پیدا نشد" message="هنوز نقشی برای نمایش وجود ندارد." />
-        <TableScrollContainer v-else>
-          <UTable :data="roles" :columns="roleColumns" class="min-w-[34rem]">
-          <template #phoneNumber-cell="{ row }">
-            {{ row.original.phoneNumber || "-" }}
+        <PanelDataTable v-else :rows="roles" :columns="roleColumns" min-width="34rem">
+          <template #phoneNumber-data="{ row }">
+            {{ row.phoneNumber || "-" }}
           </template>
-          <template #nationalId-cell="{ row }">
-            {{ row.original.nationalId || "-" }}
+          <template #nationalId-data="{ row }">
+            {{ row.nationalId || "-" }}
           </template>
-          <template #permissions-cell="{ row }">
+          <template #permissions-data="{ row }">
             <span class="permissions-cell">
-              {{ formatPermissions(row.original.permissions) || "-" }}
+              {{ formatPermissions(row.permissions) || "-" }}
             </span>
           </template>
-          <template #actions-cell="{ row }">
+          <template #actions-data="{ row }">
             <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
                 color="warning"
                 variant="soft"
-                @click="editRole(row.original)">
+                @click="editRole(row)">
                 ویرایش
               </UButton>
             </div>
           </template>
-          </UTable>
-        </TableScrollContainer>
+        </PanelDataTable>
       </div>
     </div>
     </PanelPermissionGuard>
@@ -192,11 +190,11 @@ const roles = ref<Role[]>([]);
 const rolesLoading = ref(false);
 const rolesError = ref("");
 const roleColumns = computed(() => [
-  { accessorKey: "phoneNumber", header: "شماره تماس" },
-  { accessorKey: "nationalId", header: "کد ملی" },
-  { accessorKey: "permissions", header: "دسترسی‌ها" },
+  { key: "phoneNumber", label: "شماره تماس" },
+  { key: "nationalId", label: "کد ملی" },
+  { key: "permissions", label: "دسترسی‌ها" },
   ...(canUpdate.value
-    ? [{ accessorKey: "actions", header: "عملیات" }]
+    ? [{ key: "actions", label: "عملیات" }]
     : []),
 ]);
 const isModalOpen = ref(false);

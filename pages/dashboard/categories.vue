@@ -26,40 +26,38 @@
           state="empty"
           title="دسته‌بندی‌ای پیدا نشد"
           message="جستجو را تغییر دهید یا دسته‌بندی جدید بسازید." />
-        <TableScrollContainer v-else>
-          <UTable :data="filteredCategories" :columns="categoryColumns" class="min-w-[32rem]">
-          <template #name-cell="{ row }">
-            <div class="category-name-cell" :style="{ '--category-depth': row.original.depth }">
-              <span class="category-name-cell__marker" aria-hidden="true">{{ row.original.depth ? "↳" : "◆" }}</span>
-              <span>{{ row.original.name }}</span>
+        <PanelDataTable v-else :rows="filteredCategories" :columns="categoryColumns" min-width="32rem">
+          <template #name-data="{ row }">
+            <div class="category-name-cell" :style="{ '--category-depth': row.depth }">
+              <span class="category-name-cell__marker" aria-hidden="true">{{ row.depth ? "↳" : "◆" }}</span>
+              <span>{{ row.name }}</span>
             </div>
           </template>
-          <template #description-cell="{ row }">
-            {{ row.original.description || "-" }}
+          <template #description-data="{ row }">
+            {{ row.description || "-" }}
           </template>
-          <template #actions-cell="{ row }">
+          <template #actions-data="{ row }">
             <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
                 color="warning"
                 variant="soft"
-                @click="editCategory(row.original)">
+                @click="editCategory(row)">
                 ویرایش
               </UButton>
               <UButton
                 v-if="canDelete"
                 size="xs"
                 color="error"
-                :loading="deletingId === categoryId(row.original)"
+                :loading="deletingId === categoryId(row)"
                 :disabled="Boolean(deletingId)"
-                @click="deleteCategory(categoryId(row.original))">
+                @click="deleteCategory(categoryId(row))">
                 حذف
               </UButton>
             </div>
           </template>
-          </UTable>
-        </TableScrollContainer>
+        </PanelDataTable>
       </div>
     </div>
     </PanelPermissionGuard>
@@ -164,10 +162,10 @@ const search = ref("");
 const loading = ref(false);
 const loadError = ref("");
 const categoryColumns = computed(() => [
-  { accessorKey: "name", header: "نام دسته" },
-  { accessorKey: "description", header: "توضیحات" },
+  { key: "name", label: "نام دسته" },
+  { key: "description", label: "توضیحات" },
   ...(canUpdate.value || canDelete.value
-    ? [{ accessorKey: "actions", header: "عملیات" }]
+    ? [{ key: "actions", label: "عملیات" }]
     : []),
 ]);
 const { $axios } = useNuxtApp();
