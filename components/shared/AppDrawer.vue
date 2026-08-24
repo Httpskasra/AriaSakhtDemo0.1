@@ -119,9 +119,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.app-drawer { grid-area: drawer; min-width: 0; overflow: clip; }
+.app-drawer { grid-area: drawer; display: flex; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
 .app-drawer__backdrop { display: none; }
 .app-drawer__panel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   width: min(100%, var(--drawer-width));
@@ -147,7 +149,7 @@ onMounted(() => {
     transition: transform .25s ease;
     background: var(--color-bg-surface);
     box-shadow: var(--shadow-overlay);
-    overflow-y: auto;
+    overflow: hidden;
     overscroll-behavior: contain;
     padding: 3.75rem 0.75rem 1rem;
   }

@@ -21,6 +21,7 @@ const emit = defineEmits<{ navigate: [] }>();
   width: 100%;
   height: 100%;
   min-height: 0;
+  overflow: hidden;
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
   display: flex;

@@ -106,7 +106,11 @@ export default defineNuxtConfig({
   ],
 
   app: {
-    pageTransition: { name: 'page', mode: 'out-in' },
+    // Panel navigation must never leave NuxtPage empty while a legacy panel
+    // view is being resolved. The panel has its own loading/error states, so
+    // replacing the page atomically here only creates a blank shell when a
+    // chunk or API request is slow.
+    pageTransition: false,
     head: {
       htmlAttrs: {
         dir: 'rtl',

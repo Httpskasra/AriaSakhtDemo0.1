@@ -3,7 +3,14 @@
     <PanelHeader :title="panelTitle" :identity="identity" :collapsed="isSidebarCollapsed" @open-menu="isSidebarOpen = true" @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed" />
     <PanelSidebar v-model="isSidebarOpen" :collapsed="isSidebarCollapsed" :items="navItems" :identity="identity" />
     <main class="panel-layout__main">
-      <div class="panel-layout__content"><slot /></div>
+      <div class="panel-layout__content">
+        <Suspense>
+          <slot />
+          <template #fallback>
+            <SharedAsyncState state="loading" :skeleton-rows="3" />
+          </template>
+        </Suspense>
+      </div>
     </main>
   </div>
 </template>

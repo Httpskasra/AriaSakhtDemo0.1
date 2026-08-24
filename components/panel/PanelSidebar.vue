@@ -12,7 +12,7 @@ const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
 </template>
 
 <style scoped>
-.panel-sidebar { width:100%; height:100%; min-height:0; }
+.panel-sidebar { width:100%; height:100%; min-height:0; overflow:hidden; }
 .panel-sidebar :deep(.sidebar-identity) { display:none; }
 .panel-sidebar--collapsed :deep(.sidebar-nav__label),
 .panel-sidebar--collapsed :deep(.sidebar-nav__section),

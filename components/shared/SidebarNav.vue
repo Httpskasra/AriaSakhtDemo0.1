@@ -57,14 +57,24 @@ async function handleAction(item: SidebarNavItem) {
 .sidebar-nav {
   width: 100%;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   direction: rtl;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
   padding: .75rem 0 1.25rem;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
+
+.sidebar-nav::-webkit-scrollbar { width: .45rem; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { border-radius: var(--radius-pill); background: var(--color-border-strong); }
+.sidebar-nav::-webkit-scrollbar-thumb:hover { background: var(--color-text-disabled); }
 
 .sidebar-nav__item {
   width: calc(100% - 2.5rem);
