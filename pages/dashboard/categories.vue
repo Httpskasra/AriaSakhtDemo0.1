@@ -27,27 +27,33 @@
           title="دسته‌بندی‌ای پیدا نشد"
           message="جستجو را تغییر دهید یا دسته‌بندی جدید بسازید." />
         <TableScrollContainer v-else>
-          <UTable :rows="filteredCategories" :columns="categoryColumns" class="min-w-[32rem]">
-          <template #description-data="{ row }">
-            {{ row.description || "-" }}
+          <UTable :data="filteredCategories" :columns="categoryColumns" class="min-w-[32rem]">
+          <template #name-cell="{ row }">
+            <div class="category-name-cell" :style="{ '--category-depth': row.original.depth }">
+              <span class="category-name-cell__marker" aria-hidden="true">{{ row.original.depth ? "↳" : "◆" }}</span>
+              <span>{{ row.original.name }}</span>
+            </div>
           </template>
-          <template #actions-data="{ row }">
+          <template #description-cell="{ row }">
+            {{ row.original.description || "-" }}
+          </template>
+          <template #actions-cell="{ row }">
             <div class="panel-row-actions">
               <UButton
                 v-if="canUpdate"
                 size="xs"
                 color="warning"
                 variant="soft"
-                @click="editCategory(row)">
+                @click="editCategory(row.original)">
                 ویرایش
               </UButton>
               <UButton
                 v-if="canDelete"
                 size="xs"
                 color="error"
-                :loading="deletingId === row.id"
+                :loading="deletingId === categoryId(row.original)"
                 :disabled="Boolean(deletingId)"
-                @click="deleteCategory(row.id)">
+                @click="deleteCategory(categoryId(row.original))">
                 حذف
               </UButton>
             </div>
@@ -80,11 +86,11 @@
           <UTextarea v-model="form.description" :rows="3" />
         </UFormField>
 
-        <!-- والد (parentName = id والد) -->
-        <UFormField label="دسته والد" name="parentName">
+        <!-- والد -->
+        <UFormField label="دسته والد" name="parentId">
           <USelect
-            v-model="form.parentName"
-            :items="[{ label: 'بدون والد', value: '' }, ...categories.map((cat) => ({ label: cat.name, value: cat.id }))]" />
+            v-model="form.parentId"
+            :items="categoryOptions" />
         </UFormField>
 
         <!-- وضعیت -->
@@ -140,12 +146,17 @@ const { canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
 );
 
 type Category = {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   slug: string;
   description?: string;
-  parentName?: string;
+  parentId?: string | { _id?: string; id?: string; name?: string } | null;
   status: "draft" | "active" | "inactive";
+};
+
+type CategoryRow = Category & {
+  depth: number;
 };
 
 const categories = ref<Category[]>([]);
@@ -160,6 +171,13 @@ const categoryColumns = computed(() => [
     : []),
 ]);
 const { $axios } = useNuxtApp();
+const categoryId = (category: Category) => String(category.id || category._id || "");
+const parentCategoryId = (category: Category) => {
+  if (!category.parentId) return "";
+  return typeof category.parentId === "string"
+    ? category.parentId
+    : String(category.parentId.id || category.parentId._id || "");
+};
 
 const isModalOpen = ref(false);
 const saving = ref(false);
@@ -171,8 +189,34 @@ const form = ref({
   name: "",
   slug: "",
   description: "",
-  parentName: "",
+  parentId: "",
   status: "draft",
+});
+
+const categoryOptions = computed(() => {
+  const rows: CategoryRow[] = [];
+  const visited = new Set<string>();
+  const currentId = editMode.value ? form.value.id : "";
+  const walk = (parentId: string, depth: number) => {
+    categories.value
+      .filter((category) => parentCategoryId(category) === parentId && categoryId(category) !== currentId)
+      .sort((a, b) => a.name.localeCompare(b.name, "fa"))
+      .forEach((category) => {
+        const id = categoryId(category);
+        if (!id || visited.has(id)) return;
+        visited.add(id);
+        rows.push({ ...category, depth });
+        walk(id, depth + 1);
+      });
+  };
+  walk("", 0);
+  return [
+    { label: "بدون دسته والد", value: "" },
+    ...rows.map((category) => ({
+      label: `${"— ".repeat(category.depth)}${category.name}`,
+      value: categoryId(category),
+    })),
+  ];
 });
 
 const openCreateModal = () => {
@@ -182,7 +226,7 @@ const openCreateModal = () => {
     name: "",
     slug: "",
     description: "",
-    parentName: "",
+    parentId: "",
     status: "draft",
   };
   isModalOpen.value = true;
@@ -191,11 +235,11 @@ const openCreateModal = () => {
 const editCategory = (cat: Category) => {
   editMode.value = true;
   form.value = {
-    id: cat.id,
+    id: categoryId(cat),
     name: cat.name,
     slug: cat.slug,
     description: cat.description || "",
-    parentName: cat.parentName || "",
+    parentId: parentCategoryId(cat),
     status: cat.status as "draft" | "active" | "inactive",
   };
   isModalOpen.value = true;
@@ -203,13 +247,13 @@ const editCategory = (cat: Category) => {
 
 const deleteCategory = async (id: string) => {
   if (!canDelete.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه حذف ندارید.");
-  const category = categories.value.find((item) => item.id === id);
+  const category = categories.value.find((item) => categoryId(item) === id);
   if (!category) return feedback.error("حذف انجام نشد", "دسته‌بندی موردنظر پیدا نشد.");
   deleteTarget.value = category;
 };
 
 const confirmDelete = async () => {
-  const id = deleteTarget.value?.id;
+  const id = deleteTarget.value ? categoryId(deleteTarget.value) : "";
   if (!id) return;
   try {
     deletingId.value = id;
@@ -230,7 +274,8 @@ const fetchCategories = async () => {
   loadError.value = "";
   try {
     const { data } = await $axios.get("/categories");
-    categories.value = data;
+    const items = Array.isArray(data) ? data : data?.items;
+    categories.value = Array.isArray(items) ? items : [];
     //console.log(data);
   } catch (err) {
     console.error("خطا در گرفتن دسته‌بندی‌ها:", err);
@@ -241,11 +286,34 @@ const fetchCategories = async () => {
   }
 };
 
-const filteredCategories = computed(() => {
-  const query = search.value.trim().toLowerCase();
-  if (!query) return categories.value;
+const hierarchicalCategories = computed<CategoryRow[]>(() => {
+  const rows: CategoryRow[] = [];
+  const visited = new Set<string>();
+  const walk = (parentId: string, depth: number) => {
+    categories.value
+      .filter((category) => parentCategoryId(category) === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, "fa"))
+      .forEach((category) => {
+        const id = categoryId(category);
+        if (!id || visited.has(id)) return;
+        visited.add(id);
+        rows.push({ ...category, depth });
+        walk(id, depth + 1);
+      });
+  };
+  walk("", 0);
+  categories.value.forEach((category) => {
+    const id = categoryId(category);
+    if (id && !visited.has(id)) rows.push({ ...category, depth: 0 });
+  });
+  return rows;
+});
 
-  return categories.value.filter((cat) =>
+const filteredCategories = computed<CategoryRow[]>(() => {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return hierarchicalCategories.value;
+
+  return hierarchicalCategories.value.filter((cat) =>
     [cat.name, cat.slug, cat.description, cat.status]
       .filter(Boolean)
       .join(" ")
@@ -265,8 +333,7 @@ const saveCategory = async () => {
       return;
     }
     saving.value = true;
-    const parentId =
-      form.value.parentName === "" ? null : form.value.parentName;
+    const parentId = form.value.parentId === "" ? null : form.value.parentId;
 
     let payload;
     if (editMode.value) {
@@ -317,6 +384,24 @@ watch(isReady, (ready) => { if (ready) fetchCategories(); }, { once: true });
   display: grid;
   gap: 1rem;
   min-width: 0;
+}
+
+.category-name-cell {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 2.25rem;
+  padding-inline-start: calc(var(--category-depth, 0) * 1.25rem);
+  font-weight: 700;
+}
+
+.category-name-cell__marker {
+  display: inline-grid;
+  width: 1.1rem;
+  flex: 0 0 1.1rem;
+  place-items: center;
+  color: var(--color-brand-blue);
+  font-size: .7rem;
 }
 
 </style>
