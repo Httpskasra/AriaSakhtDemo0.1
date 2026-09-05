@@ -99,8 +99,10 @@ onBeforeUnmount(() => { if (pollTimer) clearTimeout(pollTimer); });
         </div>
 
         <div class="flex flex-col gap-3">
-          <UButton v-if="isSuccess" to="/dashboard/account/orders" color="primary" size="xl" block>مشاهده سفارش‌های من</UButton>
-          <UButton v-else-if="!loading" @click="loadTransaction" color="primary" size="xl" block>استعلام مجدد</UButton>
+          <UButton v-if="isSuccess" :to="transaction?.metadata?.kind === 'wallet_top_up' ? '/dashboard/wallets' : '/dashboard/account/orders'" color="primary" size="xl" block>
+            {{ transaction?.metadata?.kind === 'wallet_top_up' ? 'مشاهده کیف پول' : 'مشاهده سفارش‌های من' }}
+          </UButton>
+          <UButton v-else-if="!loading" @click="() => loadTransaction()" color="primary" size="xl" block>استعلام مجدد</UButton>
           <UButton to="/" variant="ghost" color="neutral" size="lg" block>بازگشت به صفحه اصلی</UButton>
         </div>
       </div>

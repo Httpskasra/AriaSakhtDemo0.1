@@ -1,7 +1,13 @@
 import { useApiClient } from '~/services/apiClient';
 
 export interface InitiatePaymentRequest { orderId: string; amount: number; }
-export interface InitiatePaymentResponse { trackId?: string; paymentUrl?: string; url?: string; }
+export interface InitiatePaymentResponse {
+  transactionId?: string;
+  localId?: string;
+  trackId?: string;
+  paymentUrl?: string;
+  url?: string;
+}
 
 export async function initiatePayment(payload: InitiatePaymentRequest): Promise<InitiatePaymentResponse> {
   const { data } = await useApiClient().post<InitiatePaymentResponse>('/payment/initiate', payload);

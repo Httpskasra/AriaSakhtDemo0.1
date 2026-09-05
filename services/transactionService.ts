@@ -11,10 +11,11 @@ export interface PaymentTransaction {
   updatedAt?: string;
   verifiedAt?: string;
   ref_id?: string;
+  metadata?: { kind?: string };
 }
 
 export async function getTransactionStatus(trackId: string, signal?: AbortSignal): Promise<PaymentTransaction> {
   const $axios = useApiClient();
-  const { data } = await $axios.get(`/transaction/${encodeURIComponent(trackId)}`, { signal });
+  const { data } = await $axios.get<PaymentTransaction>(`/transaction/${encodeURIComponent(trackId)}`, { signal });
   return data;
 }

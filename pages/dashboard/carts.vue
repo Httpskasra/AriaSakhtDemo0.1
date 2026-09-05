@@ -55,7 +55,7 @@
           <div class="summary-total"><dt>جمع نهایی</dt><dd>{{ numberFormat(totalPrice + shippingCost) }} ریال</dd></div>
         </dl>
         <div class="summary-actions">
-          <UButton v-if="canUpdate" block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">تسویه حساب</UButton>
+          <UButton v-if="canUpdate" block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">ثبت سفارش</UButton>
           <p v-else class="permission-note">مجوز تغییر یا ثبت سفارش برای این حساب فعال نیست.</p>
           <UButton block color="neutral" variant="soft" icon="i-lucide-arrow-left" to="/products">ادامه خرید</UButton>
         </div>
@@ -147,7 +147,7 @@ async function fetchCart() {
       let populatedCarts: Cart | Cart[] | null = null;
       try { populatedCarts = (await getPopulatedCart()).data; } catch { /* The active-cart response is enough for an empty or legacy cart. */ }
       const populatedCart = Array.isArray(populatedCarts)
-        ? populatedCarts.find((candidate) => candidate?._id === activeCart?._id || candidate?.status === "active")
+        ? populatedCarts.find((candidate) => candidate?.id === activeCart?.id || candidate?.status === "active")
         : populatedCarts;
       const data = populatedCart || activeCart;
       cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
@@ -231,7 +231,7 @@ async function checkout() {
   try {
     await checkoutCart({});
     cartItems.value = [];
-    feedback.success("سفارش با موفقیت ثبت شد");
+    feedback.success("سفارش ثبت شد", "برای پرداخت، سفارش موردنظر را از بخش سفارش‌ها انتخاب کنید.");
     await navigateTo({ path: "/dashboard/account/orders", query: { checkout: "success" } });
   } catch (error) {
     feedback.error(toUserFacingError(error, "ثبت سفارش انجام نشد.").message);
