@@ -34,6 +34,22 @@ export default defineNuxtPlugin({
   // Request Interceptor: Attach token
   api.interceptors.request.use(
     (requestConfig) => {
+      // Axios has a JSON content type as its instance default. When the
+      // browser sends FormData, that header must be removed so the browser
+      // can add multipart/form-data with the correct boundary. Keeping the
+      // JSON header makes Multer receive an empty file list.
+      if (
+        typeof FormData !== "undefined" &&
+        requestConfig.data instanceof FormData
+      ) {
+        if (requestConfig.headers && typeof requestConfig.headers.delete === "function") {
+          requestConfig.headers.delete("Content-Type");
+        } else if (requestConfig.headers) {
+          delete requestConfig.headers["Content-Type"];
+          delete requestConfig.headers["content-type"];
+        }
+      }
+
       const accessToken = authStore.getAccessToken();
       if (accessToken && !requestConfig.headers?.Authorization) {
         requestConfig.headers = requestConfig.headers || {};
