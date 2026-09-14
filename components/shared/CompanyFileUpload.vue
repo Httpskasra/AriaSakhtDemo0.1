@@ -166,11 +166,20 @@ const processFile = async (file: File) => {
       files: [{ filename: file.name, contentType: file.type, size: file.size }]
     });
 
-    const item = data.items[0];
+    const item = data?.items?.[0];
+    if (!item) throw new Error('Upload response did not include an upload item');
     if (!item.presignedUrl) {
-      // Fallback: If no presigned URL, maybe backend uploaded it or we should use direct upload
+      // Local-disk mode has no remote presigned URL. Upload the file through
+      // the authenticated backend endpoint instead of treating the URL as done.
+      const formData = new FormData();
+      formData.append('type', props.type);
+      formData.append('files', file);
+      const { data: uploadData } = await $axios.post('/images/upload', formData);
+      const uploadedItem = uploadData?.items?.[0];
+      if (!uploadedItem?.publicUrl) throw new Error('Upload response did not include a public URL');
+      uploadProgress.value = 100;
       uploadComplete.value = true;
-      emit('success', item.publicUrl);
+      emit('success', uploadedItem.publicUrl);
       return;
     }
 
