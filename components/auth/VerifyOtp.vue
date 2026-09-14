@@ -7,7 +7,7 @@
         class="otp-logo" />
 
       <p class="otp-message">
-        کد ۴ رقمی ارسال شده به شماره
+        کد ۶ رقمی ارسال شده به شماره
         <span class="otp-phone">
           {{ phoneNumber }}
         </span>
@@ -73,7 +73,7 @@ import { toEnglishDigits } from "@/utils/PhoneNumber";
 import { useApiClient, toUserFacingError } from "~/services/apiClient";
 
 const { phoneNumber, nationalId, flow } = useAuthData();
-const inputs = ref(Array(4).fill(""));
+const inputs = ref(Array(6).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
 const duration = 120;
@@ -150,7 +150,7 @@ const resendOtp = async () => {
 };
 
 const resetTimer = async () => {
-  inputs.value = Array(4).fill("");
+  inputs.value = Array(6).fill("");
   errorMessage.value = "";
   loading.value = false;
   startTimer();

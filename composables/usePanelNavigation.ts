@@ -42,6 +42,7 @@ const sections: Array<{ label: string; items: PanelNavDefinition[] }> = [
       { icon: icon("building"), label: "شرکت‌ها", route: "/dashboard/companies", permission: Resource.COMPANIES },
       { icon: icon("users"), label: "کاربران", route: "/dashboard/admin/users", permission: Resource.ALL, requiredAction: Action.MANAGE },
       { icon: icon("shield-check"), label: "نقش‌ها و دسترسی‌ها", route: "/dashboard/admin/roles", permission: Resource.ALL, requiredAction: Action.MANAGE },
+      { icon: icon("settings"), label: "تنظیمات سیستم", route: "/dashboard/admin/settings", permission: Resource.ALL, requiredAction: Action.MANAGE },
     ],
   },
 ];

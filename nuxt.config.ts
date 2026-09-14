@@ -85,6 +85,7 @@ export default defineNuxtConfig({
         "/dashboard/categories": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "categories", action: "r" } },
         "/dashboard/users": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "all", action: "m" } },
         "/dashboard/roles": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "all", action: "m" } },
+        "/dashboard/admin/settings": { layout: "panel", middleware: ["auth", "permission"], permission: { resource: "all", action: "m" } },
       };
 
       for (const page of pages) {
@@ -129,7 +130,17 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'مرکز مبادلات کالا و خدمات صنعتی کشور' }
+        { name: 'description', content: 'مرکز مبادلات کالا و خدمات صنعتی کشور' },
+        { name: 'theme-color', content: BRAND_BLUE },
+        { name: 'application-name', content: 'تجاریس' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' }
+      ],
+      link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+        { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png', sizes: '180x180' }
       ]
     }
   },
