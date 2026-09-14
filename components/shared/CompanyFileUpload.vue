@@ -123,6 +123,8 @@ const handleFileChange = (e: Event) => {
 };
 
 const processFile = async (file: File) => {
+  if (loading.value) return;
+
   const extension = getFileExtension(file.name);
   if (!ALLOWED_MIME_TYPES.has(file.type) || !ALLOWED_EXTENSIONS.has(extension)) {
     errorMessage.value = 'فرمت فایل باید JPG، PNG یا WEBP باشد.';
@@ -149,12 +151,12 @@ const processFile = async (file: File) => {
     if (props.type === 'company') {
       const formData = new FormData();
       formData.append('files', file);
-      const { data } = await $axios.post('/images/public-company-upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await $axios.post('/images/public-company-upload', formData);
+      const publicUrl = data?.items?.[0]?.publicUrl;
+      if (!publicUrl) throw new Error('Upload response did not include a public URL');
       uploadProgress.value = 100;
       uploadComplete.value = true;
-      emit('success', data.items[0].publicUrl);
+      emit('success', publicUrl);
       return;
     }
 
@@ -184,9 +186,20 @@ const processFile = async (file: File) => {
     uploadComplete.value = true;
     emit('success', item.publicUrl);
     uploadProgress.value = 100;
-  } catch (err: any) {
-    console.error('Upload error:', err);
-    errorMessage.value = 'خطا در بارگذاری تصویر. لطفا مجددا تلاش کنید.';
+  } catch (err: unknown) {
+    const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+    const retryAfterHeader = axios.isAxiosError(err) ? err.response?.headers?.['retry-after'] : undefined;
+    console.warn('Company image upload failed', { status });
+    if (status === 429) {
+      const retryAfter = Number(retryAfterHeader);
+      errorMessage.value = Number.isFinite(retryAfter) && retryAfter > 0
+        ? `تعداد تلاش‌ها زیاد شده است؛ لطفاً ${Math.ceil(retryAfter)} ثانیه دیگر دوباره تلاش کنید.`
+        : 'تعداد تلاش‌ها زیاد شده است؛ لطفاً کمی بعد دوباره تلاش کنید.';
+    } else if (status === 503) {
+      errorMessage.value = 'ذخیره‌سازی تصویر موقتاً در دسترس نیست؛ لطفاً بعداً دوباره تلاش کنید.';
+    } else {
+      errorMessage.value = 'خطا در بارگذاری تصویر. لطفاً مجدداً تلاش کنید.';
+    }
     emit('error', errorMessage.value);
   } finally {
     setTimeout(() => {
