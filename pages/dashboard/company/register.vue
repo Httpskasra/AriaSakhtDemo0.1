@@ -470,16 +470,33 @@ const onSubmit = async () => {
 }
 
 .company-logo-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 7rem;
   min-width: 7rem;
   height: 7rem;
   overflow: hidden;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  background: var(--color-bg-light);
+  /* A checkerboard keeps transparent and white logos visible in the preview. */
+  background-color: #475569;
+  background-image:
+    linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+    linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+    linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+  background-position: 0 0, 0.5rem 0, 0.5rem -0.5rem, 0 -0.5rem;
+  background-size: 1rem 1rem;
 }
 
-.company-logo-preview__image { width: 100%; height: 100%; object-fit: cover; }
+.company-logo-preview__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: .5rem;
+  object-fit: contain;
+}
 
 .seller-help { display: flex; align-items: flex-start; gap: .75rem; margin-top: 2rem; padding: 1rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-info-fg); background: var(--color-info-bg); line-height: var(--line-height-long-form); }
 .seller-help__icon { width: var(--spacing-icon-action); height: var(--spacing-icon-action); flex: none; margin-top: .125rem; }
