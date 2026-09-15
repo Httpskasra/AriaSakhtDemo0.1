@@ -1,6 +1,6 @@
 import { defineNuxtPlugin, useRequestHeaders } from "#app";
 import { useUser } from "~/composables/useUser";
-import { refreshAccessToken } from "~/services/authService";
+import { isInvalidRefreshSession, refreshAccessToken } from "~/services/authService";
 import { useAuthStore } from "~/stores/auth";
 import { usePendingLogout } from "~/composables/usePendingLogout";
 
@@ -62,10 +62,32 @@ export default defineNuxtPlugin({
       return;
     }
 
-    // On a normal SSR response, authStatus is already hydrated from the
-    // server. Only bootstrap client-only runtimes that still have no result.
-    if (authStatus.value === "loading") {
-      await fetchUser();
+    const authStore = useAuthStore();
+
+    // SSR normally hydrates both the user and the short-lived access token.
+    // If only the user arrived in the payload, restore the access token from
+    // the HttpOnly refresh cookie before the first protected navigation/API
+    // request. Never persist the access token in localStorage.
+    if (authStatus.value === "authenticated" && !authStore.getAccessToken()) {
+      try {
+        await refreshAccessToken();
+      } catch (error) {
+        // A genuinely invalid/expired refresh session is a real logout. A
+        // temporary API, Redis or network failure must keep the current user
+        // state so a later request can retry without forcing a login.
+        if (isInvalidRefreshSession(error)) {
+          authStore.clearTokens();
+          clearUser();
+        }
+      }
+      return;
+    }
+
+    // Retry an auth bootstrap that failed during SSR because of a temporary
+    // infrastructure problem. This prevents one transient outage from
+    // becoming a guest session after the page has hydrated.
+    if (authStatus.value === "loading" || authStatus.value === "unavailable") {
+      await fetchUser(authStatus.value === "unavailable");
     }
   },
 });
