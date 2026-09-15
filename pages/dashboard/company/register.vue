@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, reactive } from 'vue';
+import { computed, nextTick, ref, reactive } from 'vue';
 import { createAuthenticatedVendorRequest } from '~/services/companyService';
 
 definePageMeta({
@@ -15,11 +15,6 @@ const logoUrl = ref('');
 const sellerType = ref<'legal' | 'individual'>('legal');
 const errors = reactive<Record<string, string>>({});
 const isLegalSeller = computed(() => sellerType.value === 'legal');
-  const canSubmit = computed(() => Boolean(
-    state.name.trim()
-    && state.email.trim()
-    && (isLegalSeller.value ? state.registrationNumber.trim() : state.nationalId.trim())
-));
 
 const state = reactive({
   name: '',
@@ -44,6 +39,13 @@ const onLogoCleared = () => {
 };
 
 const clearErrors = () => Object.keys(errors).forEach((key) => { delete errors[key]; });
+const clearError = (field: string) => { delete errors[field]; };
+
+const selectSellerType = (type: 'legal' | 'individual') => {
+  sellerType.value = type;
+  clearError('registrationNumber');
+  clearError('nationalId');
+};
 
 const validate = () => {
   clearErrors();
@@ -59,7 +61,11 @@ const validate = () => {
 };
 
 const onSubmit = async () => {
-  if (!validate()) return;
+  if (!validate()) {
+    await nextTick();
+    document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    return;
+  }
 
   loading.value = true;
   try {
@@ -126,7 +132,7 @@ const onSubmit = async () => {
               :class="{ 'seller-type-option--active': sellerType === 'legal' }"
               :aria-checked="sellerType === 'legal'"
               role="radio"
-              @click="sellerType = 'legal'"
+              @click="selectSellerType('legal')"
             >
               <span class="seller-type-icon" aria-hidden="true"><UIcon name="i-lucide-building-2" /></span>
               <span class="seller-type-copy">
@@ -141,7 +147,7 @@ const onSubmit = async () => {
               :class="{ 'seller-type-option--active': sellerType === 'individual' }"
               :aria-checked="sellerType === 'individual'"
               role="radio"
-              @click="sellerType = 'individual'"
+              @click="selectSellerType('individual')"
             >
               <span class="seller-type-icon" aria-hidden="true"><UIcon name="i-lucide-user-round" /></span>
               <span class="seller-type-copy">
@@ -154,45 +160,47 @@ const onSubmit = async () => {
         </UFormField>
 
         <div class="company-fields">
-          <UFormField :label="isLegalSeller ? 'نام شرکت یا موسسه' : 'نام و نام خانوادگی'" required class="company-field" :error="errors.name" :description="isLegalSeller ? 'نام رسمی ثبت‌شدهٔ کسب‌وکار را وارد کنید.' : 'نام مطابق کد ملی را وارد کنید.'">
-            <div class="company-input-shell">
+          <UFormField :label="isLegalSeller ? 'نام شرکت یا موسسه' : 'نام و نام خانوادگی'" required class="company-field" :class="{ 'company-field--error': errors.name }" :error="errors.name" :description="isLegalSeller ? 'نام رسمی ثبت‌شدهٔ کسب‌وکار را وارد کنید.' : 'نام مطابق کد ملی را وارد کنید.'">
+            <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.name }">
               <UIcon name="i-lucide-building-2" class="company-input-icon" aria-hidden="true" />
-              <UInput v-model="state.name" class="company-input" :placeholder="isLegalSeller ? 'مثال: فولاد آریا' : 'مثال: علی رضایی'" :autocomplete="isLegalSeller ? 'organization' : 'name'" />
+              <UInput v-model="state.name" class="company-input" :aria-invalid="Boolean(errors.name)" :placeholder="isLegalSeller ? 'مثال: فولاد آریا' : 'مثال: علی رضایی'" :autocomplete="isLegalSeller ? 'organization' : 'name'" @update:model-value="clearError('name')" />
             </div>
           </UFormField>
 
-          <UFormField :label="`${isLegalSeller ? 'شناسه ملی' : 'کد ملی'}${isLegalSeller ? ' (اختیاری)' : ''}`" :required="!isLegalSeller" class="company-field" :error="errors.nationalId" :description="isLegalSeller ? 'در صورت تکمیل، باید دقیقاً ۱۰ رقم باشد.' : 'برای ثبت شخص حقیقی، کد ملی ۱۰ رقمی الزامی است.'">
-            <div class="company-input-shell">
+          <UFormField :label="`${isLegalSeller ? 'شناسه ملی' : 'کد ملی'}${isLegalSeller ? ' (اختیاری)' : ''}`" :required="!isLegalSeller" class="company-field" :class="{ 'company-field--error': errors.nationalId }" :error="errors.nationalId" :description="isLegalSeller ? 'در صورت تکمیل، باید دقیقاً ۱۰ رقم باشد.' : 'برای ثبت شخص حقیقی، کد ملی ۱۰ رقمی الزامی است.'">
+            <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.nationalId }">
               <UIcon name="i-lucide-hash" class="company-input-icon" aria-hidden="true" />
-              <UInput v-model="state.nationalId" class="company-input font-num" placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" maxlength="10" inputmode="numeric" autocomplete="off" />
+              <UInput v-model="state.nationalId" class="company-input font-num" :aria-invalid="Boolean(errors.nationalId)" placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" maxlength="10" inputmode="numeric" autocomplete="off" @update:model-value="clearError('nationalId')" />
             </div>
           </UFormField>
 
-          <UFormField v-if="isLegalSeller" label="شماره ثبت" required class="company-field" :error="errors.registrationNumber" description="فقط عدد، بدون فاصله یا خط تیره.">
-            <div class="company-input-shell">
+          <UFormField v-if="isLegalSeller" label="شماره ثبت" required class="company-field" :class="{ 'company-field--error': errors.registrationNumber }" :error="errors.registrationNumber" description="فقط عدد، بدون فاصله یا خط تیره.">
+            <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.registrationNumber }">
               <UIcon name="i-lucide-file-text" class="company-input-icon" aria-hidden="true" />
-              <UInput v-model="state.registrationNumber" class="company-input font-num" placeholder="مثال: ۱۲۳۴۵" maxlength="20" inputmode="numeric" autocomplete="off" />
+              <UInput v-model="state.registrationNumber" class="company-input font-num" :aria-invalid="Boolean(errors.registrationNumber)" placeholder="مثال: ۱۲۳۴۵" maxlength="20" inputmode="numeric" autocomplete="off" @update:model-value="clearError('registrationNumber')" />
             </div>
           </UFormField>
 
-          <UFormField label="ایمیل سازمانی" required class="company-field" :error="errors.email" description="برای دریافت اعلان‌های مربوط به درخواست و سفارش‌ها استفاده می‌شود.">
-            <div class="company-input-shell">
+          <UFormField label="ایمیل سازمانی" required class="company-field" :class="{ 'company-field--error': errors.email }" :error="errors.email" description="برای دریافت اعلان‌های مربوط به درخواست و سفارش‌ها استفاده می‌شود.">
+            <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.email }">
               <UIcon name="i-lucide-mail" class="company-input-icon" aria-hidden="true" />
-              <UInput v-model="state.email" class="company-input" type="email" placeholder="name@company.com" autocomplete="email" />
+              <UInput v-model="state.email" class="company-input" :aria-invalid="Boolean(errors.email)" type="email" placeholder="name@company.com" autocomplete="email" @update:model-value="clearError('email')" />
             </div>
           </UFormField>
 
-          <UFormField label="شماره تماس ثابت (اختیاری)" class="company-field" :error="errors.phone" description="در صورت تکمیل، همراه با پیش‌شماره شهر مثل ۰۲۱ وارد شود.">
-            <div class="company-input-shell">
+          <UFormField label="شماره تماس ثابت (اختیاری)" class="company-field" :class="{ 'company-field--error': errors.phone }" :error="errors.phone" description="در صورت تکمیل، همراه با پیش‌شماره شهر مثل ۰۲۱ وارد شود.">
+            <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.phone }">
               <UIcon name="i-lucide-phone" class="company-input-icon" aria-hidden="true" />
-              <UInput v-model="state.phone" class="company-input company-input--phone font-num" type="tel" placeholder="مثال: ۰۲۱۱۲۳۴۵۶۷۸" maxlength="15" autocomplete="tel" inputmode="tel" />
+              <UInput v-model="state.phone" class="company-input company-input--phone font-num" :aria-invalid="Boolean(errors.phone)" type="tel" placeholder="مثال: ۰۲۱۱۲۳۴۵۶۷۸" maxlength="15" autocomplete="tel" inputmode="tel" @update:model-value="clearError('phone')" />
             </div>
           </UFormField>
 
         </div>
 
         <UFormField label="آدرس دفتر مرکزی (اختیاری)" class="company-field company-field--full" description="استان، شهر و نشانی کامل را وارد کنید؛ حداکثر ۵۰۰ نویسه.">
-          <UTextarea v-model="state.address" class="company-textarea" :rows="4" maxlength="500" placeholder="مثال: تهران، خیابان ولیعصر..." autocomplete="street-address" />
+          <div class="company-textarea-shell">
+            <UTextarea v-model="state.address" class="company-textarea" :rows="4" maxlength="500" placeholder="مثال: تهران، خیابان ولیعصر..." autocomplete="street-address" />
+          </div>
         </UFormField>
 
         <UFormField label="لوگو یا تصویر کسب‌وکار (اختیاری)" class="company-field company-field--full" description="فرمت‌های JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت.">
@@ -211,7 +219,7 @@ const onSubmit = async () => {
             variant="solid"
             size="lg" 
             :loading="loading"
-            :disabled="loading || !canSubmit"
+            :disabled="loading"
             icon="i-lucide-send"
             class="company-submit"
           >
@@ -279,6 +287,10 @@ const onSubmit = async () => {
 
 .company-field {
   min-width: 0;
+}
+
+.company-field--error :deep(label) {
+  color: var(--color-danger-fg);
 }
 
 .company-field--full {
@@ -365,6 +377,20 @@ const onSubmit = async () => {
 
 .company-input-shell {
   position: relative;
+  width: 100%;
+}
+
+.company-input-shell--error :deep(input) {
+  border-color: var(--color-danger-fg);
+  background: var(--color-danger-bg);
+  box-shadow: 0 0 0 1px var(--color-danger-fg);
+}
+
+.company-input-shell--error .company-input-icon {
+  color: var(--color-danger-fg);
+}
+
+.company-textarea-shell {
   width: 100%;
 }
 
