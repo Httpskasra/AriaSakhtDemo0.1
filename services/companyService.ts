@@ -1,6 +1,6 @@
 // services/companyService.ts
 import type { AxiosResponse } from 'axios';
-import type { Company } from '~/types/company';
+import type { Company, VendorRequest, VendorRequestStatus } from '~/types/company';
 import { useApiClient } from '~/services/apiClient';
 
 export interface CreateCompanyDto {
@@ -23,6 +23,7 @@ export interface CompanyListParams {
   limit?: number;
   sort?: string;
   filter?: string;
+  managed?: boolean;
 }
 
 export interface CompanyListResponse {
@@ -36,8 +37,9 @@ export const listCompanies = async (
   params: CompanyListParams = {},
 ): Promise<CompanyListResponse> => {
   const { $axios } = useNuxtApp();
-  const { data } = await $axios.get<CompanyListResponse | Company[]>("/companies", {
-    params,
+  const { managed, ...query } = params;
+  const { data } = await $axios.get<CompanyListResponse | Company[]>(managed ? "/companies/manage" : "/companies", {
+    params: query,
   });
 
   if (Array.isArray(data)) {
@@ -88,6 +90,7 @@ export async function deleteCompany(id: string): Promise<void> {
 
 export interface CreateVendorRequestDto {
   companyName: string;
+  sellerType?: 'legal' | 'individual';
   email: string;
   phone?: string;
   registrationNumber?: string;
@@ -102,9 +105,63 @@ export const createVendorRequest = async (payload: CreateVendorRequestDto) => {
   return data;
 };
 
-export const getMyCompany = async (id: string): Promise<Company> => {
+export const createAuthenticatedVendorRequest = async (payload: CreateVendorRequestDto): Promise<VendorRequest> => {
+  const { data } = await useApiClient().post<VendorRequest>('/vendor-requests/me', payload);
+  return data;
+};
+
+export const listMyVendorRequests = async (): Promise<VendorRequest[]> => {
+  const { data } = await useApiClient().get<VendorRequest[]>('/vendor-requests/me');
+  return data;
+};
+
+export interface VendorRequestListParams {
+  status?: VendorRequestStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface VendorRequestListResponse {
+  items: VendorRequest[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const listVendorRequests = async (
+  params: VendorRequestListParams = {},
+): Promise<VendorRequestListResponse> => {
+  const { data } = await useApiClient().get<VendorRequestListResponse>('/vendor-requests', { params });
+  return data;
+};
+
+export const reviewVendorRequest = async (
+  id: string,
+  status: Exclude<VendorRequestStatus, 'pending'>,
+  rejectionReason?: string,
+): Promise<VendorRequest> => {
+  const { data } = await useApiClient().patch<VendorRequest>(`/vendor-requests/${encodeURIComponent(id)}/review`, {
+    status,
+    ...(rejectionReason?.trim() ? { rejectionReason: rejectionReason.trim() } : {}),
+  });
+  return data;
+};
+
+export const uploadPublicCompanyImage = async (file: File): Promise<string> => {
   const { $axios } = useNuxtApp();
-  const { data } = await $axios.get<Company>(`/companies/${id}`);
+  const formData = new FormData();
+  formData.append('files', file);
+  const { data } = await $axios.post<{ items: Array<{ publicUrl: string }> }>(
+    '/images/public-company-upload',
+    formData,
+  );
+  const publicUrl = data?.items?.[0]?.publicUrl;
+  if (!publicUrl) throw new Error('آدرس عمومی لوگو از سرور دریافت نشد.');
+  return publicUrl;
+};
+
+export const getMyCompany = async (): Promise<Company | null> => {
+  const { data } = await useApiClient().get<Company | null>('/companies/mine');
   return data;
 };
 

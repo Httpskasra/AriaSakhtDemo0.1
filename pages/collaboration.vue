@@ -20,6 +20,7 @@
           <input
             v-model="form.name"
             type="text"
+            required
             class="collaboration-form__input"
             placeholder="تجاریس" />
         </div>
@@ -30,6 +31,7 @@
           <input
             v-model="form.email"
             type="email"
+            required
             class="collaboration-form__input"
             placeholder="email@example.com" />
         </div>
@@ -60,6 +62,7 @@
           <input
             v-model="form.registrationNumber"
             type="text"
+            required
             class="collaboration-form__input"
             placeholder="10002110222" />
         </div>
@@ -118,12 +121,19 @@ useHead({
 import { ref, reactive } from "vue";
 import { toInternationalPhone } from "@/utils/PhoneNumber";
 import type { AxiosError } from "axios";
-import { createVendorRequest } from '~/services/companyService';
+import {
+  createVendorRequest,
+  createAuthenticatedVendorRequest,
+  uploadPublicCompanyImage,
+  type CreateVendorRequestDto,
+} from '~/services/companyService';
+import { useUser } from '~/composables/useUser';
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
+const { isAuthenticated } = useUser();
 
 const form = reactive({
   name: "",
@@ -155,40 +165,40 @@ function resetForm() {
 async function submit() {
   error.value = null;
   success.value = null;
+  if (!form.name.trim() || !form.email.trim() || !form.registrationNumber.trim()) {
+    error.value = "نام شرکت، ایمیل و شماره ثبت الزامی هستند.";
+    return;
+  }
   loading.value = true;
   try {
-    // Backend expects string fields in JSON. Convert file to base64 string if provided.
-    async function fileToBase64(file: File) {
-      return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = (e) => reject(e);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    const payload = {
+    const payload: CreateVendorRequestDto = {
       companyName: String(form.name || ""),
+      sellerType: "legal" as const,
       email: String(form.email || ""),
       phone: toInternationalPhone(String(form.phone || "")) || undefined,
       registrationNumber: String(form.registrationNumber || "") || undefined,
       address: String(form.address || "") || undefined,
       nationalId: String(form.nationalId || "") || undefined,
-      imageUrl: "",
-    } as Record<string, string | undefined>;
+      imageUrl: undefined,
+    };
 
     if (form.image) {
-      try {
-        payload.imageUrl = await fileToBase64(form.image);
-      } catch (e) {
-        console.warn("image convert failed", e);
-        payload.imageUrl = undefined;
+      const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+      if (!allowedTypes.has(form.image.type) || form.image.size > 10 * 1024 * 1024) {
+        throw new Error("لوگو باید JPG، PNG یا WEBP و حداکثر ۱۰ مگابایت باشد.");
       }
+      payload.imageUrl = await uploadPublicCompanyImage(form.image);
     }
 
-    await createVendorRequest(payload);
+    if (isAuthenticated.value) {
+      await createAuthenticatedVendorRequest(payload);
+    } else {
+      await createVendorRequest(payload);
+    }
 
-    success.value = "اطلاعات با موفقیت ارسال شد.";
+    success.value = isAuthenticated.value
+      ? "درخواست شما با موفقیت ثبت شد و پس از بررسی در بخش «شرکت من» قابل پیگیری است."
+      : "اطلاعات با موفقیت ارسال شد. برای پیگیری و فعال‌سازی شرکت، پس از ورود از بخش «فروشنده شوید» درخواست خود را ثبت کنید.";
     resetForm();
   } catch (err) {
     const e = err as AxiosError;

@@ -39,7 +39,8 @@ const sections: Array<{ label: string; items: PanelNavDefinition[] }> = [
     label: "مدیریت",
     items: [
       { icon: icon("tags"), label: "دسته‌بندی‌ها", route: "/dashboard/admin/categories", permission: Resource.CATEGORIES },
-      { icon: icon("building"), label: "شرکت‌ها", route: "/dashboard/companies", permission: Resource.COMPANIES },
+      { icon: icon("building"), label: "شرکت‌ها", route: "/dashboard/companies", permission: Resource.COMPANIES, requiredAction: Action.UPDATE },
+      { icon: icon("clipboard-check"), label: "درخواست‌های فروشندگی", route: "/dashboard/admin/vendor-requests", permission: Resource.COMPANIES, requiredAction: Action.UPDATE },
       { icon: icon("users"), label: "کاربران", route: "/dashboard/admin/users", permission: Resource.ALL, requiredAction: Action.MANAGE },
       { icon: icon("shield-check"), label: "نقش‌ها و دسترسی‌ها", route: "/dashboard/admin/roles", permission: Resource.ALL, requiredAction: Action.MANAGE },
       { icon: icon("settings"), label: "تنظیمات سیستم", route: "/dashboard/admin/settings", permission: Resource.ALL, requiredAction: Action.MANAGE },

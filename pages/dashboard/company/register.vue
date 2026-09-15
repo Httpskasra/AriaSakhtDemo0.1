@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, reactive } from 'vue';
-import { createVendorRequest } from '~/services/companyService';
-import { useUser } from '~/composables/useUser';
+import { createAuthenticatedVendorRequest } from '~/services/companyService';
 
 definePageMeta({
   layout: 'default',
@@ -10,17 +9,16 @@ definePageMeta({
 
 const toast = useToast();
 const router = useRouter();
-const { isAuthenticated } = useUser();
 
 const loading = ref(false);
 const logoUrl = ref('');
 const sellerType = ref<'legal' | 'individual'>('legal');
 const errors = reactive<Record<string, string>>({});
 const isLegalSeller = computed(() => sellerType.value === 'legal');
-const canSubmit = computed(() => Boolean(
-  state.name.trim()
-  && state.email.trim()
-  && (!isLegalSeller.value || state.registrationNumber.trim())
+  const canSubmit = computed(() => Boolean(
+    state.name.trim()
+    && state.email.trim()
+    && (isLegalSeller.value ? state.registrationNumber.trim() : state.nationalId.trim())
 ));
 
 const state = reactive({
@@ -53,8 +51,9 @@ const validate = () => {
   if (!state.email.trim()) errors.email = 'ایمیل سازمانی الزامی است.';
   else if (!/^\S+@\S+\.\S+$/.test(state.email.trim())) errors.email = 'یک ایمیل معتبر وارد کنید.';
   if (isLegalSeller.value && !state.registrationNumber.trim()) errors.registrationNumber = 'شماره ثبت برای شخص حقوقی الزامی است.';
+  if (!isLegalSeller.value && !state.nationalId.trim()) errors.nationalId = 'کد ملی برای شخص حقیقی الزامی است.';
   if (state.nationalId && !/^[0-9۰-۹]{10}$/.test(state.nationalId.trim())) errors.nationalId = 'شناسه ملی یا کد ملی باید ۱۰ رقم باشد.';
-  if (state.registrationNumber && !/^[0-9۰-۹]{3,20}$/.test(state.registrationNumber.trim())) errors.registrationNumber = 'شماره ثبت باید فقط شامل اعداد باشد.';
+  if (isLegalSeller.value && state.registrationNumber && !/^[0-9۰-۹]{3,20}$/.test(state.registrationNumber.trim())) errors.registrationNumber = 'شماره ثبت باید فقط شامل اعداد باشد.';
   if (state.phone && !/^[0-9۰-۹+()\-\s]{7,15}$/.test(state.phone.trim())) errors.phone = 'شماره تماس را همراه با پیش‌شماره وارد کنید.';
   return Object.keys(errors).length === 0;
 };
@@ -66,6 +65,7 @@ const onSubmit = async () => {
   try {
     const payload = {
       companyName: state.name,
+      sellerType: sellerType.value,
       email: state.email,
       phone: state.phone || undefined,
       registrationNumber: isLegalSeller.value ? state.registrationNumber || undefined : undefined,
@@ -74,7 +74,7 @@ const onSubmit = async () => {
       imageUrl: logoUrl.value || undefined,
     };
 
-    await createVendorRequest(payload);
+    await createAuthenticatedVendorRequest(payload);
 
     toast.add({
       title: 'موفقیت',
@@ -90,7 +90,7 @@ const onSubmit = async () => {
     state.address = '';
     logoUrl.value = '';
 
-    router.push(isAuthenticated.value ? '/dashboard' : '/');
+    await router.push('/dashboard/seller/company');
   } catch (err: any) {
     toast.add({
       title: 'خطا در ثبت',
@@ -115,7 +115,7 @@ const onSubmit = async () => {
     <UCard class="company-card">
       <form @submit.prevent="onSubmit" class="company-form" dir="rtl">
         <div class="form-guidance" role="note">
-          فیلدهای دارای ستاره (*) الزامی هستند. فیلدهای اختیاری: شناسه ملی/کد ملی، شماره تماس ثابت، آدرس دفتر مرکزی و لوگوی کسب‌وکار.
+          فیلدهای دارای ستاره (*) الزامی هستند. برای شخص حقوقی، شماره ثبت الزامی است؛ برای شخص حقیقی، کد ملی الزامی است. شماره تماس ثابت، آدرس دفتر مرکزی و لوگوی کسب‌وکار اختیاری هستند.
         </div>
 
         <UFormField label="نوع تأمین‌کننده" required class="company-field company-field--full" description="نوع فعالیت خود را انتخاب کنید تا فیلدهای شناسایی متناسب نمایش داده شوند.">
@@ -161,7 +161,7 @@ const onSubmit = async () => {
             </div>
           </UFormField>
 
-          <UFormField :label="`${isLegalSeller ? 'شناسه ملی' : 'کد ملی'} (اختیاری)`" class="company-field" :error="errors.nationalId" description="در صورت تکمیل، باید دقیقاً ۱۰ رقم باشد.">
+          <UFormField :label="`${isLegalSeller ? 'شناسه ملی' : 'کد ملی'}${isLegalSeller ? ' (اختیاری)' : ''}`" :required="!isLegalSeller" class="company-field" :error="errors.nationalId" :description="isLegalSeller ? 'در صورت تکمیل، باید دقیقاً ۱۰ رقم باشد.' : 'برای ثبت شخص حقیقی، کد ملی ۱۰ رقمی الزامی است.'">
             <div class="company-input-shell">
               <UIcon name="i-lucide-hash" class="company-input-icon" aria-hidden="true" />
               <UInput v-model="state.nationalId" class="company-input font-num" placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" maxlength="10" inputmode="numeric" autocomplete="off" />

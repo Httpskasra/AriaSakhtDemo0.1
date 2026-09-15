@@ -2,6 +2,7 @@ export interface Company {
   id?: string;
   _id?: string;
   name: string;
+  sellerType?: "legal" | "individual";
   email: string;
   phone?: string;
   registrationNumber: string;
@@ -13,4 +14,25 @@ export interface Company {
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export type VendorRequestStatus = "pending" | "approved" | "rejected";
+
+export interface VendorRequest {
+  _id: string;
+  userId?: string;
+  companyName: string;
+  sellerType?: "legal" | "individual";
+  email: string;
+  phone?: string;
+  registrationNumber?: string;
+  nationalId?: string;
+  address?: string;
+  imageUrl?: string;
+  status: VendorRequestStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  companyId?: string;
+  createdAt?: string;
 }

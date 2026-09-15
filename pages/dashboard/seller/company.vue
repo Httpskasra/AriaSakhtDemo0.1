@@ -4,14 +4,27 @@
       <template #actions>
         <UButton v-if="company && canUpdate" icon="i-lucide-pencil" @click="openEdit">ویرایش اطلاعات</UButton>
         <UButton v-else-if="!company && !loading" to="/dashboard/company/register" icon="i-lucide-plus">ثبت شرکت</UButton>
-        <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی شرکت" @click="fetchCompany">به‌روزرسانی</UButton>
+        <UButton icon="i-lucide-refresh-cw" variant="soft" :loading="loading" aria-label="به‌روزرسانی شرکت" @click="refreshAll">به‌روزرسانی</UButton>
       </template>
     </PanelPageHeader>
 
+    <article v-if="latestVendorRequest" class="vendor-request-status panel-surface" :class="`vendor-request-status--${latestVendorRequest.status}`">
+      <div>
+        <p class="vendor-request-status__eyebrow">آخرین درخواست فروشندگی</p>
+        <h2>{{ latestVendorRequest.companyName }}</h2>
+        <p>{{ vendorRequestStatusLabel(latestVendorRequest.status) }}</p>
+        <p v-if="latestVendorRequest.status === 'rejected' && latestVendorRequest.rejectionReason" class="vendor-request-status__reason">
+          دلیل رد: {{ latestVendorRequest.rejectionReason }}
+        </p>
+      </div>
+      <UIcon :name="vendorRequestStatusIcon(latestVendorRequest.status)" aria-hidden="true" />
+    </article>
+    <p v-if="vendorRequestError" class="vendor-request-error" role="status">وضعیت درخواست فروشندگی فعلاً قابل دریافت نیست؛ برای جلوگیری از ثبت درخواست تکراری، کمی بعد دوباره به‌روزرسانی کنید.</p>
+
     <SharedAsyncState v-if="!isReady || loading" state="loading" :skeleton-rows="3" />
-    <SharedAsyncState v-else-if="errorMessage" state="error" :message="errorMessage" @retry="fetchCompany" />
-    <SharedAsyncState v-else-if="!company" state="empty" title="هنوز شرکتی برای حساب شما ثبت نشده است" message="برای شروع فروشندگی، اطلاعات شرکت خود را ثبت کنید.">
-      <template #actions><UButton to="/dashboard/company/register" icon="i-lucide-arrow-left">ثبت شرکت</UButton></template>
+    <SharedAsyncState v-else-if="errorMessage" state="error" :message="errorMessage" @retry="refreshAll" />
+    <SharedAsyncState v-else-if="!company" state="empty" title="هنوز شرکتی برای حساب شما ثبت نشده است" message="پس از تأیید درخواست، شرکت شما در همین بخش نمایش داده می‌شود.">
+      <template #actions><UButton v-if="!vendorRequestError && (!latestVendorRequest || latestVendorRequest.status === 'rejected' || latestVendorRequest.status === 'approved')" to="/dashboard/company/register" icon="i-lucide-arrow-left">ثبت درخواست جدید</UButton></template>
     </SharedAsyncState>
     <div v-else class="company-content">
       <article class="company-summary panel-surface">
@@ -52,17 +65,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Company } from "~/types/company";
-import { getMyCompany, updateCompany } from "~/services/companyService";
+import { getMyCompany, listMyVendorRequests, updateCompany } from "~/services/companyService";
 import { toUserFacingError } from "~/services/apiClient";
+import type { VendorRequest } from "~/types/company";
 
 definePageMeta({ layout: "panel", middleware: ["auth", "permission"], permission: { resource: "companies", action: "r" } });
 useHead({ title: "داشبورد | شرکت من" });
 
-const { user } = useUser();
 const { canUpdate, isReady } = useAccess(Resource.COMPANIES);
 const company = ref<Company | null>(null);
 const loading = ref(false);
@@ -71,21 +84,17 @@ const showEdit = ref(false);
 const saving = ref(false);
 const formError = ref("");
 const form = ref({ name: "", email: "", phone: "", registrationNumber: "", address: "" });
+const vendorRequests = ref<VendorRequest[]>([]);
+const vendorRequestError = ref("");
+const latestVendorRequest = computed(() => vendorRequests.value[0] || null);
 let companyRequest: Promise<void> | null = null;
-
-const companyId = () => {
-  const current = user.value as (typeof user.value & { companyId?: string; profile?: { companyId?: string } }) | null;
-  return current?.companyId || current?.profile?.companyId || "";
-};
 
 async function fetchCompany() {
   if (companyRequest) return companyRequest;
 
   const request = (async () => {
-    const id = companyId();
-    if (!id) { company.value = null; errorMessage.value = ""; return; }
     loading.value = true; errorMessage.value = "";
-    try { company.value = await getMyCompany(id); }
+    try { company.value = await getMyCompany(); }
     catch (error) { company.value = null; errorMessage.value = toUserFacingError(error, "دریافت اطلاعات شرکت انجام نشد.").message; }
     finally { loading.value = false; }
   })();
@@ -100,6 +109,8 @@ async function fetchCompany() {
 
 function statusLabel(status?: Company["status"]) { return ({ active: "فعال", pending: "در انتظار بررسی", suspended: "معلق", rejected: "رد شده" } as Record<string, string>)[status || ""] || "نامشخص"; }
 function statusSemantic(status?: Company["status"]) { return status === "active" ? "success" : status === "rejected" ? "danger" : "warning"; }
+function vendorRequestStatusLabel(status: VendorRequest["status"]) { return ({ pending: "در انتظار بررسی ادمین", approved: "تأیید شده و شرکت شما فعال شد", rejected: "رد شده" } as Record<string, string>)[status]; }
+function vendorRequestStatusIcon(status: VendorRequest["status"]) { return status === "approved" ? "i-lucide-circle-check" : status === "rejected" ? "i-lucide-circle-x" : "i-lucide-clock-3"; }
 function openEdit() { if (!company.value) return; form.value = { name: company.value.name || "", email: company.value.email || "", phone: company.value.phone || "", registrationNumber: company.value.registrationNumber || "", address: company.value.address || "" }; formError.value = ""; showEdit.value = true; }
 function closeEdit() { if (!saving.value) showEdit.value = false; }
 async function saveCompany() {
@@ -111,12 +122,36 @@ async function saveCompany() {
   finally { saving.value = false; }
 }
 
-onMounted(() => { if (isReady.value) fetchCompany(); });
-watch(isReady, (ready) => { if (ready) fetchCompany(); }, { once: true });
+async function fetchVendorRequests() {
+  vendorRequestError.value = "";
+  try { vendorRequests.value = await listMyVendorRequests(); }
+  catch (error) {
+    vendorRequests.value = [];
+    vendorRequestError.value = toUserFacingError(error).message;
+  }
+}
+
+async function refreshAll() {
+  await Promise.all([fetchCompany(), fetchVendorRequests()]);
+}
+
+onMounted(() => { if (isReady.value) { fetchCompany(); fetchVendorRequests(); } });
+watch(isReady, (ready) => { if (ready) { fetchCompany(); fetchVendorRequests(); } }, { once: true });
 </script>
 
 <style scoped>
 .seller-company-page, .company-content { display:grid; gap:1rem; }
+.vendor-request-status { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.25rem; border-inline-start:.25rem solid var(--color-brand-blue); }
+.vendor-request-status h2 { margin:.2rem 0; color:var(--color-text-heading); font-size:1rem; font-weight:800; }
+.vendor-request-status p { margin:0; color:var(--color-text-muted); font-size:.85rem; }
+.vendor-request-status__eyebrow { font-size:.75rem !important; font-weight:700; }
+.vendor-request-status > .iconify { flex:none; color:var(--color-brand-blue); font-size:1.5rem; }
+.vendor-request-status--approved { border-color:var(--color-success); }
+.vendor-request-status--approved > .iconify { color:var(--color-success); }
+.vendor-request-status--rejected { border-color:var(--color-danger); }
+.vendor-request-status--rejected > .iconify { color:var(--color-danger); }
+.vendor-request-status__reason { margin-top:.35rem !important; color:var(--color-danger) !important; }
+.vendor-request-error { margin:0; padding:.75rem 1rem; color:var(--color-warning-fg); background:var(--color-warning-bg); border-radius:var(--radius-field); font-size:.85rem; }
 .company-summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-width:0; padding:1.25rem; }
 .company-summary__identity { display:flex; align-items:center; gap:1rem; min-width:0; flex:1 1 auto; }
 .company-summary h2, .company-details h2, .company-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight:800; }

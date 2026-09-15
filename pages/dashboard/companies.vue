@@ -1,6 +1,9 @@
 <template>
     <PanelPageHeader title="شرکت‌ها" subtitle="شرکت‌ها و وضعیت فعالیت تأمین‌کنندگان را مدیریت کنید" icon="i-lucide-building-2">
-      <template #actions><UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">افزودن شرکت</UButton></template>
+      <template #actions>
+        <UButton v-if="canUpdate" to="/dashboard/admin/vendor-requests" color="neutral" variant="soft" icon="i-lucide-clipboard-check">درخواست‌های فروشندگی</UButton>
+        <UButton v-if="canCreate" icon="i-lucide-plus" @click="openModal()">افزودن شرکت</UButton>
+      </template>
     </PanelPageHeader>
 
     <div class="space-y-4" dir="rtl">
@@ -209,8 +212,8 @@
               <UInput v-model="form.phone" />
             </UFormField>
 
-            <UFormField label="شماره ثبت" name="registrationNumber">
-              <UInput v-model="form.registrationNumber" />
+            <UFormField label="شماره ثبت" name="registrationNumber" required>
+              <UInput v-model="form.registrationNumber" required inputmode="numeric" />
             </UFormField>
 
             <UFormField label="آدرس" name="address">
@@ -259,7 +262,7 @@ useHead({
 });
 
 // // دسترسی‌ها
-const { canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
+const { canManage, canCreate, canRead, canUpdate, canDelete, isReady } = useAccess(
   Resource.COMPANIES
 );
 // const { canCreate, canRead, canUpdate, canDelete } = {
@@ -372,6 +375,7 @@ const fetchCompanies = async () => {
       limit: limit.value,
       sort: sort.value,
       filter: search.value.trim() || undefined,
+      managed: true,
     });
     companies.value = result.items;
     for (const company of result.items) {
@@ -472,21 +476,27 @@ const saveCompany = async () => {
         feedback.error("شناسه نامعتبر", "شناسه شرکت معتبر نیست.");
         return;
       }
-      // فقط فیلدهای مجاز را ارسال کن
-      const cleanData = {
-        id: selectedId.value, // اضافه کردن id
-        name: form.value.name,
-        email: form.value.email,
-        phone: form.value.phone,
-        registrationNumber: form.value.registrationNumber,
-        address: form.value.address,
-        // status: form.value.status,
-        image: imageUrl,
+      // فقط فیلدهای قابل ویرایش را ارسال کن. اگر تصویر جدیدی انتخاب نشده،
+      // فیلد image را حذف می‌کنیم تا لوگوی قبلی ناخواسته پاک نشود.
+      const cleanData: Record<string, string | undefined> = {
+        name: form.value.name.trim(),
+        email: form.value.email.trim(),
+        phone: form.value.phone.trim() || undefined,
+        registrationNumber: form.value.registrationNumber.trim(),
+        address: form.value.address.trim() || undefined,
       };
+      if (imageUrl) cleanData.image = imageUrl;
       //console.log("PATCH id:", selectedId.value); // برای دیباگ
       await updateCompany(selectedId.value, cleanData);
     } else {
-      await createCompany({ ...form.value, image: imageUrl });
+      await createCompany({
+        name: form.value.name.trim(),
+        email: form.value.email.trim(),
+        phone: form.value.phone.trim() || undefined,
+        registrationNumber: form.value.registrationNumber.trim(),
+        address: form.value.address.trim() || undefined,
+        image: imageUrl,
+      });
     }
     await fetchCompanies();
     closeModal();
