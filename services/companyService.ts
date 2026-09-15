@@ -90,7 +90,7 @@ export async function deleteCompany(id: string): Promise<void> {
 
 export interface CreateVendorRequestDto {
   companyName: string;
-  sellerType?: 'legal' | 'individual';
+  sellerType: 'legal' | 'individual';
   email: string;
   phone?: string;
   registrationNumber?: string;

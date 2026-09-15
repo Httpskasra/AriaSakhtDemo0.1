@@ -479,15 +479,9 @@ const onSubmit = async () => {
   overflow: hidden;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-field);
-  /* A checkerboard keeps transparent and white logos visible in the preview. */
-  background-color: #475569;
-  background-image:
-    linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
-    linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
-    linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
-  background-position: 0 0, 0.5rem 0, 0.5rem -0.5rem, 0 -0.5rem;
-  background-size: 1rem 1rem;
+  /* The source logo contains transparent and white artwork; use the site's
+     dark brand surface so the complete wordmark remains visible. */
+  background: var(--color-bg-dark, #1e293b);
 }
 
 .company-logo-preview__image {

@@ -35,7 +35,7 @@
         <div class="text-sm">
           <span class="font-bold text-primary">کلیک کنید</span> یا تصویر را اینجا رها کنید
         </div>
-        <p class="text-xs text-slate-600">فرمت‌های مجاز: PNG، JPG و WEBP — حداکثر حجم: ۵ مگابایت</p>
+        <p class="text-xs text-slate-600">فرمت‌های مجاز: PNG، JPG و WEBP — حداکثر حجم: ۱۰ مگابایت</p>
       </div>
     </div>
 
@@ -132,8 +132,8 @@ const processFile = async (file: File) => {
     return;
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    errorMessage.value = 'حجم فایل نباید بیشتر از ۵ مگابایت باشد.';
+  if (file.size > 10 * 1024 * 1024) {
+    errorMessage.value = 'حجم فایل نباید بیشتر از ۱۰ مگابایت باشد.';
     emit('error', errorMessage.value);
     return;
   }
