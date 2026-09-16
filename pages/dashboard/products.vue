@@ -1,10 +1,17 @@
 <template>
-    <div class="products-page">
-      <PanelPageHeader title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
-        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="openModal()">محصول جدید</UButton></template>
+    <div class="products-page" :class="{ 'products-page--editor': props.editorOnly }">
+      <PanelPageHeader v-if="!props.editorOnly" title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
+        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="navigateToProductEditor">محصول جدید</UButton></template>
+      </PanelPageHeader>
+      <PanelPageHeader v-else title="ثبت محصول جدید" subtitle="محصول را با تمرکز کامل تکمیل کنید؛ اطلاعات فرم در طول کار به‌صورت خودکار ذخیره می‌شود." icon="i-lucide-package-plus">
+        <template #actions>
+          <span class="product-draft-status" role="status" aria-live="polite">{{ editorDraftMessage }}</span>
+          <UButton v-if="hasEditorDraft" type="button" color="neutral" variant="soft" icon="i-lucide-rotate-ccw" @click="discardEditorDraft">شروع از ابتدا</UButton>
+          <UButton type="button" color="neutral" variant="outline" icon="i-lucide-arrow-right" @click="cancelEditor">بازگشت</UButton>
+        </template>
       </PanelPageHeader>
 
-      <section class="products-overview" aria-label="خلاصه محصولات">
+      <section v-if="!props.editorOnly" class="products-overview" aria-label="خلاصه محصولات">
         <article class="products-overview__card">
           <span>نتیجه‌های این صفحه</span>
           <strong class="font-num">{{ products.length.toLocaleString("fa-IR") }}</strong>
@@ -27,7 +34,7 @@
         </article>
       </section>
 
-      <PanelFilterBar>
+      <PanelFilterBar v-if="!props.editorOnly">
         <div class="flex flex-wrap items-center gap-2">
           <TableFilterInput
             v-model="search"
@@ -52,7 +59,7 @@
         <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''; applyProductFilters()">حذف فیلتر</UButton>
       </PanelFilterBar>
 
-      <PanelPermissionGuard :allowed="canRead" :ready="isReady" title="دسترسی به محصولات امکان‌پذیر نیست" message="حساب کاربری شما مجوز مشاهده محصولات را ندارد.">
+      <PanelPermissionGuard v-if="!props.editorOnly" :allowed="canRead" :ready="isReady" title="دسترسی به محصولات امکان‌پذیر نیست" message="حساب کاربری شما مجوز مشاهده محصولات را ندارد.">
         <div class="products-panel panel-surface">
         <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
         <SharedAsyncState
@@ -66,7 +73,7 @@
           state="empty"
           :title="search ? 'محصولی با این جستجو پیدا نشد' : 'هنوز محصولی ثبت نشده است'"
           :message="search ? 'عبارت جستجو یا فیلترها را تغییر دهید.' : 'برای شروع، اولین محصول خود را ثبت کنید.'">
-          <UButton v-if="!search && canCreate" type="button" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="openModal()">افزودن محصول</UButton>
+          <UButton v-if="!search && canCreate" type="button" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="navigateToProductEditor">افزودن محصول</UButton>
         </SharedAsyncState>
         <div v-else class="products-table-wrap">
           <TableScrollContainer>
@@ -165,12 +172,47 @@
         </div>
       </PanelPermissionGuard>
 
-      <div v-if="total > limit" class="flex justify-center py-4">
+      <div v-if="!props.editorOnly && total > limit" class="flex justify-center py-4">
         <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
       </div>
 
+      <section v-if="props.editorOnly" class="product-editor-page" aria-label="فرم ثبت محصول">
+        <PanelPermissionGuard :allowed="canCreate" :ready="isReady" title="دسترسی ثبت محصول ندارید" message="برای ثبت محصول باید مجوز ایجاد محصول داشته باشید.">
+          <ProductEditorForm
+            v-if="isReady && canCreate"
+            :form="form"
+            :edit-mode="false"
+            :full-page="true"
+            :category-options="categoryOptions"
+            :categories-loading="categoriesLoading"
+            :tags-input="tagsInput"
+            :attributes-pairs="attributesPairs"
+            :image-files="imageFiles"
+            :image-previews="imagePreviews"
+            :saving="saving"
+            :uploading="uploading"
+            :show-form-errors="showFormErrors"
+            :form-error="formError"
+            @submit="saveProduct"
+            @cancel="cancelEditor"
+            @upload="uploadSelectedImages"
+            @update:form="updateEditorForm"
+            @select-images="handleImageSelection"
+            @image-error="handleTableImageError"
+            @update:tags-input="tagsInput = $event"
+            @remove-pending-image="removePendingImage"
+            @remove-uploaded-image="removeUploadedImage"
+            @remove-variant="removeVariant"
+            @add-variant="addVariant"
+            @remove-option="removeVariantOption"
+            @add-option="addVariantOption"
+            @remove-attribute="removeAttribute"
+            @add-attribute="addAttribute" />
+        </PanelPermissionGuard>
+      </section>
+
       <!-- Modal -->
-      <BaseModal v-if="showModal" :busy="saving" @close="closeModal">
+      <BaseModal v-if="showModal && !props.editorOnly" :busy="saving" @close="closeModal">
         <template #default>
           <header class="product-modal__header">
             <div class="product-modal__title-icon" aria-hidden="true"><UIcon :name="editMode ? 'i-lucide-pencil-line' : 'i-lucide-package-plus'" /></div>
@@ -377,9 +419,8 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ sellerOnly?: boolean }>(), { sellerOnly: false });
-const feedback = useFeedback();
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
@@ -391,8 +432,11 @@ import type {
 import { listAdminProducts, listCompanyProducts, uploadProductImages, createProduct, updateProduct, deleteProduct as removeProduct } from "~/services/productService";
 import { useApiClient } from '~/services/apiClient';
 
+const props = withDefaults(defineProps<{ sellerOnly?: boolean; editorOnly?: boolean }>(), { sellerOnly: false, editorOnly: false });
+const feedback = useFeedback();
+
 useHead({
-  title: "داشبورد | محصولات",
+  title: props.editorOnly ? "داشبورد | ثبت محصول" : "داشبورد | محصولات",
 });
 
 
@@ -451,6 +495,15 @@ const form = ref<Product>({
 // helpers
 const tagsInput = ref("");
 const attributesPairs = ref<{ key: string; value: string }[]>([]);
+const hasEditorDraft = ref(false);
+const editorDraftMessage = ref("ذخیره خودکار فعال است");
+const editorDraftSavedAt = ref<string | null>(null);
+const suppressEditorDraftSave = ref(false);
+let editorDraftTimer: ReturnType<typeof setTimeout> | null = null;
+const editorDraftKey = computed(() => {
+  const ownerId = user.value?.userId || "unknown-user";
+  return `tejaris:product-draft:${ownerId}:${props.sellerOnly ? "seller" : "admin"}`;
+});
 
 const activeProductsCount = computed(() => products.value.filter((product) => product.status === "active").length);
 const draftProductsCount = computed(() => products.value.filter((product) => product.status === "draft").length);
@@ -458,15 +511,133 @@ const outOfStockCount = computed(() => products.value.filter((product) => Number
 
 onMounted(() => {
   if (!isReady.value) return;
-  if (canRead.value) fetchProducts();
+  if (!props.editorOnly && canRead.value) fetchProducts();
   if (canCreate.value || canUpdate.value) fetchCategories();
+  if (props.editorOnly && canCreate.value) restoreEditorDraft();
 });
 
 watch(isReady, (ready) => {
   if (!ready) return;
-  if (canRead.value) fetchProducts();
+  if (!props.editorOnly && canRead.value) fetchProducts();
   if (canCreate.value || canUpdate.value) fetchCategories();
+  if (props.editorOnly && canCreate.value) restoreEditorDraft();
 }, { once: true });
+
+watch([form, tagsInput, attributesPairs], () => {
+  if (props.editorOnly && isReady.value && !suppressEditorDraftSave.value) scheduleEditorDraftSave();
+}, { deep: true });
+
+function handleEditorBeforeUnload(event: BeforeUnloadEvent) {
+  if (props.editorOnly && imageFiles.value.length && !saving.value) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+}
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (props.editorOnly && imageFiles.value.length && import.meta.client && !window.confirm("تصاویر انتخاب‌شده هنوز آپلود نشده‌اند. از صفحه خارج می‌شوید؟")) {
+    next(false);
+    return;
+  }
+  next();
+});
+
+onMounted(() => {
+  if (props.editorOnly && import.meta.client) window.addEventListener("beforeunload", handleEditorBeforeUnload);
+});
+
+onBeforeUnmount(() => {
+  if (editorDraftTimer) clearTimeout(editorDraftTimer);
+  if (import.meta.client) window.removeEventListener("beforeunload", handleEditorBeforeUnload);
+});
+
+function emptyProduct(): Product {
+  return {
+    name: "",
+    slug: "",
+    sku: "",
+    basePrice: 0,
+    discount: 0,
+    categories: [],
+    description: "",
+    stock: { quantity: 0 },
+    variants: [],
+    attributes: {},
+    tags: [],
+    images: [],
+    imagesMeta: [],
+    status: "draft",
+  };
+}
+
+function restoreEditorDraft() {
+  if (!props.editorOnly || !import.meta.client) return;
+  try {
+    const raw = localStorage.getItem(editorDraftKey.value);
+    if (!raw) return;
+    const snapshot = JSON.parse(raw) as { form?: Partial<Product>; tagsInput?: string; attributesPairs?: { key: string; value: string }[]; savedAt?: string };
+    if (!snapshot.form || typeof snapshot.form !== "object") return;
+    form.value = {
+      ...emptyProduct(),
+      ...snapshot.form,
+      stock: { quantity: Number(snapshot.form.stock?.quantity ?? 0) },
+      images: Array.isArray(snapshot.form.images) ? snapshot.form.images : [],
+      imagesMeta: Array.isArray(snapshot.form.imagesMeta) ? snapshot.form.imagesMeta : [],
+      variants: Array.isArray(snapshot.form.variants) ? snapshot.form.variants : [],
+      attributes: snapshot.form.attributes || {},
+      tags: Array.isArray(snapshot.form.tags) ? snapshot.form.tags : [],
+    };
+    tagsInput.value = snapshot.tagsInput ?? form.value.tags.join(", ");
+    attributesPairs.value = Array.isArray(snapshot.attributesPairs) ? snapshot.attributesPairs : Object.entries(form.value.attributes || {}).map(([key, value]) => ({ key, value: String(value) }));
+    editorDraftSavedAt.value = snapshot.savedAt || null;
+    hasEditorDraft.value = true;
+    editorDraftMessage.value = editorDraftSavedAt.value ? `پیش‌نویس محلی بازیابی شد (${formatDraftTime(editorDraftSavedAt.value)})` : "پیش‌نویس محلی بازیابی شد";
+  } catch (error) {
+    console.warn("پیش‌نویس محصول قابل بازیابی نیست:", error);
+    localStorage.removeItem(editorDraftKey.value);
+  }
+}
+
+function scheduleEditorDraftSave() {
+  if (!props.editorOnly || !import.meta.client) return;
+  editorDraftMessage.value = "در حال ذخیره پیش‌نویس…";
+  if (editorDraftTimer) clearTimeout(editorDraftTimer);
+  editorDraftTimer = setTimeout(persistEditorDraft, 350);
+}
+
+function persistEditorDraft() {
+  if (!props.editorOnly || !import.meta.client) return;
+  const savedAt = new Date().toISOString();
+  const snapshot = {
+    form: form.value,
+    tagsInput: tagsInput.value,
+    attributesPairs: attributesPairs.value,
+    savedAt,
+  };
+  try {
+    localStorage.setItem(editorDraftKey.value, JSON.stringify(snapshot));
+    hasEditorDraft.value = true;
+    editorDraftSavedAt.value = savedAt;
+    editorDraftMessage.value = `ذخیره شد؛ ${formatDraftTime(savedAt)}`;
+  } catch (error) {
+    console.warn("ذخیره پیش‌نویس محصول انجام نشد:", error);
+    editorDraftMessage.value = "ذخیره خودکار در دسترس نیست";
+  }
+}
+
+function clearEditorDraft() {
+  if (!props.editorOnly || !import.meta.client) return;
+  if (editorDraftTimer) clearTimeout(editorDraftTimer);
+  localStorage.removeItem(editorDraftKey.value);
+  hasEditorDraft.value = false;
+  editorDraftSavedAt.value = null;
+  editorDraftMessage.value = "ذخیره خودکار فعال است";
+}
+
+function formatDraftTime(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "اکنون" : date.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+}
 
 async function fetchCategories() {
   try {
@@ -668,23 +839,70 @@ function openModal(product: Product | null = null) {
     if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
     selectedId.value = null;
-    form.value = {
-      name: "",
-      slug: "",
-      sku: "",
-      basePrice: 0,
-      categories: [],
-      description: "",
-      stock: { quantity: 0 },
-      variants: [],
-      attributes: {},
-      tags: [],
-      images: [],
-      imagesMeta: [],
-      status: "draft",
-    };
+    form.value = emptyProduct();
   }
   showModal.value = true;
+}
+
+function addVariant() {
+  form.value.variants.push({ name: "", options: [{ value: "", priceModifier: 0 }] });
+}
+
+function updateEditorForm(value: Product) {
+  form.value = value;
+}
+
+function removeVariant(index: number) {
+  form.value.variants.splice(index, 1);
+}
+
+function addVariantOption(variantIndex: number) {
+  const variant = form.value.variants[variantIndex];
+  if (variant) variant.options.push({ value: "", priceModifier: 0 });
+}
+
+function removeVariantOption(variantIndex: number, optionIndex: number) {
+  const variant = form.value.variants[variantIndex];
+  if (variant) variant.options.splice(optionIndex, 1);
+}
+
+function addAttribute() {
+  attributesPairs.value.push({ key: "", value: "" });
+}
+
+function removeAttribute(index: number) {
+  attributesPairs.value.splice(index, 1);
+}
+
+function editorListPath() {
+  return props.sellerOnly ? "/dashboard/seller/products" : "/dashboard/products";
+}
+
+async function navigateToProductEditor() {
+  if (!canCreate.value) {
+    feedback.error("دسترسی کافی ندارید", "شما اجازه ثبت محصول ندارید.");
+    return;
+  }
+  await navigateTo(props.sellerOnly ? "/dashboard/seller/products/new" : "/dashboard/products/new");
+}
+
+async function cancelEditor() {
+  if (imageFiles.value.length && import.meta.client && !window.confirm("تصاویر انتخاب‌شده هنوز آپلود نشده‌اند و با خروج از صفحه از بین می‌روند. ادامه می‌دهید؟")) return;
+  await navigateTo(editorListPath());
+}
+
+async function discardEditorDraft() {
+  if (!import.meta.client || !window.confirm("پیش‌نویس محلی حذف شود و فرم از ابتدا شروع شود؟")) return;
+  suppressEditorDraftSave.value = true;
+  form.value = emptyProduct();
+  tagsInput.value = "";
+  attributesPairs.value = [];
+  releaseImagePreviews();
+  formError.value = "";
+  showFormErrors.value = false;
+  await nextTick();
+  clearEditorDraft();
+  suppressEditorDraftSave.value = false;
 }
 
 function closeModal() {
@@ -696,7 +914,8 @@ function closeModal() {
   }
 }
 
-async function saveProduct() {
+async function saveProduct(submittedForm?: Product) {
+  if (submittedForm) form.value = submittedForm;
   if (imageFiles.value.length) {
     feedback.info("تصاویر آپلود نشده‌اند", "ابتدا روی «آپلود و افزودن» بزنید یا تصاویر انتخاب‌شده را حذف کنید.");
     return;
@@ -750,8 +969,13 @@ async function saveProduct() {
     } else {
       await createProduct(cleanPayload);
     }
-    await fetchProducts();
-    closeModal();
+    if (props.editorOnly) {
+      clearEditorDraft();
+      await navigateTo(editorListPath());
+    } else {
+      await fetchProducts();
+      closeModal();
+    }
   } catch (e: any) {
     console.error("خطا در ذخیره محصول:", e);
     const errorMsg =
@@ -892,6 +1116,9 @@ function numberFormat(n?: number) {
 
 <style scoped>
 .products-page { width: 100%; max-width: 92rem; margin-inline: auto; }
+.products-page--editor { max-width: 78rem; }
+.product-editor-page { width: 100%; min-width: 0; }
+.product-draft-status { color: var(--color-text-muted); font-size: .72rem; white-space: nowrap; }
 .products-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1rem; }
 .products-overview__card { display: grid; gap: .15rem; min-width: 0; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); box-shadow: var(--shadow-raised); }
 .products-overview__card span { color: var(--color-text-muted); font-size: .75rem; }
