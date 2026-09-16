@@ -2,10 +2,7 @@
 import type { Product } from "~/types/product";
 import { useApiClient } from '~/services/apiClient';
 
-const useApi = () => {
-  const { $axios } = useNuxtApp();
-  return useApiClient();
-};
+const useApi = () => useApiClient();
 
 export interface UploadedImageItem { filename: string; contentType: string; publicUrl: string; presignedUrl?: string | null; }
 
@@ -72,7 +69,7 @@ export const listCompanyProducts = async (
   params: { page?: number; limit?: number; sort?: string } = {},
 ) => {
   const { data } = await useApi().get<Product[] | PaginatedResponse<Product>>(
-    `/products/company/${encodeURIComponent(companyId)}`,
+    `/products/company/${encodeURIComponent(companyId)}/manage`,
     { params },
   );
   if (Array.isArray(data)) {
@@ -210,8 +207,8 @@ export const advancedSearchProducts = async (
       },
     });
 
-    const page = cleanParams.page || 1;
-    const limit = cleanParams.limit || 12;
+    const page = Number(cleanParams.page) || 1;
+    const limit = Number(cleanParams.limit) || 12;
 
     return {
       data: normalizeProductPage(response.data, page, limit),

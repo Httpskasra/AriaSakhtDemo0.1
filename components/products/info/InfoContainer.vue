@@ -16,7 +16,7 @@
     <div class="product-info-tabs__content" role="tabpanel" :aria-labelledby="`${show}-tab`" tabindex="0">
       <InfoProduct class="info-content" v-if="show === 'info'" :data="data" />
       <RulsProduct v-else-if="show === 'rules'" :data="data" />
-      <CommentProduct v-else-if="show === 'comments'" :data="data" />
+      <CommentProduct v-else-if="show === 'comments'" :product-id="String(data.id || data._id || '')" />
     </div>
   </div>
 </template>
@@ -27,7 +27,7 @@ import type { Product } from "~/types/product";
 type content = "info" | "rules" | "comments";
 const show = ref<content>("info");
 
-const props = defineProps<{
+defineProps<{
   data: Product;
 }>();
 const tabOrder: content[] = ["info", "rules", "comments"];

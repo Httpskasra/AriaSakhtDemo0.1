@@ -16,7 +16,19 @@ const { data: related } = await useAsyncData(`related-${props.currentProductId}`
     }
   });
   
-  return (res.data || []).filter((p: any) => (p.id || p._id) !== props.currentProductId);
+  const payload = res.data as
+    | any[]
+    | { items?: any[]; data?: any[] }
+    | undefined;
+  const products = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
+
+  return products.filter((p: any) => String(p.id || p._id) !== props.currentProductId);
 });
 </script>
 
@@ -28,7 +40,7 @@ const { data: related } = await useAsyncData(`related-${props.currentProductId}`
     </div>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <CatalogProductCard v-for="item in related" :key="item.id" :product="item" />
+      <CatalogProductCard v-for="item in related" :key="item.id || item._id" :product="item" />
     </div>
   </div>
 </template>

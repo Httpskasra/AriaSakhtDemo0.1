@@ -15,13 +15,13 @@ async function toggle() {
   if (busy.value || !props.productId) return;
   busy.value = true;
   try { await store.toggle(props.productId); }
-  catch { useToast().add({ title: 'تغییر علاقه‌مندی انجام نشد', description: 'لطفاً دوباره تلاش کنید.', color: 'red' }); }
+  catch { useToast().add({ title: 'تغییر علاقه‌مندی انجام نشد', description: 'لطفاً دوباره تلاش کنید.', color: 'error' }); }
   finally { busy.value = false; }
 }
 </script>
 
 <template>
-  <UButton type="button" size="sm" color="white" variant="solid" :loading="busy" :disabled="busy" :aria-label="isFavorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'" :aria-pressed="isFavorite" @click.stop.prevent="toggle">
+  <UButton type="button" size="sm" color="neutral" variant="soft" :loading="busy" :disabled="busy" :aria-label="isFavorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'" :aria-pressed="isFavorite" @click.stop.prevent="toggle">
     <UIcon :name="isFavorite ? 'i-lucide-heart-off' : 'i-lucide-heart'" :class="isFavorite ? 'text-red-600' : 'text-gray-600'" />
   </UButton>
 </template>

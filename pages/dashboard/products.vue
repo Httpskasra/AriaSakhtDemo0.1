@@ -4,6 +4,29 @@
         <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
       </PanelPageHeader>
 
+      <section class="products-overview" aria-label="خلاصه محصولات">
+        <article class="products-overview__card">
+          <span>نتیجه‌های این صفحه</span>
+          <strong class="font-num">{{ products.length.toLocaleString("fa-IR") }}</strong>
+          <small>از {{ total.toLocaleString("fa-IR") }} محصول</small>
+        </article>
+        <article class="products-overview__card products-overview__card--success">
+          <span>فعال</span>
+          <strong class="font-num">{{ activeProductsCount.toLocaleString("fa-IR") }}</strong>
+          <small>در نتیجه‌های فعلی</small>
+        </article>
+        <article class="products-overview__card products-overview__card--warning">
+          <span>پیش‌نویس</span>
+          <strong class="font-num">{{ draftProductsCount.toLocaleString("fa-IR") }}</strong>
+          <small>نیازمند تکمیل یا انتشار</small>
+        </article>
+        <article class="products-overview__card products-overview__card--danger">
+          <span>موجودی صفر</span>
+          <strong class="font-num">{{ outOfStockCount.toLocaleString("fa-IR") }}</strong>
+          <small>در نتیجه‌های فعلی</small>
+        </article>
+      </section>
+
       <PanelFilterBar>
         <div class="flex flex-wrap items-center gap-2">
           <TableFilterInput
@@ -48,12 +71,11 @@
         <div v-else class="products-table-wrap">
           <TableScrollContainer>
             <table class="panel-table products-table">
+              <caption class="sr-only">فهرست محصولات و عملیات مدیریت آن‌ها</caption>
           <thead>
             <tr>
-              <th>تصویر</th>
-              <th>نام</th>
-              <th>SKU</th>
-              <th>قیمت پایه</th>
+              <th>محصول</th>
+              <th>قیمت</th>
               <th>موجودی</th>
               <th>وضعیت</th>
               <th>اقدامات</th>
@@ -63,42 +85,69 @@
             <tr
               v-for="product in products"
               :key="product._id || product.id">
-              <td>
+              <td class="products-table__identity">
                 <img
-                  v-if="product.images && product.images.length"
+                  v-if="product.images?.[0]?.url"
                   :src="product.images[0].url"
                   class="products-table__image"
-                  alt="" />
+                  :alt="`تصویر ${product.name}`"
+                  loading="lazy"
+                  @error="handleTableImageError" />
                 <span v-else class="products-table__image products-table__image--empty" aria-hidden="true">
                   <UIcon name="i-lucide-image-off" />
                 </span>
+                <div class="products-table__identity-copy">
+                  <strong class="products-table__name">{{ product.name }}</strong>
+                  <span class="products-table__sku ltr">SKU: {{ product.sku || "-" }}</span>
+                </div>
               </td>
-              <td class="products-table__name">{{ product.name }}</td>
-              <td class="ltr">{{ product.sku || "-" }}</td>
-              <td class="font-num">{{ numberFormat(product.basePrice) }}</td>
-              <td class="font-num">{{ (product.stock?.quantity ?? 0).toLocaleString("fa-IR") }}</td>
+              <td class="products-table__price">
+                <strong class="font-num">{{ numberFormat(product.finalPrice ?? product.basePrice) }} ریال</strong>
+                <span v-if="product.discount" class="products-table__discount font-num">{{ product.discount }}٪ تخفیف</span>
+              </td>
+              <td>
+                <span class="products-stock" :class="{ 'products-stock--empty': !(product.stock?.quantity ?? 0), 'products-stock--low': (product.stock?.quantity ?? 0) > 0 && (product.stock?.quantity ?? 0) <= 5 }">
+                  <UIcon :name="(product.stock?.quantity ?? 0) > 0 ? 'i-lucide-package-check' : 'i-lucide-package-x'" aria-hidden="true" />
+                  <span class="font-num">{{ (product.stock?.quantity ?? 0).toLocaleString("fa-IR") }}</span>
+                </span>
+              </td>
               <td>
                 <PanelStatusBadge
                   :label="statusFa(product.status)"
-                  :semantic="getStatusSemantic(product.status)"
+                  :status="product.status"
                   size="compact" />
               </td>
               <td>
-                <div class="panel-row-actions">
+                <div class="panel-row-actions products-table__actions">
+                <UButton
+                  v-if="product._id || product.id"
+                  :to="`/products/${product._id || product.id}`"
+                  icon="i-lucide-eye"
+                  size="xs"
+                  color="neutral"
+                  variant="soft"
+                  aria-label="مشاهده محصول">
+                  مشاهده
+                </UButton>
                 <UButton
                   v-if="canUpdate"
+                  icon="i-lucide-pencil"
                   @click="openModal(product)"
                   size="xs"
-                  variant="ghost">
+                  color="neutral"
+                  variant="ghost"
+                  aria-label="ویرایش محصول">
                   ویرایش
                 </UButton>
                 <UButton
                   v-if="canDelete"
+                  icon="i-lucide-trash-2"
                   @click="requestDelete(product)"
                   size="xs"
                   color="error"
                   variant="ghost"
-                  :loading="deletingId === (product._id || product.id)">
+                  :loading="deletingId === (product._id || product.id)"
+                  aria-label="حذف محصول">
                   حذف
                 </UButton>
                 </div>
@@ -118,14 +167,20 @@
       <!-- Modal -->
       <BaseModal v-if="showModal" :busy="saving" @close="closeModal">
         <template #default>
-          <h2 class="text-lg font-semibold mb-4">
-            {{ editMode ? "ویرایش محصول" : "محصول جدید" }}
-          </h2>
+          <header class="product-modal__header">
+            <div class="product-modal__title-icon" aria-hidden="true"><UIcon :name="editMode ? 'i-lucide-pencil-line' : 'i-lucide-package-plus'" /></div>
+            <div>
+              <h2 id="product-form-title">{{ editMode ? "ویرایش محصول" : "محصول جدید" }}</h2>
+              <p>{{ editMode ? "اطلاعات، قیمت و موجودی محصول را به‌روز کنید." : "اطلاعات محصول را وارد کنید تا در فروشگاه نمایش داده شود." }}</p>
+            </div>
+          </header>
 
-          <UForm :state="form" @submit.prevent="saveProduct" class="space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <UForm :state="form" aria-labelledby="product-form-title" @submit.prevent="saveProduct" class="product-form">
+            <section class="product-form__section">
+              <div class="product-form__section-heading"><span>اطلاعات اصلی</span><small>فیلدهای ضروری محصول</small></div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UFormField label="نام" name="name">
-                <UInput v-model="form.name" required />
+                <UInput v-model="form.name" required placeholder="مثلاً سیمان تیپ ۲" />
               </UFormField>
 
               <UFormField label="نامک (slug)" name="slug">
@@ -133,7 +188,7 @@
               </UFormField>
 
               <UFormField label="SKU" name="sku">
-                <UInput v-model="form.sku" class="ltr" />
+                <UInput v-model="form.sku" class="ltr" required placeholder="مثلاً CEM-T2-001" />
               </UFormField>
 
               <UFormField label="قیمت پایه" name="basePrice">
@@ -145,97 +200,89 @@
               </UFormField>
 
               <UFormField label="موجودی" name="stockQuantity">
-                <UInput v-model.number="form.stock.quantity" type="number" />
+                <UInput v-model.number="form.stock.quantity" type="number" min="0" />
               </UFormField>
-            </div>
-
-            <UFormField label="توضیحات" name="description">
-              <UTextarea v-model="form.description" :rows="4" />
-            </UFormField>
-
-            <!-- دسته‌بندی‌ها -->
-            <UFormField label="دسته‌بندی" name="categories">
-              <div class="space-y-2">
-                <USelectMenu
-                  v-model="form.categories"
-                  multiple
-                  :options="categoryOptions"
-                  value-attribute="_id"
-                  option-attribute="name" />
-                <div class="products-form-hint">
-                  از لیست بالا یکی را انتخاب کن؛
-                </div>
               </div>
-            </UFormField>
+            </section>
 
-            <!-- برچسب‌ها -->
-            <UFormField label="برچسب‌ها" name="tags">
-              <UInput
-                v-model="tagsInput"
-                @blur="syncTagsFromInput"
-                placeholder="برچسب‌ها را با ویرگول جدا کنید" />
-            </UFormField>
+            <section class="product-form__section">
+              <div class="product-form__section-heading"><span>توضیحات و دسته‌بندی</span><small>به پیدا شدن و تصمیم خرید کمک می‌کند</small></div>
+              <UFormField label="توضیحات" name="description">
+                <UTextarea v-model="form.description" :rows="4" maxlength="500" placeholder="توضیح کوتاه و دقیق درباره محصول…" />
+              </UFormField>
 
-            <!-- تصاویر (Choose + Upload → images / imagesMeta) -->
-            <div>
-              <label class="block text-sm font-medium mb-1">تصاویر</label>
+              <UFormField label="دسته‌بندی" name="categories">
+                <div class="space-y-2">
+                  <USelectMenu
+                    v-model="form.categories"
+                    multiple
+                    :loading="categoriesLoading"
+                    :options="categoryOptions"
+                    value-attribute="_id"
+                    option-attribute="name"
+                    placeholder="دسته‌بندی محصول را انتخاب کنید" />
+                  <div class="products-form-hint">می‌توانید چند دسته‌بندی مرتبط انتخاب کنید.</div>
+                </div>
+              </UFormField>
+
+              <UFormField label="برچسب‌ها" name="tags">
+                <UInput v-model="tagsInput" @blur="syncTagsFromInput" placeholder="مثلاً سیمان، ساختمانی، تیپ ۲" />
+              </UFormField>
+            </section>
+
+            <section class="product-form__section">
+              <div class="product-form__section-heading"><span>تصاویر محصول</span><small>حداکثر ۵ تصویر، JPG، PNG یا WEBP، هرکدام تا ۱۰ مگابایت</small></div>
               <div class="space-y-3">
-                <!-- Specialized upload control: native file input is required for FileList/ref handling. -->
-                <input
-                  ref="fileInputRef"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  @change="handleImageSelection"
-                  class="products-file-input" />
+                <label for="product-images" class="products-upload-dropzone">
+                  <UIcon name="i-lucide-cloud-upload" aria-hidden="true" />
+                  <span><strong>انتخاب تصویر</strong> یا فایل‌ها را اینجا رها کنید</span>
+                  <small>تصویر اول به‌عنوان تصویر اصلی نمایش داده می‌شود.</small>
+                  <input id="product-images" ref="fileInputRef" type="file" multiple accept="image/jpeg,image/png,image/webp" @change="handleImageSelection" />
+                </label>
 
-                <!-- Upload button / state -->
-                <div
-                  v-if="imageFiles.length"
-                  class="flex items-center gap-2 text-sm">
-                  <span>{{ imageFiles.length }} فایل انتخاب شد.</span>
+                <div v-if="imageFiles.length" class="products-pending-files">
+                  <span>{{ imageFiles.length }} تصویر آماده آپلود است.</span>
                   <UButton
                     v-if="!uploading"
                     type="button"
                     size="sm"
                     @click="uploadSelectedImages">
-                    آپلود تصاویر
+                    آپلود و افزودن
                   </UButton>
                   <span v-else class="products-upload-status">در حال آپلود...</span>
                 </div>
 
-                <!-- Preview of form.images -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div v-if="imagePreviews.length" class="products-image-grid" aria-label="پیش‌نمایش تصاویر انتخاب‌شده">
+                  <div v-for="(preview, i) in imagePreviews" :key="preview.url" class="products-image-tile products-image-tile--pending">
+                    <img :src="preview.url" :alt="`پیش‌نمایش تصویر ${i + 1}`" />
+                    <span class="products-image-tile__label">در انتظار آپلود</span>
+                    <UButton type="button" icon="i-lucide-x" size="xs" color="error" variant="soft" aria-label="حذف تصویر انتخاب‌شده" @click="removePendingImage(i)" />
+                  </div>
+                </div>
+
+                <div v-if="form.images.length" class="products-image-grid" aria-label="تصاویر آپلودشده">
                   <div
                     v-for="(img, i) in form.images"
-                    :key="i"
-                    class="relative">
-                    <img
-                      :src="img.url"
-                      alt=""
-                      class="w-full h-24 object-cover rounded" />
+                    :key="`${img.url}-${i}`"
+                    class="products-image-tile">
+                    <img :src="img.url" :alt="`تصویر محصول ${i + 1}`" @error="handleTableImageError" />
+                    <span v-if="i === 0" class="products-image-tile__label">تصویر اصلی</span>
                     <UButton
                       type="button"
-                      class="absolute top-1 right-1"
+                      icon="i-lucide-trash-2"
                       size="xs"
                       color="error"
                       variant="soft"
-                      @click="
-                        () => {
-                          form.images.splice(i, 1);
-                          if (form.imagesMeta) form.imagesMeta.splice(i, 1);
-                        }
-                      ">
-                      حذف
-                    </UButton>
+                      aria-label="حذف تصویر آپلودشده"
+                      @click="removeUploadedImage(i)" />
                   </div>
                 </div>
+                <p v-else-if="!imagePreviews.length" class="products-images-empty"><UIcon name="i-lucide-image" aria-hidden="true" /> هنوز تصویری اضافه نشده است.</p>
               </div>
-            </div>
+            </section>
 
-            <!-- واریانت‌ها -->
-            <div>
-              <label class="block text-sm font-medium mb-2">واریانت‌ها</label>
+            <section class="product-form__section">
+              <div class="product-form__section-heading"><span>واریانت‌ها و ویژگی‌ها</span><small>اطلاعات فنی و گزینه‌های قابل انتخاب محصول</small></div>
               <div class="space-y-4">
                 <div
                   v-for="(variant, vi) in form.variants"
@@ -299,11 +346,7 @@
                   + افزودن واریانت
                 </UButton>
               </div>
-            </div>
 
-            <!-- ویژگی‌ها -->
-            <div>
-              <label class="block text-sm font-medium mb-2">ویژگی‌ها</label>
               <div class="space-y-2">
                 <div
                   v-for="(pair, i) in attributesPairs"
@@ -333,7 +376,7 @@
                   + افزودن ویژگی
                 </UButton>
               </div>
-            </div>
+            </section>
 
             <div class="flex items-center justify-end gap-2">
               <UButton
@@ -410,7 +453,9 @@ const categoriesLoading = ref(false);
 // Image upload state (Choose → Upload → images / imagesMeta)
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const imageFiles = ref<File[]>([]);
+const imagePreviews = ref<{ file: File; url: string }[]>([]);
 const uploading = ref(false);
+const maxProductImages = 5;
 
 // فرم محصول
 const form = ref<Product>({
@@ -433,6 +478,10 @@ const form = ref<Product>({
 // helpers
 const tagsInput = ref("");
 const attributesPairs = ref<{ key: string; value: string }[]>([]);
+
+const activeProductsCount = computed(() => products.value.filter((product) => product.status === "active").length);
+const draftProductsCount = computed(() => products.value.filter((product) => product.status === "draft").length);
+const outOfStockCount = computed(() => products.value.filter((product) => Number(product.stock?.quantity || 0) <= 0).length);
 
 onMounted(() => {
   if (!isReady.value) return;
@@ -462,19 +511,56 @@ async function fetchCategories() {
   }
 }
 
+function fileKey(file: File) {
+  return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function releaseImagePreviews() {
+  imagePreviews.value.forEach((preview) => URL.revokeObjectURL(preview.url));
+  imagePreviews.value = [];
+  imageFiles.value = [];
+}
+
 function handleImageSelection(e: Event) {
   const target = e.target as HTMLInputElement;
   const files = Array.from(target.files || []);
-  const maxFileSize = 5 * 1024 * 1024;
-  const validFiles = files.filter((file) => file.type.startsWith("image/") && file.size <= maxFileSize);
+  const maxFileSize = 10 * 1024 * 1024;
+  const validFiles = files.filter((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type) && file.size <= maxFileSize);
 
   if (validFiles.length !== files.length) {
-    feedback.error("تصویر نامعتبر است", "فقط فایل تصویری با حجم حداکثر ۵ مگابایت قابل انتخاب است.");
+    feedback.error("تصویر نامعتبر است", "فقط JPG، PNG یا WEBP با حجم حداکثر ۱۰ مگابایت قابل انتخاب است.");
   }
-  imageFiles.value = validFiles.slice(0, 8);
-  if (validFiles.length > 8) {
-    feedback.info("تعداد تصاویر محدود شد", "حداکثر ۸ تصویر در هر بار انتخاب قابل آپلود است.");
+  const existingKeys = new Set(imageFiles.value.map(fileKey));
+  const remaining = Math.max(0, maxProductImages - form.value.images.length - imageFiles.value.length);
+  const nextFiles = validFiles.filter((file) => {
+    const key = fileKey(file);
+    if (existingKeys.has(key)) return false;
+    existingKeys.add(key);
+    return true;
+  }).slice(0, remaining);
+  imageFiles.value.push(...nextFiles);
+  imagePreviews.value.push(...nextFiles.map((file) => ({ file, url: URL.createObjectURL(file) })));
+  if (validFiles.length > nextFiles.length) {
+    feedback.info("تعداد تصاویر محدود شد", `حداکثر ${maxProductImages} تصویر برای هر محصول قابل ذخیره است.`);
   }
+}
+
+function removePendingImage(index: number) {
+  const preview = imagePreviews.value[index];
+  if (!preview) return;
+  URL.revokeObjectURL(preview.url);
+  imagePreviews.value.splice(index, 1);
+  imageFiles.value.splice(index, 1);
+}
+
+function removeUploadedImage(index: number) {
+  form.value.images.splice(index, 1);
+  form.value.imagesMeta?.splice(index, 1);
+}
+
+function handleTableImageError(event: Event) {
+  const image = event.target as HTMLImageElement;
+  image.style.display = "none";
 }
 
 // uploadSelectedImages → POST /api/images/upload (multipart/form-data)
@@ -497,10 +583,10 @@ async function uploadSelectedImages() {
       url: item.publicUrl,
     }));
 
-    const newImagesMeta: ProductImageMeta[] = items.map((item) => ({
+    const newImagesMeta: ProductImageMeta[] = items.map((item, index) => ({
       filename: item.filename,
       contentType: item.contentType,
-      size: imageFiles.value.find((f) => f.name === item.filename)?.size ?? 0,
+      size: imageFiles.value.find((file) => file.name === item.filename)?.size ?? imageFiles.value[index]?.size ?? 0,
     }));
 
     form.value.images = [...form.value.images, ...newImages];
@@ -511,7 +597,7 @@ async function uploadSelectedImages() {
     feedback.success("تصاویر آپلود شدند", `${items.length} تصویر با موفقیت اضافه شد.`);
 
     // پاک‌سازی input انتخاب فایل
-    imageFiles.value = [];
+    releaseImagePreviews();
     if (fileInputRef.value) {
       fileInputRef.value.value = "";
     }
@@ -529,7 +615,7 @@ watch(showModal, (val) => {
   if (val) {
     tagsInput.value = form.value.tags?.join(", ") ?? "";
     attributesPairs.value = Object.entries(form.value.attributes || {}).map(
-      ([k, v]) => ({ key: k, value: v })
+      ([k, v]) => ({ key: k, value: String(v) })
     );
   }
 });
@@ -542,13 +628,7 @@ function syncTagsFromInput() {
 }
 
 function statusFa(s: Product["status"]) {
-  return s === "draft"
-    ? "پیش‌نویس"
-    : s === "active"
-    ? "فعال"
-    : s === "inactive"
-    ? "غیرفعال"
-    : "آرشیو";
+  return s === "draft" ? "پیش‌نویس" : s === "active" ? "فعال" : s === "inactive" ? "غیرفعال" : s === "deleted" ? "حذف‌شده" : "آرشیو";
 }
 
 async function fetchProducts() {
@@ -585,8 +665,6 @@ async function fetchProducts() {
   }
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.value)));
-
 function applyProductFilters() {
   page.value = 1;
   fetchProducts();
@@ -617,7 +695,6 @@ function openModal(product: Product | null = null) {
       slug: "",
       sku: "",
       basePrice: 0,
-      discount: 0,
       categories: [],
       description: "",
       stock: { quantity: 0 },
@@ -635,13 +712,17 @@ function openModal(product: Product | null = null) {
 function closeModal() {
   if (saving.value) return;
   showModal.value = false;
-  imageFiles.value = [];
+  releaseImagePreviews();
   if (fileInputRef.value) {
     fileInputRef.value.value = "";
   }
 }
 
 async function saveProduct() {
+  if (imageFiles.value.length) {
+    feedback.info("تصاویر آپلود نشده‌اند", "ابتدا روی «آپلود و افزودن» بزنید یا تصاویر انتخاب‌شده را حذف کنید.");
+    return;
+  }
   // sync helpers
   syncTagsFromInput();
   form.value.attributes = {};
@@ -676,7 +757,7 @@ async function saveProduct() {
   };
 
   // images + imagesMeta طبق Swagger
-  if (form.value.images && form.value.images.length > 0) {
+  if (editMode.value || form.value.images.length > 0) {
     cleanPayload.images = form.value.images;
   }
   if (form.value.imagesMeta && form.value.imagesMeta.length > 0) {
@@ -768,17 +849,56 @@ function numberFormat(n?: number) {
 
 <style scoped>
 .products-page { width: 100%; max-width: 92rem; margin-inline: auto; }
+.products-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.products-overview__card { display: grid; gap: .15rem; min-width: 0; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); box-shadow: var(--shadow-raised); }
+.products-overview__card span { color: var(--color-text-muted); font-size: .75rem; }
+.products-overview__card strong { color: var(--color-text-heading); font-size: 1.45rem; line-height: 1.3; }
+.products-overview__card small { color: var(--color-text-muted); font-size: .68rem; }
+.products-overview__card--success { border-color: var(--color-success-border); }
+.products-overview__card--success strong { color: var(--color-success-fg); }
+.products-overview__card--warning { border-color: var(--color-warning-border); }
+.products-overview__card--warning strong { color: var(--color-warning-fg); }
+.products-overview__card--danger { border-color: var(--color-danger-border); }
+.products-overview__card--danger strong { color: var(--color-danger-fg); }
 .products-panel { min-height: 20rem; overflow: hidden; }
 .products-table-wrap { overflow: hidden; }
-.products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
-.products-form-hint { color: var(--color-text-muted); font-size: .75rem; }
-.products-file-input { display: block; color: var(--color-text-body); font-size: .875rem; }
-.products-table__image { display: block; width: 3rem; height: 3rem; border-radius: var(--radius-compact-list-item); object-fit: cover; }
+.products-table__identity { display: flex; align-items: center; gap: .75rem; min-width: 15rem; }
+.products-table__image { display: block; flex: 0 0 auto; width: 3.5rem; height: 3.5rem; padding: .2rem; border: 1px solid var(--color-border); border-radius: var(--radius-compact-list-item); object-fit: contain; background: var(--color-bg-light); }
 .products-table__image--empty { display: grid; place-items: center; color: var(--color-text-disabled); background: var(--color-bg-light); }
-.products-table__name { max-width: 16rem; color: var(--color-text-heading); font-weight: 700; white-space: normal; }
-.products-table td { white-space: nowrap; }
-@media (max-width: 640px) { .products-table__name { max-width: 10rem; } }
-.ltr {
-  direction: ltr;
-}
+.products-table__identity-copy { display: grid; min-width: 0; gap: .25rem; }
+.products-table__name { max-width: 18rem; overflow: hidden; color: var(--color-text-heading); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.products-table__sku { color: var(--color-text-muted); font-size: .72rem; }
+.products-table__price { display: grid; gap: .25rem; color: var(--color-text-heading); }
+.products-table__discount { color: var(--color-success-fg); font-size: .7rem; }
+.products-stock { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-weight: 800; }
+.products-stock--low { color: var(--color-warning-fg); }
+.products-stock--empty { color: var(--color-danger-fg); }
+.products-table__actions { flex-wrap: wrap; min-width: 12rem; }
+.products-form { display: grid; gap: 1rem; }
+.product-modal__header { display: flex; align-items: center; gap: .75rem; padding-inline-end: 2.5rem; margin-bottom: 1.25rem; }
+.product-modal__title-icon { display: grid; flex: 0 0 auto; width: 2.75rem; height: 2.75rem; place-items: center; border-radius: var(--radius-compact-list-item); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: 1.25rem; }
+.product-modal__header h2 { margin: 0; color: var(--color-text-heading); font-size: 1.15rem; font-weight: 800; }
+.product-modal__header p { margin: .2rem 0 0; color: var(--color-text-muted); font-size: .75rem; }
+.product-form__section { display: grid; gap: 1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-light); }
+.product-form__section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding-bottom: .65rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-heading); font-size: .9rem; font-weight: 800; }
+.product-form__section-heading small { color: var(--color-text-muted); font-size: .68rem; font-weight: 500; }
+.products-form-hint { color: var(--color-text-muted); font-size: .75rem; }
+.products-upload-dropzone { display: grid; place-items: center; gap: .4rem; min-height: 8rem; padding: 1rem; border: 1px dashed var(--color-info-border); border-radius: var(--radius-field); color: var(--color-text-body); background: var(--color-bg-surface); text-align: center; cursor: pointer; }
+.products-upload-dropzone > svg { color: var(--color-brand-blue); font-size: 1.5rem; }
+.products-upload-dropzone strong { color: var(--color-brand-blue); }
+.products-upload-dropzone small { color: var(--color-text-muted); font-size: .7rem; }
+.products-upload-dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.products-upload-dropzone:focus-within { box-shadow: var(--focus-ring); }
+.products-pending-files { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border-radius: var(--radius-field); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .78rem; }
+.products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
+.products-image-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem; }
+.products-image-tile { position: relative; display: grid; min-width: 0; aspect-ratio: 1; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-surface); }
+.products-image-tile img { width: 100%; height: 100%; padding: .3rem; object-fit: contain; }
+.products-image-tile :deep(button) { position: absolute; inset-block-start: .3rem; inset-inline-end: .3rem; }
+.products-image-tile__label { position: absolute; inset-inline: .35rem; inset-block-end: .35rem; padding: .2rem .3rem; border-radius: var(--radius-pill); color: var(--color-text-heading); background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent); font-size: .62rem; text-align: center; }
+.products-image-tile--pending { border-style: dashed; border-color: var(--color-info-border); }
+.products-images-empty { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 5rem; margin: 0; border: 1px dashed var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); font-size: .78rem; }
+.ltr { direction: ltr; }
+@media (max-width: 800px) { .products-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } .products-image-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .products-overview__card { padding: .75rem; } .products-overview__card strong { font-size: 1.2rem; } .products-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .product-form__section { padding: .75rem; } .product-form__section-heading { align-items: flex-start; flex-direction: column; gap: .2rem; } .products-table__identity { min-width: 13rem; } }
 </style>

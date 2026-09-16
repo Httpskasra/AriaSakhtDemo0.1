@@ -18,13 +18,10 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import type { Product } from "~/types/product";
 import { getRatingsByProduct } from "@/services/ratingService";
 import Comments from "./Comments.vue";
 
-const props = defineProps<{
-  data: Product;
-}>();
+const props = defineProps<{ productId: string }>();
 
 const ratings = ref<any[]>([]);
 const loading = ref(false);
@@ -35,8 +32,7 @@ const fetchRatings = async () => {
   errorMsg.value = "";
 
   try {
-    const productId = props.data.id || props.data._id || "";
-    const result = await getRatingsByProduct(productId);
+    const result = await getRatingsByProduct(props.productId);
     ratings.value = result;
   } catch (err: any) {
     console.error("خطا در دریافت نقدهای محصول:", err);

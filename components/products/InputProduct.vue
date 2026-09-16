@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import type { CreateProductDto } from '~/types/product';
+import { reactive } from 'vue';
+import type { Product } from '~/types/product';
 
 const props = defineProps<{
-  initialData?: Partial<CreateProductDto>;
+  initialData?: Partial<Product>;
   isUpdate?: boolean;
 }>();
 

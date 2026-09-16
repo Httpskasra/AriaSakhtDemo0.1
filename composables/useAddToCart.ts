@@ -19,7 +19,7 @@ export const useAddToCart = () => {
     if (!user.value?.userId) await fetchUser();
     if (!user.value?.userId) {
       error.value = 'لطفا وارد سایت شوید';
-      toast.add({ title: 'خطا', description: error.value, color: 'red' });
+      toast.add({ title: 'خطا', description: error.value || 'لطفاً وارد سایت شوید', color: 'error' });
       return null;
     }
 
@@ -44,7 +44,7 @@ export const useAddToCart = () => {
       return response.data;
     } catch (requestError: any) {
       error.value = requestError?.response?.data?.message || requestError?.message || 'خطا در افزودن محصول به سبد خرید';
-      toast.add({ title: 'خطا', description: error.value, color: 'red' });
+      toast.add({ title: 'خطا', description: error.value || 'خطا در افزودن محصول به سبد خرید', color: 'error' });
       throw requestError;
     } finally {
       loading.value = false;

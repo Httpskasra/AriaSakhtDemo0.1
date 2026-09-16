@@ -75,9 +75,10 @@ const getCategoryNames = computed(() => {
     return [];
   }
 
-  return props.data.categories.map((catId: string) => {
-    const category = categories.value.find((cat) => cat._id === catId);
-    return category?.name || catId;
+  return props.data.categories.map((categoryValue) => {
+    if (typeof categoryValue !== "string") return categoryValue.name || categoryValue._id || categoryValue.id || "دسته‌بندی";
+    const category = categories.value.find((item) => item._id === categoryValue);
+    return category?.name || categoryValue;
   });
 });
 
@@ -92,11 +93,11 @@ const statusLabel = computed(() => {
 });
 
 const formatPrice = (price: number) => {
-  return price.toLocaleString("fa-IR") + " ت";
+  return price.toLocaleString("fa-IR") + " ریال";
 };
 
 const copyProductLink = () => {
-  const productLink = `${window.location.origin}/products/${props.data.id}`;
+  const productLink = `${window.location.origin}/products/${props.data.id || props.data._id || ""}`;
   navigator.clipboard.writeText(productLink).then(() => {
   toast.add({ title: "کپی شد", description: "لینک محصول در کلیپ‌بورد ذخیره شد.", color: "success" });
   });

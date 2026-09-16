@@ -1,16 +1,15 @@
 <template>
   <div class="product-comments-panel">
-    <FormComments :data="data" />
-    <AllComments :data="data" />
+    <FormComments :product-id="productId" />
+    <AllComments :product-id="productId" />
   </div>
 </template>
 <script setup lang="ts">
-import type { Product } from "~/types/product";
 import FormComments from "./FormComments.vue";
 import AllComments from "./AllComments.vue";
 
-const props = defineProps<{
-  data: Product;
+defineProps<{
+  productId: string;
 }>();
 </script>
 <style scoped>

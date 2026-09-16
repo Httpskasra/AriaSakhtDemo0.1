@@ -114,7 +114,7 @@ const checkEligibility = async () => {
 
 const handleSubmit = async () => {
   if (form.comment.length < 5) {
-    toast.add({ title: 'خطا', description: 'متن نظر بسیار کوتاه است', color: 'red' })
+    toast.add({ title: 'خطا', description: 'متن نظر بسیار کوتاه است', color: 'error' })
     return
   }
 
@@ -126,7 +126,7 @@ const handleSubmit = async () => {
       comment: form.comment
     })
     
-    toast.add({ title: 'موفقیت', description: 'دیدگاه شما با موفقیت ثبت شد و پس از تایید نمایش داده می‌شود.', color: 'green' })
+    toast.add({ title: 'موفقیت', description: 'دیدگاه شما با موفقیت ثبت شد و پس از تایید نمایش داده می‌شود.', color: 'success' })
     form.comment = ''
     form.rating = 5
     emit('comment-added')
@@ -134,7 +134,7 @@ const handleSubmit = async () => {
     toast.add({ 
       title: 'خطا در ثبت', 
       description: err.response?.data?.message || 'مشکلی پیش آمد', 
-      color: 'red' 
+      color: 'error'
     })
   } finally {
     submitting.value = false
