@@ -13,14 +13,14 @@
             v-model="search"
             placeholder="جستجوی شرکت..."
             @submit="applyCompanyFilters" />
-          <USelect
+          <AppSelect
             v-model="sort"
             :items="[
               { label: 'جدیدترین', value: 'createdAt:desc' },
               { label: 'قدیمی‌ترین', value: 'createdAt:asc' },
               { label: 'نام (الفبا)', value: 'name:asc' }
             ]" />
-          <USelect
+          <AppSelect
             v-model="limit"
             :items="[
               { label: '۱۰', value: 10 },

@@ -82,7 +82,7 @@ onMounted(() => { if (canRead.value) void fetchOrders(); });
       <template v-else>
         <PanelFilterBar>
           <TableFilterInput v-model="search" placeholder="جستجو با شناسه سفارش" aria-label="جستجوی سفارش" />
-          <USelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت سفارش" class="status-filter" />
+          <AppSelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت سفارش" class="status-filter" />
           <UButton v-if="hasFilters" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearFilters">حذف فیلترها</UButton>
         </PanelFilterBar>
         <SharedAsyncState v-if="!filteredOrders.length" state="empty" title="سفارشی با این فیلتر پیدا نشد" message="فیلترها را تغییر دهید یا همه فیلترها را پاک کنید." />

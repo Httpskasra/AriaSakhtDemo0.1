@@ -13,7 +13,7 @@
     <PanelPermissionGuard :allowed="canUpdate" :ready="isReady">
       <PanelFilterBar>
         <div class="vendor-request-filter-label">نمایش درخواست‌ها</div>
-        <USelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت درخواست" class="vendor-request-filter" />
+        <AppSelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت درخواست" class="vendor-request-filter" />
       </PanelFilterBar>
 
       <div class="premium-card panel-table-card">

@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useProductById } from "~/composables/useGetProductByID";
 import { useAddToCart } from "~/composables/useAddToCart";
-import type { Product, ProductImage } from "~/types/product";
+import type { Product, ProductImage, ProductVariant, ProductVariantSelection } from "~/types/product";
 
 const route = useRoute();
 const productId = computed(() => String(route.params.id || ""));
@@ -25,7 +25,6 @@ const stockQuantity = computed(() => Math.max(0, Number(product.value?.stock?.qu
 const isOutOfStock = computed(() => stockQuantity.value <= 0);
 const isAvailable = computed(() => product.value?.status === "active" && !isOutOfStock.value);
 const rating = computed(() => Math.max(0, Math.min(5, Number(product.value?.avgRate || 0))));
-const finalPrice = computed(() => Number(product.value?.finalPrice ?? product.value?.basePrice ?? 0));
 const companyId = computed(() => {
   const value = product.value?.companyId;
   return typeof value === "string" ? value : value?._id || "";
@@ -59,9 +58,33 @@ const availabilityLabel = computed(() => {
 });
 const displayAttributes = computed(() => Object.entries(product.value?.attributes || {}));
 const displayTags = computed(() => product.value?.tags || []);
-const selectedVariant = computed(() => {
-  const entries = Object.entries(selectedVariants.value).filter(([, value]) => value);
-  return entries.length ? { name: entries[0][0], value: entries[0][1] } : undefined;
+const discountedBasePrice = computed(() => {
+  const basePrice = Number(product.value?.basePrice || 0);
+  const discount = Math.min(Math.max(Number(product.value?.discount || 0), 0), 100);
+  return Math.max(basePrice - (basePrice * discount) / 100, 0);
+});
+const selectedVariantSelections = computed<ProductVariantSelection[]>(() => (
+  (product.value?.variants || [])
+    .map((variant) => ({
+      name: variant.name,
+      value: selectedVariants.value[variantKey(variant)] || "",
+    }))
+    .filter((selection) => selection.value)
+));
+const hasVariants = computed(() => Boolean(product.value?.variants?.length));
+const variantsComplete = computed(() => (
+  !hasVariants.value || selectedVariantSelections.value.length === product.value?.variants.length
+));
+const selectedVariantAdjustment = computed(() => selectedVariantSelections.value.reduce((total, selection) => {
+  const variant = product.value?.variants?.find((candidate) => candidate.name === selection.name);
+  const option = variant?.options.find((candidate) => candidate.value === selection.value);
+  return total + Math.max(0, Number(option?.priceModifier || 0));
+}, 0));
+const finalPrice = computed(() => Math.round(discountedBasePrice.value + selectedVariantAdjustment.value));
+const variantSelectionHint = computed(() => {
+  if (!hasVariants.value) return "";
+  const remaining = (product.value?.variants || []).filter((variant) => !selectedVariants.value[variantKey(variant)]).length;
+  return remaining ? `${remaining.toLocaleString("fa-IR")} گزینه دیگر را انتخاب کنید` : "همه گزینه‌ها انتخاب شده‌اند";
 });
 const productUrl = computed(() => `/products/${encodeURIComponent(productId.value)}`);
 
@@ -91,15 +114,29 @@ function changeQuantity(delta: number) {
   quantity.value = Math.min(Math.max(1, next), Math.max(1, stockQuantity.value));
 }
 
+function variantKey(variant: ProductVariant) {
+  return variant.id || variant.name;
+}
+
+function selectVariant(variant: ProductVariant, value: string) {
+  selectedVariants.value = { ...selectedVariants.value, [variantKey(variant)]: value };
+}
+
 async function handleAddToCart() {
   if (!product.value || !productId.value || !isAvailable.value || cartLoading.value) return;
+  if (!variantsComplete.value) {
+    useToast().add({ title: "گزینه‌های محصول کامل نیست", description: "برای ادامه، همه گزینه‌های خرید را انتخاب کنید.", color: "warning" });
+    return;
+  }
   try {
+    const selections = selectedVariantSelections.value;
     await addProductToCart({
       productId: productId.value,
       quantity: quantity.value,
       companyId: companyId.value || undefined,
       priceAtAdd: finalPrice.value,
-      variant: selectedVariant.value,
+      variants: selections.length ? selections : undefined,
+      variant: selections.length === 1 ? selections[0] : undefined,
     });
   } catch {
     // useAddToCart already reports the actionable error to the user.
@@ -187,17 +224,39 @@ function handleImageError(event: Event) {
             <div class="product-summary__price-card">
               <span v-if="product.discount" class="product-summary__old-price font-num">{{ product.basePrice.toLocaleString("fa-IR") }} ریال</span>
               <strong class="product-summary__price font-num">{{ finalPrice.toLocaleString("fa-IR") }} <small>ریال</small></strong>
+              <span v-if="hasVariants" class="product-summary__price-note">
+                {{ selectedVariantAdjustment ? `شامل ${selectedVariantAdjustment.toLocaleString("fa-IR")} ریال افزایش گزینه‌ها` : "قیمت پایه پس از تخفیف" }}
+              </span>
               <span class="product-summary__availability" :class="{ 'product-summary__availability--danger': !isAvailable }"><UIcon name="i-lucide-package-check" aria-hidden="true" /> {{ availabilityLabel }}</span>
             </div>
 
             <div v-if="product.variants?.length" class="product-variants">
-              <div v-for="variant in product.variants" :key="variant.id || variant.name" class="product-variant">
-                <label :for="`variant-${variant.name}`">{{ variant.name }}</label>
-                <select :id="`variant-${variant.name}`" v-model="selectedVariants[variant.name]">
-                  <option value="">انتخاب کنید</option>
-                  <option v-for="option in variant.options" :key="option.value" :value="option.value">{{ option.value }}</option>
-                </select>
+              <div class="product-variants__header">
+                <div>
+                  <h2>گزینه‌های خرید</h2>
+                  <p>گزینه مناسب محصول را انتخاب کنید تا قیمت نهایی نمایش داده شود.</p>
+                </div>
+                <span class="product-variants__progress">{{ variantSelectionHint }}</span>
               </div>
+              <fieldset v-for="variant in product.variants" :key="variant.id || variant.name" class="product-variant">
+                <legend>{{ variant.name }}</legend>
+                <div class="product-variant__options" role="radiogroup" :aria-label="`انتخاب ${variant.name}`">
+                  <button
+                    v-for="option in variant.options"
+                    :key="option.value"
+                    type="button"
+                    role="radio"
+                    class="product-variant__option"
+                    :class="{ 'product-variant__option--selected': selectedVariants[variantKey(variant)] === option.value }"
+                    :aria-checked="selectedVariants[variantKey(variant)] === option.value"
+                    @click="selectVariant(variant, option.value)">
+                    <span class="product-variant__option-value">{{ option.value }}</span>
+                    <span class="product-variant__option-price">
+                      {{ Number(option.priceModifier || 0) > 0 ? `+${Number(option.priceModifier).toLocaleString("fa-IR")} ریال` : "بدون افزایش" }}
+                    </span>
+                  </button>
+                </div>
+              </fieldset>
             </div>
 
             <div class="product-summary__actions">
@@ -206,8 +265,8 @@ function handleImageError(event: Event) {
                 <span class="font-num" aria-live="polite">{{ quantity.toLocaleString("fa-IR") }}</span>
                 <button type="button" :disabled="quantity <= 1" aria-label="کاهش تعداد" @click="changeQuantity(-1)">−</button>
               </div>
-              <UButton type="button" size="xl" color="primary" class="product-summary__cart-button" :disabled="!isAvailable || cartLoading" :loading="cartLoading" @click="handleAddToCart">
-                <UIcon name="i-lucide-shopping-cart" aria-hidden="true" /> {{ isAvailable ? "افزودن به سبد خرید" : "در حال حاضر قابل سفارش نیست" }}
+              <UButton type="button" size="xl" color="primary" class="product-summary__cart-button" :disabled="!isAvailable || !variantsComplete || cartLoading" :loading="cartLoading" @click="handleAddToCart">
+                <UIcon name="i-lucide-shopping-cart" aria-hidden="true" /> {{ !isAvailable ? "در حال حاضر قابل سفارش نیست" : variantsComplete ? "افزودن به سبد خرید" : "انتخاب گزینه‌های خرید" }}
               </UButton>
               <FavoriteButton v-if="productId" :product-id="productId" class="product-summary__favorite" />
             </div>
@@ -233,7 +292,7 @@ function handleImageError(event: Event) {
         </div>
 
         <article v-if="displayAttributes.length" class="product-information-card">
-          <div class="product-section-heading"><UIcon name="i-lucide-sliders-horizontal" aria-hidden="true" /><h2>مشخصات فنی</h2></div>
+          <div class="product-section-heading"><UIcon name="i-lucide-sliders-horizontal" aria-hidden="true" /><div><h2>مشخصات فنی</h2><p>ویژگی‌های ثابت محصول؛ این موارد هنگام خرید انتخاب نمی‌شوند.</p></div></div>
           <dl class="product-attributes-grid">
             <div v-for="([key, value]) in displayAttributes" :key="key"><dt>{{ key }}</dt><dd>{{ value }}</dd></div>
           </dl>
@@ -296,12 +355,23 @@ function handleImageError(event: Event) {
 .product-summary__old-price { color: var(--color-text-muted); font-size: .8rem; text-decoration: line-through; }
 .product-summary__price { color: var(--color-brand-blue); font-size: clamp(1.65rem, 4vw, 2.2rem); font-weight: 900; }
 .product-summary__price small { color: var(--color-text-muted); font-size: .8rem; font-weight: 700; }
+.product-summary__price-note { color: var(--color-text-muted); font-size: .72rem; }
 .product-summary__availability { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-size: .75rem; font-weight: 700; }
 .product-summary__availability--danger { color: var(--color-danger-fg); }
-.product-variants { display: grid; gap: .75rem; margin-bottom: 1.25rem; }
-.product-variant { display: grid; gap: .4rem; }
-.product-variant label { color: var(--color-text-heading); font-size: .8rem; font-weight: 700; }
-.product-variant select { min-height: 2.75rem; padding: .5rem .7rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-field); color: var(--color-text-body); background: var(--color-bg-surface); font: inherit; }
+.product-variants { display: grid; gap: .8rem; margin-bottom: 1.25rem; }
+.product-variants__header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .8rem 0 .2rem; }
+.product-variants__header h2 { margin: 0; color: var(--color-text-heading); font-size: .95rem; font-weight: 800; }
+.product-variants__header p { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .72rem; line-height: 1.7; }
+.product-variants__progress { flex: 0 0 auto; padding: .3rem .55rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .7rem; font-weight: 700; }
+.product-variant { min-width: 0; padding: .75rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-light); }
+.product-variant legend { padding-inline: .25rem; color: var(--color-text-heading); font-size: .8rem; font-weight: 800; }
+.product-variant__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .5rem; }
+.product-variant__option { display: grid; min-height: 3.35rem; gap: .25rem; padding: .6rem .7rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-field); color: var(--color-text-body); background: var(--color-bg-surface); text-align: start; cursor: pointer; transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
+.product-variant__option:hover { border-color: var(--color-brand-blue); background: var(--color-info-bg); }
+.product-variant__option:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.product-variant__option--selected { border-color: var(--color-brand-blue); background: var(--color-info-bg); box-shadow: inset 0 0 0 1px var(--color-brand-blue); }
+.product-variant__option-value { color: var(--color-text-heading); font-size: .82rem; font-weight: 800; }
+.product-variant__option-price { color: var(--color-text-muted); font-size: .68rem; }
 .product-summary__actions { display: flex; align-items: stretch; gap: .65rem; margin-top: auto; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
 .product-summary__cart-button { flex: 1; min-height: 3.25rem; }
 .product-summary__cart-button :deep(svg) { width: 1.15rem; height: 1.15rem; }
@@ -316,6 +386,7 @@ function handleImageError(event: Event) {
 .product-section-heading { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; color: var(--color-text-heading); }
 .product-section-heading svg { color: var(--color-brand-blue); }
 .product-section-heading h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+.product-section-heading p { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .7rem; font-weight: 500; }
 .product-description { margin: 0; color: var(--color-text-body); line-height: 2.1; white-space: pre-line; overflow-wrap: anywhere; }
 .product-meta-list, .product-attributes-grid { display: grid; gap: .65rem; margin: 0; }
 .product-meta-list div, .product-attributes-grid div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: .55rem; border-bottom: 1px solid var(--color-border); }
@@ -339,6 +410,6 @@ function handleImageError(event: Event) {
 .product-lightbox__close { position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; }
 
 @media (max-width: 1024px) { .product-detail-layout { grid-template-columns: 1fr; } .product-gallery__main { max-width: 42rem; margin-inline: auto; } }
-@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), 90rem); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid, .product-attributes-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } }
-@media (prefers-reduced-motion: reduce) { .product-gallery__thumbnail, .product-gallery__main, .product-status { transition: none; } }
+@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), 90rem); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid, .product-attributes-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } .product-variants__header { flex-direction: column; } .product-variants__progress { align-self: flex-start; } .product-variant__options { grid-template-columns: 1fr 1fr; } }
+@media (prefers-reduced-motion: reduce) { .product-gallery__thumbnail, .product-gallery__main, .product-status, .product-variant__option { transition: none; } }
 </style>

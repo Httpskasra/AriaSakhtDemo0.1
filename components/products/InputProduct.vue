@@ -53,7 +53,7 @@ const onSubmit = () => {
       </UFormField>
 
       <UFormField label="وضعیت انتشار" name="status">
-        <USelect 
+        <AppSelect
           v-model="state.status" 
           :options="[
             { label: 'پیش‌نویس', value: 'draft' },

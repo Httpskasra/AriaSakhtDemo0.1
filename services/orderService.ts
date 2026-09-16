@@ -61,6 +61,7 @@ export async function createOrder(options: CreateOrderOptions = {}): Promise<Ord
       companyId: String(companyId),
       quantity: Number(item.quantity),
       priceAtAdd: Number(item.priceAtAdd),
+      ...(item.variants?.length ? { variants: item.variants } : {}),
       ...(item.variant ? { variant: item.variant } : {}),
     };
   });

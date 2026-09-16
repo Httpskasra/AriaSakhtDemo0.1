@@ -13,13 +13,13 @@
               v-model="searchOrders"
               placeholder="جستجوی سفارش..."
               @submit="applyOrderFilters" />
-            <USelect
+            <AppSelect
               v-model="sortOrders"
               :items="[
                 { label: 'جدیدترین', value: 'createdAt:desc' },
                 { label: 'قدیمی‌ترین', value: 'createdAt:asc' }
               ]" />
-            <USelect
+            <AppSelect
               v-model="limitOrders"
               :items="[
                 { label: '۱۰', value: 10 },
@@ -119,13 +119,13 @@
               v-model="searchTransportings"
               placeholder="جستجوی حمل‌ونقل..."
               @submit="applyTransportFilters" />
-            <USelect
+            <AppSelect
               v-model="sortTransportings"
               :items="[
                 { label: 'جدیدترین', value: 'createdAt:desc' },
                 { label: 'قدیمی‌ترین', value: 'createdAt:asc' }
               ]" />
-            <USelect
+            <AppSelect
               v-model="limitTransportings"
               :items="[
                 { label: '۱۰', value: 10 },
@@ -185,7 +185,7 @@
                     {{ numberFormat(transporting.cost) }}
                   </td>
                   <td class="px-4 py-3">
-                    <USelect
+                    <AppSelect
                       v-if="canUpdate"
                       :model-value="transporting.status"
                       size="xs"
@@ -262,7 +262,7 @@
 
           <!-- Status -->
           <UFormField label="وضعیت" name="status">
-            <USelect
+            <AppSelect
               v-model="form.status"
               :items="[
                 { label: 'درحال‌انتظار', value: 'pending' },
@@ -292,7 +292,7 @@
 
 <script setup lang="ts">
 const feedback = useFeedback();
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import type { Order } from "~/types/order";
@@ -438,9 +438,6 @@ function selectOrder(order: Order) {
   fetchTransportings();
 }
 
-const totalOrderPages = computed(() => Math.max(1, Math.ceil(totalOrders.value / limitOrders.value)));
-const totalTransportPages = computed(() => Math.max(1, Math.ceil(totalTransportings.value / limitTransportings.value)));
-
 function applyOrderFilters() {
   pageOrders.value = 1;
   fetchOrders();
@@ -448,16 +445,6 @@ function applyOrderFilters() {
 
 function applyTransportFilters() {
   pageTransportings.value = 1;
-  fetchTransportings();
-}
-
-function goToOrderPage(nextPage: number) {
-  pageOrders.value = Math.max(1, Math.min(nextPage, totalOrderPages.value));
-  fetchOrders();
-}
-
-function goToTransportPage(nextPage: number) {
-  pageTransportings.value = Math.max(1, Math.min(nextPage, totalTransportPages.value));
   fetchTransportings();
 }
 

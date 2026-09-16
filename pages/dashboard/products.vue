@@ -1,7 +1,7 @@
 <template>
     <div class="products-page">
       <PanelPageHeader title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
-        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" @click="openModal()">محصول جدید</UButton></template>
+        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="openModal()">محصول جدید</UButton></template>
       </PanelPageHeader>
 
       <section class="products-overview" aria-label="خلاصه محصولات">
@@ -33,7 +33,7 @@
             v-model="search"
             placeholder="جستجوی محصول..."
             @submit="applyProductFilters" />
-          <USelect
+          <AppSelect
             v-model="sort"
             :items="[
               { label: 'جدیدترین', value: 'createdAt:desc' },
@@ -41,7 +41,7 @@
               { label: 'نام (الفبا)', value: 'name:asc' },
               { label: 'قیمت نزولی', value: 'basePrice:desc' }
             ]" />
-          <USelect
+          <AppSelect
             v-model="limit"
             :items="[
               { label: '۱۰', value: 10 },
@@ -66,7 +66,7 @@
           state="empty"
           :title="search ? 'محصولی با این جستجو پیدا نشد' : 'هنوز محصولی ثبت نشده است'"
           :message="search ? 'عبارت جستجو یا فیلترها را تغییر دهید.' : 'برای شروع، اولین محصول خود را ثبت کنید.'">
-          <UButton v-if="!search && canCreate" type="button" @click="openModal()">افزودن محصول</UButton>
+          <UButton v-if="!search && canCreate" type="button" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="openModal()">افزودن محصول</UButton>
         </SharedAsyncState>
         <div v-else class="products-table-wrap">
           <TableScrollContainer>
@@ -99,6 +99,11 @@
                 <div class="products-table__identity-copy">
                   <strong class="products-table__name">{{ product.name }}</strong>
                   <span class="products-table__sku ltr">SKU: {{ product.sku || "-" }}</span>
+                  <span v-if="product.variants?.length || Object.keys(product.attributes || {}).length" class="products-table__metadata">
+                    <span v-if="product.variants?.length">{{ product.variants.length.toLocaleString("fa-IR") }} گزینه خرید</span>
+                    <span v-if="product.variants?.length && Object.keys(product.attributes || {}).length"> · </span>
+                    <span v-if="Object.keys(product.attributes || {}).length">{{ Object.keys(product.attributes || {}).length.toLocaleString("fa-IR") }} مشخصه فنی</span>
+                  </span>
                 </div>
               </td>
               <td class="products-table__price">
@@ -213,13 +218,13 @@
 
               <UFormField label="دسته‌بندی" name="categories">
                 <div class="space-y-2">
-                  <USelectMenu
+                  <AppMultiSelect
                     v-model="form.categories"
-                    multiple
                     :loading="categoriesLoading"
-                    :options="categoryOptions"
-                    value-attribute="_id"
-                    option-attribute="name"
+                    :items="categoryOptions"
+                    value-key="_id"
+                    label-key="name"
+                    aria-label="دسته‌بندی محصول"
                     placeholder="دسته‌بندی محصول را انتخاب کنید" />
                   <div class="products-form-hint">می‌توانید چند دسته‌بندی مرتبط انتخاب کنید.</div>
                 </div>
@@ -246,6 +251,10 @@
                     v-if="!uploading"
                     type="button"
                     size="sm"
+                    icon="i-lucide-cloud-upload"
+                    color="primary"
+                    variant="solid"
+                    class="products-primary-action"
                     @click="uploadSelectedImages">
                     آپلود و افزودن
                   </UButton>
@@ -281,101 +290,63 @@
               </div>
             </section>
 
-            <section class="product-form__section">
-              <div class="product-form__section-heading"><span>واریانت‌ها و ویژگی‌ها</span><small>اطلاعات فنی و گزینه‌های قابل انتخاب محصول</small></div>
-              <div class="space-y-4">
-                <div
-                  v-for="(variant, vi) in form.variants"
-                  :key="vi"
-                  class="border rounded p-3">
-                  <div class="flex items-center gap-2 mb-2">
-                    <UInput
-                      v-model="variant.name"
-                      placeholder="نام واریانت (مثلا: بسته‌بندی)"
-                      class="flex-1" />
-                    <UButton
-                      type="button"
-                      size="sm"
-                      color="neutral"
-                      variant="soft"
-                      @click="form.variants.splice(vi, 1)">
-                      حذف واریانت
-                    </UButton>
-                  </div>
-                  <div class="space-y-2">
-                    <div
-                      v-for="(opt, oi) in variant.options"
-                      :key="oi"
-                      class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <UInput
-                        v-model="opt.value"
-                        placeholder="مقدار (مثلا: 50 kg)" />
-                      <UInput
-                        v-model.number="opt.priceModifier"
-                        type="number"
-                        placeholder="تغییر قیمت" />
-                      <div class="md:col-span-2">
-                        <UButton
-                          type="button"
-                          size="sm"
-                          color="neutral"
-                          variant="soft"
-                          @click="variant.options.splice(oi, 1)">
-                          حذف گزینه
-                        </UButton>
-                      </div>
-                    </div>
-                    <UButton
-                      type="button"
-                      size="sm"
-                      color="neutral"
-                      variant="outline"
-                      @click="
-                        variant.options.push({ value: '', priceModifier: 0 })
-                      ">
-                      + افزودن گزینه
-                    </UButton>
-                  </div>
-                </div>
-                <UButton
-                  type="button"
-                  size="sm"
-                  color="neutral"
-                  variant="outline"
-                  @click="form.variants.push({ name: '', options: [] })">
-                  + افزودن واریانت
-                </UButton>
-              </div>
+            <p v-if="formError" class="product-form-error" role="alert">{{ formError }}</p>
 
-              <div class="space-y-2">
-                <div
-                  v-for="(pair, i) in attributesPairs"
-                  :key="i"
-                  class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <UInput
-                    v-model="pair.key"
-                    placeholder="کلید" />
-                  <UInput
-                    v-model="pair.value"
-                    placeholder="مقدار" />
-                  <UButton
-                    type="button"
-                    size="sm"
-                    color="neutral"
-                    variant="soft"
-                    @click="attributesPairs.splice(i, 1)">
-                    حذف
-                  </UButton>
-                </div>
-                <UButton
-                  type="button"
-                  size="sm"
-                  color="neutral"
-                  variant="outline"
-                  @click="attributesPairs.push({ key: '', value: '' })">
-                  + افزودن ویژگی
-                </UButton>
+            <section class="product-form__section">
+              <div class="product-form__section-heading">
+                <div><span>گزینه‌های قابل انتخاب هنگام خرید</span><small>برای مواردی مثل رنگ، وزن یا نوع بسته‌بندی؛ مشتری هنگام خرید یکی از مقدارها را انتخاب می‌کند.</small></div>
               </div>
+              <div class="product-form__explainer"><UIcon name="i-lucide-circle-help" aria-hidden="true" /><span><strong>واریانت یعنی انتخاب خرید.</strong> هر عنوان یک گروه گزینه است و باید حداقل یک مقدار داشته باشد. افزایش قیمت نسبت به قیمت پایه و به ریال وارد می‌شود.</span></div>
+              <div class="product-options-editor">
+                <article v-for="(variant, vi) in form.variants" :key="vi" class="product-option-card" :class="{ 'product-option-card--invalid': showFormErrors && hasVariantError(variant) }">
+                  <div class="product-option-card__header">
+                    <div><span class="product-option-card__step">گزینه {{ (vi + 1).toLocaleString("fa-IR") }}</span><h3>عنوان گزینه خرید</h3></div>
+                    <UButton type="button" size="sm" color="error" variant="soft" icon="i-lucide-trash-2" @click="form.variants.splice(vi, 1)">حذف گزینه خرید</UButton>
+                  </div>
+                  <div class="product-field-row" :class="{ 'product-field-row--invalid': showFormErrors && !variant.name.trim() }">
+                    <UInput v-model="variant.name" placeholder="مثلاً رنگ، وزن یا نوع بسته‌بندی" aria-label="عنوان گزینه خرید" />
+                    <span v-if="showFormErrors && !variant.name.trim()" class="product-field-error">عنوان گزینه را وارد کنید.</span>
+                  </div>
+                  <div class="product-option-card__options">
+                    <div v-for="(opt, oi) in variant.options" :key="oi" class="product-option-row" :class="{ 'product-option-row--invalid': showFormErrors && hasOptionError(opt) }">
+                      <div class="product-field-row">
+                        <label>مقدار قابل انتخاب</label>
+                        <UInput v-model="opt.value" placeholder="مثلاً سفید یا ۵۰ کیلوگرم" aria-label="مقدار قابل انتخاب" />
+                      </div>
+                      <div class="product-field-row">
+                        <label>افزایش قیمت نسبت به پایه (ریال)</label>
+                        <UInput v-model.number="opt.priceModifier" type="number" min="0" placeholder="۰ = بدون افزایش" aria-label="افزایش قیمت نسبت به پایه" />
+                      </div>
+                      <UButton type="button" size="sm" color="neutral" variant="soft" icon="i-lucide-x" aria-label="حذف مقدار گزینه" @click="variant.options.splice(oi, 1)">حذف مقدار</UButton>
+                      <span v-if="showFormErrors && !opt.value.trim()" class="product-field-error">مقدار را وارد کنید.</span>
+                    </div>
+                  </div>
+                  <UButton type="button" size="sm" color="neutral" variant="outline" class="products-secondary-action" icon="i-lucide-plus" @click="variant.options.push({ value: '', priceModifier: 0 })">افزودن مقدار</UButton>
+                </article>
+              </div>
+              <UButton type="button" size="sm" color="neutral" variant="outline" class="products-secondary-action" icon="i-lucide-plus" @click="form.variants.push({ name: '', options: [{ value: '', priceModifier: 0 }] })">افزودن گزینه خرید</UButton>
+            </section>
+
+            <section class="product-form__section">
+              <div class="product-form__section-heading">
+                <div><span>مشخصات فنی ثابت محصول</span><small>اطلاعاتی که مشتری می‌خواند و انتخاب نمی‌کند؛ مثل برند، جنس، استاندارد یا ابعاد.</small></div>
+              </div>
+              <div class="product-form__explainer"><UIcon name="i-lucide-info" aria-hidden="true" /><span><strong>ویژگی فنی یعنی مشخصه ثابت.</strong> این بخش قیمت را تغییر نمی‌دهد و در صفحه محصول به‌صورت جدول نمایش داده می‌شود.</span></div>
+              <div class="product-attributes-editor">
+                <div v-for="(pair, i) in attributesPairs" :key="i" class="product-attribute-row" :class="{ 'product-attribute-row--invalid': showFormErrors && hasAttributeError(pair) }">
+                  <div class="product-field-row">
+                    <label>عنوان مشخصه</label>
+                    <UInput v-model="pair.key" placeholder="مثلاً برند، جنس یا ابعاد" aria-label="عنوان مشخصه فنی" />
+                  </div>
+                  <div class="product-field-row">
+                    <label>مقدار مشخصه</label>
+                    <UInput v-model="pair.value" placeholder="مثلاً سیمان تیپ ۲ یا ۱۰ × ۲۰ سانتی‌متر" aria-label="مقدار مشخصه فنی" />
+                  </div>
+                  <UButton type="button" size="sm" color="neutral" variant="soft" icon="i-lucide-x" aria-label="حذف مشخصه فنی" @click="attributesPairs.splice(i, 1)">حذف مشخصه</UButton>
+                  <span v-if="showFormErrors && hasAttributeError(pair)" class="product-field-error">عنوان و مقدار مشخصه را کامل کنید.</span>
+                </div>
+              </div>
+              <UButton type="button" size="sm" color="neutral" variant="outline" class="products-secondary-action" icon="i-lucide-plus" @click="attributesPairs.push({ key: '', value: '' })">افزودن مشخصه فنی</UButton>
             </section>
 
             <div class="flex items-center justify-end gap-2">
@@ -433,6 +404,8 @@ const total = ref(0);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
 const saving = ref(false);
+const formError = ref("");
+const showFormErrors = ref(false);
 const deleting = ref(false);
 const deletingId = ref<string | null>(null);
 const deleteTarget = ref<Product | null>(null);
@@ -613,6 +586,8 @@ async function uploadSelectedImages() {
 
 watch(showModal, (val) => {
   if (val) {
+    formError.value = "";
+    showFormErrors.value = false;
     tagsInput.value = form.value.tags?.join(", ") ?? "";
     attributesPairs.value = Object.entries(form.value.attributes || {}).map(
       ([k, v]) => ({ key: k, value: String(v) })
@@ -684,6 +659,9 @@ function openModal(product: Product | null = null) {
       ...product,
       images: product.images || [],
       imagesMeta: product.imagesMeta || [],
+      variants: product.variants || [],
+      attributes: product.attributes || {},
+      tags: product.tags || [],
       discount: product.discount ?? 0,
     };
   } else {
@@ -725,16 +703,17 @@ async function saveProduct() {
   }
   // sync helpers
   syncTagsFromInput();
-  form.value.attributes = {};
-  attributesPairs.value.forEach(({ key, value }) => {
-    if (key && value) form.value.attributes[key] = value;
-  });
-
+  showFormErrors.value = true;
   const validationError = validateProductForm();
   if (validationError) {
+    formError.value = validationError;
     feedback.error("اطلاعات محصول کامل نیست", validationError);
     return;
   }
+
+  formError.value = "";
+  form.value.variants = normalizeVariants(form.value.variants);
+  form.value.attributes = normalizeAttributes(attributesPairs.value);
 
   const cleanPayload: Record<string, unknown> = {
     name: form.value.name,
@@ -833,7 +812,71 @@ function validateProductForm(): string | null {
   if (Number(form.value.basePrice) < 0) return "قیمت پایه نمی‌تواند منفی باشد.";
   if (Number(form.value.discount) < 0 || Number(form.value.discount) > 100) return "تخفیف باید بین صفر تا صد باشد.";
   if (Number(form.value.stock?.quantity) < 0) return "موجودی نمی‌تواند منفی باشد.";
+
+  const variantNames = new Set<string>();
+  for (const variant of form.value.variants || []) {
+    const name = variant.name.trim();
+    if (name.length < 2) return "عنوان هر گزینه خرید باید حداقل ۲ کاراکتر باشد.";
+    const normalizedName = name.toLocaleLowerCase();
+    if (variantNames.has(normalizedName)) return `گزینه خرید «${name}» تکراری است.`;
+    variantNames.add(normalizedName);
+    if (!variant.options?.length) return `برای گزینه «${name}» حداقل یک مقدار اضافه کنید.`;
+    const optionValues = new Set<string>();
+    for (const option of variant.options) {
+      const value = option.value.trim();
+      if (!value) return `مقدار گزینه «${name}» را وارد کنید.`;
+      const normalizedValue = value.toLocaleLowerCase();
+      if (optionValues.has(normalizedValue)) return `مقدار «${value}» در گزینه «${name}» تکراری است.`;
+      optionValues.add(normalizedValue);
+      const modifier = Number(option.priceModifier ?? 0);
+      if (!Number.isFinite(modifier) || modifier < 0) return `افزایش قیمت مقدار «${value}» معتبر نیست.`;
+    }
+  }
+
+  const attributeNames = new Set<string>();
+  for (const attribute of attributesPairs.value) {
+    const key = attribute.key.trim();
+    const value = attribute.value.trim();
+    if (Boolean(key) !== Boolean(value)) return "عنوان و مقدار هر مشخصه فنی را کامل کنید.";
+    if (key) {
+      const normalizedKey = key.toLocaleLowerCase();
+      if (attributeNames.has(normalizedKey)) return `مشخصه فنی «${key}» تکراری است.`;
+      attributeNames.add(normalizedKey);
+    }
+  }
   return null;
+}
+
+function normalizeVariants(variants: Product["variants"]): Product["variants"] {
+  return (variants || []).map((variant) => ({
+    name: variant.name.trim(),
+    options: (variant.options || []).map((option) => ({
+      value: option.value.trim(),
+      priceModifier: Math.round(Number(option.priceModifier ?? 0)),
+    })),
+  }));
+}
+
+function normalizeAttributes(pairs: { key: string; value: string }[]): Record<string, string> {
+  return pairs.reduce<Record<string, string>>((result, pair) => {
+    const key = pair.key.trim();
+    const value = pair.value.trim();
+    if (key && value) result[key] = value;
+    return result;
+  }, {});
+}
+
+function hasVariantError(variant: Product["variants"][number]): boolean {
+  return !variant.name.trim() || !variant.options?.length || variant.options.some(hasOptionError);
+}
+
+function hasOptionError(option: Product["variants"][number]["options"][number]): boolean {
+  const modifier = Number(option.priceModifier ?? 0);
+  return !option.value.trim() || !Number.isFinite(modifier) || modifier < 0;
+}
+
+function hasAttributeError(pair: { key: string; value: string }): boolean {
+  return Boolean(pair.key.trim()) !== Boolean(pair.value.trim());
 }
 
 function errorMessage(error: unknown): string {
@@ -868,6 +911,7 @@ function numberFormat(n?: number) {
 .products-table__identity-copy { display: grid; min-width: 0; gap: .25rem; }
 .products-table__name { max-width: 18rem; overflow: hidden; color: var(--color-text-heading); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .products-table__sku { color: var(--color-text-muted); font-size: .72rem; }
+.products-table__metadata { color: var(--color-brand-blue); font-size: .68rem; font-weight: 700; }
 .products-table__price { display: grid; gap: .25rem; color: var(--color-text-heading); }
 .products-table__discount { color: var(--color-success-fg); font-size: .7rem; }
 .products-stock { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-weight: 800; }
@@ -883,6 +927,26 @@ function numberFormat(n?: number) {
 .product-form__section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding-bottom: .65rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-heading); font-size: .9rem; font-weight: 800; }
 .product-form__section-heading small { color: var(--color-text-muted); font-size: .68rem; font-weight: 500; }
 .products-form-hint { color: var(--color-text-muted); font-size: .75rem; }
+.product-form-error { margin: 0; padding: .7rem .8rem; border: 1px solid var(--color-danger-border); border-radius: var(--radius-field); color: var(--color-danger-fg); background: var(--color-danger-bg); font-size: .78rem; font-weight: 700; line-height: 1.7; }
+.product-form__explainer { display: flex; align-items: flex-start; gap: .5rem; padding: .7rem .8rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-info-bg); font-size: .74rem; line-height: 1.8; }
+.product-form__explainer :deep(svg) { flex: 0 0 auto; margin-top: .2rem; color: var(--color-brand-blue); }
+.product-form__explainer strong { color: var(--color-text-heading); }
+.product-options-editor, .product-attributes-editor { display: grid; gap: .75rem; }
+.product-option-card, .product-attribute-row { display: grid; gap: .75rem; padding: .85rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-surface); }
+.product-option-card--invalid, .product-attribute-row--invalid { border-color: var(--color-danger-border); }
+.product-option-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.product-option-card__header h3 { margin: .2rem 0 0; color: var(--color-text-heading); font-size: .82rem; }
+.product-option-card__step { color: var(--color-brand-blue); font-size: .68rem; font-weight: 800; }
+.product-field-row { display: grid; min-width: 0; gap: .3rem; }
+.product-field-row label { color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
+.product-field-row--invalid :deep(input), .product-option-row--invalid :deep(input), .product-attribute-row--invalid :deep(input) { border-color: var(--color-danger-fg) !important; }
+.product-field-error { color: var(--color-danger-fg); font-size: .68rem; font-weight: 700; }
+.product-option-card > .product-field-row { max-width: 34rem; }
+.product-option-card__options { display: grid; gap: .65rem; }
+.product-option-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: .6rem; align-items: end; padding: .7rem; border: 1px dashed var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-light); }
+.product-option-row .product-field-error { grid-column: 1 / -1; }
+.product-attribute-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; align-items: end; }
+.product-attribute-row .product-field-error { grid-column: 1 / -1; }
 .products-upload-dropzone { display: grid; place-items: center; gap: .4rem; min-height: 8rem; padding: 1rem; border: 1px dashed var(--color-info-border); border-radius: var(--radius-field); color: var(--color-text-body); background: var(--color-bg-surface); text-align: center; cursor: pointer; }
 .products-upload-dropzone > svg { color: var(--color-brand-blue); font-size: 1.5rem; }
 .products-upload-dropzone strong { color: var(--color-brand-blue); }
@@ -891,6 +955,33 @@ function numberFormat(n?: number) {
 .products-upload-dropzone:focus-within { box-shadow: var(--focus-ring); }
 .products-pending-files { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border-radius: var(--radius-field); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .78rem; }
 .products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
+.products-primary-action {
+  min-height: 2.75rem;
+  border: 1px solid var(--color-brand-blue) !important;
+  background: var(--color-brand-blue) !important;
+  color: var(--color-bg-surface) !important;
+  font-weight: 800;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.products-primary-action:hover:not(:disabled) {
+  border-color: var(--color-brand-blue-hover) !important;
+  background: var(--color-brand-blue-hover) !important;
+}
+.products-primary-action:focus-visible { box-shadow: var(--focus-ring); }
+.products-primary-action :deep(svg) { color: currentColor !important; }
+.products-secondary-action {
+  min-height: 2.5rem;
+  border: 1px solid var(--color-border-strong) !important;
+  background: var(--color-bg-surface) !important;
+  color: var(--color-text-heading) !important;
+  font-weight: 800;
+}
+.products-secondary-action:hover:not(:disabled) {
+  border-color: var(--color-brand-blue) !important;
+  background: var(--color-info-bg) !important;
+  color: var(--color-brand-blue) !important;
+}
+.products-secondary-action:focus-visible { box-shadow: var(--focus-ring); }
 .products-image-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem; }
 .products-image-tile { position: relative; display: grid; min-width: 0; aspect-ratio: 1; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-surface); }
 .products-image-tile img { width: 100%; height: 100%; padding: .3rem; object-fit: contain; }
@@ -900,5 +991,6 @@ function numberFormat(n?: number) {
 .products-images-empty { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 5rem; margin: 0; border: 1px dashed var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); font-size: .78rem; }
 .ltr { direction: ltr; }
 @media (max-width: 800px) { .products-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } .products-image-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 480px) { .products-overview__card { padding: .75rem; } .products-overview__card strong { font-size: 1.2rem; } .products-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .product-form__section { padding: .75rem; } .product-form__section-heading { align-items: flex-start; flex-direction: column; gap: .2rem; } .products-table__identity { min-width: 13rem; } }
+@media (max-width: 700px) { .product-option-row, .product-attribute-row { grid-template-columns: 1fr; align-items: stretch; } .product-option-row .product-field-error, .product-attribute-row .product-field-error { grid-column: auto; } }
+@media (max-width: 480px) { .products-overview__card { padding: .75rem; } .products-overview__card strong { font-size: 1.2rem; } .products-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .product-form__section { padding: .75rem; } .product-form__section-heading { align-items: flex-start; flex-direction: column; gap: .2rem; } .products-table__identity { min-width: 13rem; } .product-option-card, .product-attribute-row { padding: .7rem; } .product-option-card__header { align-items: stretch; flex-direction: column; } }
 </style>

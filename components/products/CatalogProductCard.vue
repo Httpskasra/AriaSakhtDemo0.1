@@ -6,10 +6,15 @@ const { addProductToCart, loading: cartLoading } = useAddToCart();
 const productId = computed(() => props.product._id || props.product.id || '');
 const stockQuantity = computed(() => Math.max(0, Number(props.product.stock?.quantity || 0)));
 const isOutOfStock = computed(() => stockQuantity.value <= 0);
+const hasVariants = computed(() => Boolean(props.product.variants?.length));
 
 const handleAddToCart = async () => {
   if (!productId.value) return;
   if (isOutOfStock.value) return;
+  if (hasVariants.value) {
+    await navigateTo(`/products/${encodeURIComponent(productId.value)}`);
+    return;
+  }
   await addProductToCart({
     productId: productId.value,
     quantity: 1,
@@ -61,10 +66,19 @@ const finalPrice = computed(() => Number(props.product.finalPrice ?? props.produ
         <div v-if="product.discount" class="flex items-center gap-2 opacity-40 line-through text-xs text-slate-500 font-num">{{ product.basePrice.toLocaleString() }}</div>
         <div class="flex items-center justify-between">
           <div class="flex items-baseline gap-1">
+            <span v-if="hasVariants" class="text-[10px] font-bold text-slate-500">از</span>
             <span class="text-lg font-black text-slate-900 font-num">{{ finalPrice.toLocaleString() }}</span>
             <span class="text-[10px] font-bold text-slate-500">ریال</span>
           </div>
-          <ActionButton icon-only icon="i-lucide-shopping-cart" tone="primary" size="sm" :loading="cartLoading" :disabled="cartLoading || isOutOfStock" :aria-label="isOutOfStock ? 'محصول ناموجود است' : 'افزودن به سبد خرید'" @click.prevent="handleAddToCart" />
+          <ActionButton
+            :icon="hasVariants ? 'i-lucide-list-checks' : 'i-lucide-shopping-cart'"
+            :label="isOutOfStock ? 'ناموجود' : hasVariants ? 'انتخاب گزینه‌ها' : 'افزودن'"
+            :icon-only="false"
+            tone="primary"
+            :loading="cartLoading"
+            :disabled="cartLoading || isOutOfStock"
+            :aria-label="isOutOfStock ? 'محصول ناموجود است' : hasVariants ? 'انتخاب گزینه‌های محصول' : 'افزودن به سبد خرید'"
+            @click.prevent="handleAddToCart" />
         </div>
       </div>
     </div>

@@ -86,14 +86,14 @@
 
         <!-- والد -->
         <UFormField label="دسته والد" name="parentId">
-          <USelect
+          <AppSelect
             v-model="form.parentId"
             :items="categoryOptions" />
         </UFormField>
 
         <!-- وضعیت -->
         <UFormField label="وضعیت" name="status">
-          <USelect
+          <AppSelect
             v-model="form.status"
             :items="[
               { label: 'پیش‌نویس', value: 'draft' },

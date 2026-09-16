@@ -55,9 +55,11 @@ export const addToCart = async (cartItem: CartItemDto) => {
 /**
  * حذف محصول از سبد خریدی
  */
-export const removeFromCart = async (productId: string) => {
+export const removeFromCart = async (productId: string, variants?: CartItemDto["variants"]) => {
   const $axios = useApi();
-  return await $axios.delete(`/carts/items/${productId}`);
+  return await $axios.delete(`/carts/items/${productId}`, {
+    params: variants?.length ? { variants: JSON.stringify(variants) } : undefined,
+  });
 };
 
 /**

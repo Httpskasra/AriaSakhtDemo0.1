@@ -10,8 +10,8 @@
     <template v-else>
       <PanelFilterBar>
         <TableFilterInput v-model="search" placeholder="جستجو در شرح، مرجع یا شناسه تراکنش" aria-label="جستجوی تراکنش" />
-        <USelect v-model="typeFilter" :items="typeOptions" value-key="value" label-key="label" aria-label="فیلتر نوع تراکنش" class="filter-select" />
-        <USelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت تراکنش" class="filter-select" />
+        <AppSelect v-model="typeFilter" :items="typeOptions" value-key="value" label-key="label" aria-label="فیلتر نوع تراکنش" class="filter-select" />
+        <AppSelect v-model="statusFilter" :items="statusOptions" value-key="value" label-key="label" aria-label="فیلتر وضعیت تراکنش" class="filter-select" />
         <UButton v-if="hasFilters" variant="ghost" color="neutral" icon="i-lucide-x" @click="clearFilters">حذف فیلترها</UButton>
       </PanelFilterBar>
       <SharedAsyncState v-if="!filteredTransactions.length" state="empty" title="تراکنشی با این فیلتر پیدا نشد" message="فیلترها را تغییر دهید یا همه فیلترها را پاک کنید." />

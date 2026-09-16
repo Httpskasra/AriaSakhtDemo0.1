@@ -1,3 +1,5 @@
+import type { ProductVariantSelection } from "~/types/product";
+
 export const OrderStatus = {
   Pending: "pending",
   Paid: "paid",
@@ -16,7 +18,8 @@ export interface OrderItem {
   priceAtAdd: number;
   price?: number;
   product?: { id?: string; _id?: string; name?: string; images?: Array<{ url?: string }> };
-  variant?: { name?: string; value?: string };
+  variant?: ProductVariantSelection;
+  variants?: ProductVariantSelection[];
 }
 
 export type OrderItemDto = OrderItem;
@@ -52,3 +55,4 @@ export interface OrderStatusUpdateDto {
   status: OrderStatus;
   refund?: boolean;
 }
+import type { ProductVariantSelection } from "~/types/product";

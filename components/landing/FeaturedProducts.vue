@@ -11,6 +11,10 @@ const { addProductToCart } = useAddToCart()
 const addFeaturedProductToCart = async (product: Product) => {
   const companyId = typeof product.companyId === 'string' ? product.companyId : product.companyId?._id
   if (!product._id || !companyId) return
+  if (product.variants?.length) {
+    await navigateTo(`/products/${encodeURIComponent(product._id)}`)
+    return
+  }
   await addProductToCart({ productId: product._id, quantity: 1, companyId, priceAtAdd: product.finalPrice || product.basePrice })
 }
 
@@ -75,7 +79,7 @@ const formatPrice = (price: number) => {
                   {{ formatPrice(product.basePrice) }}
                 </div>
                 <div class="featured-product__price font-num">
-                  {{ formatPrice(product.finalPrice || product.basePrice) }}
+                  <span v-if="product.variants?.length" class="featured-product__from">از </span>{{ formatPrice(product.finalPrice ?? product.basePrice) }}
                   <span class="featured-product__currency">ریال</span>
                 </div>
               </div>
@@ -84,9 +88,9 @@ const formatPrice = (price: number) => {
                 size="sm"
                 color="primary"
                 variant="soft"
-                icon="i-lucide-shopping-cart"
-                square
-                aria-label="افزودن به سبد خرید"
+                :icon="product.variants?.length ? 'i-lucide-list-checks' : 'i-lucide-shopping-cart'"
+                :label="product.variants?.length ? 'انتخاب گزینه‌ها' : 'افزودن'"
+                :aria-label="product.variants?.length ? 'انتخاب گزینه‌های محصول' : 'افزودن به سبد خرید'"
                 @click.prevent.stop="addFeaturedProductToCart(product)"
                 class="featured-product__cart"
               />
@@ -119,6 +123,7 @@ const formatPrice = (price: number) => {
 .featured-product__footer { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
 .featured-product__old-price { color: var(--color-text-muted); font-size: .65rem; text-decoration: line-through; text-decoration-color: var(--color-danger-fg); }
 .featured-product__price { color: var(--color-text-heading); font-size: 1.1rem; font-weight: 900; }
+.featured-product__from { color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
 .featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: 600; }
 .featured-product__cart { transition: background-color .16s ease, color .16s ease; }
 .featured-product__empty { grid-column: 1 / -1; padding-block: 5rem; color: var(--color-text-disabled); text-align: center; }

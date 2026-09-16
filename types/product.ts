@@ -3,6 +3,11 @@ export interface ProductVariantOption {
   priceModifier?: number;
 }
 
+export interface ProductVariantSelection {
+  name: string;
+  value: string;
+}
+
 export interface ProductVariant {
   id?: string;
   name: string;
@@ -68,7 +73,8 @@ export type productImage = {
 export interface CartItemDto {
   productId: string;
   quantity: number;
-  variant?: { name: string; value: string };
+  variant?: ProductVariantSelection;
+  variants?: ProductVariantSelection[];
   companyId?: string;
   priceAtAdd?: number;
 }
@@ -81,7 +87,8 @@ export interface Cart {
     companyId: string | { _id?: string; id?: string; name?: string };
     quantity: number;
     priceAtAdd: number;
-    variant?: { name: string; value: string };
+    variant?: ProductVariantSelection;
+    variants?: ProductVariantSelection[];
     discount?: { type: string; value: number };
   }>;
   totalAmount: number;

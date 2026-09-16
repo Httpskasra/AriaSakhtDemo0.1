@@ -12,7 +12,7 @@
             v-model="filter"
             placeholder="جستجوی کاربر..."
             @submit="applyUserFilters" />
-          <USelect
+          <AppSelect
             v-model="sort"
             :items="[
               { label: 'جدیدترین', value: 'createdAt:desc' },
@@ -24,7 +24,7 @@
           <label for="page-size" class="text-sm text-gray-600"
             >تعداد در صفحه</label
           >
-          <USelect
+          <AppSelect
             id="page-size"
             v-model="limit"
             :disabled="loading"
@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
@@ -213,10 +213,6 @@ const sort = ref("createdAt:desc");
 const filter = ref("");
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
-
-const totalPages = computed(() =>
-  total.value > 0 ? Math.ceil(total.value / limit.value) : 1
-);
 
 // Modal
 const showModal = ref(false);
@@ -286,11 +282,6 @@ async function fetchUsers() {
   } finally {
     loading.value = false;
   }
-}
-
-function goToPage(p: number) {
-  const safe = Math.max(1, Math.min(p, totalPages.value));
-  page.value = safe;
 }
 
 function onChangeLimit() {

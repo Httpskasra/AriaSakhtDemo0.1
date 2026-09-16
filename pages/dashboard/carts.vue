@@ -23,11 +23,14 @@
         </div>
 
         <div class="cart-items">
-          <article v-for="item in cartItems" :key="item.productId" class="cart-item">
+          <article v-for="item in cartItems" :key="cartItemKey(item)" class="cart-item">
             <div class="item-info">
               <h3>{{ item.productName }}</h3>
               <p class="item-meta ltr">SKU: {{ item.sku }}</p>
-              <p v-if="item.variant" class="item-meta">{{ item.variant.name }}: {{ item.variant.value }}</p>
+              <div v-if="item.variants?.length || item.variant" class="item-variants" aria-label="گزینه‌های انتخاب‌شده">
+                <span class="item-meta__label">انتخاب شما:</span>
+                <span v-for="selection in item.variants?.length ? item.variants : [item.variant]" :key="`${selection?.name}-${selection?.value}`" class="item-variant-chip">{{ selection?.name }}: {{ selection?.value }}</span>
+              </div>
               <p v-if="item.companyName" class="item-meta">شرکت: {{ item.companyName }}</p>
             </div>
 
@@ -40,7 +43,7 @@
             <div class="item-actions">
               <label :for="`quantity-${item.productId}`">تعداد</label>
               <UInput :id="`quantity-${item.productId}`" v-model.number="item.quantity" type="number" min="1" inputmode="numeric" class="quantity-input" :disabled="!canUpdate" @change="updateQuantity(item)" />
-              <UButton v-if="canDelete" color="error" variant="ghost" size="sm" icon="i-lucide-trash-2" :loading="removingId === item.productId" :disabled="Boolean(updatingId || removingId)" :aria-label="`حذف ${item.productName}`" @click="removeFromCart(item.productId)">حذف</UButton>
+              <UButton v-if="canDelete" color="error" variant="ghost" size="sm" icon="i-lucide-trash-2" :loading="removingId === cartItemKey(item)" :disabled="Boolean(updatingId || removingId)" :aria-label="`حذف ${item.productName}`" @click="removeFromCart(item)">حذف</UButton>
             </div>
           </article>
         </div>
@@ -79,7 +82,7 @@
 import { computed, onMounted, ref } from "vue";
 import { getActiveCart, getPopulatedCart, addToCart as addCartItem, clearCart as clearCartRequest, checkoutCart, removeFromCart as removeCartItem } from "~/services/cartService";
 import { toUserFacingError } from "~/services/apiClient";
-import type { Cart, CartItemDto } from "~/types/product";
+import type { Cart, CartItemDto, ProductVariantSelection } from "~/types/product";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 
@@ -92,7 +95,8 @@ interface CartItem {
   sku: string;
   price: number;
   quantity: number;
-  variant?: { name: string; value: string };
+  variant?: ProductVariantSelection;
+  variants?: ProductVariantSelection[];
   companyId?: string;
   companyName?: string;
   priceAtAdd?: number;
@@ -130,6 +134,7 @@ function normalizeCartItem(item: any): CartItem | null {
     price: Number(item.priceAtAdd || product?.finalPrice || product?.basePrice || 0),
     quantity: Math.max(1, Number(item.quantity) || 1),
     variant: item.variant,
+    variants: Array.isArray(item.variants) ? item.variants : undefined,
     companyId: company?._id || company?.id || item.companyId,
     companyName: company?.name,
     priceAtAdd: item.priceAtAdd,
@@ -167,10 +172,18 @@ async function fetchCart() {
   }
 }
 
-async function addToCart(productId: string, quantity: number, variant?: CartItemDto["variant"], companyId?: string, priceAtAdd?: number) {
+function cartItemSelections(item: CartItem): ProductVariantSelection[] {
+  return item.variants?.length ? item.variants : item.variant ? [item.variant] : [];
+}
+
+function cartItemKey(item: CartItem): string {
+  return `${item.productId}::${JSON.stringify(cartItemSelections(item))}`;
+}
+
+async function addToCart(productId: string, quantity: number, variant?: CartItemDto["variant"], companyId?: string, priceAtAdd?: number, variants?: CartItemDto["variants"]) {
   if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه افزودن محصول به سبد را ندارید.");
   try {
-    await addCartItem({ productId, quantity, variant, companyId, priceAtAdd });
+    await addCartItem({ productId, quantity, variant, variants, companyId, priceAtAdd });
     await fetchCart();
     feedback.success("محصول به سبد افزوده شد");
   } catch (error) {
@@ -182,9 +195,9 @@ async function updateQuantity(item: CartItem) {
   if (!canUpdate.value) return;
   const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
   item.quantity = quantity;
-  updatingId.value = item.productId;
+  updatingId.value = cartItemKey(item);
   try {
-    await addCartItem({ productId: item.productId, quantity, variant: item.variant, companyId: item.companyId, priceAtAdd: item.priceAtAdd });
+    await addCartItem({ productId: item.productId, quantity, variants: cartItemSelections(item), variant: item.variant, companyId: item.companyId, priceAtAdd: item.priceAtAdd });
     await fetchCart();
     feedback.success("تعداد محصول به‌روزرسانی شد");
   } catch (error) {
@@ -195,12 +208,13 @@ async function updateQuantity(item: CartItem) {
   }
 }
 
-async function removeFromCart(productId: string) {
+async function removeFromCart(item: CartItem) {
   if (!canDelete.value) return;
-  removingId.value = productId;
+  removingId.value = cartItemKey(item);
   try {
-    await removeCartItem(productId);
-    cartItems.value = cartItems.value.filter((item) => item.productId !== productId);
+    await removeCartItem(item.productId, cartItemSelections(item));
+    const key = cartItemKey(item);
+    cartItems.value = cartItems.value.filter((candidate) => cartItemKey(candidate) !== key);
     feedback.success("محصول از سبد حذف شد");
   } catch (error) {
     feedback.error(toUserFacingError(error, "حذف محصول از سبد انجام نشد.").message);
@@ -260,6 +274,9 @@ defineExpose({ addToCart });
 .cart-item { display: grid; grid-template-columns: minmax(0, 1fr) 10rem auto; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-app); }
 .item-info h3 { margin: 0 0 .45rem; color: var(--color-text-heading); font-size: .98rem; }
 .item-meta { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .8rem; }
+.item-variants { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .45rem; }
+.item-meta__label { color: var(--color-text-muted); font-size: .76rem; }
+.item-variant-chip { padding: .25rem .45rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .72rem; }
 .item-price { display: grid; gap: .2rem; text-align: center; color: var(--color-text-muted); font-size: .76rem; }
 .item-price strong { color: var(--color-text-heading); font-size: .9rem; }
 .item-price small { font-size: .75rem; }
