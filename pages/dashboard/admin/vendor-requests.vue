@@ -27,15 +27,16 @@
         />
         <div v-else class="vendor-requests-table-wrap">
           <table class="vendor-requests-table">
+            <caption class="sr-only">فهرست درخواست‌های فروشندگی</caption>
             <thead>
               <tr>
-                <th>کسب‌وکار</th>
-                <th>متقاضی</th>
-                <th>نوع</th>
-                <th>اطلاعات ثبتی</th>
-                <th>وضعیت</th>
-                <th>تاریخ</th>
-                <th>عملیات</th>
+                <th scope="col">کسب‌وکار</th>
+                <th scope="col">متقاضی</th>
+                <th scope="col">نوع</th>
+                <th scope="col">اطلاعات ثبتی</th>
+                <th scope="col">وضعیت</th>
+                <th scope="col">تاریخ</th>
+                <th scope="col">عملیات</th>
               </tr>
             </thead>
             <tbody>
@@ -44,23 +45,26 @@
                   <div class="vendor-request-name">
                     <img v-if="request.imageUrl" :src="request.imageUrl" :alt="`لوگوی ${request.companyName}`" />
                     <span v-else aria-hidden="true"><UIcon name="i-lucide-building-2" /></span>
-                    <strong>{{ request.companyName }}</strong>
+                    <div class="vendor-request-name__copy">
+                      <strong>{{ request.companyName }}</strong>
+                      <small>{{ sellerTypeLabel(request.sellerType) }}</small>
+                    </div>
                   </div>
                 </td>
                 <td>
-                  <div>{{ request.email }}</div>
-                  <small>{{ request.phone || "بدون تلفن" }}</small>
+                  <div class="vendor-request-contact font-num">{{ request.email }}</div>
+                  <small class="font-num">{{ request.phone || "بدون تلفن" }}</small>
                 </td>
-                <td>{{ request.sellerType === "individual" ? "شخص حقیقی" : "شخص حقوقی" }}</td>
-                <td>{{ request.registrationNumber || request.nationalId || "—" }}</td>
+                <td><span class="vendor-request-type">{{ request.sellerType === "individual" ? "حقیقی" : "حقوقی" }}</span></td>
+                <td class="font-num">{{ request.registrationNumber || request.nationalId || "—" }}</td>
                 <td><StatusPill :label="statusLabel(request.status)" :semantic="statusSemantic(request.status)" /></td>
                 <td class="ltr">{{ formatDate(request.createdAt) }}</td>
                 <td>
                   <div class="panel-row-actions">
-                    <UButton size="xs" variant="soft" icon="i-lucide-eye" @click="openDetails(request)">مشاهده</UButton>
+                    <UButton size="xs" color="primary" variant="soft" icon="i-lucide-eye" :aria-label="`مشاهده جزئیات درخواست ${request.companyName}`" @click="openDetails(request)">مشاهده جزئیات</UButton>
                     <template v-if="request.status === 'pending'">
-                      <UButton v-if="request.userId" size="xs" color="success" :disabled="Boolean(processingId)" @click="openReview(request, 'approved')">تأیید</UButton>
-                      <UButton size="xs" color="error" variant="soft" :disabled="Boolean(processingId)" @click="openReview(request, 'rejected')">رد</UButton>
+                      <UButton v-if="request.userId" size="xs" color="success" icon="i-lucide-check" :disabled="Boolean(processingId)" @click="openReview(request, 'approved')">تأیید</UButton>
+                      <UButton size="xs" color="error" variant="soft" icon="i-lucide-x" :disabled="Boolean(processingId)" @click="openReview(request, 'rejected')">رد</UButton>
                     </template>
                   </div>
                   <small v-if="request.status === 'pending' && !request.userId" class="vendor-request-unlinked">بدون حساب کاربری؛ فقط قابل رد است</small>
@@ -113,10 +117,10 @@
 
         <div class="vendor-request-details__actions">
           <template v-if="selectedRequest.status === 'pending'">
-            <UButton v-if="selectedRequest.userId" color="success" :disabled="Boolean(processingId)" @click="reviewFromDetails('approved')">تأیید و فعال‌سازی</UButton>
-            <UButton color="error" variant="soft" :disabled="Boolean(processingId)" @click="reviewFromDetails('rejected')">رد درخواست</UButton>
+            <UButton v-if="selectedRequest.userId" color="success" icon="i-lucide-check-circle-2" :disabled="Boolean(processingId)" @click="reviewFromDetails('approved')">تأیید و فعال‌سازی</UButton>
+            <UButton color="error" variant="soft" icon="i-lucide-circle-x" :disabled="Boolean(processingId)" @click="reviewFromDetails('rejected')">رد درخواست</UButton>
           </template>
-          <UButton type="button" color="neutral" variant="soft" :disabled="Boolean(processingId)" @click="closeDetails">بستن</UButton>
+          <UButton type="button" color="neutral" variant="outline" icon="i-lucide-x" :disabled="Boolean(processingId)" @click="closeDetails">بستن</UButton>
         </div>
       </div>
     </BaseModal>
@@ -282,21 +286,26 @@ watch(statusFilter, fetchRequests);
 .vendor-requests-table tbody tr { transition:background-color 150ms ease; }
 .vendor-requests-table tbody tr:hover { background:var(--color-bg-light); }
 .vendor-requests-table td small { color:var(--color-text-muted); }
-.vendor-request-unlinked { display:block; max-width:12rem; margin-top:.35rem; color:var(--color-warning-fg) !important; line-height:1.6; }
+.vendor-request-unlinked { display:block; max-width:12rem; margin-top:.35rem; color:var(--color-warning-fg); line-height:1.6; }
 .vendor-request-name { display:flex; align-items:center; gap:.65rem; min-width:12rem; }
 .vendor-request-name img, .vendor-request-name > span { display:grid; place-items:center; width:2.75rem; height:2.75rem; flex:none; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); object-fit:contain; padding:.3rem; }
+.vendor-request-name__copy { display:grid; gap:.2rem; min-width:0; }
+.vendor-request-name__copy strong { overflow:hidden; color:var(--color-text-heading); font-size:.85rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.vendor-request-name__copy small { color:var(--color-text-muted); font-size:.72rem; }
+.vendor-request-contact { overflow:hidden; max-width:15rem; color:var(--color-text-body); text-overflow:ellipsis; white-space:nowrap; }
+.vendor-request-type { display:inline-flex; align-items:center; min-height:1.7rem; padding:.2rem .55rem; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-text-body); font-size:.72rem; font-weight:700; }
 .vendor-request-reviewed { color:var(--color-text-muted); font-size:.78rem; }
 .review-form { display:grid; gap:1rem; }
 .review-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight:800; }
 .review-form p { margin:0; color:var(--color-text-muted); }
-.form-error { color:var(--color-danger) !important; }
-.vendor-request-details { display:grid; gap:1.25rem; padding-top:1rem; }
+.review-form .form-error { color:var(--color-danger); }
+.vendor-request-details { display:grid; gap:1.1rem; width:100%; min-height:0; padding-top:.5rem; }
 .vendor-request-details__hero { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-bottom:1rem; border-bottom:1px solid var(--color-border); }
 .vendor-request-details__identity { display:flex; align-items:center; min-width:0; gap:.85rem; }
 .vendor-request-details__logo { display:grid; place-items:center; width:4.5rem; height:4.5rem; flex:none; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); }
 .vendor-request-details__logo img { display:block; width:100%; height:100%; padding:.45rem; object-fit:contain; }
 .vendor-request-details__logo .iconify { font-size:1.75rem; }
-.vendor-request-details__eyebrow { margin:0 0 .25rem !important; color:var(--color-brand-blue) !important; font-size:.75rem !important; font-weight:800; }
+.vendor-request-details__eyebrow { margin:0 0 .25rem; color:var(--color-brand-blue); font-size:.75rem; font-weight:800; }
 .vendor-request-details__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.25rem; font-weight:800; overflow-wrap:anywhere; }
 .vendor-request-details__hero p:last-child { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.82rem; }
 .vendor-request-details__section { display:grid; gap:.75rem; }
@@ -306,8 +315,9 @@ watch(statusFilter, fetchRequests);
 .vendor-request-details__grid-wide { grid-column:1/-1; }
 .vendor-request-details__grid dt { color:var(--color-text-muted); font-size:.75rem; }
 .vendor-request-details__grid dd { margin:.35rem 0 0; color:var(--color-text-heading); font-size:.84rem; font-weight:700; overflow-wrap:anywhere; }
-.vendor-request-details__rejection { color:var(--color-danger-fg) !important; }
-.vendor-request-details__actions { display:flex; justify-content:flex-start; flex-wrap:wrap; gap:.6rem; padding-top:.25rem; border-top:1px solid var(--color-border); }
+.vendor-request-details__grid dd.vendor-request-details__rejection { color:var(--color-danger-fg); }
+.vendor-request-details__actions { display:flex; align-items:center; justify-content:flex-start; flex-wrap:wrap; gap:.6rem; margin-top:.1rem; padding:1rem 0 0; border-top:1px solid var(--color-border); }
+.vendor-request-details__actions :deep(button) { min-height:2.75rem; }
 
 @media (max-width: 640px) {
   .vendor-request-filter-label { display:none; }
@@ -318,4 +328,5 @@ watch(statusFilter, fetchRequests);
   .vendor-request-details__actions { flex-direction:column-reverse; align-items:stretch; }
   .vendor-request-details__actions :deep(button) { width:100%; }
 }
+@media (prefers-reduced-motion:reduce) { .vendor-requests-table tbody tr { transition:none; } }
 </style>

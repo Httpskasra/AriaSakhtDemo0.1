@@ -26,7 +26,7 @@
           >
           <USelect
             id="page-size"
-            v-model.number="limit"
+            v-model="limit"
             :disabled="loading"
             @change="onChangeLimit"
             :items="[
@@ -46,29 +46,31 @@
       <!-- List -->
       <div
         v-if="!loading && users.length"
-        class="premium-card border border-gray-100">
+        class="premium-card panel-table-card users-table-card">
         <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
+          <table class="users-table">
+            <caption class="sr-only">فهرست کاربران و سطح دسترسی آن‌ها</caption>
             <thead>
               <tr class="bg-gray-50 text-gray-600">
                 <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                  scope="col">
                   #
                 </th>
                 <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                  شماره موبایل
+                  scope="col">
+                  کاربر
                 </th>
                 <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                  scope="col">
                   کد ملی
                 </th>
                 <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100">
+                  scope="col">
                   تعداد مجوزها
                 </th>
                 <th
-                  class="text-right font-medium px-4 py-3 border-b border-gray-100 w-40">
+                  scope="col"
+                  class="users-table__operations-heading">
                   اقدامات
                 </th>
               </tr>
@@ -77,44 +79,42 @@
               <tr
                 v-for="(u, idx) in users"
                 :key="u.id"
-                class="hover:bg-gray-50">
-                <td class="px-4 py-3 border-b border-gray-100">
+                class="users-table__row">
+                <td class="users-table__index font-num">
                   {{ (page - 1) * limit + idx + 1 }}
                 </td>
-                <td class="px-4 py-3 border-b border-gray-100">
-                  {{ u.phoneNumber || u.profile?.phoneNumber || "—" }}
+                <td class="users-table__identity-cell">
+                  <div class="user-identity">
+                    <span class="user-avatar" aria-hidden="true"><UIcon name="i-lucide-user-round" /></span>
+                    <span class="user-identity__copy">
+                      <strong>{{ fullName(u) === "—" ? "کاربر بدون نام" : fullName(u) }}</strong>
+                      <small class="font-num">{{ u.phoneNumber || u.profile?.phoneNumber || "شماره ثبت نشده" }}</small>
+                    </span>
+                  </div>
                 </td>
-                <td class="px-4 py-3 border-b border-gray-100">
+                <td class="users-table__value font-num">
                   {{ u.nationalId || u.profile?.nationalId || "—" }}
                 </td>
-                <td class="px-4 py-3 border-b border-gray-100">
-                  {{ u.permissions?.length ?? 0 }}
+                <td class="users-table__permissions">
+                  <span class="permission-count font-num">
+                    {{ (u.permissions?.length ?? 0).toLocaleString("fa-IR") }} مجوز
+                  </span>
+                  <small v-if="u.permissions?.length" class="permission-preview">
+                    {{ u.permissions.slice(0, 2).map((permission) => resourceLabel(permission.resource)).join("، ") }}<template v-if="u.permissions.length > 2"> و بیشتر</template>
+                  </small>
+                  <small v-else class="permission-preview">بدون مجوز اختصاصی</small>
                 </td>
-                <td class="px-4 py-3 border-b border-gray-100" @click.stop>
-                  <div class="flex items-center gap-2">
+                <td class="users-table__operations" @click.stop>
+                  <div class="panel-row-actions">
                     <UButton
                       size="xs"
                       color="neutral"
                       variant="outline"
+                      icon="i-lucide-eye"
+                      :aria-label="`مشاهده جزئیات ${fullName(u)}`"
                       @click="openDetails(u)">
-                      جزییات
+                      مشاهده جزئیات
                     </UButton>
-
-                    <!-- <button
-                      v-if="canUpdate"
-                      class="inline-flex items-center justify-center rounded-field bg-emerald-600 px-3 py-2 text-xs text-white hover:bg-emerald-700 transition"
-                      title="ویرایش (نمایشی)"
-                      @click="openDetails(u)">
-                      ویرایش
-                    </button> -->
-                    <!-- 
-                    <button
-                      v-if="canDelete"
-                      class="inline-flex items-center justify-center rounded-field bg-red-600 px-3 py-2 text-xs text-white opacity-70 cursor-not-allowed"
-                      title="حذف (غیرفعال)"
-                      disabled>
-                      حذف
-                    </button> -->
                   </div>
                 </td>
               </tr>
@@ -141,110 +141,47 @@
     </div>
 
     <!-- Details Modal -->
-    <BaseModal v-if="showModal" @close="showModal = false">
-      <div
-        class="w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 space-y-5"
-        dir="rtl">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-800">جزییات کاربر</h3>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- <div class="space-y-1">
-            <label class="text-xs text-gray-500">شناسه</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{ selected?.id }}
-            </div>
-          </div> -->
-
-          <div class="space-y-1">
-            <label class="text-xs text-gray-500">موبایل</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{
-                selected?.phoneNumber || selected?.profile?.phoneNumber || "—"
-              }}
-            </div>
+    <BaseModal v-if="showModal" title-id="user-details-title" @close="showModal = false">
+      <div class="user-details" dir="rtl">
+        <header class="user-details__hero">
+          <span class="user-details__avatar" aria-hidden="true"><UIcon name="i-lucide-user-round" /></span>
+          <div class="user-details__heading">
+            <p class="user-details__eyebrow">اطلاعات حساب کاربری</p>
+            <h2 id="user-details-title">{{ fullName(selected) === "—" ? "کاربر بدون نام" : fullName(selected) }}</h2>
+            <p class="font-num">{{ selected?.phoneNumber || selected?.profile?.phoneNumber || "شماره ثبت نشده" }}</p>
           </div>
+          <span class="permission-count permission-count--hero font-num">{{ (selected?.permissions?.length ?? 0).toLocaleString("fa-IR") }} مجوز</span>
+        </header>
 
-          <div class="space-y-1">
-            <label class="text-xs text-gray-500">کد ملی</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{ selected?.nationalId || selected?.profile?.nationalId || "—" }}
-            </div>
+        <section class="user-details__section" aria-labelledby="user-contact-title">
+          <h3 id="user-contact-title">اطلاعات تماس و شناسایی</h3>
+          <dl class="user-details__grid">
+            <div><dt>شماره موبایل</dt><dd class="font-num">{{ selected?.phoneNumber || selected?.profile?.phoneNumber || "—" }}</dd></div>
+            <div><dt>کد ملی</dt><dd class="font-num">{{ selected?.nationalId || selected?.profile?.nationalId || "—" }}</dd></div>
+            <div><dt>شناسه کاربر</dt><dd class="font-num">{{ selected?.id || "—" }}</dd></div>
+            <div><dt>کیف پول</dt><dd class="font-num">{{ selected?.profile?.walletId || "—" }}</dd></div>
+            <div class="user-details__grid-wide"><dt>آدرس</dt><dd>{{ selected?.profile?.address || "ثبت نشده" }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="user-details__section" aria-labelledby="user-permissions-title">
+          <div class="user-details__section-heading">
+            <h3 id="user-permissions-title">مجوزهای دسترسی</h3>
+            <span class="user-details__section-count font-num">{{ (selected?.permissions?.length ?? 0).toLocaleString("fa-IR") }} مورد</span>
           </div>
-
-          <!-- <div class="space-y-1">
-            <label class="text-xs text-gray-500">کیف پول</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{ selected?.profile?.walletId || "—" }}
-            </div>
-          </div> -->
-
-          <div class="space-y-1 md:col-span-2">
-            <label class="text-xs text-gray-500">نام و نام خانوادگی</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{ fullName(selected) }}
-            </div>
+          <div v-if="selected?.permissions?.length" class="user-permissions-list">
+            <article v-for="permission in selected.permissions" :key="permission.resource + '-' + (permission.companyId || 'global')" class="user-permission-card">
+              <div class="user-permission-card__title">
+                <span>{{ resourceLabel(permission.resource) }}</span>
+                <small v-if="permission.companyId" class="font-num">شرکت: {{ permission.companyId }}</small>
+              </div>
+              <div class="user-permission-card__actions">
+                <span v-for="action in permission.actions" :key="action" class="permission-action">{{ actionLabel(action) }}</span>
+              </div>
+            </article>
           </div>
-
-          <div class="space-y-1 md:col-span-2">
-            <label class="text-xs text-gray-500">آدرس</label>
-            <div
-              class="bg-gray-50 border border-gray-100 rounded-field px-3 py-2 text-sm text-gray-800">
-              {{ selected?.profile?.address || "—" }}
-            </div>
-          </div>
-        </div>
-
-        <!-- <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-800">مجوزها</h4>
-          <div class="overflow-x-auto border border-gray-100 rounded-card">
-            <table class="min-w-full text-sm">
-              <thead>
-                <tr class="bg-gray-50 text-gray-600">
-                  <th
-                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                    ریسورس
-                  </th>
-                  <th
-                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                    اکشن‌ها
-                  </th>
-                  <th
-                    class="text-right font-medium px-4 py-3 border-b border-gray-100">
-                    شناسه شرکت (در صورت محصول)
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="text-gray-800">
-                <tr
-                  v-for="(p, i) in selected?.permissions || []"
-                  :key="i"
-                  class="hover:bg-gray-50">
-                  <td class="px-4 py-3 border-b border-gray-100">
-                    {{ resourceLabel(p.resource) }}
-                  </td>
-                  <td class="px-4 py-3 border-b border-gray-100">
-                    <span
-                      v-for="(a, j) in p.actions"
-                      :key="j"
-                      class="inline-block rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700 ml-1 mb-1">
-                      {{ actionLabel(a) }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 border-b border-gray-100">
-                    {{ p.companyId || "—" }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div> -->
+          <p v-else class="user-details__empty">برای این کاربر مجوز اختصاصی ثبت نشده است.</p>
+        </section>
       </div>
     </BaseModal>
 </template>
@@ -260,7 +197,7 @@ useHead({
   title: "داشبورد | کاربران",
 });
 // Access control
-const { canRead, canUpdate, canDelete, isReady } = useAccess(Resource.USERS);
+const { canRead, isReady } = useAccess(Resource.USERS);
 // const { canRead, canUpdate, canDelete } = {
 //   canRead: true,
 //   canDelete: true,
@@ -379,3 +316,60 @@ watch([limit, page, sort], () => {
 onMounted(() => { if (isReady.value) fetchUsers(); });
 watch(isReady, (ready) => { if (ready) fetchUsers(); }, { once: true });
 </script>
+
+<style scoped>
+.users-table-card { overflow:hidden; }
+.users-table { width:100%; min-width:54rem; border-collapse:separate; border-spacing:0; font-size:.875rem; }
+.users-table th, .users-table td { padding:.9rem 1rem; text-align:right; vertical-align:middle; border-bottom:1px solid var(--color-border); }
+.users-table th { color:var(--color-text-muted); background:var(--color-bg-light); font-size:.78rem; font-weight:800; white-space:nowrap; }
+.users-table thead th:first-child { border-start-start-radius:var(--radius-field); }
+.users-table thead th:last-child { border-start-end-radius:var(--radius-field); }
+.users-table tbody tr:last-child td { border-bottom:0; }
+.users-table__row { transition:background-color .18s ease; }
+.users-table__row:hover { background:var(--color-bg-light); }
+.users-table__index { width:4rem; color:var(--color-text-muted); }
+.users-table__identity-cell { min-width:17rem; }
+.user-identity { display:flex; align-items:center; gap:.75rem; min-width:0; }
+.user-avatar, .user-details__avatar { display:grid; place-items:center; flex:none; border:1px solid var(--color-info-border); border-radius:var(--radius-compact-list-item); background:var(--color-info-bg); color:var(--color-brand-blue); }
+.user-avatar { width:2.75rem; height:2.75rem; font-size:1.15rem; }
+.user-identity__copy { display:grid; gap:.2rem; min-width:0; }
+.user-identity__copy strong { overflow:hidden; color:var(--color-text-heading); font-size:.88rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.user-identity__copy small { color:var(--color-text-muted); font-size:.77rem; }
+.users-table__value { color:var(--color-text-body); white-space:nowrap; }
+.users-table__permissions { min-width:13rem; }
+.permission-count { display:inline-flex; align-items:center; min-height:1.75rem; padding:.25rem .65rem; border:1px solid var(--color-info-border); border-radius:var(--radius-pill); background:var(--color-info-bg); color:var(--color-info-fg); font-size:.75rem; font-weight:800; white-space:nowrap; }
+.permission-count--hero { margin-inline-start:auto; }
+.permission-preview { display:block; max-width:15rem; margin-top:.35rem; overflow:hidden; color:var(--color-text-muted); font-size:.72rem; text-overflow:ellipsis; white-space:nowrap; }
+.users-table__operations-heading, .users-table__operations { width:13rem; min-width:13rem; }
+.users-table__operations :deep(button) { min-height:2.5rem; }
+.user-details { display:grid; gap:1.25rem; width:100%; max-width:48rem; margin:0 auto; }
+.user-details__hero { display:flex; align-items:center; gap:.9rem; padding:.25rem 0 1.15rem; border-bottom:1px solid var(--color-border); }
+.user-details__avatar { width:3.5rem; height:3.5rem; font-size:1.45rem; }
+.user-details__heading { min-width:0; }
+.user-details__eyebrow { margin:0 0 .2rem; color:var(--color-brand-blue); font-size:.75rem; font-weight:800; }
+.user-details__heading h2 { margin:0; overflow-wrap:anywhere; color:var(--color-text-heading); font-size:1.2rem; font-weight:800; }
+.user-details__heading p:last-child { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.8rem; }
+.user-details__section { display:grid; gap:.7rem; }
+.user-details__section h3 { margin:0; color:var(--color-text-heading); font-size:.9rem; font-weight:800; }
+.user-details__section-heading { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.user-details__section-count { color:var(--color-text-muted); font-size:.75rem; }
+.user-details__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; margin:0; }
+.user-details__grid > div { min-width:0; padding:.75rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.user-details__grid-wide { grid-column:1/-1; }
+.user-details__grid dt { color:var(--color-text-muted); font-size:.73rem; }
+.user-details__grid dd { margin:.3rem 0 0; overflow-wrap:anywhere; color:var(--color-text-heading); font-size:.84rem; font-weight:700; }
+.user-permissions-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+.user-permission-card { display:grid; gap:.65rem; min-width:0; padding:.8rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.user-permission-card__title { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; color:var(--color-text-heading); font-size:.82rem; font-weight:800; }
+.user-permission-card__title small { max-width:9rem; overflow:hidden; color:var(--color-text-muted); font-size:.67rem; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+.user-permission-card__actions { display:flex; flex-wrap:wrap; gap:.35rem; }
+.permission-action { padding:.2rem .45rem; border-radius:var(--radius-pill); background:var(--color-bg-surface); color:var(--color-text-body); font-size:.68rem; }
+.user-details__empty { margin:0; padding:.85rem; border:1px dashed var(--color-border-strong); border-radius:var(--radius-field); color:var(--color-text-muted); font-size:.8rem; }
+@media (max-width:640px) {
+  .user-details__hero { align-items:flex-start; flex-wrap:wrap; }
+  .permission-count--hero { width:100%; margin-inline-start:0; }
+  .user-details__grid, .user-permissions-list { grid-template-columns:1fr; }
+  .user-details__grid-wide { grid-column:auto; }
+}
+@media (prefers-reduced-motion:reduce) { .users-table__row { transition:none; } }
+</style>
