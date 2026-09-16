@@ -6,7 +6,30 @@
       </template>
     </PanelPageHeader>
 
-    <div class="space-y-4" dir="rtl">
+    <div class="companies-page" dir="rtl">
+      <section class="companies-overview" aria-label="خلاصه شرکت‌ها">
+        <article class="companies-overview__card">
+          <span class="companies-overview__label"><UIcon name="i-lucide-building-2" aria-hidden="true" /> کل نتایج</span>
+          <strong class="font-num">{{ total.toLocaleString("fa-IR") }}</strong>
+          <small>مطابق فیلترهای فعلی</small>
+        </article>
+        <article class="companies-overview__card companies-overview__card--success">
+          <span class="companies-overview__label"><UIcon name="i-lucide-circle-check" aria-hidden="true" /> فعال در این صفحه</span>
+          <strong class="font-num">{{ activeCompanyCount.toLocaleString("fa-IR") }}</strong>
+          <small>از نتایج نمایش‌داده‌شده</small>
+        </article>
+        <article class="companies-overview__card companies-overview__card--warning">
+          <span class="companies-overview__label"><UIcon name="i-lucide-clock-3" aria-hidden="true" /> در انتظار در این صفحه</span>
+          <strong class="font-num">{{ pendingCompanyCount.toLocaleString("fa-IR") }}</strong>
+          <small>نیازمند بررسی مدیریت</small>
+        </article>
+        <article class="companies-overview__card companies-overview__card--neutral">
+          <span class="companies-overview__label"><UIcon name="i-lucide-pause-circle" aria-hidden="true" /> غیرفعال در این صفحه</span>
+          <strong class="font-num">{{ inactiveCompanyCount.toLocaleString("fa-IR") }}</strong>
+          <small>معلق یا ردشده</small>
+        </article>
+      </section>
+
       <PanelFilterBar>
         <div class="filter-group">
           <TableFilterInput
@@ -31,7 +54,14 @@
         <UButton v-if="search" variant="ghost" color="neutral" icon="i-lucide-x" @click="search = ''">حذف جستجو</UButton>
       </PanelFilterBar>
 
-      <div class="premium-card panel-table-card company-table-card">
+      <section class="premium-card company-list-card" aria-labelledby="companies-list-title">
+        <div class="company-list-card__heading">
+          <div>
+            <h2 id="companies-list-title">فهرست شرکت‌ها</h2>
+            <p>اطلاعات تأمین‌کنندگان و وضعیت فعالیت آن‌ها را از اینجا مدیریت کنید.</p>
+          </div>
+          <span class="company-list-card__count font-num">نمایش {{ companies.length.toLocaleString("fa-IR") }} از {{ total.toLocaleString("fa-IR") }} نتیجه</span>
+        </div>
         <SharedAsyncState v-if="loading" state="loading" :skeleton-rows="5" />
         <SharedAsyncState
           v-else-if="loadError"
@@ -43,183 +73,80 @@
           state="empty"
           title="شرکتی پیدا نشد"
           message="فیلترها را تغییر دهید یا اولین شرکت را اضافه کنید." />
-        <div v-else class="overflow-x-auto">
-          <table class="company-table">
-            <caption class="sr-only">فهرست شرکت‌ها و وضعیت فعالیت آن‌ها</caption>
-            <thead>
-              <tr class="bg-gray-50 text-gray-600">
-                <th
-                  scope="col">
-                  لوگو
-                </th>
-                <th
-                  scope="col">
-                  نام
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col">
-                  ایمیل
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col">
-                  تلفن
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col">
-                  شماره ثبت
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col">
-                  آدرس
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col">
-                  وضعیت
-                </th>
-                <th
-                  v-if="canRead"
-                  scope="col"
-                  class="company-table__operations-heading">
-                  عملیات
-                </th>
-              </tr>
-            </thead>
-            <tbody class="text-gray-800">
-              <tr
-                v-for="(company, idx) in companies"
-                :key="company._id || idx"
-                class="company-table__row">
-                <td class="company-table__logo-cell">
-                  <div class="company-logo-frame">
-                    <img
-                      v-if="company.image"
-                      :src="company.image"
-                      :alt="`لوگوی ${company.name}`"
-                      class="company-logo-frame__image" />
-                    <UIcon v-else name="i-lucide-building-2" aria-hidden="true" />
-                  </div>
-                </td>
-                <td class="company-table__identity-cell">
-                  <div class="company-identity">
-                    <strong>{{ company.name }}</strong>
-                    <small>{{ companySellerTypeLabel(company.sellerType) }}</small>
-                  </div>
-                </td>
-                <td
-                  class="company-table__value font-num"
-                  v-if="canRead">
-                  {{ company.email }}
-                </td>
-                <td
-                  class="company-table__value font-num"
-                  v-if="canRead">
-                  {{ company.phone || "—" }}
-                </td>
-                <td
-                  class="company-table__value font-num"
-                  v-if="canRead">
-                  {{ company.registrationNumber || "—" }}
-                </td>
-                <td
-                  class="company-table__value company-table__address"
-                  v-if="canRead">
-                  {{ company.address || "—" }}
-                </td>
-                <td class="company-table__status-cell" v-if="canRead">
-                  <div class="company-status-control">
-                    <StatusPill
-                      :label="companyStatusLabel(getCompanyStatus(company))"
-                      :semantic="companyStatusSemantic(getCompanyStatus(company))"
-                      :icon="companyStatusIcon(getCompanyStatus(company))"
-                      size="compact" />
+        <div v-else class="company-list" role="list" aria-label="شرکت‌های ثبت‌شده">
+          <article v-for="company in companies" :key="companyKey(company)" class="company-card" role="listitem">
+            <header class="company-card__header">
+              <div class="company-card__identity">
+                <div class="company-logo-frame" aria-hidden="true">
+                  <img v-if="company.image" :src="company.image" alt="" class="company-logo-frame__image" />
+                  <UIcon v-else name="i-lucide-building-2" />
+                </div>
+                <div class="company-identity">
+                  <h3>{{ company.name }}</h3>
+                  <span>{{ companySellerTypeLabel(company.sellerType) }}</span>
+                  <small class="font-num">شناسه: {{ companyKey(company) || "—" }}</small>
+                </div>
+              </div>
+              <StatusPill
+                :label="companyStatusLabel(getCompanyStatus(company))"
+                :semantic="companyStatusSemantic(getCompanyStatus(company))"
+                :icon="companyStatusIcon(getCompanyStatus(company))"
+                size="compact" />
+            </header>
 
-                    <div
-                      v-if="canUpdate"
-                      class="company-status-select"
-                      :class="{ 'company-status-select--open': isStatusOpen(company) }">
-                      <button
-                        type="button"
-                        class="company-status-trigger"
-                        :aria-expanded="isStatusOpen(company)"
-                        aria-haspopup="listbox"
-                        :aria-controls="`company-status-options-${companyKey(company)}`"
-                        :disabled="Boolean(statusLoading[companyKey(company)])"
-                        :aria-label="`تغییر وضعیت ${company.name}`"
-                        @click.stop="toggleStatusMenu(company)">
-                        <UIcon name="i-lucide-sliders-horizontal" aria-hidden="true" />
-                        <span>{{ statusLoading[companyKey(company)] ? "در حال ذخیره" : "تغییر وضعیت" }}</span>
-                        <UIcon :name="isStatusOpen(company) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" aria-hidden="true" />
-                      </button>
-                      <div
-                        v-if="isStatusOpen(company)"
-                        :id="`company-status-options-${companyKey(company)}`"
-                        class="company-status-options"
-                        role="listbox"
-                        :aria-label="`وضعیت‌های قابل انتخاب برای ${company.name}`"
-                        @click.stop>
-                        <button
-                          v-for="option in statusOptions"
-                          :key="option.value"
-                          type="button"
-                          class="company-status-option"
-                          :class="{ 'company-status-option--selected': (statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value }"
-                          role="option"
-                          :aria-selected="(statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value"
-                          @click="onChangeStatus(option.value, company)">
-                          <span class="company-status-option__dot" :class="`company-status-option__dot--${option.value}`" aria-hidden="true"></span>
-                          <span>{{ option.label }}</span>
-                          <UIcon v-if="(statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value" name="i-lucide-check" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="company-table__operations" @click.stop>
-                  <div class="panel-row-actions company-table__actions">
-                    <UButton
-                      v-if="canRead"
-                      @click="openDetails(company)"
-                      size="xs"
-                      color="primary"
-                      variant="soft"
-                      icon="i-lucide-eye"
-                      :aria-label="`مشاهده جزئیات ${company.name}`">
-                      مشاهده
-                    </UButton>
-                    <UButton
-                      v-if="canUpdate"
-                      @click="openModal(company)"
-                      size="xs"
-                      color="neutral"
-                      variant="outline"
-                      icon="i-lucide-pencil"
-                      :aria-label="`ویرایش ${company.name}`">
-                      ویرایش
-                    </UButton>
-                    <UButton
-                      v-if="canDelete"
-                      @click="deleteCompany(company)"
-                      size="xs"
-                      color="error"
-                      variant="soft"
-                      icon="i-lucide-trash-2"
-                      :loading="deletingId === companyKey(company)"
-                      :disabled="Boolean(deletingId)"
-                      :aria-label="`حذف ${company.name}`">
-                      حذف
-                    </UButton>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <dl v-if="canRead" class="company-card__details">
+              <div><dt><UIcon name="i-lucide-mail" aria-hidden="true" /> ایمیل</dt><dd class="ltr">{{ company.email || "ثبت نشده" }}</dd></div>
+              <div><dt><UIcon name="i-lucide-phone" aria-hidden="true" /> تلفن</dt><dd class="ltr">{{ company.phone || "ثبت نشده" }}</dd></div>
+              <div><dt><UIcon name="i-lucide-file-text" aria-hidden="true" /> شماره ثبت</dt><dd class="font-num">{{ company.registrationNumber || "ثبت نشده" }}</dd></div>
+              <div class="company-card__detail-wide"><dt><UIcon name="i-lucide-map-pin" aria-hidden="true" /> آدرس</dt><dd>{{ company.address || "ثبت نشده" }}</dd></div>
+            </dl>
+
+            <footer class="company-card__footer">
+              <div v-if="canUpdate" class="company-status-select" :class="{ 'company-status-select--open': isStatusOpen(company) }">
+                <button
+                  type="button"
+                  class="company-status-trigger"
+                  :aria-expanded="isStatusOpen(company)"
+                  aria-haspopup="listbox"
+                  :aria-controls="`company-status-options-${companyKey(company)}`"
+                  :disabled="Boolean(statusLoading[companyKey(company)])"
+                  :aria-label="`تغییر وضعیت ${company.name}`"
+                  @click.stop="toggleStatusMenu(company)">
+                  <UIcon name="i-lucide-sliders-horizontal" aria-hidden="true" />
+                  <span>{{ statusLoading[companyKey(company)] ? "در حال ذخیره" : "تغییر وضعیت" }}</span>
+                  <UIcon :name="isStatusOpen(company) ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" aria-hidden="true" />
+                </button>
+                <div
+                  v-if="isStatusOpen(company)"
+                  :id="`company-status-options-${companyKey(company)}`"
+                  class="company-status-options"
+                  role="listbox"
+                  :aria-label="`وضعیت‌های قابل انتخاب برای ${company.name}`"
+                  @click.stop>
+                  <button
+                    v-for="option in statusOptions"
+                    :key="option.value"
+                    type="button"
+                    class="company-status-option"
+                    :class="{ 'company-status-option--selected': (statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value }"
+                    role="option"
+                    :aria-selected="(statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value"
+                    @click="onChangeStatus(option.value, company)">
+                    <span class="company-status-option__dot" :class="`company-status-option__dot--${option.value}`" aria-hidden="true"></span>
+                    <span>{{ option.label }}</span>
+                    <UIcon v-if="(statusDraft[companyKey(company)] ?? getCompanyStatus(company)) === option.value" name="i-lucide-check" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+              <div class="panel-row-actions company-card__actions" @click.stop>
+                <UButton v-if="canRead" @click="openDetails(company)" size="xs" color="primary" variant="soft" icon="i-lucide-eye" :aria-label="`مشاهده جزئیات ${company.name}`">مشاهده جزئیات</UButton>
+                <UButton v-if="canUpdate" @click="openModal(company)" size="xs" color="neutral" variant="outline" icon="i-lucide-pencil" :aria-label="`ویرایش ${company.name}`">ویرایش</UButton>
+                <UButton v-if="canDelete" @click="deleteCompany(company)" size="xs" color="error" variant="soft" icon="i-lucide-trash-2" :loading="deletingId === companyKey(company)" :disabled="Boolean(deletingId)" :aria-label="`حذف ${company.name}`">حذف</UButton>
+              </div>
+            </footer>
+          </article>
         </div>
-      </div>
+      </section>
 
       <div v-if="total > limit" class="flex justify-center py-4">
         <UPagination v-model="page" :total="total" :page-count="limit" :disabled="loading" />
@@ -337,7 +264,7 @@
 
 <script setup lang="ts">
 const feedback = useFeedback();
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { computed, ref, onMounted, onUnmounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
@@ -397,6 +324,10 @@ const statusOptions = [
   { label: "در انتظار", value: "pending" },
   { label: "رد شده", value: "rejected" },
 ] satisfies Array<{ label: string; value: CompanyStatusValue }>;
+
+const activeCompanyCount = computed(() => companies.value.filter((company) => getCompanyStatus(company) === "active").length);
+const pendingCompanyCount = computed(() => companies.value.filter((company) => getCompanyStatus(company) === "pending").length);
+const inactiveCompanyCount = computed(() => companies.value.filter((company) => ["suspended", "rejected"].includes(getCompanyStatus(company))).length);
 
 function companyKey(company: Company) {
   return String(company._id || company.id || "");
@@ -677,33 +608,47 @@ watch(isReady, (ready) => { if (ready) fetchCompanies(); }, { once: true });
 </script>
 
 <style scoped>
-.company-table-card { overflow: hidden; }
-.company-table { width:100%; min-width:80rem; border-collapse:separate; border-spacing:0; font-size:.875rem; }
-.company-table th, .company-table td { padding:.9rem 1rem; text-align:right; vertical-align:middle; border-bottom:1px solid var(--color-border); }
-.company-table th { color:var(--color-text-muted); background:var(--color-bg-light); font-size:.78rem; font-weight:800; white-space:nowrap; }
-.company-table thead th:first-child { border-start-start-radius:var(--radius-field); }
-.company-table thead th:last-child { border-start-end-radius:var(--radius-field); }
-.company-table__row { transition:background-color .18s ease; }
-.company-table__row:hover { background:var(--color-bg-light); }
-.company-table tbody tr:last-child td { border-bottom:0; }
-.company-table__logo-cell { width:5.5rem; }
-.company-logo-frame { display:grid; place-items:center; width:3.25rem; height:3.25rem; overflow:hidden; border:1px solid var(--color-border-strong); border-radius:var(--radius-compact-list-item); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); }
-.company-logo-frame__image { display:block; width:100%; height:100%; padding:.35rem; object-fit:contain; }
-.company-identity { display:grid; gap:.25rem; min-width:10rem; }
-.company-identity strong { color:var(--color-text-heading); font-size:.9rem; font-weight:800; }
-.company-identity small { color:var(--color-text-muted); font-size:.75rem; }
-.company-table__value { color:var(--color-text-body); white-space:nowrap; }
-.company-table__address { max-width:15rem; overflow:hidden; color:var(--color-text-body); text-overflow:ellipsis; white-space:nowrap; }
-.company-table__status-cell { min-width:16rem; }
-.company-status-control { display:grid; align-items:start; gap:.55rem; }
-.company-status-select { display:grid; gap:.35rem; width:min(100%, 15rem); }
-.company-status-trigger { display:flex; align-items:center; justify-content:space-between; gap:.45rem; min-height:2.5rem; padding:.5rem .7rem; border:1px solid var(--color-border-strong); border-radius:var(--radius-field); color:var(--color-text-body); background:var(--color-bg-surface); font:inherit; font-size:.75rem; font-weight:700; cursor:pointer; transition:border-color .18s ease, background-color .18s ease, box-shadow .18s ease; }
+.companies-page { display:grid; gap:1rem; min-width:0; }
+.companies-overview { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:.75rem; }
+.companies-overview__card { display:grid; gap:.35rem; min-width:0; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
+.companies-overview__card--success { border-color:var(--color-success-border); background:var(--color-success-bg); }
+.companies-overview__card--warning { border-color:var(--color-warning-border); background:var(--color-warning-bg); }
+.companies-overview__card--neutral { background:var(--color-bg-light); }
+.companies-overview__label { display:flex; align-items:center; gap:.4rem; color:var(--color-text-muted); font-size:.73rem; font-weight:800; }
+.companies-overview__label :deep(svg) { color:var(--color-brand-blue); }
+.companies-overview__card strong { color:var(--color-text-heading); font-size:1.55rem; font-weight:900; line-height:1.1; }
+.companies-overview__card small { color:var(--color-text-muted); font-size:.68rem; }
+.company-list-card { display:grid; gap:1rem; padding:1rem; overflow:visible; }
+.company-list-card__heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-bottom:.85rem; border-bottom:1px solid var(--color-border); }
+.company-list-card__heading h2 { margin:0; color:var(--color-text-heading); font-size:1rem; font-weight:900; }
+.company-list-card__heading p { margin:.3rem 0 0; color:var(--color-text-muted); font-size:.72rem; }
+.company-list-card__count { flex:0 0 auto; padding:.35rem .65rem; border-radius:var(--radius-pill); color:var(--color-brand-blue); background:var(--color-info-bg); font-size:.7rem; font-weight:800; }
+.company-list { display:grid; gap:.8rem; }
+.company-card { display:grid; gap:1rem; min-width:0; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.company-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-1px); }
+.company-card__header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; min-width:0; }
+.company-card__identity { display:flex; align-items:center; gap:.75rem; min-width:0; }
+.company-logo-frame { display:grid; place-items:center; width:4rem; height:4rem; flex:0 0 auto; overflow:hidden; border:1px solid var(--color-border-strong); border-radius:var(--radius-card); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); font-size:1.45rem; }
+.company-logo-frame__image { display:block; width:100%; height:100%; padding:.4rem; object-fit:contain; }
+.company-identity { display:grid; gap:.22rem; min-width:0; }
+.company-identity h3 { margin:0; overflow-wrap:anywhere; color:var(--color-text-heading); font-size:1rem; font-weight:900; }
+.company-identity span { color:var(--color-text-muted); font-size:.76rem; }
+.company-identity small { overflow-wrap:anywhere; color:var(--color-text-disabled); font-size:.64rem; }
+.company-card__details { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:.65rem; margin:0; }
+.company-card__details > div { display:grid; gap:.3rem; min-width:0; padding:.7rem .8rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.company-card__details dt { display:flex; align-items:center; gap:.35rem; color:var(--color-text-muted); font-size:.68rem; font-weight:800; }
+.company-card__details dt :deep(svg) { color:var(--color-brand-blue); }
+.company-card__details dd { margin:0; overflow-wrap:anywhere; color:var(--color-text-heading); font-size:.78rem; }
+.company-card__detail-wide { grid-column:1 / -1; }
+.company-card__footer { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-top:.85rem; border-top:1px solid var(--color-border); }
+.company-status-select { position:relative; display:grid; gap:.35rem; width:min(100%, 15rem); }
+.company-status-trigger { display:flex; align-items:center; justify-content:space-between; gap:.45rem; min-height:2.65rem; padding:.55rem .75rem; border:1px solid var(--color-border-strong); border-radius:var(--radius-field); color:var(--color-text-body); background:var(--color-bg-surface); font:inherit; font-size:.75rem; font-weight:700; cursor:pointer; transition:border-color .18s ease, background-color .18s ease, box-shadow .18s ease; }
 .company-status-trigger:hover { border-color:var(--color-brand-blue); background:var(--color-info-bg); }
 .company-status-trigger:focus-visible, .company-status-option:focus-visible { outline:none; box-shadow:var(--focus-ring); }
 .company-status-trigger:disabled { opacity:.65; cursor:wait; }
 .company-status-trigger > span { flex:1; text-align:right; }
-.company-status-options { display:grid; gap:.2rem; padding:.3rem; border:1px solid var(--color-border-strong); border-radius:var(--radius-field); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
-.company-status-option { display:flex; align-items:center; gap:.5rem; min-height:2.35rem; padding:.4rem .55rem; border:0; border-radius:.45rem; color:var(--color-text-body); background:transparent; font:inherit; font-size:.75rem; text-align:right; cursor:pointer; }
+.company-status-options { position:absolute; inset-block-start:calc(100% + .35rem); inset-inline-start:0; z-index:20; display:grid; width:100%; max-height:14rem; gap:.2rem; overflow-y:auto; padding:.35rem; border:1px solid var(--color-border-strong); border-radius:var(--radius-field); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
+.company-status-option { display:flex; align-items:center; gap:.5rem; min-height:2.45rem; padding:.45rem .55rem; border:0; border-radius:.45rem; color:var(--color-text-body); background:transparent; font:inherit; font-size:.75rem; text-align:right; cursor:pointer; }
 .company-status-option:hover, .company-status-option--selected { color:var(--color-text-heading); background:var(--color-bg-light); }
 .company-status-option > span:nth-child(2) { flex:1; }
 .company-status-option__dot { width:.55rem; height:.55rem; flex:0 0 auto; border-radius:50%; background:var(--color-text-muted); }
@@ -711,10 +656,8 @@ watch(isReady, (ready) => { if (ready) fetchCompanies(); }, { once: true });
 .company-status-option__dot--suspended { background:#64748b; }
 .company-status-option__dot--pending { background:#d97706; }
 .company-status-option__dot--rejected { background:#dc2626; }
-.company-table__operations-heading { width:13rem; }
-.company-table__operations { min-width:17rem; }
-.company-table__actions { gap:.4rem; }
-.company-table__actions :deep(button) { min-height:2.5rem; }
+.company-card__actions { display:flex; flex-wrap:wrap; gap:.4rem; }
+.company-card__actions :deep(button) { min-height:2.55rem; }
 .company-edit-modal, .company-details-modal { display:grid; gap:1.25rem; width:100%; }
 .company-modal-heading { display:flex; align-items:center; gap:.75rem; padding-inline-end:2.5rem; }
 .company-modal-heading__icon { display:grid; place-items:center; width:2.75rem; height:2.75rem; flex:0 0 auto; border-radius:var(--radius-compact-list-item); color:var(--color-brand-blue); background:var(--color-info-bg); font-size:1.3rem; }
@@ -741,6 +684,7 @@ watch(isReady, (ready) => { if (ready) fetchCompanies(); }, { once: true });
 .company-upload-control { display:flex; align-items:center; justify-content:space-between; gap:.75rem; min-height:2.75rem; padding:.5rem .65rem; border:1px dashed var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); color:var(--color-text-muted); }
 .company-upload-field p { margin:0; color:var(--color-text-muted); font-size:.75rem; }
 .company-logo-preview { width:5rem; height:5rem; border-radius:var(--radius-field); object-fit:contain; border:1px solid var(--color-border); background:var(--color-bg-light); }
-@media (max-width: 640px) { .company-upload-control { align-items:stretch; flex-direction:column; } .company-details-modal__hero { align-items:flex-start; flex-direction:column; } .company-details-modal__grid { grid-template-columns:1fr; } .company-details-modal__grid-wide { grid-column:auto; } .company-modal-actions, .company-details-modal__actions { flex-wrap:wrap; } }
-@media (prefers-reduced-motion: reduce) { .company-table__row { transition:none; } }
+@media (max-width: 900px) { .companies-overview { grid-template-columns:repeat(2, minmax(0, 1fr)); } .company-card__details { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .company-list-card { padding:.75rem; } .company-list-card__heading { align-items:flex-start; flex-direction:column; gap:.5rem; } .company-card__header, .company-card__footer { align-items:stretch; flex-direction:column; } .company-card__details { grid-template-columns:1fr; } .company-card__detail-wide { grid-column:auto; } .company-status-select { width:100%; } .company-card__actions :deep(button) { flex:1; } .company-upload-control { align-items:stretch; flex-direction:column; } .company-details-modal__hero { align-items:flex-start; flex-direction:column; } .company-details-modal__grid { grid-template-columns:1fr; } .company-details-modal__grid-wide { grid-column:auto; } .company-modal-actions, .company-details-modal__actions { flex-wrap:wrap; } }
+@media (prefers-reduced-motion: reduce) { .company-card, .company-status-trigger { transition:none; } }
 </style>
