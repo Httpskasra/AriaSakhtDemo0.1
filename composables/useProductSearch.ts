@@ -9,8 +9,10 @@ export const useProductSearch = () => {
   const router = useRouter();
 
   /* ---------- Derived values from query string ---------- */
-  const page = computed(() => Number(route.query.page || 1));
-  const limit = computed(() => Number(route.query.limit || 12));
+  const page = computed(() => Math.max(1, Number.parseInt(String(route.query.page || 1), 10) || 1));
+  // Keep a public URL from requesting an unbounded page of products. Twelve is
+  // the normal catalog page and 48 is enough for an intentional larger page.
+  const limit = computed(() => Math.min(48, Math.max(1, Number.parseInt(String(route.query.limit || 12), 10) || 12)));
   const sortOption = computed(() => (route.query.sort as string) || "");
   const searchQuery = computed(() => (route.query.query as string) || "");
   const maxPrice = computed(() =>

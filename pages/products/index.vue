@@ -2,11 +2,14 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { advancedSearchProducts } from '~/services/productService';
 import { useCategories } from '~/composables/useCategories';
-import { getCategoryId } from '~/services/categories';
+import { getCategoryFilterIds, getCategoryId, getParentCategoryId } from '~/services/categories';
 
 const { buildParams, changePage, page, limit, sortOption, searchQuery, minPrice, maxPrice, companyName, categoryIds, onFiltersFromSidebar, clearAllFilters, updateQueryString, onSortChange } = useProductSearch();
 const { categories: availableCategories, load: loadCategories } = useCategories();
-await loadCategories().catch(() => undefined);
+// Let the product request and the shared category request run in parallel.
+// Waiting for categories here made the whole catalog appear blocked even when
+// the product API was already available.
+void loadCategories().catch(() => undefined);
 const mobileFiltersOpen = ref(false);
 const productsLoadError = ref<string | null>(null);
 const searchInput = ref(searchQuery.value);
@@ -29,7 +32,15 @@ const { data: productsData, pending, error, refresh } = await useAsyncData('prod
   }
 }, { watch: [() => useRoute().query], dedupe: 'cancel' });
 
-const activeFilterCount = computed(() => [minPrice.value, maxPrice.value, companyName.value, ...categoryIds.value].filter(Boolean).length);
+const visibleCategoryFilterIds = computed(() => {
+  const selected = new Set(categoryIds.value);
+  return categoryIds.value.filter((categoryId) => {
+    const category = availableCategories.value.find(item => getCategoryId(item) === categoryId);
+    const parentId = category ? getParentCategoryId(category) : null;
+    return !parentId || !selected.has(parentId);
+  });
+});
+const activeFilterCount = computed(() => [minPrice.value, maxPrice.value, companyName.value, ...visibleCategoryFilterIds.value].filter(Boolean).length);
 const categoryLabel = (categoryId: string) => {
   const category = availableCategories.value.find(item => getCategoryId(item) === categoryId);
   return `دسته: ${category?.name || categoryId}`;
@@ -38,14 +49,20 @@ const activeFilterLabels = computed(() => [
   minPrice.value ? `از ${minPrice.value.toLocaleString()} ریال` : '',
   maxPrice.value ? `تا ${maxPrice.value.toLocaleString()} ریال` : '',
   companyName.value ? `تأمین‌کننده: ${companyName.value}` : '',
-  ...categoryIds.value.map(categoryLabel),
+  ...visibleCategoryFilterIds.value.map(categoryLabel),
 ].filter(Boolean));
 
 const clearSearch = () => updateQueryString({ query: '' });
 const clearMaxPrice = () => updateQueryString({ maxPrice: null });
 const clearMinPrice = () => updateQueryString({ minPrice: null });
 const clearCompanyName = () => updateQueryString({ companyName: null });
-const removeCategory = (categoryId: string) => updateQueryString({ categoryIds: categoryIds.value.filter(id => id !== categoryId) });
+const removeCategory = (categoryId: string) => {
+  const category = availableCategories.value.find(item => getCategoryId(item) === categoryId);
+  const idsToRemove = category
+    ? new Set(getCategoryFilterIds(category, availableCategories.value))
+    : new Set([categoryId]);
+  updateQueryString({ categoryIds: categoryIds.value.filter(id => !idsToRemove.has(id)) });
+};
 const applyMobileFilters = (filters: { minPrice?: number; maxPrice?: number; companyName?: string; categoryIds?: string[] }) => {
   onFiltersFromSidebar(filters);
   mobileFiltersOpen.value = false;
@@ -122,7 +139,7 @@ const onPageChange = (newPage: number) => {
           <button v-if="minPrice" type="button" class="filter-chip" @click="clearMinPrice">از {{ minPrice.toLocaleString() }} ریال <UIcon name="i-lucide-x" /></button>
           <button v-if="maxPrice" type="button" class="filter-chip" @click="clearMaxPrice">تا {{ maxPrice.toLocaleString() }} ریال <UIcon name="i-lucide-x" /></button>
           <button v-if="companyName" type="button" class="filter-chip" @click="clearCompanyName">تأمین‌کننده: {{ companyName }} <UIcon name="i-lucide-x" /></button>
-          <button v-for="categoryId in categoryIds" :key="categoryId" type="button" class="filter-chip" @click="removeCategory(categoryId)">
+          <button v-for="categoryId in visibleCategoryFilterIds" :key="categoryId" type="button" class="filter-chip" @click="removeCategory(categoryId)">
             {{ categoryLabel(categoryId) }} <UIcon name="i-lucide-x" />
           </button>
           <button type="button" class="clear-filters-link" @click="clearAllFilters">پاک کردن همه</button>

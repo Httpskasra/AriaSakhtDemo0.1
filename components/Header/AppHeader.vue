@@ -12,11 +12,13 @@ const { isAuthenticated, user } = useUser();
 const { setStep } = useAuthStep();
 const cartStore = useCartStore();
 const { categories, loading: categoriesLoading, load } = useCategories();
-await load().catch(() => undefined);
+// Category data is shared by the header, drawer and catalog filters. Start the
+// request without blocking the first render of the public page or the catalog
+// request itself. The drawer still renders a loading state until it is ready.
+void load().catch(() => undefined);
 const mobileMenuOpen = ref(false);
 const effectiveScrolled = computed(() => props.isScrolled);
 const topCategories = computed(() => categories.value.filter(category => !getParentCategoryId(category)));
-const popularCategories = computed(() => topCategories.value.slice(0, 5));
 const categoryPath = (category: Category) => ({ path: "/products", query: { categoryIds: getCategoryFilterIds(category, categories.value) } });
 const cartCountLabel = computed(() => cartStore.itemCount > 99 ? "99+" : String(cartStore.itemCount));
 const supportPhone = "021-12345678";
@@ -28,41 +30,28 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
 
 <template>
   <header :class="['site-header', { 'site-header--scrolled': effectiveScrolled }]">
-    <div v-if="variant !== 'mobile'" class="desktop-header hidden lg:block">
-      <div class="desktop-header__trust">
-        <div class="section-container desktop-header__trust-inner">
-          <div class="desktop-header__trust-links">
-            <a :href="`tel:${supportPhone.replace(/-/g, '')}`"><UIcon name="i-lucide-phone" aria-hidden="true" /> {{ supportPhone }}</a>
-            <NuxtLink to="/about"><UIcon name="i-lucide-verified" aria-hidden="true" /> تأمین‌کنندگان تأییدشده</NuxtLink>
-          </div>
-        </div>
-      </div>
+    <div v-if="variant !== 'mobile'" class="desktop-header">
       <div class="desktop-header__main">
         <div class="section-container desktop-header__main-inner">
           <HeaderBrand class="shrink-0" />
           <div class="desktop-header__search"><GlobalProductSearch variant="header" /></div>
           <div class="desktop-header__actions" aria-label="عملیات حساب و خرید">
-            <HeaderIconButton v-if="isAuthenticated" to="/dashboard/account/favorites" icon="i-lucide-heart" label="علاقه‌مندی‌ها" />
-            <HeaderIconButton v-else icon="i-lucide-heart" label="ورود برای مشاهده علاقه‌مندی‌ها" @click="setStep('signin')" />
+            <UButton to="/dashboard/company/register" variant="outline" color="neutral" size="sm" icon="i-lucide-handshake" class="desktop-header__supplier-cta">تأمین‌کننده شوید</UButton>
             <div class="cart-action"><HeaderIconButton icon="i-lucide-shopping-cart" label="سبد خرید" @click="handleCartClick" /><span v-if="cartStore.itemCount" class="cart-action__badge" aria-hidden="true">{{ cartCountLabel }}</span></div>
-            <div class="desktop-header__divider" aria-hidden="true"></div><AuthLoginButton />
+            <AuthLoginButton />
           </div>
         </div>
       </div>
-      <div class="desktop-header__nav"><div class="section-container desktop-header__nav-inner"><CategoryMenu /><nav aria-label="ناوبری اصلی" class="desktop-nav-links"><NuxtLink to="/products" class="header-nav-link" :aria-current="route.path.startsWith('/products') ? 'page' : undefined">فروشگاه</NuxtLink><NuxtLink to="/dashboard/company/register" class="header-nav-link">تأمین‌کننده شوید</NuxtLink><NuxtLink to="/about" class="header-nav-link">درباره تجاریس</NuxtLink><NuxtLink to="/contact" class="header-nav-link">پشتیبانی</NuxtLink></nav></div></div>
+      <div class="desktop-header__nav"><div class="section-container desktop-header__nav-inner"><CategoryMenu /><nav aria-label="ناوبری اصلی" class="desktop-nav-links"><NuxtLink to="/products" class="header-nav-link" :aria-current="route.path.startsWith('/products') ? 'page' : undefined">فروشگاه</NuxtLink><NuxtLink to="/wholesale" class="header-nav-link" :aria-current="route.path === '/wholesale' ? 'page' : undefined">خرید عمده</NuxtLink><NuxtLink to="/price-quote" class="header-nav-link" :aria-current="route.path === '/price-quote' ? 'page' : undefined">استعلام قیمت</NuxtLink><NuxtLink to="/about" class="header-nav-link" :aria-current="route.path === '/about' ? 'page' : undefined">درباره تجاریس</NuxtLink><NuxtLink to="/support" class="header-nav-link" :aria-current="route.path === '/support' ? 'page' : undefined">پشتیبانی</NuxtLink></nav></div></div>
     </div>
 
-    <div v-if="variant !== 'desktop'" class="mobile-header lg:hidden">
+    <div v-if="variant !== 'desktop'" class="mobile-header">
       <div class="mobile-header__row">
         <HeaderBrand compact />
         <div class="mobile-header__actions"><div class="cart-action"><HeaderIconButton icon="i-lucide-shopping-cart" label="سبد خرید" @click="handleCartClick" /><span v-if="cartStore.itemCount" class="cart-action__badge" aria-hidden="true">{{ cartCountLabel }}</span></div><AuthLoginButton compact /></div>
-        <UButton id="mobile-site-menu-trigger" icon="i-lucide-menu" variant="soft" color="primary" square class="mobile-header__menu-button" aria-label="باز کردن منوی سایت" aria-controls="mobile-site-drawer" :aria-expanded="mobileMenuOpen" @click="mobileMenuOpen = true" />
+        <UButton id="mobile-site-menu-trigger" icon="i-lucide-menu" variant="soft" color="primary" square class="mobile-header__menu-button" aria-label="باز کردن منوی سایت و دسته‌بندی‌ها" aria-controls="mobile-site-drawer" :aria-expanded="mobileMenuOpen" @click="mobileMenuOpen = true" />
       </div>
       <div class="mobile-header__search"><GlobalProductSearch variant="header" class="w-full" /></div>
-      <nav v-if="popularCategories.length" class="mobile-header__categories" aria-label="دسته‌بندی‌های محبوب فروشگاه">
-        <NuxtLink to="/products" class="mobile-header__category-link mobile-header__category-link--all" :aria-current="route.path === '/products' ? 'page' : undefined">همه دسته‌بندی‌ها</NuxtLink>
-        <NuxtLink v-for="category in popularCategories" :key="getCategoryId(category)" :to="categoryPath(category)" class="mobile-header__category-link">{{ category.name }}</NuxtLink>
-      </nav>
       <ClientOnly><AppDrawer v-model="mobileMenuOpen" panel-id="mobile-site-drawer" label="منوی سایت" teleport-on-mobile width="min(22rem, 88vw)"><nav class="mobile-menu" aria-label="ناوبری موبایل">
         <div class="mobile-menu__account">
           <NuxtLink v-if="isAuthenticated" to="/dashboard" class="mobile-menu__link mobile-menu__link--primary" @click="closeMobileMenu"><UIcon name="i-lucide-user" aria-hidden="true" /><span>حساب کاربری</span><small>{{ user?.userId || "پنل کاربری" }}</small></NuxtLink>
@@ -70,7 +59,7 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
         </div>
       <div class="mobile-menu__links"><NuxtLink to="/products" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-store" aria-hidden="true" />فروشگاه</NuxtLink><button type="button" class="mobile-menu__link" @click="handleCartClick"><UIcon name="i-lucide-shopping-cart" aria-hidden="true" />سبد خرید<span v-if="cartStore.itemCount" class="mobile-menu__count">{{ cartCountLabel }}</span></button><NuxtLink v-if="isAuthenticated" to="/dashboard/account/orders" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-receipt" aria-hidden="true" />سفارش‌های من</NuxtLink><button v-else type="button" class="mobile-menu__link" @click="openAuth"><UIcon name="i-lucide-receipt" aria-hidden="true" />سفارش‌های من</button><NuxtLink v-if="isAuthenticated" to="/dashboard/account/favorites" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-heart" aria-hidden="true" />علاقه‌مندی‌ها</NuxtLink><button v-else type="button" class="mobile-menu__link" @click="openAuth"><UIcon name="i-lucide-heart" aria-hidden="true" />علاقه‌مندی‌ها</button></div>
         <div class="mobile-menu__section"><div class="mobile-menu__section-heading"><h2>دسته‌بندی‌ها</h2><span v-if="categoriesLoading">در حال بارگذاری</span><span v-else>{{ topCategories.length }} دسته اصلی</span></div><NuxtLink to="/products" class="mobile-menu__all-categories" @click="closeMobileMenu">مشاهده همه دسته‌بندی‌ها <UIcon name="i-lucide-arrow-left" aria-hidden="true" /></NuxtLink><div v-if="categoriesLoading" class="mobile-menu__state">در حال آماده‌سازی دسته‌بندی‌ها…</div><div v-else class="mobile-menu__categories-list"><details v-for="category in topCategories" :key="`drawer-${getCategoryId(category)}`" class="mobile-menu__category-group"><summary><span>{{ category.name }}</span><UIcon name="i-lucide-chevron-down" aria-hidden="true" /></summary><div class="mobile-menu__subcategory-list"><NuxtLink :to="categoryPath(category)" @click="closeMobileMenu">همه محصولات این دسته</NuxtLink><NuxtLink v-for="child in categories.filter(item => getParentCategoryId(item) === getCategoryId(category))" :key="getCategoryId(child)" :to="categoryPath(child)" @click="closeMobileMenu">{{ child.name }}</NuxtLink></div></details></div></div>
-        <div class="mobile-menu__links mobile-menu__links--secondary"><NuxtLink to="/dashboard/company/register" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-handshake" aria-hidden="true" />تأمین‌کننده شوید</NuxtLink><NuxtLink to="/about" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-building-2" aria-hidden="true" />درباره تجاریس</NuxtLink><NuxtLink to="/contact" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-life-buoy" aria-hidden="true" />پشتیبانی</NuxtLink><a class="mobile-menu__link" :href="`tel:${supportPhone.replace(/-/g, '')}`"><UIcon name="i-lucide-phone" aria-hidden="true" />تماس با ما</a></div>
+        <div class="mobile-menu__links mobile-menu__links--secondary"><NuxtLink to="/wholesale" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-truck" aria-hidden="true" />خرید عمده</NuxtLink><NuxtLink to="/price-quote" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-badge-dollar-sign" aria-hidden="true" />استعلام قیمت</NuxtLink><NuxtLink to="/dashboard/company/register" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-handshake" aria-hidden="true" />تأمین‌کننده شوید</NuxtLink><NuxtLink to="/about" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-building-2" aria-hidden="true" />درباره تجاریس</NuxtLink><NuxtLink to="/support" class="mobile-menu__link" @click="closeMobileMenu"><UIcon name="i-lucide-life-buoy" aria-hidden="true" />پشتیبانی</NuxtLink><a class="mobile-menu__link" :href="`tel:${supportPhone.replace(/-/g, '')}`"><UIcon name="i-lucide-phone" aria-hidden="true" />تماس با ما</a></div>
       </nav></AppDrawer></ClientOnly>
     </div>
   </header>
@@ -78,36 +67,25 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
 
 <style scoped>
 .site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; isolation:isolate; border-bottom:1px solid var(--color-border); background:var(--color-bg-surface-translucent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
-.site-header--scrolled .desktop-header__trust { display:block; }
-.site-header--scrolled .desktop-header__main-inner { min-height:5.25rem; }
-.desktop-header__trust { background:var(--color-text-heading); color:var(--color-bg-surface); }
-.desktop-header__trust-inner,.desktop-header__trust-links { display:flex; min-height:2rem; align-items:center; justify-content:space-between; }
-.desktop-header__trust-links { gap:1.5rem; font-size:.7rem; font-weight:700; }
-.desktop-header__trust-links a { display:inline-flex; min-height:2rem; align-items:center; gap:.35rem; opacity:.9; }
-.desktop-header__trust-links a:hover { opacity:1; color:var(--color-info-border); }
-.desktop-header__trust-links :deep(svg) { width:1rem; }
+.site-header--scrolled .desktop-header__main-inner { min-height:4.25rem; }
 .desktop-header__main { background:var(--color-bg-surface); }
-.desktop-header__main-inner { display:flex; min-height:5.25rem; align-items:center; gap:clamp(1rem,3vw,2.5rem); }
+.desktop-header__main-inner { display:flex; min-height:4.5rem; align-items:center; gap:clamp(1rem,2.5vw,2rem); }
 .desktop-header__search { min-width:0; flex:1; }
-.desktop-header__actions { display:flex; flex-shrink:0; align-items:center; gap:.35rem; }
-.desktop-header__divider { width:1px; height:1.75rem; margin-inline:.25rem; background:var(--color-border); }
+.desktop-header__actions { display:flex; flex-shrink:0; align-items:center; gap:.45rem; }
+.desktop-header__supplier-cta { min-height:2.5rem; white-space:nowrap; }
 .desktop-header__nav { border-top:1px solid var(--color-bg-light); background:var(--color-bg-surface); }
-.desktop-header__nav-inner { display:flex; min-height:3.25rem; align-items:center; gap:2rem; }
+.desktop-header__nav-inner { display:flex; min-height:2.9rem; align-items:center; gap:2rem; }
 .desktop-nav-links { display:flex; min-width:0; align-items:center; gap:clamp(1rem,2.2vw,2rem); color:var(--color-text-body); font-size:.8rem; font-weight:700; }
 .header-nav-link { display:inline-flex; min-height:2.75rem; align-items:center; border-bottom:2px solid transparent; white-space:nowrap; }
 .header-nav-link:hover,.header-nav-link.router-link-active { color:var(--color-brand-blue); border-bottom-color:var(--color-brand-blue); }
 .cart-action { position:relative; display:inline-flex; }
 .cart-action__badge { position:absolute; inset-block-start:-.2rem; inset-inline-start:-.25rem; display:flex; min-width:1.05rem; height:1.05rem; align-items:center; justify-content:center; padding-inline:.18rem; border:2px solid var(--color-bg-surface); border-radius:var(--radius-pill); background:var(--color-brand-yellow); color:var(--color-text-heading); font-size:.58rem; font-weight:900; line-height:1; }
 .mobile-header { max-width:100%; overflow-x:clip; background:var(--color-bg-surface-mobile); direction:rtl; }
-.mobile-header__row { position:relative; display:flex; min-height:3.5rem; align-items:center; justify-content:center; padding:.45rem 3.2rem; }
+.mobile-header__row { position:relative; display:flex; min-height:3.75rem; align-items:center; justify-content:center; padding:.45rem 3.2rem; }
 .mobile-header__actions { position:absolute; left:.55rem; right:auto; display:flex; align-items:center; gap:.1rem; }
 .mobile-header__actions :deep(button) { min-width:2.5rem; min-height:2.5rem; }
 .mobile-header__menu-button { position:absolute; right:.55rem; left:auto; width:2.5rem; height:2.5rem; border-radius:var(--radius-compact-list-item); }
-.mobile-header__search { padding:.4rem .7rem .55rem; border-top:1px solid var(--color-bg-light); }
-.mobile-header__categories { display:flex; gap:.4rem; padding:0 .7rem .5rem; overflow-x:auto; scrollbar-width:none; }
-.mobile-header__categories::-webkit-scrollbar { display:none; }
-.mobile-header__category-link { display:inline-flex; min-height:2.25rem; flex:0 0 auto; align-items:center; padding-inline:.7rem; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-text-body); font-size:.7rem; font-weight:700; white-space:nowrap; }
-.mobile-header__category-link:hover,.mobile-header__category-link:focus-visible,.mobile-header__category-link--all { border-color:var(--color-info-border); background:var(--color-info-bg); color:var(--color-info-fg); }
+.mobile-header__search { padding:.5rem .7rem .65rem; border-top:1px solid var(--color-bg-light); }
 .mobile-menu { display:flex; flex-direction:column; gap:.75rem; padding:.15rem 0 1rem; direction:rtl; }
 .mobile-menu__account { border-bottom:1px solid var(--color-border); padding-bottom:.7rem; }
 .mobile-menu__links { display:grid; gap:.15rem; }
@@ -133,7 +111,24 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
 .mobile-menu__subcategory-list a { min-height:2.35rem; padding:.45rem; color:var(--color-text-muted); font-size:.73rem; }
 .mobile-menu__subcategory-list a:hover,.mobile-menu__subcategory-list a:focus-visible { color:var(--color-brand-blue); }
 .mobile-menu__state { padding:.65rem; color:var(--color-text-muted); font-size:.72rem; }
-@media (min-width:1024px) and (max-width:1199px) { .desktop-header__main-inner { gap:1rem; } .desktop-nav-links { gap:1rem; } .desktop-header__trust-links { gap:.75rem; } }
+@media (min-width:1024px) and (max-width:1199px) { .desktop-header__main-inner { gap:1rem; } .desktop-nav-links { gap:1rem; } .desktop-header__supplier-cta { padding-inline:.65rem; } }
 @media (max-width:359px) { .mobile-header__row { padding-inline:2.85rem; } .mobile-header__actions { left:.35rem; right:auto; } .mobile-header__menu-button { right:.35rem; left:auto; } .mobile-header__search { padding-inline:.5rem; } .header-brand--compact :deep(.header-brand__name) { display:none; } }
 @media (prefers-reduced-motion:reduce) { .site-header *,.site-header *::before,.site-header *::after { transition:none; animation:none; } }
+
+/* The public header switches as one unit at the same boundary used by the
+   mobile drawer. This prevents a desktop and mobile header from competing at
+   the exact 1024px boundary. */
+.desktop-header { display:none; }
+
+@media (min-width:1025px) {
+  .desktop-header { display:block; }
+  .mobile-header { display:none; }
+  .desktop-header__search { max-width:46rem; }
+}
+
+@media (max-width:1024px) {
+  .site-header { background:var(--color-bg-surface-mobile); }
+  .mobile-header__actions { gap:.25rem; }
+  .mobile-header__actions :deep(button) { min-width:2.5rem; min-height:2.5rem; }
+}
 </style>

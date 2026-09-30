@@ -5,11 +5,12 @@ import { useApiClient } from '~/services/apiClient';
 
 export interface CreateCompanyDto {
   name: string;
+  sellerType: 'legal' | 'individual';
   email: string;
-  phone?: string;
-  registrationNumber: string;
-  address?: string;
-  nationalId?: string;
+  phone: string;
+  registrationNumber?: string;
+  address: string;
+  nationalId: string;
   imageMeta?: {
     filename: string;
     contentType: string;
@@ -92,11 +93,11 @@ export interface CreateVendorRequestDto {
   companyName: string;
   sellerType: 'legal' | 'individual';
   email: string;
-  phone?: string;
+  phone: string;
   registrationNumber?: string;
-  nationalId?: string;
-  address?: string;
-  imageUrl?: string;
+  nationalId: string;
+  address: string;
+  imageUrl: string;
 }
 
 export const createVendorRequest = async (payload: CreateVendorRequestDto) => {

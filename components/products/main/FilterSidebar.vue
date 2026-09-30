@@ -33,10 +33,21 @@ const categoryGroups = computed(() => {
     const parentId = getParentCategoryId(category);
     return !parentId || !allIds.has(parentId);
   });
-  const groups = rootCategories.map((root) => ({
-    root,
-    children: all.filter((category) => getParentCategoryId(category) === getCategoryId(root)),
-  }));
+  const groups = rootCategories.map((root) => {
+    const children: { category: typeof root; depth: number }[] = [];
+    const visited = new Set<string>();
+    const collectChildren = (parentId: string, depth: number) => {
+      all.forEach((category) => {
+        const id = getCategoryId(category);
+        if (visited.has(id) || getParentCategoryId(category) !== parentId) return;
+        visited.add(id);
+        children.push({ category, depth });
+        collectChildren(id, depth + 1);
+      });
+    };
+    collectChildren(getCategoryId(root), 1);
+    return { root, children };
+  });
 
   return groups;
 });
@@ -91,6 +102,37 @@ const toggleCategory = (categoryId: string) => {
     : [...selectedCategories.value, categoryId];
 };
 
+const descendantIds = (categoryId: string) => {
+  const ids = new Set<string>([categoryId]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    categories.value.forEach((category) => {
+      const id = getCategoryId(category);
+      const parentId = getParentCategoryId(category);
+      if (parentId && ids.has(parentId) && !ids.has(id)) {
+        ids.add(id);
+        changed = true;
+      }
+    });
+  }
+  return [...ids];
+};
+
+const isGroupSelected = (categoryId: string) => descendantIds(categoryId).every((id) => selectedCategories.value.includes(id));
+const isGroupPartiallySelected = (categoryId: string) => {
+  const ids = descendantIds(categoryId);
+  const selected = ids.filter((id) => selectedCategories.value.includes(id)).length;
+  return selected > 0 && selected < ids.length;
+};
+const toggleCategoryGroup = (categoryId: string) => {
+  const ids = descendantIds(categoryId);
+  const allSelected = ids.every((id) => selectedCategories.value.includes(id));
+  selectedCategories.value = allSelected
+    ? selectedCategories.value.filter((id) => !ids.includes(id))
+    : [...new Set([...selectedCategories.value, ...ids])];
+};
+
 const clearCategories = () => {
   selectedCategories.value = [];
 };
@@ -133,12 +175,13 @@ const clearCategories = () => {
           <button
             type="button"
             class="category-option__button category-option__button--parent"
-            :class="{ 'category-option__button--selected': selectedCategories.includes(getCategoryId(group.root)) }"
-            :aria-pressed="selectedCategories.includes(getCategoryId(group.root))"
-            @click="toggleCategory(getCategoryId(group.root))"
+            :class="{ 'category-option__button--selected': isGroupSelected(getCategoryId(group.root)), 'category-option__button--partial': isGroupPartiallySelected(getCategoryId(group.root)) }"
+            :aria-pressed="isGroupSelected(getCategoryId(group.root))"
+            @click="toggleCategoryGroup(getCategoryId(group.root))"
           >
             <span class="category-option__check" aria-hidden="true">
-              <UIcon v-if="selectedCategories.includes(getCategoryId(group.root))" name="i-lucide-check" />
+              <UIcon v-if="isGroupSelected(getCategoryId(group.root))" name="i-lucide-check" />
+              <UIcon v-else-if="isGroupPartiallySelected(getCategoryId(group.root))" name="i-lucide-minus" />
             </span>
             <span class="category-option__name">{{ group.root.name }}</span>
             <span v-if="group.children.length" class="category-option__count">{{ group.children.length }}</span>
@@ -146,17 +189,18 @@ const clearCategories = () => {
           <div v-if="group.children.length" class="category-children">
             <button
               v-for="child in group.children"
-              :key="getCategoryId(child)"
+              :key="getCategoryId(child.category)"
               type="button"
               class="category-option__button category-option__button--child"
-              :class="{ 'category-option__button--selected': selectedCategories.includes(getCategoryId(child)) }"
-              :aria-pressed="selectedCategories.includes(getCategoryId(child))"
-              @click="toggleCategory(getCategoryId(child))"
+              :style="{ '--category-depth': child.depth }"
+              :class="{ 'category-option__button--selected': selectedCategories.includes(getCategoryId(child.category)) }"
+              :aria-pressed="selectedCategories.includes(getCategoryId(child.category))"
+              @click="toggleCategory(getCategoryId(child.category))"
             >
               <span class="category-option__check" aria-hidden="true">
-                <UIcon v-if="selectedCategories.includes(getCategoryId(child))" name="i-lucide-check" />
+                <UIcon v-if="selectedCategories.includes(getCategoryId(child.category))" name="i-lucide-check" />
               </span>
-              <span class="category-option__name">{{ child.name }}</span>
+              <span class="category-option__name">{{ child.category.name }}</span>
             </button>
           </div>
         </div>
@@ -266,8 +310,8 @@ const clearCategories = () => {
   position: sticky;
   top: 6rem;
   display: grid;
-  gap: 2rem;
-  padding: 1.5rem;
+  gap: 1.35rem;
+  padding: 1.25rem;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
@@ -374,8 +418,9 @@ const clearCategories = () => {
 .category-option__button:hover,
 .category-option__button:focus-visible { background: var(--color-bg-light); color: var(--color-brand-blue); }
 .category-option__button--parent { color: var(--color-text-heading); font-weight: 800; }
-.category-option__button--child { min-height: 2.2rem; padding-inline-start: 1rem; font-size: .75rem; }
+.category-option__button--child { min-height: 2.2rem; padding-inline-start: calc(1rem + (var(--category-depth, 1) - 1) * .7rem); font-size: .75rem; }
 .category-option__button--selected { background: var(--color-info-bg); color: var(--color-brand-blue); }
+.category-option__button--partial { background: color-mix(in srgb, var(--color-info-bg) 55%, var(--color-bg-surface)); color: var(--color-brand-blue); }
 
 .category-option__button:focus-visible {
   outline: 2px solid var(--color-brand-blue);

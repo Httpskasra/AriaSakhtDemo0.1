@@ -17,20 +17,20 @@
         <div>
           <h4 class="mb-4 font-bold text-slate-800">خدمات تجاریس</h4>
           <ul class="space-y-2.5 text-sm text-slate-600">
-            <li><NuxtLink to="/products" class="transition-colors hover:text-primary-500">خرید عمده</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">استعلام قیمت</NuxtLink></li>
+            <li><NuxtLink to="/wholesale" class="transition-colors hover:text-primary-500">خرید عمده</NuxtLink></li>
+            <li><NuxtLink to="/price-quote" class="transition-colors hover:text-primary-500">استعلام قیمت</NuxtLink></li>
             <li><NuxtLink to="/dashboard/company/register" class="transition-colors hover:text-primary-500">ثبت‌نام تأمین‌کنندگان</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">تأمین مالی زنجیره‌ای</NuxtLink></li>
+            <li><NuxtLink to="/collaboration" class="transition-colors hover:text-primary-500">همکاری و تأمین مالی</NuxtLink></li>
           </ul>
         </div>
 
         <div>
           <h4 class="mb-4 font-bold text-slate-800">پشتیبانی</h4>
           <ul class="space-y-2.5 text-sm text-slate-600">
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">سوالات متداول</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">شرایط و قوانین</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">پشتیبانی</NuxtLink></li>
-            <li><NuxtLink to="/contact" class="transition-colors hover:text-primary-500">گزارش تخلف</NuxtLink></li>
+            <li><NuxtLink to="/faq" class="transition-colors hover:text-primary-500">سوالات متداول</NuxtLink></li>
+            <li><NuxtLink to="/terms" class="transition-colors hover:text-primary-500">شرایط و قوانین</NuxtLink></li>
+            <li><NuxtLink to="/support" class="transition-colors hover:text-primary-500">پشتیبانی</NuxtLink></li>
+            <li><NuxtLink to="/report" class="transition-colors hover:text-primary-500">گزارش تخلف</NuxtLink></li>
           </ul>
         </div>
 

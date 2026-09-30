@@ -32,6 +32,7 @@ const onLogoUploaded = (publicUrl: string) => {
     /^https?:\/\/(localhost|127\.0\.0\.1):3000(?=\/uploads\/)/,
     'http://localhost:3001',
   );
+  clearError('imageUrl');
 };
 
 const onLogoCleared = () => {
@@ -52,12 +53,29 @@ const validate = () => {
   if (!state.name.trim()) errors.name = isLegalSeller.value ? 'نام شرکت الزامی است.' : 'نام و نام خانوادگی الزامی است.';
   if (!state.email.trim()) errors.email = 'ایمیل سازمانی الزامی است.';
   else if (!/^\S+@\S+\.\S+$/.test(state.email.trim())) errors.email = 'یک ایمیل معتبر وارد کنید.';
+  if (!state.phone.trim()) errors.phone = 'شماره تماس الزامی است.';
+  else if (!/^[0-9۰-۹+()\-\s]{7,15}$/.test(state.phone.trim())) errors.phone = 'شماره تماس را همراه با پیش‌شماره وارد کنید.';
+  if (!state.address.trim()) errors.address = 'آدرس دفتر مرکزی الزامی است.';
+  else if (state.address.trim().length > 500) errors.address = 'آدرس نمی‌تواند بیشتر از ۵۰۰ نویسه باشد.';
+  if (!state.nationalId.trim()) errors.nationalId = 'کد ملی یا شناسه ملی الزامی است.';
   if (isLegalSeller.value && !state.registrationNumber.trim()) errors.registrationNumber = 'شماره ثبت برای شخص حقوقی الزامی است.';
-  if (!isLegalSeller.value && !state.nationalId.trim()) errors.nationalId = 'کد ملی برای شخص حقیقی الزامی است.';
-  if (state.nationalId && !/^[0-9۰-۹]{10}$/.test(state.nationalId.trim())) errors.nationalId = 'شناسه ملی یا کد ملی باید ۱۰ رقم باشد.';
+  if (state.nationalId.trim() && !/^[0-9۰-۹]{10}$/.test(state.nationalId.trim())) errors.nationalId = 'شناسه ملی یا کد ملی باید ۱۰ رقم باشد.';
   if (isLegalSeller.value && state.registrationNumber && !/^[0-9۰-۹]{3,20}$/.test(state.registrationNumber.trim())) errors.registrationNumber = 'شماره ثبت باید فقط شامل اعداد باشد.';
-  if (state.phone && !/^[0-9۰-۹+()\-\s]{7,15}$/.test(state.phone.trim())) errors.phone = 'شماره تماس را همراه با پیش‌شماره وارد کنید.';
+  if (!logoUrl.value.trim()) errors.imageUrl = 'لوگو یا تصویر کسب‌وکار الزامی است.';
   return Object.keys(errors).length === 0;
+};
+
+const applyServerValidationError = (err: any) => {
+  const rawMessage = err?.response?.data?.message;
+  const message = Array.isArray(rawMessage) ? rawMessage.join(' ') : String(rawMessage || '');
+  if (!message) return;
+  if (message.includes('نام شرکت') || message.includes('نام و نام خانوادگی')) errors.name = message;
+  else if (message.includes('ایمیل')) errors.email = message;
+  else if (message.includes('شماره تماس')) errors.phone = message;
+  else if (message.includes('آدرس')) errors.address = message;
+  else if (message.includes('لوگو') || message.includes('تصویر')) errors.imageUrl = message;
+  else if (message.includes('کد ملی') || message.includes('شناسه ملی')) errors.nationalId = message;
+  else if (message.includes('شماره ثبت')) errors.registrationNumber = message;
 };
 
 const onSubmit = async () => {
@@ -73,11 +91,11 @@ const onSubmit = async () => {
       companyName: state.name,
       sellerType: sellerType.value,
       email: state.email,
-      phone: state.phone || undefined,
-      registrationNumber: isLegalSeller.value ? state.registrationNumber || undefined : undefined,
-      nationalId: state.nationalId || undefined,
-      address: state.address || undefined,
-      imageUrl: logoUrl.value || undefined,
+      phone: state.phone.trim(),
+      registrationNumber: isLegalSeller.value ? state.registrationNumber.trim() : undefined,
+      nationalId: state.nationalId.trim(),
+      address: state.address.trim(),
+      imageUrl: logoUrl.value.trim(),
     };
 
     await createAuthenticatedVendorRequest(payload);
@@ -98,6 +116,7 @@ const onSubmit = async () => {
 
     await router.push('/dashboard/seller/company');
   } catch (err: any) {
+    applyServerValidationError(err);
     toast.add({
       title: 'خطا در ثبت',
       description: err.response?.data?.message || 'مشکلی در ثبت کسب‌وکار پیش آمد',
@@ -121,7 +140,7 @@ const onSubmit = async () => {
     <UCard class="company-card">
       <form @submit.prevent="onSubmit" class="company-form" dir="rtl">
         <div class="form-guidance" role="note">
-          فیلدهای دارای ستاره (*) الزامی هستند. برای شخص حقوقی، شماره ثبت الزامی است؛ برای شخص حقیقی، کد ملی الزامی است. شماره تماس ثابت، آدرس دفتر مرکزی و لوگوی کسب‌وکار اختیاری هستند.
+          همه فیلدها الزامی هستند. برای شخص حقوقی، شناسه ملی و شماره ثبت و برای شخص حقیقی، کد ملی باید کامل و دقیق وارد شود.
         </div>
 
         <UFormField label="نوع تأمین‌کننده" required class="company-field company-field--full" description="نوع فعالیت خود را انتخاب کنید تا فیلدهای شناسایی متناسب نمایش داده شوند.">
@@ -167,7 +186,7 @@ const onSubmit = async () => {
             </div>
           </UFormField>
 
-          <UFormField :label="`${isLegalSeller ? 'شناسه ملی' : 'کد ملی'}${isLegalSeller ? ' (اختیاری)' : ''}`" :required="!isLegalSeller" class="company-field" :class="{ 'company-field--error': errors.nationalId }" :error="errors.nationalId" :description="isLegalSeller ? 'در صورت تکمیل، باید دقیقاً ۱۰ رقم باشد.' : 'برای ثبت شخص حقیقی، کد ملی ۱۰ رقمی الزامی است.'">
+          <UFormField :label="isLegalSeller ? 'شناسه ملی' : 'کد ملی'" required class="company-field" :class="{ 'company-field--error': errors.nationalId }" :error="errors.nationalId" :description="isLegalSeller ? 'شناسه ملی شرکت باید دقیقاً ۱۰ رقم باشد.' : 'کد ملی باید دقیقاً ۱۰ رقم باشد.'">
             <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.nationalId }">
               <UIcon name="i-lucide-hash" class="company-input-icon" aria-hidden="true" />
               <UInput v-model="state.nationalId" class="company-input font-num" :aria-invalid="Boolean(errors.nationalId)" placeholder="مثال: ۱۲۳۴۵۶۷۸۹۰" maxlength="10" inputmode="numeric" autocomplete="off" @update:model-value="clearError('nationalId')" />
@@ -188,7 +207,7 @@ const onSubmit = async () => {
             </div>
           </UFormField>
 
-          <UFormField label="شماره تماس ثابت (اختیاری)" class="company-field" :class="{ 'company-field--error': errors.phone }" :error="errors.phone" description="در صورت تکمیل، همراه با پیش‌شماره شهر مثل ۰۲۱ وارد شود.">
+          <UFormField label="شماره تماس" required class="company-field" :class="{ 'company-field--error': errors.phone }" :error="errors.phone" description="شماره تماس را همراه با پیش‌شماره وارد کنید.">
             <div class="company-input-shell" :class="{ 'company-input-shell--error': errors.phone }">
               <UIcon name="i-lucide-phone" class="company-input-icon" aria-hidden="true" />
               <UInput v-model="state.phone" class="company-input company-input--phone font-num" :aria-invalid="Boolean(errors.phone)" type="tel" placeholder="مثال: ۰۲۱۱۲۳۴۵۶۷۸" maxlength="15" autocomplete="tel" inputmode="tel" @update:model-value="clearError('phone')" />
@@ -197,14 +216,14 @@ const onSubmit = async () => {
 
         </div>
 
-        <UFormField label="آدرس دفتر مرکزی (اختیاری)" class="company-field company-field--full" description="استان، شهر و نشانی کامل را وارد کنید؛ حداکثر ۵۰۰ نویسه.">
-          <div class="company-textarea-shell">
-            <UTextarea v-model="state.address" class="company-textarea" :rows="4" maxlength="500" placeholder="مثال: تهران، خیابان ولیعصر..." autocomplete="street-address" />
+        <UFormField label="آدرس دفتر مرکزی" required class="company-field company-field--full" :class="{ 'company-field--error': errors.address }" :error="errors.address" description="استان، شهر و نشانی کامل را وارد کنید؛ حداکثر ۵۰۰ نویسه.">
+          <div class="company-textarea-shell" :class="{ 'company-input-shell--error': errors.address }">
+            <UTextarea v-model="state.address" class="company-textarea" :rows="4" maxlength="500" :aria-invalid="Boolean(errors.address)" placeholder="مثال: تهران، خیابان ولیعصر..." autocomplete="street-address" @update:model-value="clearError('address')" />
           </div>
         </UFormField>
 
-        <UFormField label="لوگو یا تصویر کسب‌وکار (اختیاری)" class="company-field company-field--full" description="فرمت‌های JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت.">
-          <div class="company-upload">
+        <UFormField label="لوگو یا تصویر کسب‌وکار" required class="company-field company-field--full" :class="{ 'company-field--error': errors.imageUrl }" :error="errors.imageUrl" description="فرمت‌های JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت.">
+          <div class="company-upload" :class="{ 'company-upload--error': errors.imageUrl }">
             <div v-if="logoUrl" class="company-logo-preview">
               <img :src="logoUrl" alt="پیش‌نمایش لوگوی کسب‌وکار" class="company-logo-preview__image" />
             </div>
@@ -380,7 +399,8 @@ const onSubmit = async () => {
   width: 100%;
 }
 
-.company-input-shell--error :deep(input) {
+.company-input-shell--error :deep(input),
+.company-input-shell--error :deep(textarea) {
   border-color: var(--color-danger-fg);
   background: var(--color-danger-bg);
   box-shadow: 0 0 0 1px var(--color-danger-fg);
@@ -392,6 +412,12 @@ const onSubmit = async () => {
 
 .company-textarea-shell {
   width: 100%;
+}
+
+.company-upload--error :deep(.company-dropzone) {
+  border-color: var(--color-danger-fg);
+  background: var(--color-danger-bg);
+  box-shadow: 0 0 0 1px var(--color-danger-fg);
 }
 
 .company-input-icon {

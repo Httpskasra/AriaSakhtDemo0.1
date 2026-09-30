@@ -8,9 +8,34 @@ const props = defineProps<{
 const emit = defineEmits<{ navigate: [] }>();
 const route = useRoute();
 
+function normalizePath(path?: string) {
+  if (!path) return "";
+
+  const withoutQuery = path.split(/[?#]/)[0];
+  const normalized = withoutQuery.replace(/\/+$/, "");
+  return normalized || "/";
+}
+
+function matchesRoute(itemRoute: string, currentPath: string) {
+  // The dashboard entry is the root of the panel and must not stay active
+  // while the user is browsing one of its child pages.
+  if (itemRoute === "/dashboard") return currentPath === itemRoute;
+
+  return currentPath === itemRoute || currentPath.startsWith(`${itemRoute}/`);
+}
+
+const activeRoute = computed(() => {
+  const currentPath = normalizePath(route.path);
+
+  return props.items
+    .map((item) => normalizePath(item.route))
+    .filter((itemRoute) => itemRoute && matchesRoute(itemRoute, currentPath))
+    .sort((first, second) => second.length - first.length)[0] || null;
+});
+
 function isActive(item: SidebarNavItem) {
-  if (!item.route) return false;
-  return route.path === item.route || route.path.startsWith(`${item.route}/`);
+  const itemRoute = normalizePath(item.route);
+  return Boolean(itemRoute && itemRoute === activeRoute.value);
 }
 
 async function handleAction(item: SidebarNavItem) {
@@ -30,6 +55,7 @@ async function handleAction(item: SidebarNavItem) {
         :to="item.route"
         class="sidebar-nav__item"
         :class="{ 'sidebar-nav__item--active': isActive(item), 'sidebar-nav__item--logout': item.action }"
+        :aria-current="isActive(item) ? 'page' : undefined"
         @click="emit('navigate')">
         <span class="sidebar-nav__icon">
           <UIcon :name="item.icon" aria-hidden="true" />

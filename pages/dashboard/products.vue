@@ -1,7 +1,8 @@
 <template>
-    <div class="products-page" :class="{ 'products-page--editor': props.editorOnly }">
+    <NuxtPage v-if="showNestedEditor" />
+    <div v-else class="products-page" :class="{ 'products-page--editor': props.editorOnly }">
       <PanelPageHeader v-if="!props.editorOnly" title="محصولات" subtitle="محصولات، قیمت و موجودی فروشگاه را مدیریت کنید." icon="i-lucide-boxes">
-        <template #actions><UButton v-if="canCreate && canRead" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="navigateToProductEditor">محصول جدید</UButton></template>
+        <template #actions><UButton v-if="canCreate && canRead" :to="productEditorPath" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action">محصول جدید</UButton></template>
       </PanelPageHeader>
       <PanelPageHeader v-else title="ثبت محصول جدید" subtitle="محصول را با تمرکز کامل تکمیل کنید؛ اطلاعات فرم در طول کار به‌صورت خودکار ذخیره می‌شود." icon="i-lucide-package-plus">
         <template #actions>
@@ -73,7 +74,7 @@
           state="empty"
           :title="search ? 'محصولی با این جستجو پیدا نشد' : 'هنوز محصولی ثبت نشده است'"
           :message="search ? 'عبارت جستجو یا فیلترها را تغییر دهید.' : 'برای شروع، اولین محصول خود را ثبت کنید.'">
-          <UButton v-if="!search && canCreate" type="button" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action" @click="navigateToProductEditor">افزودن محصول</UButton>
+          <UButton v-if="!search && canCreate" :to="productEditorPath" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action">افزودن محصول</UButton>
         </SharedAsyncState>
         <div v-else class="products-table-wrap">
           <TableScrollContainer>
@@ -434,6 +435,12 @@ import { useApiClient } from '~/services/apiClient';
 
 const props = withDefaults(defineProps<{ sellerOnly?: boolean; editorOnly?: boolean }>(), { sellerOnly: false, editorOnly: false });
 const feedback = useFeedback();
+const route = useRoute();
+const normalizedRoutePath = computed(() => route.path.replace(/\/+$/, "") || "/");
+const productEditorPath = computed(() => props.sellerOnly ? "/dashboard/seller/products/new" : "/dashboard/products/new");
+const showNestedEditor = computed(() => (
+  !props.editorOnly && normalizedRoutePath.value === productEditorPath.value
+));
 
 useHead({
   title: props.editorOnly ? "داشبورد | ثبت محصول" : "داشبورد | محصولات",
@@ -876,14 +883,6 @@ function removeAttribute(index: number) {
 
 function editorListPath() {
   return props.sellerOnly ? "/dashboard/seller/products" : "/dashboard/products";
-}
-
-async function navigateToProductEditor() {
-  if (!canCreate.value) {
-    feedback.error("دسترسی کافی ندارید", "شما اجازه ثبت محصول ندارید.");
-    return;
-  }
-  await navigateTo(props.sellerOnly ? "/dashboard/seller/products/new" : "/dashboard/products/new");
 }
 
 async function cancelEditor() {

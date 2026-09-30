@@ -20,7 +20,7 @@
         </div>
       </NuxtLink>
 
-      <NuxtLink to="/contact" class="group relative flex flex-col justify-center overflow-hidden rounded-card bg-brand-blue p-8 text-white shadow-raised">
+      <NuxtLink to="/wholesale" class="group relative flex flex-col justify-center overflow-hidden rounded-card bg-brand-blue p-8 text-white shadow-raised">
         <UIcon name="i-lucide-sparkles" class="absolute -top-6 -left-6 size-32 rotate-12 text-white/10" />
         <h3 class="mb-4 text-2xl font-black leading-snug">درخواست تأمین از تجاریس</h3>
         <p class="mb-8 text-sm leading-relaxed text-slate-100">اگر کالای موردنیازتان را پیدا نکردید، درخواست تأمین خود را برای تیم تجاریس ارسال کنید.</p>

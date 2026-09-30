@@ -9,7 +9,7 @@
           <p class="text-base text-blue-100 leading-relaxed mb-8 opacity-90">فرقی نمی‌کند تولیدکننده هستید یا پیمانکار؛ تجاریس ابزارهای موردنیاز برای توسعه کسب‌وکار شما را فراهم کرده است.</p>
           <div class="flex flex-wrap justify-center lg:justify-start gap-4">
             <UButton to="/dashboard/company/register" size="xl" color="neutral" variant="solid">ثبت‌نام فروشندگان</UButton>
-            <UButton to="/contact" size="xl" color="neutral" variant="outline">مشاوره سازمانی</UButton>
+            <UButton to="/price-quote" size="xl" color="neutral" variant="outline">استعلام قیمت</UButton>
           </div>
         </div>
 

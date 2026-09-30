@@ -165,27 +165,40 @@
             </div>
           </div>
           <UForm :state="form" @submit.prevent="saveCompany" class="company-edit-form">
-            <UFormField label="نام" name="name">
-              <UInput v-model="form.name" required />
+            <div v-if="Object.keys(formErrors).length" class="company-form-alert" role="alert">
+              <UIcon name="i-lucide-alert-circle" aria-hidden="true" />
+              لطفاً همه فیلدهای مشخص‌شده را کامل کنید.
+            </div>
+
+            <UFormField label="نوع شخصیت" name="sellerType" required :error="formErrors.sellerType">
+              <AppSelect v-model="form.sellerType" :items="sellerTypeOptions" value-key="value" label-key="label" @update:model-value="clearFormError('sellerType')" />
             </UFormField>
 
-            <UFormField label="ایمیل" name="email">
-              <UInput v-model="form.email" type="email" required />
+            <UFormField label="نام یا نام شرکت" name="name" required :error="formErrors.name">
+              <UInput v-model="form.name" required :aria-invalid="Boolean(formErrors.name)" @update:model-value="clearFormError('name')" />
             </UFormField>
 
-            <UFormField label="تلفن" name="phone">
-              <UInput v-model="form.phone" />
+            <UFormField label="ایمیل" name="email" required :error="formErrors.email">
+              <UInput v-model="form.email" type="email" required :aria-invalid="Boolean(formErrors.email)" @update:model-value="clearFormError('email')" />
             </UFormField>
 
-            <UFormField label="شماره ثبت" name="registrationNumber" required>
-              <UInput v-model="form.registrationNumber" required inputmode="numeric" />
+            <UFormField label="تلفن" name="phone" required :error="formErrors.phone">
+              <UInput v-model="form.phone" required :aria-invalid="Boolean(formErrors.phone)" @update:model-value="clearFormError('phone')" />
             </UFormField>
 
-            <UFormField label="آدرس" name="address">
-              <UTextarea v-model="form.address" />
+            <UFormField v-if="form.sellerType === 'legal'" label="شماره ثبت" name="registrationNumber" required :error="formErrors.registrationNumber">
+              <UInput v-model="form.registrationNumber" required inputmode="numeric" :aria-invalid="Boolean(formErrors.registrationNumber)" @update:model-value="clearFormError('registrationNumber')" />
             </UFormField>
 
-            <div class="company-upload-field">
+            <UFormField label="کد ملی یا شناسه ملی" name="nationalId" required :error="formErrors.nationalId">
+              <UInput v-model="form.nationalId" required inputmode="numeric" maxlength="10" :aria-invalid="Boolean(formErrors.nationalId)" @update:model-value="clearFormError('nationalId')" />
+            </UFormField>
+
+            <UFormField label="آدرس دفتر مرکزی" name="address" required :error="formErrors.address">
+              <UTextarea v-model="form.address" required maxlength="500" :aria-invalid="Boolean(formErrors.address)" @update:model-value="clearFormError('address')" />
+            </UFormField>
+
+            <div class="company-upload-field" :class="{ 'company-upload-field--error': formErrors.image }">
               <label for="company-logo-input">لوگوی شرکت</label>
               <input id="company-logo-input" ref="fileInputRef" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp" @change="onFileChange" />
               <div class="company-upload-control">
@@ -194,6 +207,7 @@
               </div>
               <img v-if="imagePreview" :src="imagePreview" alt="پیش‌نمایش لوگوی شرکت" class="company-logo-preview" />
               <p>فرمت JPG، PNG یا WEBP؛ حداکثر ۱۰ مگابایت</p>
+              <p v-if="formErrors.image" class="company-form-error">{{ formErrors.image }}</p>
             </div>
 
             <div class="company-modal-actions">
@@ -264,7 +278,7 @@
 
 <script setup lang="ts">
 const feedback = useFeedback();
-import { computed, ref, onMounted, onUnmounted, watch } from "vue";
+import { computed, reactive, ref, onMounted, onUnmounted, watch } from "vue";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
 import { toUserFacingError } from "~/services/apiClient";
@@ -300,15 +314,34 @@ const selectedImage = ref<File | null>(null);
 const imagePreview = ref("");
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const form = ref({
+type CompanyForm = {
+  name: string;
+  sellerType: "legal" | "individual";
+  email: string;
+  phone: string;
+  registrationNumber: string;
+  address: string;
+  nationalId: string;
+  image: string;
+};
+
+const emptyCompanyForm = (): CompanyForm => ({
   name: "",
+  sellerType: "legal",
   email: "",
   phone: "",
   registrationNumber: "",
   address: "",
-  // status: "",
+  nationalId: "",
   image: "",
 });
+
+const form = ref<CompanyForm>(emptyCompanyForm());
+const formErrors = reactive<Record<string, string>>({});
+const sellerTypeOptions = [
+  { label: "شخص حقوقی", value: "legal" },
+  { label: "شخص حقیقی", value: "individual" },
+] as const;
 
 // small map to track loading state per-company when changing status
 const statusLoading = ref<Record<string, boolean>>({});
@@ -451,28 +484,57 @@ function applyCompanyFilters() {
 
 watch([sort, limit], applyCompanyFilters);
 
+function clearFormErrors() {
+  Object.keys(formErrors).forEach((key) => delete formErrors[key]);
+}
+
+function clearFormError(field: string) {
+  delete formErrors[field];
+}
+
+function validateCompanyForm() {
+  clearFormErrors();
+  const current = form.value;
+  if (!current.name.trim()) formErrors.name = "نام یا نام شرکت الزامی است.";
+  if (!current.email.trim()) formErrors.email = "ایمیل الزامی است.";
+  else if (!/^\S+@\S+\.\S+$/.test(current.email.trim())) formErrors.email = "ایمیل معتبر وارد کنید.";
+  if (!current.phone.trim()) formErrors.phone = "شماره تماس الزامی است.";
+  if (!current.address.trim()) formErrors.address = "آدرس دفتر مرکزی الزامی است.";
+  if (!current.nationalId.trim()) formErrors.nationalId = "کد ملی یا شناسه ملی الزامی است.";
+  else if (!/^[0-9۰-۹]{10}$/.test(current.nationalId.trim())) formErrors.nationalId = "کد ملی یا شناسه ملی باید ۱۰ رقم باشد.";
+  if (current.sellerType === "legal" && !current.registrationNumber.trim()) {
+    formErrors.registrationNumber = "شماره ثبت برای شخص حقوقی الزامی است.";
+  }
+  if (!current.image.trim() && !selectedImage.value) {
+    formErrors.image = "لوگوی شرکت الزامی است.";
+  }
+  return Object.keys(formErrors).length === 0;
+}
+
 function openModal(company: any | null = null) {
   closeStatusMenu();
+  clearFormErrors();
   if (company) {
     if (!canUpdate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ویرایش ندارید.");
     editMode.value = true;
     selectedId.value = companyKey(company);
-    form.value = { ...company };
+    form.value = {
+      name: company.name || "",
+      sellerType: company.sellerType || "legal",
+      email: company.email || "",
+      phone: company.phone || "",
+      registrationNumber: company.registrationNumber || "",
+      address: company.address || "",
+      nationalId: company.nationalId || "",
+      image: company.image || "",
+    };
     selectedImage.value = null;
     imagePreview.value = company.image || "";
   } else {
     if (!canCreate.value) return feedback.error("دسترسی کافی ندارید", "شما اجازه ایجاد ندارید.");
     editMode.value = false;
     selectedId.value = null;
-    form.value = {
-      name: "",
-      email: "",
-      phone: "",
-      registrationNumber: "",
-      address: "",
-      // status: "",
-      image: "",
-    };
+    form.value = emptyCompanyForm();
     selectedImage.value = null;
     imagePreview.value = "";
   }
@@ -522,16 +584,14 @@ function onFileChange(e: Event) {
     }
     selectedImage.value = file;
     imagePreview.value = URL.createObjectURL(file);
+    clearFormError("image");
   }
 }
 
 const saveCompany = async () => {
   if (saving.value) return;
+  if (!validateCompanyForm()) return;
   try {
-    if (!form.value.name.trim() || !form.value.email.trim()) {
-      feedback.error("اطلاعات ناقص", "نام و ایمیل شرکت الزامی هستند.");
-      return;
-    }
     saving.value = true;
     // Only persist server-issued URLs. Never send the local preview/data URL
     // to the API because it is not a durable company image reference.
@@ -550,10 +610,12 @@ const saveCompany = async () => {
       // فیلد image را حذف می‌کنیم تا لوگوی قبلی ناخواسته پاک نشود.
       const cleanData: Record<string, string | undefined> = {
         name: form.value.name.trim(),
+        sellerType: form.value.sellerType,
         email: form.value.email.trim(),
-        phone: form.value.phone.trim() || undefined,
-        registrationNumber: form.value.registrationNumber.trim(),
-        address: form.value.address.trim() || undefined,
+        phone: form.value.phone.trim(),
+        registrationNumber: form.value.sellerType === "legal" ? form.value.registrationNumber.trim() : undefined,
+        address: form.value.address.trim(),
+        nationalId: form.value.nationalId.trim(),
       };
       if (imageUrl) cleanData.image = imageUrl;
       //console.log("PATCH id:", selectedId.value); // برای دیباگ
@@ -561,11 +623,13 @@ const saveCompany = async () => {
     } else {
       await createCompany({
         name: form.value.name.trim(),
+        sellerType: form.value.sellerType,
         email: form.value.email.trim(),
-        phone: form.value.phone.trim() || undefined,
-        registrationNumber: form.value.registrationNumber.trim(),
-        address: form.value.address.trim() || undefined,
-        image: imageUrl,
+        phone: form.value.phone.trim(),
+        registrationNumber: form.value.sellerType === "legal" ? form.value.registrationNumber.trim() : undefined,
+        address: form.value.address.trim(),
+        nationalId: form.value.nationalId.trim(),
+        image: imageUrl!,
       });
     }
     await fetchCompanies();
@@ -664,6 +728,10 @@ watch(isReady, (ready) => { if (ready) fetchCompanies(); }, { once: true });
 .company-modal-heading p, .company-details-modal__eyebrow { margin:0 0 .2rem; color:var(--color-brand-blue); font-size:.72rem; font-weight:800; }
 .company-modal-heading h2, .company-details-modal h2 { margin:0; color:var(--color-text-heading); font-size:1.15rem; font-weight:800; }
 .company-edit-form { display:grid; gap:1rem; }
+.company-form-alert { display:flex; align-items:center; gap:.45rem; padding:.7rem .8rem; border:1px solid var(--color-danger-border); border-radius:var(--radius-field); color:var(--color-danger-fg); background:var(--color-danger-bg); font-size:.78rem; font-weight:700; }
+.company-form-error { margin:0 !important; color:var(--color-danger-fg) !important; font-size:.72rem !important; font-weight:700; }
+.company-upload-field--error > label { color:var(--color-danger-fg); }
+.company-upload-field--error .company-upload-control { border-color:var(--color-danger-fg); background:var(--color-danger-bg); box-shadow:0 0 0 1px var(--color-danger-fg); }
 .company-modal-actions, .company-details-modal__actions { display:flex; justify-content:flex-start; gap:.55rem; padding-top:1rem; border-top:1px solid var(--color-border); }
 .company-details-modal__hero { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-bottom:1rem; border-bottom:1px solid var(--color-border); }
 .company-details-modal__identity { display:flex; align-items:center; gap:.8rem; min-width:0; }

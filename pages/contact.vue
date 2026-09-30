@@ -67,7 +67,7 @@ useHead({ title: 'تماس با تجاریس' });
     <PublicPageHeader
       icon="i-lucide-message-circle"
       title="تماس با تجاریس"
-      description="برای دریافت مشاوره، استعلام قیمت یا پیگیری درخواست‌ها، پیام خود را برای ما ارسال کنید."
+      description="برای ارتباط مستقیم با تیم تجاریس، پیام عمومی خود را از این صفحه ارسال کنید. برای مسیرهای تخصصی از پشتیبانی، استعلام قیمت یا گزارش تخلف استفاده کنید."
     />
 
     <main class="section-container contact-page__content">
@@ -195,7 +195,13 @@ a.contact-item:hover { border-color: var(--ui-color-primary-300); background: va
 .contact-form__message { grid-column: 1 / -1; }
 .contact-input, .contact-textarea { width: 100%; }
 :deep(.contact-input input), :deep(.contact-textarea textarea) { min-height: 2.875rem; border: 1px solid var(--gray-300); border-radius: var(--radius-field); background: var(--color-bg-surface); color: var(--color-text-heading); transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease; }
-:deep(.contact-input input) { padding-inline: .875rem; }
+:deep(.contact-input input) {
+  /* Keep a dedicated logical area for the leading icon in RTL and LTR. */
+  padding-block: .5rem;
+  padding-inline-start: 2.75rem;
+  padding-inline-end: .875rem;
+}
+:deep(.contact-input > span) { pointer-events: none; }
 :deep(.contact-textarea textarea) { padding: .75rem .875rem; resize: vertical; }
 :deep(.contact-input input:focus-visible), :deep(.contact-textarea textarea:focus-visible) { border-color: var(--color-brand-blue); outline: none; box-shadow: var(--focus-ring); }
 :deep(.contact-input input:hover), :deep(.contact-textarea textarea:hover) { border-color: var(--gray-400); background: var(--color-bg-light); }

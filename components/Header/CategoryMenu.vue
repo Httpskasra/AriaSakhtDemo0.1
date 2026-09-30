@@ -8,7 +8,9 @@ const button = ref<HTMLButtonElement | null>(null);
 const menu = ref<HTMLElement | null>(null);
 const { categories, loading, error, load } = useCategories();
 const route = useRoute();
-await load().catch(() => undefined);
+// Categories are shared with AppHeader. Do not make every public route wait for
+// this request before it can render; load() is deduplicated by the composable.
+void load().catch(() => undefined);
 
 const topLevelCategories = computed(() => categories.value.filter(category => !getParentCategoryId(category)));
 const childrenOf = (category: Category) => categories.value.filter(child => getParentCategoryId(child) === getCategoryId(category));
@@ -27,7 +29,11 @@ function handleOutsidePointer(event: PointerEvent) {
   if (isOpen.value && !menu.value?.contains(event.target as Node) && !button.value?.contains(event.target as Node)) closeMenu(false);
 }
 watch(isOpen, async open => {
-  if (open) { await nextTick(); menu.value?.querySelector<HTMLElement>("a[href], button:not([disabled])")?.focus(); }
+  if (open) {
+    if (!categories.value.length && !loading.value) await load().catch(() => undefined);
+    await nextTick();
+    menu.value?.querySelector<HTMLElement>("a[href], button:not([disabled])")?.focus();
+  }
 });
 onMounted(() => document.addEventListener("pointerdown", handleOutsidePointer));
 onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsidePointer));
