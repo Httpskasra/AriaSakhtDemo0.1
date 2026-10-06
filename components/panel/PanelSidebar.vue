@@ -1,12 +1,18 @@
 <script setup lang="ts">
-const props = defineProps<{ modelValue: boolean; collapsed?: boolean; identity: { name: string; subtitle?: string }; items: import("~/types/sidebar").SidebarNavItem[] }>();
+const props = defineProps<{
+  modelValue: boolean;
+  collapsed?: boolean;
+  identity: { name: string; subtitle?: string };
+  items: import("~/types/sidebar").SidebarNavItem[];
+  currentPath?: string;
+}>();
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
 </script>
 
 <template>
 <div class="panel-sidebar" :class="{ 'panel-sidebar--collapsed': props.collapsed }">
   <AppDrawer :model-value="props.modelValue" persistent-on-desktop label="منوی پنل" width="100%" @update:model-value="emit('update:modelValue', $event)">
-    <SidebarPanel :items="items" :identity="identity" @navigate="emit('update:modelValue', false)" />
+    <SidebarPanel :items="items" :identity="identity" :current-path="currentPath" @navigate="emit('update:modelValue', false)" />
   </AppDrawer>
 </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="panel-layout" :class="{ 'panel-layout--collapsed': isSidebarCollapsed }">
     <PanelHeader :title="panelTitle" :identity="identity" :collapsed="isSidebarCollapsed" @open-menu="isSidebarOpen = true" @toggle-sidebar="isSidebarCollapsed = !isSidebarCollapsed" />
-    <PanelSidebar v-model="isSidebarOpen" :collapsed="isSidebarCollapsed" :items="navItems" :identity="identity" />
+    <PanelSidebar v-model="isSidebarOpen" :collapsed="isSidebarCollapsed" :items="navItems" :identity="identity" :current-path="route.path" />
     <main class="panel-layout__main">
       <div class="panel-layout__content">
         <Suspense>
@@ -18,6 +18,7 @@
 <script setup lang="ts">
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(false);
+const route = useRoute();
 const { identity, navItems, panelTitle } = usePanelNavigation();
 </script>
 

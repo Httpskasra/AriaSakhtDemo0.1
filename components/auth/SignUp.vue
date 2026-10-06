@@ -54,7 +54,10 @@
             required
             class="rules-checkbox" />
           <span class="rules-text">
-            شرایط و قوانین را مطالعه کردم و قبول دارم
+            <NuxtLink to="/terms" class="rules-link" @click.stop>
+              شرایط و قوانین
+            </NuxtLink>
+            را مطالعه کردم و قبول دارم
           </span>
         </label>
 
@@ -165,5 +168,8 @@ const closeModal = () => {
 <style scoped>
 .rules-label { display:flex; width:100%; align-items:center; gap:.5rem; cursor:pointer; }
 .rules-checkbox { accent-color:var(--color-brand-blue); cursor:pointer; }
-.rules-text { margin-inline-start:.125rem; color:var(--color-text-body); font-size:.8rem; }
+.rules-text { margin-inline-start:.125rem; color:var(--color-text-body); font-size:.8rem; line-height:1.8; }
+.rules-link { color:var(--color-brand-blue); text-decoration:underline; text-decoration-thickness:.08em; text-underline-offset:.18em; }
+.rules-link:hover { color:var(--color-brand-blue-hover); }
+.rules-link:focus-visible { border-radius:.2rem; outline:2px solid var(--color-brand-blue); outline-offset:.15rem; }
 </style>

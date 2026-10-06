@@ -602,6 +602,127 @@
     }
   }
 
+  /*
+   * Global toast contract.
+   *
+   * Nuxt UI renders notifications through a portal, so page-level styles cannot
+   * reliably fix them. Keep the viewport narrow and the content column explicit:
+   * this prevents long Persian titles/descriptions from sharing a line or
+   * visually colliding with the close action.
+   */
+  .tejaris-toaster__viewport {
+    top: max(1rem, env(safe-area-inset-top));
+    right: max(1rem, env(safe-area-inset-right));
+    left: auto;
+    width: min(28rem, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+    gap: .75rem;
+    direction: rtl;
+    pointer-events: none;
+    z-index: 1100;
+  }
+
+  .tejaris-toaster__base {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    pointer-events: auto;
+  }
+
+  .tejaris-toast {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .9rem 1rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-surface);
+    color: var(--color-text-heading);
+    box-shadow: var(--shadow-overlay);
+    direction: rtl;
+    font-family: var(--font-num);
+    text-align: right;
+    isolation: isolate;
+  }
+
+  .tejaris-toast__content {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: .25rem;
+  }
+
+  .tejaris-toast__title,
+  .tejaris-toast__description {
+    display: block;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .tejaris-toast__title {
+    color: var(--color-text-heading);
+    font-size: .95rem;
+    font-weight: 800;
+    line-height: 1.65;
+  }
+
+  .tejaris-toast__description {
+    color: var(--color-text-body);
+    font-size: .84rem;
+    font-weight: 500;
+    line-height: 1.85;
+  }
+
+  .tejaris-toast__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+
+  .tejaris-toast .tejaris-toast__close {
+    display: inline-flex;
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    margin: -.15rem 0 0;
+    border-radius: var(--radius-compact-list-item);
+    color: var(--color-text-body);
+  }
+
+  .tejaris-toast .tejaris-toast__close:hover,
+  .tejaris-toast .tejaris-toast__close:focus-visible {
+    color: var(--color-text-heading);
+    background: var(--color-bg-light);
+  }
+
+  .tejaris-toast__progress {
+    background: var(--color-brand-blue);
+  }
+
+  @media (max-width: 640px) {
+    .tejaris-toaster__viewport {
+      right: max(.5rem, env(safe-area-inset-right));
+      width: calc(100vw - 1rem);
+      max-width: calc(100vw - 1rem);
+    }
+
+    .tejaris-toast {
+      padding: .8rem .85rem;
+    }
+
+    .tejaris-toast__title { font-size: .9rem; }
+    .tejaris-toast__description { font-size: .8rem; }
+  }
+
   .premium-card:hover {
     box-shadow: var(--shadow-industrial);
     transform: translateY(-4px);

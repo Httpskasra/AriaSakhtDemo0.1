@@ -4,6 +4,7 @@ import type { SidebarNavItem } from "~/types/sidebar";
 defineProps<{
   items: SidebarNavItem[];
   identity?: { name: string; subtitle?: string };
+  currentPath?: string;
 }>();
 
 const emit = defineEmits<{ navigate: [] }>();
@@ -12,7 +13,7 @@ const emit = defineEmits<{ navigate: [] }>();
 <template>
   <div class="sidebar-panel">
     <SidebarIdentity v-if="identity" v-bind="identity" />
-    <SidebarNav :items="items" @navigate="emit('navigate')" />
+    <SidebarNav :items="items" :current-path="currentPath" @navigate="emit('navigate')" />
   </div>
 </template>
 

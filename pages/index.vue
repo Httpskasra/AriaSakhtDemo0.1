@@ -8,7 +8,7 @@
 
     <BannerArea />
 
-    <div class="section-container">
+    <div v-if="featuredProductsError || featuredProductsLoading || featuredProducts?.length" class="section-container landing-page__featured-products">
       <SharedAsyncState
         v-if="featuredProductsError"
         state="error"

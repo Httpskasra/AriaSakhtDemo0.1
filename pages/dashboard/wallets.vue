@@ -64,22 +64,27 @@
       </div>
 
       <div class="withdrawal-card panel-surface">
-        <div class="section-heading">
+        <div class="section-heading withdrawal-heading">
           <div><span class="eyebrow">تسویه موجودی</span><h2>درخواست برداشت</h2><p>پس از ثبت، مبلغ تا پایان بررسی در موجودی قابل برداشت رزرو می‌شود.</p></div>
-          <UIcon name="i-lucide-banknote-arrow-down" class="withdrawal-heading-icon" aria-hidden="true" />
+          <div class="withdrawal-heading-icon" aria-hidden="true"><UIcon name="i-lucide-banknote-arrow-down" /></div>
+        </div>
+        <div v-if="wallet" class="withdrawal-available" role="status">
+          <div><span>موجودی قابل برداشت</span><strong class="ltr">{{ formatAmount(wallet.balance) }} ریال</strong></div>
+          <UIcon name="i-lucide-shield-check" aria-hidden="true" />
         </div>
         <form v-if="canUpdate" class="withdrawal-form" @submit.prevent="submitWithdrawal">
           <UFormField label="حساب مقصد" required>
-            <AppSelect v-model="withdrawalForm.bankAccountId" :items="approvedBankOptions" value-key="value" label-key="label" placeholder="حساب تأییدشده را انتخاب کنید" :disabled="!approvedBankOptions.length || withdrawalLoading" />
+            <AppSelect v-model="withdrawalForm.bankAccountId" class="withdrawal-select" :items="approvedBankOptions" value-key="value" label-key="label" placeholder="حساب تأییدشده را انتخاب کنید" :disabled="!approvedBankOptions.length || withdrawalLoading" />
           </UFormField>
-          <UFormField label="مبلغ برداشت (ریال)" required hint="مبلغ از موجودی قابل برداشت کسر و تا بررسی نهایی رزرو می‌شود.">
+          <UFormField label="مبلغ برداشت (ریال)" required>
             <UInput v-model.number="withdrawalForm.amount" type="number" min="1" :max="wallet?.balance || 0" inputmode="numeric" :disabled="!approvedBankOptions.length || withdrawalLoading" />
+            <p class="withdrawal-field-help">مبلغ از موجودی قابل برداشت کسر و تا پایان بررسی رزرو می‌شود.</p>
           </UFormField>
           <UFormField label="شرح (اختیاری)">
             <UTextarea v-model="withdrawalForm.description" :rows="2" maxlength="240" placeholder="مثلاً تسویه فروش این ماه" :disabled="withdrawalLoading" />
           </UFormField>
           <p v-if="withdrawalError" class="form-error" role="alert">{{ withdrawalError }}</p>
-          <UButton type="submit" color="error" icon="i-lucide-send" :loading="withdrawalLoading" :disabled="!approvedBankOptions.length">ثبت درخواست برداشت</UButton>
+          <UButton type="submit" color="primary" icon="i-lucide-send" :loading="withdrawalLoading" :disabled="!approvedBankOptions.length || withdrawalLoading">ثبت درخواست برداشت</UButton>
           <p v-if="!approvedBankOptions.length" class="muted-note">برای شروع برداشت، ابتدا یک حساب بانکی ثبت کنید و منتظر تأیید مدیریت بمانید.</p>
         </form>
         <p v-else class="muted-note">مجوز ثبت درخواست برداشت برای این حساب فعال نیست.</p>
@@ -378,10 +383,19 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 .bank-empty > :first-child { width: 2rem; height: 2rem; color: var(--color-brand-blue); }
 .bank-empty strong { color: var(--color-text-heading); }
 .bank-empty p { max-width: 28rem; margin: 0; }
-.withdrawal-heading-icon { width: 2rem; height: 2rem; color: var(--color-brand-blue); }
+.withdrawal-heading { margin-bottom: .85rem; }
+.withdrawal-heading-icon { display: grid; flex: 0 0 auto; width: 3rem; height: 3rem; place-items: center; border: 1px solid var(--color-info-border); border-radius: var(--radius-compact-list-item); color: var(--color-brand-blue); background: var(--color-info-bg); }
+.withdrawal-heading-icon :deep(svg) { width: 1.5rem; height: 1.5rem; }
+.withdrawal-available { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem .85rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-info-bg); }
+.withdrawal-available div { display: grid; gap: .2rem; }
+.withdrawal-available span { font-size: .72rem; }
+.withdrawal-available strong { color: var(--color-text-heading); font-size: .95rem; }
+.withdrawal-available > :last-child { flex: 0 0 auto; width: 1.25rem; height: 1.25rem; color: var(--color-brand-blue); }
 .withdrawal-form { display: grid; gap: .85rem; }
-.withdrawal-form > :deep(.app-select), .withdrawal-form > :deep(.form-field) { width: 100%; }
-.withdrawal-form > :deep(button) { justify-self: start; }
+.withdrawal-form :deep(.app-select) { display: flex; width: 100%; max-width: none; }
+.withdrawal-form :deep(.app-select__control), .withdrawal-form :deep(input), .withdrawal-form :deep(textarea) { width: 100%; }
+.withdrawal-form :deep(button) { justify-self: start; min-height: 2.75rem; }
+.withdrawal-field-help { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .72rem; line-height: 1.7; }
 .withdrawal-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem 1rem; padding: .85rem 0; border-bottom: 1px solid var(--color-border); }
 .withdrawal-item:last-child { border-bottom: 0; }
 .withdrawal-item > div { display: grid; gap: .25rem; }
@@ -398,7 +412,8 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 .permission-state > :first-child { color: var(--color-warning-fg); font-size: 1.4rem; }
 .permission-state strong { color: var(--color-text-heading); }
 .permission-state p { max-width: 34rem; margin: 0; font-size: .85rem; }
-.section-heading { margin-bottom: 1rem; }
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.section-heading > div { min-width: 0; }
 .ltr { direction: ltr; text-align: right; }
 .long-text { display: block; max-width: 18rem; overflow: hidden; text-overflow: ellipsis; }
 .transactions-table :deep(table) { min-width: 52rem; }
@@ -429,5 +444,8 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
   .bank-account-item__numbers { flex-direction: column; align-items: flex-start; }
   .withdrawal-item { grid-template-columns: 1fr; }
   .withdrawal-item > div:last-of-type { justify-items: start; }
+  .section-heading { gap: .75rem; }
+  .withdrawal-heading-icon { width: 2.75rem; height: 2.75rem; }
+  .withdrawal-form :deep(button) { width: 100%; }
 }
 </style>

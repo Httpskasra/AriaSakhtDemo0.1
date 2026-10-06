@@ -1,33 +1,73 @@
 <template>
-  <section class="py-16">
-    <div class="section-container grid gap-6 md:grid-cols-3">
+  <section class="landing-promos" aria-label="مسیرهای خرید و تأمین">
+    <div class="section-container landing-promos__grid">
       <NuxtLink
         to="/products"
-        class="group relative h-(--banner-height-mobile) overflow-hidden rounded-card shadow-raised transition-transform duration-700 hover:-translate-y-1 md:col-span-2 md:h-(--banner-height-desktop)"
+        class="promo-card promo-card--products group md:col-span-2"
       >
-        <img
-          src="/banner/hBanner.webp"
-          alt="کاتالوگ کالاهای صنعتی و ساختمانی در پلتفرم تجاریس"
-          class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        <div class="absolute inset-0 flex items-end bg-linear-to-l from-slate-900 via-transparent to-transparent p-6 sm:p-8 md:items-center md:pr-12">
-          <div class="max-w-xs">
-            <span class="mb-4 inline-flex items-center rounded-field bg-brand-yellow px-3 py-1 text-xs font-black uppercase tracking-wider text-slate-900">کاتالوگ تجاریس</span>
-            <h3 class="mb-2 text-2xl font-black leading-tight text-white sm:text-3xl">مشاهده کالاهای صنعتی و ساختمانی</h3>
-            <p class="mb-6 text-sm leading-relaxed text-slate-200 sm:text-base">کاتالوگ کالاهای ثبت‌شده در بازار تجاریس را بررسی کنید.</p>
-            <span class="inline-flex items-center rounded-brand bg-white px-6 py-2 font-bold text-slate-900">مشاهده کالاها</span>
-          </div>
+        <div class="promo-card__visual" aria-hidden="true">
+          <NuxtImg
+            src="/banner/v-banner.webp"
+            alt=""
+            class="promo-card__image"
+            loading="lazy"
+          />
+        </div>
+        <div class="promo-card__scrim" aria-hidden="true"></div>
+        <div class="promo-card__content">
+          <span class="promo-card__eyebrow">کاتالوگ تجاریس</span>
+          <h2>مشاهده کالاهای صنعتی و ساختمانی</h2>
+          <p>کالاهای ثبت‌شده در بازار تجاریس را سریع‌تر پیدا و بررسی کنید.</p>
+          <span class="promo-card__action">مشاهده کالاها <UIcon name="i-lucide-arrow-left" aria-hidden="true" /></span>
         </div>
       </NuxtLink>
 
-      <NuxtLink to="/wholesale" class="group relative flex flex-col justify-center overflow-hidden rounded-card bg-brand-blue p-8 text-white shadow-raised">
-        <UIcon name="i-lucide-sparkles" class="absolute -top-6 -left-6 size-32 rotate-12 text-white/10" />
-        <h3 class="mb-4 text-2xl font-black leading-snug">درخواست تأمین از تجاریس</h3>
-        <p class="mb-8 text-sm leading-relaxed text-slate-100">اگر کالای موردنیازتان را پیدا نکردید، درخواست تأمین خود را برای تیم تجاریس ارسال کنید.</p>
-        <span class="inline-flex w-fit items-center rounded-brand bg-white px-6 py-3 font-bold text-brand-blue transition-colors hover:bg-slate-50">
-          ثبت درخواست تأمین
-        </span>
+      <NuxtLink to="/wholesale" class="promo-card promo-card--rfq group">
+        <UIcon name="i-lucide-handshake" class="promo-card__accent-icon" aria-hidden="true" />
+        <div class="promo-card__content">
+          <span class="promo-card__eyebrow">تأمین پروژه</span>
+          <h2>درخواست تأمین از تجاریس</h2>
+          <p>اگر کالای موردنیازتان را پیدا نکردید، درخواست تأمین خود را برای تیم تجاریس ارسال کنید.</p>
+          <span class="promo-card__action">ثبت درخواست تأمین <UIcon name="i-lucide-arrow-left" aria-hidden="true" /></span>
+        </div>
       </NuxtLink>
     </div>
   </section>
 </template>
+
+<style scoped>
+.landing-promos { padding-block:clamp(2rem, 4vw, 3.5rem); }
+.landing-promos__grid { display:grid; grid-template-columns:1fr; gap:1rem; }
+.promo-card { position:relative; display:flex; min-height:16.5rem; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.promo-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
+.promo-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 30%, transparent); outline-offset:3px; }
+.promo-card--products { background:var(--color-text-heading); }
+.promo-card--rfq { padding:clamp(1.35rem, 3vw, 2rem); background:var(--color-brand-blue); }
+.promo-card__visual { position:absolute; inset-block:0; inset-inline-start:0; z-index:-2; width:46%; overflow:hidden; }
+.promo-card__image { display:block; width:100%; height:100%; object-fit:cover; object-position:left center; }
+.promo-card__scrim { position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, color-mix(in srgb, var(--color-text-heading) 40%, transparent), var(--color-text-heading) 58%); }
+.promo-card__content { position:relative; z-index:1; width:min(100%, 31rem); padding:clamp(1.35rem, 3vw, 2.25rem); direction:rtl; }
+.promo-card--rfq .promo-card__content { padding:0; }
+.promo-card__eyebrow { display:inline-flex; min-height:1.7rem; align-items:center; margin-bottom:.75rem; padding:.2rem .55rem; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-brand-yellow) 90%, white); color:var(--color-text-heading); font-size:.68rem; font-weight:900; }
+.promo-card h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.25rem, 2.5vw, 1.85rem); font-weight:900; line-height:1.45; }
+.promo-card p { max-width:29rem; margin:.6rem 0 1.15rem; color:color-mix(in srgb, var(--color-bg-surface) 84%, transparent); font-size:.8rem; line-height:1.9; }
+.promo-card__action { display:inline-flex; min-height:2.5rem; align-items:center; gap:.4rem; padding:.45rem .8rem; border-radius:var(--radius-compact-list-item); background:var(--color-bg-surface); color:var(--color-text-heading); font-size:.76rem; font-weight:900; }
+.promo-card__action :deep(svg) { width:1rem; color:var(--color-brand-blue); }
+.promo-card--rfq .promo-card__action { color:var(--color-brand-blue); }
+.promo-card__accent-icon { position:absolute; inset-block-start:-1.25rem; inset-inline-start:-1.25rem; z-index:0; width:7.5rem; height:7.5rem; color:color-mix(in srgb, var(--color-bg-surface) 13%, transparent); transform:rotate(-12deg); }
+
+@media (min-width: 768px) {
+  .landing-promos__grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .promo-card { min-height:17.5rem; }
+}
+
+@media (max-width: 767px) {
+  .promo-card__visual { width:100%; height:8.5rem; inset-block-start:auto; opacity:.32; }
+  .promo-card__scrim { background:linear-gradient(180deg, var(--color-text-heading) 10%, color-mix(in srgb, var(--color-text-heading) 86%, transparent) 100%); }
+  .promo-card__content { align-self:flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-card { transition:none; }
+}
+</style>

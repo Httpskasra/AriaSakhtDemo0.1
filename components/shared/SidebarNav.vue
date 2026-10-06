@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import type { SidebarNavItem } from "~/types/sidebar";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   items: SidebarNavItem[];
-}>();
+  /**
+   * The layout owns the current route and passes it down explicitly. This
+   * keeps active navigation reactive while the persistent panel layout stays
+   * mounted during client-side navigation.
+   */
+  currentPath?: string;
+}>(), {
+  currentPath: undefined,
+});
 
 const emit = defineEmits<{ navigate: [] }>();
 const route = useRoute();
+
+const resolvedCurrentPath = computed(() => props.currentPath || route.path);
 
 function normalizePath(path?: string) {
   if (!path) return "";
@@ -25,7 +35,7 @@ function matchesRoute(itemRoute: string, currentPath: string) {
 }
 
 const activeRoute = computed(() => {
-  const currentPath = normalizePath(route.path);
+  const currentPath = normalizePath(resolvedCurrentPath.value);
 
   return props.items
     .map((item) => normalizePath(item.route))

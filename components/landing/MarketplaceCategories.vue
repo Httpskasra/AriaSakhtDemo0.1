@@ -1,16 +1,16 @@
 <template>
-  <section aria-labelledby="marketplace-categories-heading" class="py-10 sm:py-12">
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <section aria-labelledby="marketplace-categories-heading" class="marketplace-categories">
+    <div class="marketplace-categories__heading">
       <div>
-        <h2 id="marketplace-categories-heading" class="mb-2 text-2xl font-black text-slate-800 md:text-3xl">دسته‌بندی‌های صنعتی</h2>
-        <p class="text-sm text-slate-600 md:text-base">دسترسی سریع به کالاهای ساختمانی و تجهیزات فنی</p>
+        <h2 id="marketplace-categories-heading">دسته‌بندی‌های صنعتی</h2>
+        <p>دسترسی سریع به کالاهای ساختمانی و تجهیزات فنی</p>
       </div>
       <UButton to="/products" variant="outline" color="primary" trailing-icon="i-lucide-arrow-left" label="مشاهده همه دسته‌ها" />
     </div>
 
-    <div v-if="loading" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-      <div v-for="index in 6" :key="index" class="category-skeleton premium-card p-5">
-        <USkeleton class="mx-auto mb-4 size-16 rounded-card" />
+    <div v-if="loading" class="marketplace-categories__grid">
+      <div v-for="index in 6" :key="index" class="category-skeleton">
+        <USkeleton class="mx-auto mb-3 size-14 rounded-card" />
         <USkeleton class="mx-auto h-4 w-3/4" />
       </div>
     </div>
@@ -23,18 +23,18 @@
       <UIcon name="i-lucide-folders" class="size-icon-inline text-slate-500" aria-hidden="true" />
       <p>هنوز دسته‌بندی‌ای تعریف نشده است.</p>
     </div>
-    <div v-else class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+    <div v-else class="marketplace-categories__grid">
       <NuxtLink 
-        v-for="cat in categories" 
+        v-for="(cat, index) in categories"
         :key="categoryId(cat)"
         :to="categoryPath(cat)"
-        class="premium-card relative overflow-hidden p-5 flex flex-col items-center text-center group cursor-pointer border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lg"
+        class="category-card group"
       >
-        <div class="size-16 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl flex items-center justify-center mb-5 ring-1 ring-slate-100 group-hover:from-blue-50 group-hover:to-primary-100 transition-colors">
-          <UIcon :name="icons[categories.indexOf(cat) % icons.length]" class="size-icon-empty-state text-slate-600 group-hover:text-primary-600 transition-colors" />
+        <div class="category-card__icon">
+          <UIcon :name="icons[index % icons.length]" aria-hidden="true" />
         </div>
-        <h3 class="text-sm font-bold text-slate-800 mb-1.5 group-hover:text-primary-700 transition-colors">{{ cat.name }}</h3>
-        <span v-if="categoryCount(cat)" class="text-[10px] text-slate-400 font-num uppercase tracking-wider">{{ categoryCount(cat) }} کالا</span>
+        <h3>{{ cat.name }}</h3>
+        <span v-if="categoryCount(cat)" class="font-num">{{ categoryCount(cat) }} کالا</span>
       </NuxtLink>
     </div>
   </section>
@@ -46,7 +46,7 @@ import { getCategoryFilterIds, getCategoryId, getParentCategoryId, type Category
 
 const icons = ["i-lucide-building-2", "i-lucide-plug", "i-lucide-droplets", "i-lucide-layers", "i-lucide-wrench", "i-lucide-fan"];
 const { categories: loadedCategories, loading, error, load } = useCategories();
-const retryCategories = () => load().catch(() => undefined);
+const retryCategories = () => { void load().catch(() => undefined); };
 await retryCategories();
 
 const categories = computed(() => loadedCategories.value.filter((category) => !getParentCategoryId(category)).slice(0, 6));
@@ -63,6 +63,18 @@ const categoryCount = (category: Category) => {
 </script>
 
 <style scoped>
+.marketplace-categories { padding-block: clamp(2.25rem, 4vw, 3.75rem); }
+.marketplace-categories__heading { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; }
+.marketplace-categories__heading h2 { margin:0 0 .4rem; color:var(--color-text-heading); font-size:clamp(1.35rem, 2.2vw, 1.8rem); font-weight:900; }
+.marketplace-categories__heading p { margin:0; color:var(--color-text-muted); font-size:.85rem; line-height:1.8; }
+.marketplace-categories__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; }
+.category-card { display:flex; min-height:8.75rem; align-items:center; justify-content:center; gap:.65rem; padding:1rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); color:var(--color-text-heading); text-align:center; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.category-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
+.category-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 25%, transparent); outline-offset:2px; }
+.category-card__icon { display:grid; width:3.25rem; height:3.25rem; place-items:center; flex:none; border-radius:var(--radius-card); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.65rem; }
+.category-card h3 { margin:0; color:var(--color-text-heading); font-size:.82rem; font-weight:800; line-height:1.7; }
+.category-card span { color:var(--color-text-muted); font-size:.67rem; }
+.category-skeleton { min-height:8.75rem; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
 .category-feedback {
   display: flex;
   min-height: 9rem;
@@ -74,7 +86,20 @@ const categoryCount = (category: Category) => {
   font-size: .875rem;
 }
 
-.category-skeleton {
-  min-height: 9rem;
+@media (min-width: 768px) {
+  .marketplace-categories__grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .marketplace-categories__grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+@media (min-width: 1200px) {
+  .marketplace-categories__grid { grid-template-columns:repeat(6,minmax(0,1fr)); }
+}
+
+@media (max-width: 639px) {
+  .marketplace-categories__heading { align-items:stretch; flex-direction:column; gap:.85rem; }
+  .marketplace-categories__heading :deep(a) { align-self:flex-start; }
 }
 </style>

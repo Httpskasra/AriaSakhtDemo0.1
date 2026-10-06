@@ -27,7 +27,7 @@ const formatPrice = (price: number) => {
   <section aria-labelledby="featured-products-heading" class="space-y-6">
     <h2 id="featured-products-heading" class="featured-products__heading">محصولات ویژه</h2>
 
-    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <template v-if="loading">
         <div v-for="i in 4" :key="i" class="premium-card overflow-hidden">
           <div class="featured-product-skeleton__image"></div>
@@ -63,7 +63,7 @@ const formatPrice = (price: number) => {
             </div>
           </NuxtLink>
 
-          <div class="flex flex-1 flex-col justify-between p-5">
+          <div class="flex flex-1 flex-col justify-between p-4">
             <div class="space-y-2">
               <div class="featured-product__vendor">
                 {{ typeof product.companyId === 'object' ? product.companyId.name : 'تأمین‌کننده معتبر' }}
@@ -99,10 +99,6 @@ const formatPrice = (price: number) => {
         </article>
       </template>
 
-      <div v-else class="featured-products__empty">
-        <UIcon name="i-lucide-package-search" />
-        <h3>محصولی یافت نشد</h3>
-      </div>
     </div>
   </section>
 </template>
@@ -126,8 +122,5 @@ const formatPrice = (price: number) => {
 .featured-product__from { color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
 .featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: 600; }
 .featured-product__cart { transition: background-color .16s ease, color .16s ease; }
-.featured-product__empty { grid-column: 1 / -1; padding-block: 5rem; color: var(--color-text-disabled); text-align: center; }
-.featured-product__empty :deep(svg) { width: var(--spacing-icon-hero); height: var(--spacing-icon-hero); margin-inline: auto; margin-bottom: 1rem; }
-.featured-product__empty h3 { margin: 0; color: var(--color-text-muted); font-size: 1.1rem; font-weight: 800; }
 @keyframes featured-pulse { 50% { opacity: .45; } }
 </style>

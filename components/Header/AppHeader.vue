@@ -17,7 +17,8 @@ const { categories, loading: categoriesLoading, load } = useCategories();
 // request itself. The drawer still renders a loading state until it is ready.
 void load().catch(() => undefined);
 const mobileMenuOpen = ref(false);
-const effectiveScrolled = computed(() => props.isScrolled);
+const localScrolled = ref(false);
+const effectiveScrolled = computed(() => props.isScrolled || localScrolled.value);
 const topCategories = computed(() => categories.value.filter(category => !getParentCategoryId(category)));
 const categoryPath = (category: Category) => ({ path: "/products", query: { categoryIds: getCategoryFilterIds(category, categories.value) } });
 const cartCountLabel = computed(() => cartStore.itemCount > 99 ? "99+" : String(cartStore.itemCount));
@@ -26,6 +27,14 @@ const supportPhone = "021-12345678";
 function handleCartClick() { return isAuthenticated.value ? navigateTo("/dashboard/account/cart") : setStep("signin"); }
 function closeMobileMenu() { mobileMenuOpen.value = false; }
 function openAuth() { setStep("signin"); closeMobileMenu(); }
+function syncScrollState() { localScrolled.value = window.scrollY > 24; }
+
+onMounted(() => {
+  syncScrollState();
+  window.addEventListener("scroll", syncScrollState, { passive: true });
+});
+
+onBeforeUnmount(() => window.removeEventListener("scroll", syncScrollState));
 </script>
 
 <template>
@@ -42,7 +51,7 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
           </div>
         </div>
       </div>
-      <div class="desktop-header__nav"><div class="section-container desktop-header__nav-inner"><CategoryMenu /><nav aria-label="ناوبری اصلی" class="desktop-nav-links"><NuxtLink to="/products" class="header-nav-link" :aria-current="route.path.startsWith('/products') ? 'page' : undefined">فروشگاه</NuxtLink><NuxtLink to="/wholesale" class="header-nav-link" :aria-current="route.path === '/wholesale' ? 'page' : undefined">خرید عمده</NuxtLink><NuxtLink to="/price-quote" class="header-nav-link" :aria-current="route.path === '/price-quote' ? 'page' : undefined">استعلام قیمت</NuxtLink><NuxtLink to="/about" class="header-nav-link" :aria-current="route.path === '/about' ? 'page' : undefined">درباره تجاریس</NuxtLink><NuxtLink to="/support" class="header-nav-link" :aria-current="route.path === '/support' ? 'page' : undefined">پشتیبانی</NuxtLink></nav></div></div>
+      <div class="desktop-header__nav"><div class="section-container desktop-header__nav-inner"><CategoryMenu /><nav aria-label="ناوبری اصلی" class="desktop-nav-links"><NuxtLink to="/products" class="header-nav-link" :aria-current="route.path.startsWith('/products') ? 'page' : undefined">فروشگاه</NuxtLink><NuxtLink to="/wholesale" class="header-nav-link" :aria-current="route.path === '/wholesale' ? 'page' : undefined">خرید عمده</NuxtLink><NuxtLink to="/price-quote" class="header-nav-link" :aria-current="route.path === '/price-quote' ? 'page' : undefined">استعلام قیمت</NuxtLink><NuxtLink to="/about" class="header-nav-link header-nav-link--secondary" :aria-current="route.path === '/about' ? 'page' : undefined">درباره تجاریس</NuxtLink><NuxtLink to="/support" class="header-nav-link header-nav-link--secondary" :aria-current="route.path === '/support' ? 'page' : undefined">پشتیبانی</NuxtLink></nav></div></div>
     </div>
 
     <div v-if="variant !== 'desktop'" class="mobile-header">
@@ -67,25 +76,30 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
 
 <style scoped>
 .site-header { position:sticky; top:0; z-index:1000; width:100%; max-width:100%; overflow-x:clip; isolation:isolate; border-bottom:1px solid var(--color-border); background:var(--color-bg-surface-translucent); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
-.site-header--scrolled .desktop-header__main-inner { min-height:4.25rem; }
+.site-header--scrolled { box-shadow:var(--shadow-raised); }
+.site-header--scrolled .desktop-header__main-inner { min-height:3.75rem; }
+.site-header--scrolled .desktop-header__nav-inner { min-height:2.35rem; }
+.site-header--scrolled .mobile-header__row { min-height:3.25rem; }
+.site-header--scrolled .mobile-header__search { padding-block:.3rem .4rem; }
 .desktop-header__main { background:var(--color-bg-surface); }
-.desktop-header__main-inner { display:flex; min-height:4.5rem; align-items:center; gap:clamp(1rem,2.5vw,2rem); }
+.desktop-header__main-inner { display:flex; min-height:4.25rem; align-items:center; gap:clamp(.75rem,2vw,1.5rem); }
 .desktop-header__search { min-width:0; flex:1; }
 .desktop-header__actions { display:flex; flex-shrink:0; align-items:center; gap:.45rem; }
-.desktop-header__supplier-cta { min-height:2.5rem; white-space:nowrap; }
+.desktop-header__supplier-cta { min-height:2.35rem; white-space:nowrap; }
 .desktop-header__nav { border-top:1px solid var(--color-bg-light); background:var(--color-bg-surface); }
-.desktop-header__nav-inner { display:flex; min-height:2.9rem; align-items:center; gap:2rem; }
+.desktop-header__nav-inner { display:flex; min-height:2.55rem; align-items:center; gap:1.5rem; }
 .desktop-nav-links { display:flex; min-width:0; align-items:center; gap:clamp(1rem,2.2vw,2rem); color:var(--color-text-body); font-size:.8rem; font-weight:700; }
-.header-nav-link { display:inline-flex; min-height:2.75rem; align-items:center; border-bottom:2px solid transparent; white-space:nowrap; }
+.header-nav-link { display:inline-flex; min-height:2.4rem; align-items:center; border-bottom:2px solid transparent; white-space:nowrap; }
+.header-nav-link--secondary { color:var(--color-text-muted); font-size:.75rem; font-weight:600; }
 .header-nav-link:hover,.header-nav-link.router-link-active { color:var(--color-brand-blue); border-bottom-color:var(--color-brand-blue); }
 .cart-action { position:relative; display:inline-flex; }
 .cart-action__badge { position:absolute; inset-block-start:-.2rem; inset-inline-start:-.25rem; display:flex; min-width:1.05rem; height:1.05rem; align-items:center; justify-content:center; padding-inline:.18rem; border:2px solid var(--color-bg-surface); border-radius:var(--radius-pill); background:var(--color-brand-yellow); color:var(--color-text-heading); font-size:.58rem; font-weight:900; line-height:1; }
 .mobile-header { max-width:100%; overflow-x:clip; background:var(--color-bg-surface-mobile); direction:rtl; }
-.mobile-header__row { position:relative; display:flex; min-height:3.75rem; align-items:center; justify-content:center; padding:.45rem 3.2rem; }
+.mobile-header__row { position:relative; display:flex; min-height:3.5rem; align-items:center; justify-content:center; padding:.4rem 3.2rem; }
 .mobile-header__actions { position:absolute; left:.55rem; right:auto; display:flex; align-items:center; gap:.1rem; }
 .mobile-header__actions :deep(button) { min-width:2.5rem; min-height:2.5rem; }
 .mobile-header__menu-button { position:absolute; right:.55rem; left:auto; width:2.5rem; height:2.5rem; border-radius:var(--radius-compact-list-item); }
-.mobile-header__search { padding:.5rem .7rem .65rem; border-top:1px solid var(--color-bg-light); }
+.mobile-header__search { padding:.4rem .7rem .55rem; border-top:1px solid var(--color-bg-light); }
 .mobile-menu { display:flex; flex-direction:column; gap:.75rem; padding:.15rem 0 1rem; direction:rtl; }
 .mobile-menu__account { border-bottom:1px solid var(--color-border); padding-bottom:.7rem; }
 .mobile-menu__links { display:grid; gap:.15rem; }
@@ -111,7 +125,7 @@ function openAuth() { setStep("signin"); closeMobileMenu(); }
 .mobile-menu__subcategory-list a { min-height:2.35rem; padding:.45rem; color:var(--color-text-muted); font-size:.73rem; }
 .mobile-menu__subcategory-list a:hover,.mobile-menu__subcategory-list a:focus-visible { color:var(--color-brand-blue); }
 .mobile-menu__state { padding:.65rem; color:var(--color-text-muted); font-size:.72rem; }
-@media (min-width:1024px) and (max-width:1199px) { .desktop-header__main-inner { gap:1rem; } .desktop-nav-links { gap:1rem; } .desktop-header__supplier-cta { padding-inline:.65rem; } }
+@media (min-width:1025px) and (max-width:1199px) { .desktop-header__main-inner { gap:.75rem; } .desktop-nav-links { gap:.9rem; } .desktop-header__supplier-cta { padding-inline:.55rem; } .header-nav-link--secondary { font-size:.7rem; } }
 @media (max-width:359px) { .mobile-header__row { padding-inline:2.85rem; } .mobile-header__actions { left:.35rem; right:auto; } .mobile-header__menu-button { right:.35rem; left:auto; } .mobile-header__search { padding-inline:.5rem; } .header-brand--compact :deep(.header-brand__name) { display:none; } }
 @media (prefers-reduced-motion:reduce) { .site-header *,.site-header *::before,.site-header *::after { transition:none; animation:none; } }
 

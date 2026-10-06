@@ -69,6 +69,23 @@ export default defineAppConfig({
         variant: 'outline'
       }
     },
+    toast: {
+      slots: {
+        root: 'tejaris-toast',
+        wrapper: 'tejaris-toast__content',
+        title: 'tejaris-toast__title',
+        description: 'tejaris-toast__description',
+        actions: 'tejaris-toast__actions',
+        close: 'tejaris-toast__close',
+        progress: 'tejaris-toast__progress'
+      }
+    },
+    toaster: {
+      slots: {
+        viewport: 'tejaris-toaster__viewport',
+        base: 'tejaris-toaster__base'
+      }
+    },
     formField: {
       slots: {
         label: 'text-sm font-semibold text-primary'

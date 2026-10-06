@@ -94,6 +94,12 @@ function optionHasError(option: ProductVariantOption) {
 function attributeHasError(pair: AttributePair) {
   return Boolean(pair.key.trim()) !== Boolean(pair.value.trim());
 }
+
+function submitProduct(status: Product["status"] = "active") {
+  const submittedProduct = cloneProduct(localForm);
+  submittedProduct.status = status;
+  emit("submit", submittedProduct);
+}
 </script>
 
 <template>
@@ -115,9 +121,9 @@ function attributeHasError(pair: AttributePair) {
       variant="soft"
       icon="i-lucide-save"
       title="ذخیره‌ی خودکار فعال است"
-      description="اطلاعات متنی فرم هنگام ورود ذخیره می‌شود. برای ثبت فایل تصویر، ابتدا آن را آپلود کنید؛ فایل انتخاب‌شده‌ی آپلودنشده با بستن یا refresh قابل بازیابی نیست." />
+      description="اطلاعات فرم هنگام ورود به‌صورت محلی ذخیره می‌شود. با «ذخیره پیش‌نویس» محصول در فهرست مدیریت ثبت می‌شود؛ برای نمایش در فروشگاه «ثبت و انتشار محصول» را بزنید." />
 
-    <UForm :state="localForm" :aria-labelledby="fullPage ? 'product-page-form-title' : 'product-form-title'" class="product-form" @submit.prevent="emit('submit', cloneProduct(localForm))">
+    <UForm :state="localForm" :aria-labelledby="fullPage ? 'product-page-form-title' : 'product-form-title'" class="product-form" @submit.prevent="submitProduct('active')">
       <section class="product-form__section">
         <div class="product-form__section-heading"><span>اطلاعات اصلی</span><small>فیلدهای ضروری محصول</small></div>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -245,7 +251,20 @@ function attributeHasError(pair: AttributePair) {
 
       <div class="product-editor__actions">
         <UButton type="button" color="neutral" variant="soft" @click="emit('cancel')">{{ fullPage ? "بازگشت به فهرست" : "انصراف" }}</UButton>
-        <UButton type="submit" icon="i-lucide-save" :loading="saving" :disabled="saving || uploading">{{ fullPage && !editMode ? "ذخیره پیش‌نویس" : "ذخیره" }}</UButton>
+        <UButton
+          v-if="fullPage && !editMode"
+          type="button"
+          icon="i-lucide-file-pen-line"
+          color="neutral"
+          variant="outline"
+          :loading="saving"
+          :disabled="saving || uploading"
+          @click="submitProduct('draft')">
+          ذخیره پیش‌نویس
+        </UButton>
+        <UButton type="submit" icon="i-lucide-send" :loading="saving" :disabled="saving || uploading">
+          {{ fullPage && !editMode ? "ثبت و انتشار محصول" : "ذخیره تغییرات" }}
+        </UButton>
       </div>
     </UForm>
   </div>
@@ -262,7 +281,9 @@ function attributeHasError(pair: AttributePair) {
 .product-form { display: grid; gap: 1rem; }
 .product-form__section { display: grid; gap: 1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-light); }
 .product-form__section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding-bottom: .65rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-heading); font-size: .9rem; font-weight: 800; }
-.product-form__section-heading small { color: var(--color-text-muted); font-size: .68rem; font-weight: 500; line-height: 1.7; }
+.product-form__section-heading > div { display: grid; min-width: 0; gap: .25rem; }
+.product-form__section-heading > div > span { display: block; line-height: 1.55; }
+.product-form__section-heading small { display: block; color: var(--color-text-muted); font-size: .68rem; font-weight: 500; line-height: 1.8; overflow-wrap: anywhere; }
 .products-form-hint { color: var(--color-text-muted); font-size: .75rem; }
 .product-form-error { margin: 0; padding: .7rem .8rem; border: 1px solid var(--color-danger-border); border-radius: var(--radius-field); color: var(--color-danger-fg); background: var(--color-danger-bg); font-size: .78rem; font-weight: 700; line-height: 1.7; }
 .product-form__explainer { display: flex; align-items: flex-start; gap: .5rem; padding: .7rem .8rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-info-bg); font-size: .74rem; line-height: 1.8; }

@@ -4,7 +4,7 @@
       <UInput
         :model-value="searchInput"
         type="search"
-        placeholder="نام کالا، برند یا دسته‌بندی را جستجو کنید"
+        :placeholder="variant === 'header' ? 'جستجوی کالا، برند یا دسته‌بندی…' : 'نام کالا، برند یا دسته‌بندی را جستجو کنید'"
         :aria-label="variant === 'header' ? 'جستجو در کل فروشگاه' : 'جستجوی کالا، برند یا دسته‌بندی'"
         :aria-controls="variant === 'header' ? suggestionsId : undefined"
         :aria-expanded="variant === 'header' && isFocused"
@@ -85,6 +85,8 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 :deep(.search-input input:focus-visible) { border-color:var(--color-brand-blue); outline:none; box-shadow:var(--focus-ring); background:var(--color-bg-surface); }
 :deep(.search-input > span:last-of-type) { inset-inline-end:.5rem; padding-inline:0; }
 :deep(.search-submit) { width:2.75rem; min-width:2.75rem; min-height:2.75rem; padding:0; border-radius:var(--radius-compact-list-item); }
+.global-product-search.header :deep(.search-input input) { min-height:2.65rem; padding-block:.5rem; border-width:1px; font-size:.78rem; }
+.global-product-search.header :deep(.search-submit) { width:2.35rem; min-width:2.35rem; min-height:2.35rem; }
 .suggestions { position:absolute; inset-block-start:calc(100% + .5rem); inset-inline:0; z-index:70; max-height:min(22rem,calc(100dvh - 8rem)); overflow-y:auto; padding:.9rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-overlay); }
 .suggestions__heading { display:flex; align-items:center; gap:.4rem; margin-bottom:.7rem; color:var(--color-text-body); font-size:.72rem; font-weight:800; }
 .suggestions__heading :deep(svg) { width:1rem; color:var(--color-brand-blue); }
@@ -92,6 +94,6 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 .suggestion-tags button { min-height:2.75rem; padding-inline:.8rem; border:1px solid var(--color-info-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-info-fg); font-size:.72rem; font-weight:700; }
 .suggestion-tags button:hover,.suggestion-tags button:focus-visible,.suggestion-tags button.suggestion--active { border-color:var(--color-brand-blue); background:var(--color-info-bg); outline:3px solid color-mix(in srgb, var(--color-brand-blue) 15%, transparent); }
 .suggestions__empty { margin:0; color:var(--color-text-muted); font-size:.75rem; line-height:1.8; }
-@media (max-width:767px) { :deep(.search-input input) { min-height:3rem; font-size:.8rem; } .suggestions { inset-inline:.25rem; max-height:min(18rem,calc(100dvh - 13rem)); padding:.75rem; border-radius:var(--radius-card); } }
+@media (max-width:767px) { :deep(.search-input input) { min-height:3rem; font-size:.8rem; } .global-product-search.header :deep(.search-input input) { min-height:2.8rem; font-size:.76rem; } .global-product-search.header :deep(.search-submit) { min-height:2.5rem; } .suggestions { inset-inline:.25rem; max-height:min(18rem,calc(100dvh - 13rem)); padding:.75rem; border-radius:var(--radius-card); } }
 @media (prefers-reduced-motion:reduce) { .suggestion-tags button { transition:none; } }
 </style>

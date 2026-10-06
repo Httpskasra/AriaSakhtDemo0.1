@@ -9,7 +9,15 @@
     </NuxtLayout>
     <!-- Authentication modal has one global owner across desktop and mobile headers. -->
     <ModalWrapper v-if="authStep" />
-    <UToaster />
+    <!-- Keep every global notification in one predictable, readable RTL surface. -->
+    <UToaster
+      position="top-right"
+      :expand="true"
+      :ui="{
+        viewport: 'tejaris-toaster__viewport',
+        base: 'tejaris-toaster__base'
+      }"
+    />
   </div>
 </template>
 

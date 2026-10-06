@@ -13,13 +13,18 @@ const { data: vendors, pending, error, refresh } = await useAsyncData(
 
 const companyId = (vendor: Company) => vendor._id || vendor.id || vendor.name;
 const vendorPath = (vendor: Company) => `/products?companyName=${encodeURIComponent(vendor.name)}`;
-const vendorLocation = (vendor: Company) => vendor.address || "موقعیت ثبت نشده";
+const vendorLocation = (vendor: Company) => typeof vendor.address === "string" ? vendor.address.trim() : "";
 const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isActive === true;
 </script>
 
 <template>
-  <section aria-labelledby="featured-vendors-heading" class="space-y-6">
-    <h2 id="featured-vendors-heading" class="text-2xl font-black text-slate-900">تأمین‌کنندگان برتر</h2>
+  <section aria-labelledby="featured-vendors-heading" class="featured-vendors">
+    <div class="featured-vendors__heading">
+      <div>
+        <h2 id="featured-vendors-heading">تأمین‌کنندگان برتر</h2>
+        <p>با تأمین‌کنندگان ثبت‌شده تجاریس آشنا شوید.</p>
+      </div>
+    </div>
 
     <SharedAsyncState
       v-if="pending"
@@ -40,10 +45,10 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
       title="تأمین‌کننده‌ای برای نمایش وجود ندارد"
       message="پس از ثبت شرکت‌های فعال، این بخش به‌صورت خودکار تکمیل می‌شود." />
 
-    <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <div v-for="vendor in vendors" :key="companyId(vendor)" class="premium-card group p-6">
-        <div class="mb-6 flex items-start justify-between">
-          <div class="flex size-14 items-center justify-center overflow-hidden border border-slate-200 bg-slate-100">
+    <div v-else :class="['featured-vendors__grid', { 'featured-vendors__grid--single': vendors.length === 1 }]">
+      <div v-for="vendor in vendors" :key="companyId(vendor)" class="vendor-card group">
+        <div class="vendor-card__top">
+          <div class="vendor-card__logo">
             <NuxtImg
               v-if="vendor.image"
               :src="vendor.image"
@@ -59,29 +64,46 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
             size="compact" />
         </div>
 
-        <h3 class="mb-1 text-lg font-black text-slate-900 transition-colors group-hover:text-brand-blue">{{ vendor.name }}</h3>
-        <p class="mb-6 flex items-center gap-1 text-xs text-slate-500">
+        <h3>{{ vendor.name }}</h3>
+        <p v-if="vendorLocation(vendor)" class="vendor-card__location">
           <UIcon name="i-lucide-map-pin" class="size-icon-compact" />
           {{ vendorLocation(vendor) }}
         </p>
 
-        <div class="mb-6 grid grid-cols-2 gap-4 border-y border-slate-50 py-4">
-          <div class="flex flex-col">
-            <span class="mb-1 text-xs text-slate-400">وضعیت</span>
-            <span class="font-bold text-slate-800">{{ isVerified(vendor) ? "فعال" : "در حال بررسی" }}</span>
-          </div>
-          <div class="flex flex-col items-end">
-            <span class="mb-1 text-xs text-slate-400">شناسه</span>
-            <div class="max-w-24 truncate text-xs font-num text-slate-500">
-              {{ vendor.registrationNumber || "ثبت نشده" }}
-            </div>
-          </div>
-        </div>
-
-        <UButton :to="vendorPath(vendor)" block color="neutral" variant="outline" class="font-bold transition-all group-hover:border-brand-blue group-hover:bg-brand-blue group-hover:text-white">
+        <UButton :to="vendorPath(vendor)" block color="neutral" variant="outline" class="vendor-card__action">
           مشاهده غرفه تأمین‌کننده
         </UButton>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.featured-vendors { padding-block:clamp(2rem, 4vw, 3.5rem); }
+.featured-vendors__heading { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; }
+.featured-vendors__heading h2 { margin:0 0 .35rem; color:var(--color-text-heading); font-size:clamp(1.35rem, 2.2vw, 1.8rem); font-weight:900; }
+.featured-vendors__heading p { margin:0; color:var(--color-text-muted); font-size:.85rem; line-height:1.8; }
+.featured-vendors__grid { display:grid; grid-template-columns:1fr; gap:1rem; }
+.featured-vendors__grid--single { grid-template-columns:minmax(0, 30rem); }
+.vendor-card { display:flex; min-width:0; flex-direction:column; padding:1.15rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.vendor-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
+.vendor-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin-bottom:1rem; }
+.vendor-card__logo { display:grid; width:3.5rem; height:3.5rem; place-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-light); }
+.vendor-card__logo :deep(img) { width:100%; height:100%; object-fit:cover; }
+.vendor-card h3 { margin:0; color:var(--color-text-heading); font-size:1.05rem; font-weight:900; transition:color .16s ease; }
+.vendor-card:hover h3 { color:var(--color-brand-blue); }
+.vendor-card__location { display:flex; min-height:1.5rem; align-items:center; gap:.35rem; margin:.45rem 0 1.15rem; color:var(--color-text-muted); font-size:.75rem; line-height:1.7; }
+.vendor-card__action { margin-top:auto; min-height:2.6rem; font-weight:800; }
+
+@media (min-width: 768px) {
+  .featured-vendors__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+@media (min-width: 1200px) {
+  .featured-vendors__grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+@media (max-width: 767px) {
+  .featured-vendors__grid--single { grid-template-columns:1fr; }
+}
+</style>
