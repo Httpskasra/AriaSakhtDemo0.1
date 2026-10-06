@@ -16,6 +16,7 @@ export interface UserListItem {
     lastName?: string;
     address?: string;
     walletId?: string;
+    companyId?: string;
   };
 }
 

@@ -10,7 +10,7 @@
         <SharedAsyncState v-if="rolesLoading" state="loading" :skeleton-rows="5" />
         <SharedAsyncState v-else-if="rolesError" state="error" :message="rolesError" @retry="fetchRoles" />
         <SharedAsyncState v-else-if="roles.length === 0" state="empty" title="نقشی پیدا نشد" message="هنوز نقشی برای نمایش وجود ندارد." />
-        <PanelDataTable v-else :rows="roles" :columns="roleColumns" min-width="34rem">
+        <PanelDataTable v-else :rows="roles" :columns="roleColumns" min-width="52rem">
           <template #phoneNumber-data="{ row }">
             {{ row.phoneNumber || "-" }}
           </template>
@@ -18,9 +18,20 @@
             {{ row.nationalId || "-" }}
           </template>
           <template #permissions-data="{ row }">
-            <span class="permissions-cell">
-              {{ formatPermissions(row.permissions) || "-" }}
-            </span>
+            <div v-if="row.permissions.length" class="permission-summary" :aria-label="`دسترسی‌های ${row.phoneNumber || row.nationalId || 'کاربر'}`">
+              <article v-for="permission in row.permissions" :key="permission.resource + '-' + (permission.companyId || 'global')" class="permission-summary__item">
+                <div class="permission-summary__heading">
+                  <strong>{{ resourceLabel(permission.resource) }}</strong>
+                  <span class="permission-summary__scope" :class="{ 'permission-summary__scope--global': !permission.companyId }">
+                    {{ permission.companyId ? `شرکت: ${companyName(permission.companyId)}` : "سراسری" }}
+                  </span>
+                </div>
+                <div class="permission-summary__actions">
+                  <span v-for="action in permission.actions" :key="action">{{ actionLabel(action) }}</span>
+                </div>
+              </article>
+            </div>
+            <span v-else class="permissions-empty">بدون دسترسی اختصاصی</span>
           </template>
           <template #actions-data="{ row }">
             <div class="panel-row-actions">
@@ -307,6 +318,10 @@ const saveRole = async () => {
       // update permissions via dedicated endpoint
       try {
         const targetId = form.value.id || meUserId.value;
+        if (!targetId) {
+          feedback.error("کاربر پیدا نشد", "شناسه کاربر برای ویرایش در دسترس نیست.");
+          return;
+        }
         const payload = {
           permissions: permissionsPayload,
           ...(companyIdFromProducts ? { companyId: companyIdFromProducts } : {}),
@@ -491,13 +506,47 @@ async function initializeRoles() {
 onMounted(initializeRoles);
 watch(isReady, (ready) => { if (ready) initializeRoles(); }, { once: true });
 
-function formatPermissions(perms: Permission[] = []) {
-  return perms
-    .map(
-      (p) =>
-        `${p.resource}: ${Array.isArray(p.actions) ? p.actions.join(",") : ""}`
-    )
-    .join(" | ");
+const RESOURCE_LABELS: Record<string, string> = {
+  carts: "سبد خرید",
+  categories: "دسته‌بندی‌ها",
+  companies: "شرکت‌ها",
+  orders: "سفارش‌ها",
+  payment: "پرداخت",
+  products: "محصولات",
+  roles: "نقش‌ها",
+  ticketing: "تیکتینگ",
+  transaction: "تراکنش‌ها",
+  transporting: "حمل‌ونقل",
+  users: "کاربران",
+  wallets: "کیف‌پول",
+  profile: "پروفایل",
+  product_status: "وضعیت محصول",
+  ratings: "امتیازها",
+  all: "همه منابع",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  r: "خواندن",
+  u: "ویرایش",
+  c: "ایجاد",
+  d: "حذف",
+  m: "مدیریت",
+  dr: "جزئیات",
+  dc: "واریز شرکت",
+  di: "واریز واسطه",
+  du: "واریز کاربر",
+};
+
+function resourceLabel(resource: string) {
+  return RESOURCE_LABELS[resource] || resource;
+}
+
+function actionLabel(action: string) {
+  return ACTION_LABELS[action] || action;
+}
+
+function companyName(companyId: string) {
+  return companies.value.find((company) => String(company.id || company._id) === String(companyId))?.name || "شرکت انتخاب‌شده";
 }
 </script>
 
@@ -508,6 +557,16 @@ function formatPermissions(perms: Permission[] = []) {
   width: min(100%, 90rem);
   margin-inline: auto;
 }
+
+.permission-summary { display:grid; grid-template-columns:repeat(2,minmax(12rem,1fr)); gap:.55rem; min-width:34rem; }
+.permission-summary__item { display:grid; gap:.45rem; min-width:0; padding:.65rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.permission-summary__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:.5rem; min-width:0; }
+.permission-summary__heading strong { overflow:hidden; color:var(--color-text-heading); font-size:.77rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.permission-summary__scope { max-width:9rem; overflow:hidden; color:var(--color-brand-blue); font-size:.65rem; text-overflow:ellipsis; white-space:nowrap; }
+.permission-summary__scope--global { color:var(--color-text-muted); }
+.permission-summary__actions { display:flex; flex-wrap:wrap; gap:.3rem; }
+.permission-summary__actions span { padding:.18rem .38rem; border-radius:var(--radius-pill); background:var(--color-bg-surface); color:var(--color-text-body); font-size:.64rem; white-space:nowrap; }
+.permissions-empty { color:var(--color-text-muted); font-size:.78rem; }
 
 .resources-actions-list {
   display: grid;
@@ -573,5 +632,8 @@ function formatPermissions(perms: Permission[] = []) {
   width: 1rem;
   height: 1rem;
   accent-color: var(--color-brand-blue);
+}
+@media (max-width:760px) {
+  .permission-summary { grid-template-columns:1fr; min-width:18rem; }
 }
 </style>

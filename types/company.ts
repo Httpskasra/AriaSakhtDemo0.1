@@ -12,6 +12,7 @@ export interface Company {
   isActive?: boolean;
   status: "pending" | "active" | "suspended" | "rejected";
   createdBy?: string;
+  admins?: string[];
   createdAt?: string;
   updatedAt?: string;
 }

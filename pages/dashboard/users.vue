@@ -115,6 +115,16 @@
                       @click="openDetails(u)">
                       مشاهده جزئیات
                     </UButton>
+                    <UButton
+                      v-if="canUpdate"
+                      size="xs"
+                      color="primary"
+                      variant="soft"
+                      icon="i-lucide-building-2"
+                      :aria-label="`مدیریت دسترسی شرکتی ${fullName(u)}`"
+                      @click="openCompanyAccess(u)">
+                      دسترسی شرکتی
+                    </UButton>
                   </div>
                 </td>
               </tr>
@@ -173,7 +183,8 @@
             <article v-for="permission in selected.permissions" :key="permission.resource + '-' + (permission.companyId || 'global')" class="user-permission-card">
               <div class="user-permission-card__title">
                 <span>{{ resourceLabel(permission.resource) }}</span>
-                <small v-if="permission.companyId" class="font-num">شرکت: {{ permission.companyId }}</small>
+                <small v-if="permission.companyId">شرکت: {{ companyName(permission.companyId) }}</small>
+                <small v-else>سراسری</small>
               </div>
               <div class="user-permission-card__actions">
                 <span v-for="action in permission.actions" :key="action" class="permission-action">{{ actionLabel(action) }}</span>
@@ -184,20 +195,102 @@
         </section>
       </div>
     </BaseModal>
+
+    <!-- Company access modal: company assignment and scoped permissions are intentionally separate from global roles. -->
+    <BaseModal v-if="companyAccessOpen" title-id="company-access-title" :busy="companyAccessSaving" @close="closeCompanyAccess">
+      <div class="company-access-modal" dir="rtl">
+        <header class="company-access__hero">
+          <span class="company-access__icon" aria-hidden="true"><UIcon name="i-lucide-building-2" /></span>
+          <div>
+            <p class="user-details__eyebrow">اتصال کاربر به شرکت</p>
+            <h2 id="company-access-title">مدیریت دسترسی شرکتی</h2>
+            <p>{{ fullName(companyAccessUser) === "—" ? "کاربر بدون نام" : fullName(companyAccessUser) }}</p>
+          </div>
+        </header>
+
+        <SharedAsyncState v-if="companyAccessLoading" state="loading" />
+        <div v-else-if="companyAccessError" class="company-access__error" role="alert">
+          <UIcon name="i-lucide-alert-circle" aria-hidden="true" />
+          <span>{{ companyAccessError }}</span>
+          <UButton size="xs" color="neutral" variant="outline" @click="loadCompanyAccessData">تلاش دوباره</UButton>
+        </div>
+        <form v-else class="company-access__form" @submit.prevent="saveCompanyAccess">
+          <UFormField label="شرکت" name="companyId" required>
+            <AppSelect
+              v-model="companyAccessForm.companyId"
+              :items="companyOptions"
+              value-key="value"
+              label-key="label"
+              placeholder="شرکت را انتخاب کنید"
+              @update:model-value="syncCompanyAccessForCompany" />
+          </UFormField>
+
+          <div class="company-access__context" v-if="companyAccessForm.companyId">
+            <UIcon name="i-lucide-info" aria-hidden="true" />
+            <span>مجوزهای این فرم فقط برای شرکت انتخاب‌شده اعمال می‌شوند و به دسترسی‌های سراسری کاربر دست نمی‌زنند.</span>
+          </div>
+
+          <label class="company-access__admin-toggle">
+            <input v-model="companyAccessForm.isCompanyAdmin" type="checkbox" />
+            <span>
+              <strong>مدیر شرکت باشد</strong>
+              <small>مدیر شرکت بودن از نقش‌های سراسری جداست و فقط به همین شرکت مربوط می‌شود.</small>
+            </span>
+          </label>
+
+          <section class="company-access__permissions" aria-labelledby="company-access-permissions-title">
+            <div class="company-access__section-heading">
+              <div>
+                <h3 id="company-access-permissions-title">دسترسی‌های این شرکت</h3>
+                <p>فقط مجوزهای لازم را انتخاب کنید.</p>
+              </div>
+              <span class="permission-count font-num">{{ selectedCompanyPermissionCount.toLocaleString("fa-IR") }} مورد</span>
+            </div>
+            <div class="company-access__permission-grid">
+              <article v-for="option in companyPermissionOptions" :key="option.resource" class="company-access__permission-card">
+                <div class="company-access__permission-title">
+                  <strong>{{ option.label }}</strong>
+                  <button type="button" class="company-access__select-all" @click="toggleCompanyResource(option.resource)">
+                    {{ companyResourceFullySelected(option.resource) ? "حذف همه" : "انتخاب همه" }}
+                  </button>
+                </div>
+                <div class="company-access__actions">
+                  <label v-for="action in option.actions" :key="action" class="action-checkbox" :class="{ 'action-checkbox--selected': companyActionSelected(option.resource, action) }">
+                    <input
+                      type="checkbox"
+                      :checked="companyActionSelected(option.resource, action)"
+                      @change="toggleCompanyAction(option.resource, action, ($event.target as HTMLInputElement).checked)" />
+                    <span>{{ actionLabel(action) }}</span>
+                  </label>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <div class="company-access__actions-row">
+            <UButton type="button" color="neutral" variant="soft" :disabled="companyAccessSaving" @click="closeCompanyAccess">انصراف</UButton>
+            <UButton type="submit" :loading="companyAccessSaving" :disabled="!companyAccessForm.companyId || companyAccessSaving">ذخیره دسترسی</UButton>
+          </div>
+        </form>
+      </div>
+    </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import BaseModal from "~/components/BaseModal.vue";
 import { useAccess } from "~/composables/useAccess";
-import { Resource } from "~/types/permissions";
+import { Action, Resource } from "~/types/permissions";
 import { listUsers, type UserListItem } from "~/services/userService";
+import { listCompanies } from "~/services/companyService";
+import type { Company } from "~/types/company";
 import { toUserFacingError } from "~/services/apiClient";
+const feedback = useFeedback();
 useHead({
   title: "داشبورد | کاربران",
 });
 // Access control
-const { canRead, isReady } = useAccess(Resource.USERS);
+const { canRead, canUpdate, isReady } = useAccess(Resource.USERS);
 // const { canRead, canUpdate, canDelete } = {
 //   canRead: true,
 //   canDelete: true,
@@ -217,6 +310,24 @@ const errorMessage = ref<string | null>(null);
 // Modal
 const showModal = ref(false);
 const selected = ref<UserListItem | null>(null);
+const companyAccessOpen = ref(false);
+const companyAccessUser = ref<UserListItem | null>(null);
+const companyAccessLoading = ref(false);
+const companyAccessSaving = ref(false);
+const companyAccessError = ref("");
+const companyAccessCompanies = ref<Company[]>([]);
+const companyAccessForm = ref({
+  companyId: "",
+  isCompanyAdmin: false,
+  permissions: [] as UserListItem["permissions"],
+});
+
+const companyPermissionOptions = [
+  { resource: Resource.PRODUCTS, label: "محصولات", actions: [Action.READ, Action.CREATE, Action.UPDATE, Action.DELETE] },
+  { resource: Resource.PRODUCT_STATUS, label: "وضعیت محصولات", actions: [Action.READ, Action.UPDATE] },
+  { resource: Resource.COMPANIES, label: "اطلاعات شرکت", actions: [Action.READ, Action.UPDATE] },
+  { resource: Resource.ORDERS, label: "سفارش‌ها", actions: [Action.READ, Action.UPDATE] },
+] as const;
 
 // Helpers for labels
 const ACTION_LABELS: Record<string, string> = {
@@ -252,6 +363,9 @@ function actionLabel(a: string) {
 }
 function resourceLabel(r: string) {
   return RESOURCE_LABELS[r] || r;
+}
+function companyName(companyId: string) {
+  return companyAccessCompanies.value.find((company) => String(company.id || company._id) === String(companyId))?.name || "شرکت انتخاب‌شده";
 }
 function fullName(u: UserListItem | null) {
   if (!u) return "—";
@@ -297,6 +411,139 @@ function applyUserFilters() {
 function openDetails(u: UserListItem) {
   selected.value = u;
   showModal.value = true;
+}
+
+const companyOptions = computed(() => companyAccessCompanies.value.map((company) => ({
+  label: company.name,
+  value: String(company.id || company._id),
+})));
+
+function companyIsAdmin(company: Company, userId: string) {
+  return Array.isArray(company.admins) && company.admins.some((admin) => String(admin) === String(userId));
+}
+
+function copyCompanyPermissions(user: UserListItem, companyId: string) {
+  return (user.permissions || [])
+    .filter((permission) => String(permission.companyId || "") === String(companyId))
+    .map((permission) => ({
+      resource: permission.resource,
+      actions: [...permission.actions],
+      companyId,
+    }));
+}
+
+function syncCompanyAccessForCompany() {
+  const user = companyAccessUser.value;
+  const companyId = companyAccessForm.value.companyId;
+  if (!user || !companyId) {
+    companyAccessForm.value.permissions = [];
+    companyAccessForm.value.isCompanyAdmin = false;
+    return;
+  }
+  const company = companyAccessCompanies.value.find((item) => String(item.id || item._id) === String(companyId));
+  companyAccessForm.value.permissions = copyCompanyPermissions(user, companyId);
+  companyAccessForm.value.isCompanyAdmin = Boolean(company && companyIsAdmin(company, user.id));
+}
+
+async function loadCompanyAccessData() {
+  const user = companyAccessUser.value;
+  if (!user) return;
+  companyAccessLoading.value = true;
+  companyAccessError.value = "";
+  try {
+    const result = await listCompanies({ managed: true, limit: 100, page: 1, sort: "name:asc" });
+    companyAccessCompanies.value = result.items || [];
+    const existingCompanyId = user.permissions?.find((permission) => permission.companyId)?.companyId || user.profile?.companyId;
+    companyAccessForm.value.companyId = existingCompanyId || String(companyAccessCompanies.value[0]?.id || companyAccessCompanies.value[0]?._id || "");
+    syncCompanyAccessForCompany();
+  } catch (err) {
+    companyAccessError.value = toUserFacingError(err, "فهرست شرکت‌ها دریافت نشد.").message;
+  } finally {
+    companyAccessLoading.value = false;
+  }
+}
+
+async function openCompanyAccess(user: UserListItem) {
+  companyAccessUser.value = user;
+  companyAccessForm.value = { companyId: "", isCompanyAdmin: false, permissions: [] };
+  companyAccessOpen.value = true;
+  await loadCompanyAccessData();
+}
+
+function closeCompanyAccess() {
+  if (companyAccessSaving.value) return;
+  companyAccessOpen.value = false;
+  companyAccessUser.value = null;
+}
+
+function findCompanyPermission(resource: string) {
+  return companyAccessForm.value.permissions.find((permission) => permission.resource === resource);
+}
+
+function companyActionSelected(resource: string, action: string) {
+  return Boolean(findCompanyPermission(resource)?.actions.includes(action));
+}
+
+function toggleCompanyAction(resource: string, action: string, checked: boolean) {
+  let permission = findCompanyPermission(resource);
+  if (!permission && checked) {
+    permission = { resource, actions: [], companyId: companyAccessForm.value.companyId };
+    companyAccessForm.value.permissions.push(permission);
+  }
+  if (!permission) return;
+  permission.actions = checked
+    ? Array.from(new Set([...permission.actions, action]))
+    : permission.actions.filter((item) => item !== action);
+  if (!permission.actions.length) {
+    companyAccessForm.value.permissions = companyAccessForm.value.permissions.filter((item) => item !== permission);
+  }
+}
+
+function companyResourceFullySelected(resource: string) {
+  const option = companyPermissionOptions.find((item) => item.resource === resource);
+  return Boolean(option && option.actions.every((action) => companyActionSelected(resource, action)));
+}
+
+function toggleCompanyResource(resource: string) {
+  const option = companyPermissionOptions.find((item) => item.resource === resource);
+  if (!option) return;
+  const checked = companyResourceFullySelected(resource);
+  option.actions.forEach((action) => toggleCompanyAction(resource, action, !checked));
+}
+
+const selectedCompanyPermissionCount = computed(() => companyAccessForm.value.permissions.reduce((total, permission) => total + permission.actions.length, 0));
+
+async function saveCompanyAccess() {
+  const user = companyAccessUser.value;
+  const companyId = companyAccessForm.value.companyId;
+  if (!user || !companyId || companyAccessSaving.value) return;
+  companyAccessSaving.value = true;
+  try {
+    const { $axios } = useNuxtApp();
+    const permissions = companyAccessForm.value.permissions
+      .filter((permission) => permission.actions.length)
+      .map(({ resource, actions }) => ({ resource, actions }));
+    const { data } = await $axios.patch(`/users/${encodeURIComponent(user.id)}/company-access`, {
+      companyId,
+      isCompanyAdmin: companyAccessForm.value.isCompanyAdmin,
+      permissions,
+    });
+
+    const index = users.value.findIndex((item) => item.id === user.id);
+    if (index !== -1) users.value[index] = { ...users.value[index], permissions: data?.permissions || users.value[index].permissions };
+    const company = companyAccessCompanies.value.find((item) => String(item.id || item._id) === String(companyId));
+    if (company) {
+      const admins = Array.isArray(company.admins) ? company.admins.filter((admin) => String(admin) !== String(user.id)) : [];
+      if (companyAccessForm.value.isCompanyAdmin) admins.push(user.id);
+      company.admins = admins;
+    }
+    feedback.success("دسترسی ذخیره شد", "اتصال کاربر به شرکت با موفقیت به‌روزرسانی شد.");
+    closeCompanyAccess();
+  } catch (err) {
+    feedback.error("ذخیره دسترسی انجام نشد", toUserFacingError(err).message);
+  } finally {
+    companyAccessSaving.value = false;
+  }
 }
 
 // Watchers
@@ -356,11 +603,42 @@ watch(isReady, (ready) => { if (ready) fetchUsers(); }, { once: true });
 .user-permission-card__actions { display:flex; flex-wrap:wrap; gap:.35rem; }
 .permission-action { padding:.2rem .45rem; border-radius:var(--radius-pill); background:var(--color-bg-surface); color:var(--color-text-body); font-size:.68rem; }
 .user-details__empty { margin:0; padding:.85rem; border:1px dashed var(--color-border-strong); border-radius:var(--radius-field); color:var(--color-text-muted); font-size:.8rem; }
+.users-table__operations { vertical-align:top; }
+.users-table__operations .panel-row-actions { align-items:stretch; flex-direction:column; }
+.company-access-modal { display:grid; gap:1.25rem; width:100%; max-width:52rem; margin:0 auto; }
+.company-access__hero { display:flex; align-items:center; gap:.85rem; padding-block:.2rem 1.1rem; border-bottom:1px solid var(--color-border); }
+.company-access__icon { display:grid; width:3.25rem; height:3.25rem; flex:none; place-items:center; border:1px solid var(--color-info-border); border-radius:var(--radius-compact-list-item); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.35rem; }
+.company-access__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.15rem; font-weight:800; }
+.company-access__hero p:last-child { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.8rem; }
+.company-access__form { display:grid; gap:1rem; }
+.company-access__context { display:flex; align-items:flex-start; gap:.5rem; padding:.75rem .85rem; border:1px solid var(--color-info-border); border-radius:var(--radius-field); background:var(--color-info-bg); color:var(--color-info-fg); font-size:.78rem; line-height:1.8; }
+.company-access__admin-toggle { display:flex; align-items:flex-start; gap:.65rem; padding:.85rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); cursor:pointer; }
+.company-access__admin-toggle input { width:1.1rem; height:1.1rem; margin-top:.15rem; accent-color:var(--color-brand-blue); }
+.company-access__admin-toggle span { display:grid; gap:.2rem; }
+.company-access__admin-toggle strong { color:var(--color-text-heading); font-size:.84rem; }
+.company-access__admin-toggle small { color:var(--color-text-muted); font-size:.73rem; line-height:1.7; }
+.company-access__permissions { display:grid; gap:.7rem; }
+.company-access__section-heading { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+.company-access__section-heading h3 { margin:0; color:var(--color-text-heading); font-size:.92rem; font-weight:800; }
+.company-access__section-heading p { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.74rem; }
+.company-access__permission-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
+.company-access__permission-card { display:grid; gap:.65rem; min-width:0; padding:.8rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.company-access__permission-title { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.company-access__permission-title strong { color:var(--color-text-heading); font-size:.82rem; }
+.company-access__select-all { padding:0; border:0; background:transparent; color:var(--color-brand-blue); font:inherit; font-size:.7rem; cursor:pointer; }
+.company-access__select-all:focus-visible { outline:2px solid var(--color-brand-blue); outline-offset:3px; border-radius:.2rem; }
+.company-access__actions { display:flex; flex-wrap:wrap; gap:.35rem; }
+.company-access__actions .action-checkbox { min-height:2rem; padding:.25rem .5rem; font-size:.72rem; }
+.company-access__error { display:flex; align-items:center; gap:.6rem; padding:.85rem; border:1px solid var(--color-danger-border); border-radius:var(--radius-field); background:var(--color-danger-bg); color:var(--color-danger-fg); font-size:.8rem; }
+.company-access__error span { flex:1; }
+.company-access__actions-row { display:flex; justify-content:flex-start; gap:.65rem; padding-top:.25rem; border-top:1px solid var(--color-border); }
 @media (max-width:640px) {
   .user-details__hero { align-items:flex-start; flex-wrap:wrap; }
   .permission-count--hero { width:100%; margin-inline-start:0; }
   .user-details__grid, .user-permissions-list { grid-template-columns:1fr; }
   .user-details__grid-wide { grid-column:auto; }
+  .company-access__permission-grid { grid-template-columns:1fr; }
+  .company-access__hero { align-items:flex-start; }
 }
 @media (prefers-reduced-motion:reduce) { .users-table__row { transition:none; } }
 </style>
