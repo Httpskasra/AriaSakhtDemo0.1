@@ -15,8 +15,12 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{ navigate: [] }>();
 const route = useRoute();
+const router = useRouter();
 
-const resolvedCurrentPath = computed(() => props.currentPath || route.path);
+// The persistent panel layout survives client-side navigation. Use the
+// router's canonical current route as the source of truth so this component
+// cannot keep the route that was active when the layout was first mounted.
+const resolvedCurrentPath = computed(() => router.currentRoute.value.path || props.currentPath || route.path);
 
 function normalizePath(path?: string) {
   if (!path) return "";

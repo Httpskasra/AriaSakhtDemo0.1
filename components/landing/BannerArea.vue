@@ -3,7 +3,7 @@
     <div class="section-container landing-promos__grid">
       <NuxtLink
         to="/products"
-        class="promo-card promo-card--products group md:col-span-2"
+        class="promo-card promo-card--products group"
       >
         <div class="promo-card__visual" aria-hidden="true">
           <NuxtImg
@@ -36,9 +36,9 @@
 </template>
 
 <style scoped>
-.landing-promos { padding-block:clamp(2rem, 4vw, 3.5rem); }
-.landing-promos__grid { display:grid; grid-template-columns:1fr; gap:1rem; }
-.promo-card { position:relative; display:flex; min-height:16.5rem; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.landing-promos { padding-block:var(--landing-section-space); }
+.landing-promos__grid { display:grid; grid-template-columns:1fr; gap:var(--landing-grid-gap); align-items:stretch; }
+.promo-card { position:relative; display:flex; min-height:15.5rem; height:100%; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .promo-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .promo-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 30%, transparent); outline-offset:3px; }
 .promo-card--products { background:var(--color-text-heading); }
@@ -57,11 +57,13 @@
 .promo-card__accent-icon { position:absolute; inset-block-start:-1.25rem; inset-inline-start:-1.25rem; z-index:0; width:7.5rem; height:7.5rem; color:color-mix(in srgb, var(--color-bg-surface) 13%, transparent); transform:rotate(-12deg); }
 
 @media (min-width: 768px) {
-  .landing-promos__grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .promo-card { min-height:17.5rem; }
+  .landing-promos__grid { grid-template-columns:minmax(0, 1fr) minmax(0, 2fr); }
+  .promo-card--products { grid-column:2; }
+  .promo-card--rfq { grid-column:1; }
 }
 
 @media (max-width: 767px) {
+  .promo-card--products, .promo-card--rfq { grid-column:auto; }
   .promo-card__visual { width:100%; height:8.5rem; inset-block-start:auto; opacity:.32; }
   .promo-card__scrim { background:linear-gradient(180deg, var(--color-text-heading) 10%, color-mix(in srgb, var(--color-text-heading) 86%, transparent) 100%); }
   .promo-card__content { align-self:flex-start; }

@@ -19,12 +19,11 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
 
 <template>
   <section aria-labelledby="featured-vendors-heading" class="featured-vendors">
-    <div class="featured-vendors__heading">
-      <div>
-        <h2 id="featured-vendors-heading">تأمین‌کنندگان برتر</h2>
-        <p>با تأمین‌کنندگان ثبت‌شده تجاریس آشنا شوید.</p>
-      </div>
-    </div>
+    <LandingSectionHeader
+      id="featured-vendors-heading"
+      title="تأمین‌کنندگان برتر"
+      subtitle="با تأمین‌کنندگان ثبت‌شده تجاریس آشنا شوید."
+    />
 
     <SharedAsyncState
       v-if="pending"
@@ -79,12 +78,8 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
 </template>
 
 <style scoped>
-.featured-vendors { padding-block:clamp(2rem, 4vw, 3.5rem); }
-.featured-vendors__heading { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; }
-.featured-vendors__heading h2 { margin:0 0 .35rem; color:var(--color-text-heading); font-size:clamp(1.35rem, 2.2vw, 1.8rem); font-weight:900; }
-.featured-vendors__heading p { margin:0; color:var(--color-text-muted); font-size:.85rem; line-height:1.8; }
-.featured-vendors__grid { display:grid; grid-template-columns:1fr; gap:1rem; }
-.featured-vendors__grid--single { grid-template-columns:minmax(0, 30rem); }
+.featured-vendors__grid { display:grid; grid-template-columns:1fr; gap:var(--landing-grid-gap); }
+.featured-vendors__grid--single { grid-template-columns:minmax(0, 25rem); justify-content:start; }
 .vendor-card { display:flex; min-width:0; flex-direction:column; padding:1.15rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .vendor-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .vendor-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin-bottom:1rem; }

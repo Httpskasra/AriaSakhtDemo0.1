@@ -1,14 +1,14 @@
 <template>
-  <div class="landing-page pb-16 sm:pb-20">
+  <div class="landing-page">
     <HeroSection />
     
-    <div class="section-container">
+    <div class="section-container landing-page__section">
       <MarketplaceCategories />
     </div>
 
     <BannerArea />
 
-    <div v-if="featuredProductsError || featuredProductsLoading || featuredProducts?.length" class="section-container landing-page__featured-products">
+    <div v-if="featuredProductsError || featuredProductsLoading || featuredProducts?.length" class="section-container landing-page__section landing-page__featured-products">
       <SharedAsyncState
         v-if="featuredProductsError"
         state="error"
@@ -18,11 +18,11 @@
       <FeaturedProducts v-else :products="featuredProducts" :loading="featuredProductsLoading" />
     </div>
 
-    <div class="section-container">
+    <div class="section-container landing-page__section">
       <MarketplaceAdvantages />
     </div>
 
-    <div class="section-container">
+    <div class="section-container landing-page__section">
       <FeaturedVendors />
     </div>
 

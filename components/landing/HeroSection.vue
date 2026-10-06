@@ -48,7 +48,6 @@
 .landing-hero {
   position: relative;
   overflow: hidden;
-  min-height: 29rem;
   background: var(--color-text-heading);
   isolation: isolate;
 }
@@ -67,13 +66,14 @@
 .landing-hero__overlay { background: linear-gradient(90deg, color-mix(in srgb, var(--color-text-heading) 96%, transparent) 0%, color-mix(in srgb, var(--color-text-heading) 88%, transparent) 48%, color-mix(in srgb, var(--color-text-heading) 68%, transparent) 100%); }
 
 .landing-hero__container {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   align-items: center;
-  min-height: 29rem;
-  padding-block: clamp(2.75rem, 5.5vw, 4.5rem);
+  min-height: 0;
+  padding-block: clamp(3.5rem, 7vw, 5.5rem);
 }
 
-.landing-hero__content { width: min(100%, 54rem); margin-inline-start: clamp(0rem, 6vw, 5.5rem); }
+.landing-hero__content { grid-column: 1; width: min(100%, 40rem); margin: 0; }
 .landing-hero__eyebrow { display: inline-flex; min-height: 2rem; align-items: center; gap: .55rem; margin: 0 0 1.25rem; padding: .35rem .8rem; border: 1px solid color-mix(in srgb, var(--color-bg-surface) 18%, transparent); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-bg-surface) 8%, transparent); color: var(--color-bg-surface); font-size: .78rem; font-weight: 700; }
 .landing-hero__eyebrow-dot { width: .5rem; height: .5rem; border-radius: var(--radius-circle); background: var(--color-brand-yellow); }
 .landing-hero__title { margin: 0; color: var(--color-bg-surface); font-size: clamp(2rem, 4.35vw, 3.7rem); font-weight: 800; line-height: 1.23; letter-spacing: -.035em; }
@@ -92,9 +92,8 @@
 .landing-hero__benefits :deep(svg) { width: 1rem; color: var(--color-brand-yellow); }
 
 @media (max-width: 767px) {
-  .landing-hero { min-height: auto; }
-  .landing-hero__container { min-height: auto; padding-block: 2.5rem 2.75rem; }
-  .landing-hero__content { margin-inline-start: 0; }
+  .landing-hero__container { display: block; padding-block: 2.75rem 3rem; }
+  .landing-hero__content { width: 100%; }
   .landing-hero__eyebrow { margin-bottom: 1rem; font-size: .7rem; }
   .landing-hero__title { font-size: clamp(2rem, 10vw, 3rem); letter-spacing: -.025em; }
   .landing-hero__description { margin-block: 1rem 1.25rem; font-size: .88rem; line-height: 1.9; }
@@ -107,9 +106,8 @@
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
-  .landing-hero { min-height: 26rem; }
-  .landing-hero__container { min-height: 26rem; padding-block: 2.5rem; }
-  .landing-hero__content { margin-inline-start: 2rem; }
+  .landing-hero__container { display: block; padding-block: 3rem; }
+  .landing-hero__content { width: min(100%, 42rem); }
   .landing-hero__title { font-size: clamp(2rem, 5vw, 3.1rem); }
 }
 

@@ -24,8 +24,8 @@
 </template>
 
 <style scoped>
-.landing-cta { padding-block:clamp(2rem, 4vw, 3.5rem); }
-.landing-cta__surface { position:relative; display:flex; align-items:center; justify-content:space-between; gap:2rem; overflow:hidden; padding:clamp(2rem, 5vw, 3.25rem); border-radius:var(--radius-card); background:var(--color-brand-blue); color:var(--color-bg-surface); }
+.landing-cta { padding-block:var(--landing-section-space); }
+.landing-cta__surface { position:relative; display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(13rem, .8fr); align-items:center; gap:2rem; overflow:hidden; padding:clamp(2rem, 4vw, 3rem); border-radius:var(--radius-card); background:var(--color-brand-blue); color:var(--color-bg-surface); }
 .landing-cta__icon { position:absolute; inset-block-end:-3rem; inset-inline-end:-2rem; width:15rem; height:15rem; color:color-mix(in srgb, var(--color-bg-surface) 10%, transparent); transform:rotate(-12deg); }
 .landing-cta__content { position:relative; z-index:1; max-width:42rem; }
 .landing-cta__eyebrow { margin:0 0 .5rem; color:var(--color-brand-yellow); font-size:.75rem; font-weight:800; }
@@ -38,7 +38,7 @@
 .landing-cta__signal :deep(svg) { width:1.15rem; color:var(--color-brand-yellow); }
 
 @media (max-width: 767px) {
-  .landing-cta__surface { align-items:stretch; flex-direction:column; gap:1.5rem; padding:1.6rem; }
+  .landing-cta__surface { display:flex; align-items:stretch; flex-direction:column; gap:1.5rem; padding:1.6rem; }
   .landing-cta__signals { grid-template-columns:repeat(2,minmax(0,1fr)); min-width:0; }
   .landing-cta__signal { min-width:0; font-size:.68rem; }
   .landing-cta__actions { display:grid; grid-template-columns:1fr; }

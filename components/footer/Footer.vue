@@ -1,7 +1,7 @@
 <template>
   <footer class="site-footer border-t border-slate-200 bg-white">
     <div class="section-container">
-      <div class="site-footer__main grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
+      <div class="site-footer__main">
         <div class="space-y-4">
           <NuxtLink to="/" class="flex items-center gap-2">
             <div class="flex size-9 items-center justify-center rounded-field bg-primary-500">
@@ -91,7 +91,23 @@ const socialLinks = [
 
 <style scoped>
 .site-footer__main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
   padding-block: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .site-footer__main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-footer__main {
+    grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+    gap: 2rem;
+  }
 }
 
 @media (max-width: 639px) {

@@ -24,10 +24,10 @@ const formatPrice = (price: number) => {
 </script>
 
 <template>
-  <section aria-labelledby="featured-products-heading" class="space-y-6">
-    <h2 id="featured-products-heading" class="featured-products__heading">محصولات ویژه</h2>
+  <section aria-labelledby="featured-products-heading" class="featured-products">
+    <LandingSectionHeader id="featured-products-heading" title="محصولات ویژه" />
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="featured-products__grid">
       <template v-if="loading">
         <div v-for="i in 4" :key="i" class="premium-card overflow-hidden">
           <div class="featured-product-skeleton__image"></div>
@@ -104,7 +104,7 @@ const formatPrice = (price: number) => {
 </template>
 
 <style scoped>
-.featured-products__heading { margin: 0; color: var(--color-text-heading); font-size: 1.5rem; font-weight: 900; }
+.featured-products__grid { display: grid; grid-template-columns: 1fr; gap: var(--landing-grid-gap); }
 .featured-product-skeleton__image { aspect-ratio: 1; background: var(--color-border-strong); animation: featured-pulse 1.4s ease-in-out infinite; }
 .featured-product-skeleton__line { height: .75rem; border-radius: var(--radius-compact-list-item); background: var(--color-border-strong); animation: featured-pulse 1.4s ease-in-out infinite; }
 .featured-product-skeleton__line--wide { width: 75%; height: 1.25rem; }
@@ -123,4 +123,12 @@ const formatPrice = (price: number) => {
 .featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: 600; }
 .featured-product__cart { transition: background-color .16s ease, color .16s ease; }
 @keyframes featured-pulse { 50% { opacity: .45; } }
+
+@media (min-width: 640px) {
+  .featured-products__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .featured-products__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 </style>

@@ -131,7 +131,13 @@ function submitProduct(status: Product["status"] = "active") {
             <UInput v-model="localForm.name" required placeholder="مثلاً سیمان تیپ ۲" />
           </UFormField>
           <UFormField label="نامک (slug)" name="slug">
-            <UInput v-model="localForm.slug" class="ltr" required placeholder="مثلاً cement-type-2" />
+            <UInput
+              v-model="localForm.slug"
+              class="ltr"
+              required
+              pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              placeholder="مثلاً cement-type-2" />
+            <span class="products-form-hint">فقط حروف انگلیسی کوچک، عدد و خط تیره؛ مثل cement-type-2</span>
           </UFormField>
           <UFormField label="SKU" name="sku">
             <UInput v-model="localForm.sku" class="ltr" required placeholder="مثلاً CEM-T2-001" />

@@ -232,7 +232,13 @@
               </UFormField>
 
               <UFormField label="نامک (slug)" name="slug">
-                <UInput v-model="form.slug" class="ltr" required />
+                <UInput
+                  v-model="form.slug"
+                  class="ltr"
+                  required
+                  pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  placeholder="مثلاً cement-type-2" />
+                <span class="products-form-hint">فقط حروف انگلیسی کوچک، عدد و خط تیره؛ مثل cement-type-2</span>
               </UFormField>
 
               <UFormField label="SKU" name="sku">
@@ -1053,6 +1059,9 @@ function normalizeCategoryIds(value: unknown): string[] {
 function validateProductForm(): string | null {
   if (!form.value.name.trim()) return "نام محصول را وارد کنید.";
   if (!form.value.slug.trim()) return "نامک محصول را وارد کنید.";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.value.slug.trim())) {
+    return "نامک محصول فقط باید شامل حروف انگلیسی کوچک، عدد و خط تیره باشد؛ مثل cement-type-2.";
+  }
   if (Number(form.value.basePrice) < 0) return "قیمت پایه نمی‌تواند منفی باشد.";
   if (Number(form.value.discount) < 0 || Number(form.value.discount) > 100) return "تخفیف باید بین صفر تا صد باشد.";
   if (Number(form.value.stock?.quantity) < 0) return "موجودی نمی‌تواند منفی باشد.";

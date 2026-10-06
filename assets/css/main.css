@@ -176,6 +176,10 @@
   --font-yekan: var(--font-num);
   --font-body: var(--font-num);
   --space-page: clamp(1rem, 3vw, 2rem);
+  --layout-content-max: 82.5rem;
+  --layout-gutter: 2rem;
+  --landing-section-space: clamp(2.5rem, 5vw, 4.5rem);
+  --landing-grid-gap: 1.5rem;
   --radius-brand: 12px;
   --radius-none: 0;
   --radius-control: 0.75rem;
@@ -394,14 +398,35 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-inline: 1rem;
-    max-width: 90rem;
+    max-width: var(--layout-content-max);
+    padding-inline: var(--layout-gutter);
   }
 
-  @media (min-width: 640px) {
+  @media (max-width: 1024px) {
     .section-container {
       padding-inline: 1.5rem;
     }
+  }
+
+  @media (max-width: 767px) {
+    .section-container {
+      padding-inline: 1.25rem;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .section-container {
+      padding-inline: 1rem;
+    }
+  }
+
+  .landing-page {
+    width: 100%;
+    overflow-x: clip;
+  }
+
+  .landing-page__section {
+    padding-block: var(--landing-section-space);
   }
 
   .font-num {
