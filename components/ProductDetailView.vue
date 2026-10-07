@@ -325,7 +325,7 @@ function handleImageError(event: string | Event) {
         </div>
       </section>
 
-      <section class="product-detail-sections" aria-label="مشخصات کامل محصول">
+      <section class="product-detail-sections" aria-label="اطلاعات و شرایط محصول">
         <div class="product-section-grid">
           <article class="product-information-card">
             <div class="product-section-heading"><UIcon name="i-lucide-file-text" aria-hidden="true" /><h2>درباره محصول</h2></div>
@@ -347,7 +347,13 @@ function handleImageError(event: string | Event) {
           <div v-if="displayTags.length" class="product-taxonomy-group"><strong>برچسب‌ها</strong><div><span v-for="tag in displayTags" :key="tag" class="product-chip product-chip--muted">#{{ tag }}</span></div></div>
         </article>
 
-        <InfoContainer :data="product" />
+        <section class="product-tabs-section" aria-label="اطلاعات تکمیلی محصول">
+          <div class="product-tabs-section__heading">
+            <span>اطلاعات تکمیلی</span>
+            <p>مشخصات، قوانین خرید و دیدگاه کاربران</p>
+          </div>
+          <InfoContainer :data="product" />
+        </section>
         <RelatedProducts v-if="categoryIds.length" :category-ids="categoryIds" :current-product-id="productId" />
       </section>
     </template>
@@ -362,7 +368,7 @@ function handleImageError(event: string | Event) {
 </template>
 
 <style scoped>
-.product-detail-page { width: min(calc(100% - 2rem), var(--layout-content-max)); margin-inline: auto; padding-block: 1.25rem 3rem; }
+.product-detail-page { width: min(calc(100% - 2rem), var(--layout-content-max)); margin-inline: auto; padding-block: 1.5rem 3.5rem; }
 .product-breadcrumb { display: flex; align-items: center; gap: .45rem; margin-bottom: 1rem; color: var(--color-text-muted); font-size: .78rem; overflow: hidden; }
 .product-breadcrumb a { color: var(--color-brand-blue); white-space: nowrap; }
 .product-breadcrumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -428,7 +434,7 @@ function handleImageError(event: string | Event) {
 .quantity-control button { width: 2.35rem; min-height: 2.75rem; color: var(--color-brand-blue); font-size: 1.2rem; font-weight: 800; }
 .quantity-control button:disabled { color: var(--color-text-disabled); cursor: not-allowed; }
 .quantity-control span { color: var(--color-text-heading); font-weight: 800; }
-.product-detail-sections { display: grid; gap: 1rem; margin-top: 1rem; }
+.product-detail-sections { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
 .product-section-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .product-information-card { padding: clamp(1rem, 2vw, 1.5rem); }
 .product-section-heading { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; color: var(--color-text-heading); }
@@ -448,6 +454,10 @@ function handleImageError(event: string | Event) {
 .product-taxonomy-group > div { display: flex; flex-wrap: wrap; gap: .45rem; }
 .product-chip { display: inline-flex; padding: .35rem .65rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .75rem; }
 .product-chip--muted { color: var(--color-text-body); background: var(--color-bg-light); }
+.product-tabs-section { display: grid; gap: .75rem; }
+.product-tabs-section__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-inline: .25rem; }
+.product-tabs-section__heading span { color: var(--color-text-heading); font-size: 1rem; font-weight: 800; }
+.product-tabs-section__heading p { margin: 0; color: var(--color-text-muted); font-size: .75rem; }
 .product-detail-state { display: grid; min-height: 20rem; place-items: center; gap: .75rem; padding: 2rem; border-radius: var(--radius-card); text-align: center; }
 .product-detail-state--loading { color: var(--color-brand-blue); }
 .product-detail-state--error { color: var(--color-danger-fg); background: var(--color-danger-bg); }
@@ -458,6 +468,6 @@ function handleImageError(event: string | Event) {
 .product-lightbox__close { position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; }
 
 @media (max-width: 1024px) { .product-detail-layout { grid-template-columns: 1fr; } .product-gallery__main { max-width: 42rem; margin-inline: auto; } }
-@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), var(--layout-content-max)); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } .product-variants__header { flex-direction: column; } .product-variants__progress { align-self: flex-start; } .product-variant__options { grid-template-columns: 1fr 1fr; } .product-gallery__thumbnails { display: flex; overflow-x: auto; padding-bottom: .25rem; scroll-snap-type: inline proximity; } .product-gallery__thumbnails > div { flex: 0 0 4.5rem; scroll-snap-align: start; } }
+@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), var(--layout-content-max)); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } .product-variants__header { flex-direction: column; } .product-variants__progress { align-self: flex-start; } .product-variant__options { grid-template-columns: 1fr 1fr; } .product-gallery__thumbnails { display: flex; overflow-x: auto; padding-bottom: .25rem; scroll-snap-type: inline proximity; } .product-gallery__thumbnails > div { flex: 0 0 4.5rem; scroll-snap-align: start; } .product-tabs-section__heading { align-items: flex-start; flex-direction: column; gap: .25rem; } }
 @media (prefers-reduced-motion: reduce) { .product-gallery__thumbnail, .product-gallery__main, .product-status, .product-variant__option { transition: none; } }
 </style>

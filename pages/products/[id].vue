@@ -1,5 +1,3 @@
 <template>
-  <NuxtLayout name="default">
-    <ProductDetailView />
-  </NuxtLayout>
+  <ProductDetailView />
 </template>

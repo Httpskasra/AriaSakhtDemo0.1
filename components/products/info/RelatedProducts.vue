@@ -23,8 +23,11 @@ const relatedError = computed(() => error.value?.statusMessage || error.value?.m
 <template>
   <section v-if="pending || relatedItems.length || error" class="related-products" aria-labelledby="related-products-title">
     <div class="related-products__heading">
+      <div>
+        <span class="related-products__eyebrow">پیشنهاد برای شما</span>
+        <h2 id="related-products-title">محصولات مشابه</h2>
+      </div>
       <span class="related-products__accent" aria-hidden="true"></span>
-      <h2 id="related-products-title">محصولات مشابه</h2>
     </div>
     <div v-if="pending" class="related-products__loading" role="status" aria-live="polite">
       <UIcon name="i-lucide-loader-circle" class="animate-spin" aria-hidden="true" />
@@ -41,10 +44,11 @@ const relatedError = computed(() => error.value?.statusMessage || error.value?.m
 </template>
 
 <style scoped>
-.related-products { display: grid; gap: 1rem; margin-top: 1rem; }
-.related-products__heading { display: flex; align-items: center; gap: .5rem; }
-.related-products__heading h2 { margin: 0; color: var(--color-text-heading); font-size: 1.1rem; font-weight: 800; }
-.related-products__accent { width: .25rem; height: 1.75rem; border-radius: var(--radius-pill); background: var(--color-brand-blue); }
+.related-products { display: grid; gap: 1rem; margin-top: .5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-border); }
+.related-products__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.related-products__heading h2 { margin: .2rem 0 0; color: var(--color-text-heading); font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 800; }
+.related-products__eyebrow { display: block; color: var(--color-text-muted); font-size: .72rem; font-weight: 700; }
+.related-products__accent { width: 2.25rem; height: .25rem; border-radius: var(--radius-pill); background: var(--color-brand-blue); }
 .related-products__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .related-products__loading, .related-products__error { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 1.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-bg-light); }
 .related-products__error { justify-content: space-between; color: var(--color-danger-fg); }
