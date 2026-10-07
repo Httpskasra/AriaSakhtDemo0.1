@@ -62,7 +62,7 @@ function onTabKeydown(event: KeyboardEvent, tab: Content) {
 </script>
 <style scoped>
 .product-info-tabs {
-  display: grid;
+  display: block;
   width: 100%;
   margin-inline: auto;
   background: var(--color-bg-surface);
@@ -79,14 +79,14 @@ function onTabKeydown(event: KeyboardEvent, tab: Content) {
 
 .product-info-tabs__header {
   width: 100%;
-  padding: .15rem 0 0;
+  padding: 0;
   border-bottom: 1px solid var(--color-border);
 }
 
 ul {
   display: flex;
   align-items: center;
-  gap: .35rem;
+  gap: .2rem;
   margin: 0;
   padding: 0;
   color: var(--color-text-muted);
@@ -97,8 +97,8 @@ ul {
 li { display: flex; }
 
 li button {
-  min-height: 2.75rem;
-  padding: .65rem .75rem;
+  min-height: 2.5rem;
+  padding: .5rem .7rem;
   border-bottom: 2px solid transparent;
   color: inherit;
   background: transparent;
@@ -114,7 +114,7 @@ li button.active { color: var(--color-brand-blue); border-bottom-color: var(--co
 li button:focus-visible { outline: 2px solid var(--color-brand-blue); outline-offset: 3px; }
 
 .product-info-tabs__content {
-  padding: 1.1rem 0 0;
+  padding: .75rem 0 0;
 }
 
 .product-info-tabs--embedded .product-info-tabs__content {
@@ -126,7 +126,7 @@ li button:focus-visible { outline: 2px solid var(--color-brand-blue); outline-of
   ul { overflow-x: auto; }
   li { flex: 0 0 auto; }
   li button { font-size: .75rem; }
-  .product-info-tabs__content { padding-top: .9rem; }
+  .product-info-tabs__content { padding-top: .65rem; }
   .product-info-tabs--embedded .product-info-tabs__content { padding-inline: 0; }
 }
 </style>

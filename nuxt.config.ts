@@ -1,4 +1,5 @@
 import process from "node:process";
+import { resolve } from "node:path";
 import { defineNuxtConfig } from "nuxt/config";
 
 const BRAND_BLUE = "#1673ff";
@@ -14,6 +15,13 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    publicAssets: [
+      {
+        dir: resolve(process.cwd(), "assets/fonts/IRANYekanXFaNum"),
+        baseURL: "/fonts/IRANYekanXFaNum",
+        maxAge: 31536000,
+      },
+    ],
     timing: true,
     externals: {
       inline: ['entities']

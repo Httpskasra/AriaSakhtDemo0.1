@@ -65,70 +65,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Thin.ttf") format("truetype");
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanX/IRANYekanX-UltraLight.ttf") format("truetype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-DemiBold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-ExtraBold.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IRANYekanXNoEn";
-  src: url("../fonts/IRANYekanXNoEn/IRANYekanXNoEn-Heavy.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 @theme {
   --color-brand-blue: #1673ff;
   --color-primary: var(--color-brand-blue);
@@ -352,6 +288,11 @@
 /* Light-only token contract: there is no dark-mode variant or user-facing toggle. */
 
 @layer base {
+  /* Keep the entire application on one typeface, including Nuxt UI controls. */
+  :where(html, body, body *) {
+    font-family: var(--font-num) !important;
+  }
+
   body {
     background-color: var(--color-bg-light);
     color: var(--color-text-heading);

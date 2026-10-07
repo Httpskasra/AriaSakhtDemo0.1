@@ -84,7 +84,7 @@ onBeforeUnmount(() => { if (pollTimer) clearTimeout(pollTimer); });
         <div class="space-y-4 mb-8">
           <div class="flex justify-between items-center py-3 border-b border-gray-50">
             <span class="text-gray-400 text-sm">شماره پیگیری:</span>
-            <span class="text-gray-900 font-mono font-bold">{{ trackId || '---' }}</span>
+            <span class="text-gray-900 font-bold">{{ trackId || '---' }}</span>
           </div>
           <div v-if="transaction?.createdAt" class="flex justify-between items-center py-3 border-b border-gray-50">
             <span class="text-gray-400 text-sm">تاریخ:</span>

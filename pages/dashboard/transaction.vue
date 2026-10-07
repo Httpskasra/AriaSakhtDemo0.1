@@ -129,7 +129,7 @@ watch(isReady, (ready) => { if (ready) fetchTransactions(); }, { once: true });
 .amount--neutral { color: var(--color-text-body); }
 .transaction-type { display: inline-flex; align-items: center; gap: .45rem; min-width: 9rem; }
 .transaction-type > :first-child { width: 1rem; height: 1rem; color: var(--color-text-muted); }
-.reference { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+.reference { font-family: var(--font-num); font-size: .8rem; }
 .transaction-details { display: grid; gap: 1rem; }
 .transaction-details h2 { margin: 0; color: var(--color-text-heading); font-size: 1.1rem; }
 .transaction-details dl { display: grid; gap: .75rem; margin: 0; }

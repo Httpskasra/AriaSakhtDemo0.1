@@ -69,8 +69,8 @@ onMounted(fetchRatings);
 </script>
 
 <style scoped>
-.product-comments-list { width: 100%; margin-top: 1.25rem; }
-.product-comments-list__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+.product-comments-list { width: 100%; margin-top: 0; }
+.product-comments-list__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .6rem; }
 .product-comments-list__heading h3 { margin: 0; color: var(--color-text-heading); font-size: .95rem; font-weight: 900; }
 .product-comments-list__heading span { color: var(--color-text-muted); font-size: .72rem; }
 .loading, .no-comments { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem; color: var(--color-text-muted); text-align: center; }

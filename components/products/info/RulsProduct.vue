@@ -20,12 +20,12 @@ defineProps<{ data: Product }>();
 
 <style scoped>
 .product-rules { width: 100%; }
-.product-rules__intro { max-width: 70ch; margin: 0 0 1rem; color: var(--color-text-body); line-height: 1.9; }
-.product-rules ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin: 0; padding: 0; color: var(--color-text-body); list-style: none; }
-.product-rules li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: flex-start; gap: .65rem; padding: .85rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-light); line-height: 1.9; }
+.product-rules__intro { max-width: 70ch; margin: 0 0 .75rem; color: var(--color-text-body); line-height: 1.9; }
+.product-rules ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: 0; padding: 0; color: var(--color-text-body); list-style: none; }
+.product-rules li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: flex-start; gap: .55rem; padding: .65rem .75rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-light); line-height: 1.85; }
 .product-rules li > svg { margin-top: .2rem; color: var(--color-brand-blue); }
 .product-rules li p { margin: 0; }
 .product-rules strong { color: var(--color-text-heading); }
-.product-rules__link { display: inline-flex; margin-top: 1.25rem; color: var(--color-brand-blue); font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
+.product-rules__link { display: inline-flex; margin-top: .85rem; color: var(--color-brand-blue); font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
 @media (max-width: 700px) { .product-rules ul { grid-template-columns: 1fr; } }
 </style>
