@@ -70,7 +70,8 @@ export default defineNuxtPlugin({
     // request. Never persist the access token in localStorage.
     if (authStatus.value === "authenticated" && !authStore.getAccessToken()) {
       try {
-        await refreshAccessToken();
+        const accessToken = await refreshAccessToken();
+        await fetchUser(true, accessToken);
       } catch (error) {
         // A genuinely invalid/expired refresh session is a real logout. A
         // temporary API, Redis or network failure must keep the current user

@@ -35,7 +35,7 @@ export interface Product {
   currency?: string;
   categories: Array<string | { _id?: string; id?: string; name?: string }>;
   description: string;
-  companyId?: string | { _id: string; name: string };
+  companyId?: string | { _id?: string; id?: string; name?: string };
   stock: {
     quantity: number;
     reserved?: number;

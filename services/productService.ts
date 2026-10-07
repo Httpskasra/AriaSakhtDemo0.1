@@ -36,6 +36,65 @@ export interface PaginatedResponse<T> {
   limit: number;
 }
 
+type ProductListPayload = Product[] | {
+  items?: Product[];
+  products?: Product[];
+  results?: Product[];
+  data?: Product[] | {
+    items?: Product[];
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
+  total?: number;
+  count?: number;
+  page?: number;
+  limit?: number;
+  perPage?: number;
+};
+
+/**
+ * Management endpoints have historically returned both a bare array and a
+ * paginated object. Keep that compatibility at the service boundary so page
+ * components always render the same, predictable shape.
+ */
+export function normalizeManagementProductPage(
+  payload: ProductListPayload | null | undefined,
+  defaults: { page?: number; limit?: number } = {},
+): PaginatedResponse<Product> {
+  const fallbackPage = defaults.page || 1;
+  const fallbackLimit = defaults.limit || 25;
+  let source: ProductListPayload | null | undefined = payload;
+
+  if (source && !Array.isArray(source) && source.data !== undefined) {
+    source = source.data;
+  }
+
+  if (Array.isArray(source)) {
+    return {
+      items: source,
+      total: source.length,
+      page: fallbackPage,
+      limit: fallbackLimit,
+    };
+  }
+
+  const items = Array.isArray(source?.items)
+    ? source.items
+    : Array.isArray(source?.products)
+      ? source.products
+      : Array.isArray(source?.results)
+        ? source.results
+        : [];
+
+  return {
+    items,
+    total: Number(source?.total ?? source?.count ?? items.length),
+    page: Number(source?.page ?? fallbackPage),
+    limit: Number(source?.limit ?? source?.perPage ?? fallbackLimit),
+  };
+}
+
 export interface AdminProductListParams {
   page?: number;
   limit?: number;
@@ -47,35 +106,24 @@ export const listAdminProducts = async (
   params: AdminProductListParams = {},
 ) => {
   const $axios = useApi();
-  const { data } = await $axios.get<Product[] | PaginatedResponse<Product>>(
+  const { data } = await $axios.get<ProductListPayload>(
     "/products/admin/all-products",
     { params },
   );
 
-  if (Array.isArray(data)) {
-    return {
-      items: data,
-      total: data.length,
-      page: params.page || 1,
-      limit: params.limit || data.length,
-    } satisfies PaginatedResponse<Product>;
-  }
-
-  return data;
+  return normalizeManagementProductPage(data, params);
 };
 
 export const listCompanyProducts = async (
   companyId: string,
   params: { page?: number; limit?: number; sort?: string } = {},
 ) => {
-  const { data } = await useApi().get<Product[] | PaginatedResponse<Product>>(
+  const { data } = await useApi().get<ProductListPayload>(
     `/products/company/${encodeURIComponent(companyId)}/manage`,
     { params },
   );
-  if (Array.isArray(data)) {
-    return { items: data, total: data.length, page: params.page || 1, limit: params.limit || data.length } satisfies PaginatedResponse<Product>;
-  }
-  return data;
+
+  return normalizeManagementProductPage(data, params);
 };
 
 export type ProductSearchResponse = {

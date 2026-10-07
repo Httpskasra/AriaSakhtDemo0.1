@@ -77,64 +77,54 @@
           <UButton v-if="!search && canCreate" :to="productEditorPath" icon="i-lucide-plus" color="primary" variant="solid" class="products-primary-action">افزودن محصول</UButton>
         </SharedAsyncState>
         <div v-else class="products-table-wrap">
-          <TableScrollContainer>
-            <table class="panel-table products-table">
-              <caption class="sr-only">فهرست محصولات و عملیات مدیریت آن‌ها</caption>
-          <thead>
-            <tr>
-              <th>محصول</th>
-              <th>قیمت</th>
-              <th>موجودی</th>
-              <th>وضعیت</th>
-              <th>اقدامات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="product in products"
-              :key="product._id || product.id">
-              <td class="products-table__identity">
+          <PanelDataTable
+            :rows="products"
+            :columns="productTableColumns"
+            row-key="_id"
+            min-width="64rem">
+            <template #product-data="{ row }">
+              <div class="products-table__identity">
                 <img
-                  v-if="product.images?.[0]?.url"
-                  :src="product.images[0].url"
+                  v-if="row.images?.[0]?.url"
+                  :src="row.images[0].url"
                   class="products-table__image"
-                  :alt="`تصویر ${product.name}`"
+                  :alt="`تصویر ${row.name}`"
                   loading="lazy"
                   @error="handleTableImageError" />
                 <span v-else class="products-table__image products-table__image--empty" aria-hidden="true">
                   <UIcon name="i-lucide-image-off" />
                 </span>
                 <div class="products-table__identity-copy">
-                  <strong class="products-table__name">{{ product.name }}</strong>
-                  <span class="products-table__sku ltr">SKU: {{ product.sku || "-" }}</span>
-                  <span v-if="product.variants?.length || Object.keys(product.attributes || {}).length" class="products-table__metadata">
-                    <span v-if="product.variants?.length">{{ product.variants.length.toLocaleString("fa-IR") }} گزینه خرید</span>
-                    <span v-if="product.variants?.length && Object.keys(product.attributes || {}).length"> · </span>
-                    <span v-if="Object.keys(product.attributes || {}).length">{{ Object.keys(product.attributes || {}).length.toLocaleString("fa-IR") }} مشخصه فنی</span>
+                  <strong class="products-table__name">{{ row.name || "بدون نام" }}</strong>
+                  <span class="products-table__sku ltr">SKU: {{ row.sku || "-" }}</span>
+                  <span v-if="row.variants?.length || Object.keys(row.attributes || {}).length" class="products-table__metadata">
+                    <span v-if="row.variants?.length">{{ row.variants.length.toLocaleString("fa-IR") }} گزینه خرید</span>
+                    <span v-if="row.variants?.length && Object.keys(row.attributes || {}).length"> · </span>
+                    <span v-if="Object.keys(row.attributes || {}).length">{{ Object.keys(row.attributes || {}).length.toLocaleString("fa-IR") }} مشخصه فنی</span>
                   </span>
                 </div>
-              </td>
-              <td class="products-table__price">
-                <strong class="font-num">{{ numberFormat(product.finalPrice ?? product.basePrice) }} ریال</strong>
-                <span v-if="product.discount" class="products-table__discount font-num">{{ product.discount }}٪ تخفیف</span>
-              </td>
-              <td>
-                <span class="products-stock" :class="{ 'products-stock--empty': !(product.stock?.quantity ?? 0), 'products-stock--low': (product.stock?.quantity ?? 0) > 0 && (product.stock?.quantity ?? 0) <= 5 }">
-                  <UIcon :name="(product.stock?.quantity ?? 0) > 0 ? 'i-lucide-package-check' : 'i-lucide-package-x'" aria-hidden="true" />
-                  <span class="font-num">{{ (product.stock?.quantity ?? 0).toLocaleString("fa-IR") }}</span>
-                </span>
-              </td>
-              <td>
-                <PanelStatusBadge
-                  :label="statusFa(product.status)"
-                  :status="product.status"
-                  size="compact" />
-              </td>
-              <td>
-                <div class="panel-row-actions products-table__actions">
+              </div>
+            </template>
+            <template #price-data="{ row }">
+              <div class="products-table__price">
+                <strong class="font-num">{{ numberFormat(row.finalPrice ?? row.basePrice) }} ریال</strong>
+                <span v-if="row.discount" class="products-table__discount font-num">{{ row.discount }}٪ تخفیف</span>
+              </div>
+            </template>
+            <template #stock-data="{ row }">
+              <span class="products-stock" :class="{ 'products-stock--empty': !(row.stock?.quantity ?? 0), 'products-stock--low': (row.stock?.quantity ?? 0) > 0 && (row.stock?.quantity ?? 0) <= 5 }">
+                <UIcon :name="(row.stock?.quantity ?? 0) > 0 ? 'i-lucide-package-check' : 'i-lucide-package-x'" aria-hidden="true" />
+                <span class="font-num">{{ (row.stock?.quantity ?? 0).toLocaleString("fa-IR") }}</span>
+              </span>
+            </template>
+            <template #status-data="{ row }">
+              <PanelStatusBadge :label="statusFa(row.status)" :status="row.status" size="compact" />
+            </template>
+            <template #actions-data="{ row }">
+              <div class="panel-row-actions products-table__actions">
                 <UButton
-                  v-if="product._id || product.id"
-                  :to="`/products/${product._id || product.id}`"
+                  v-if="row._id || row.id"
+                  :to="`/products/${row._id || row.id}`"
                   icon="i-lucide-eye"
                   size="xs"
                   color="neutral"
@@ -145,30 +135,27 @@
                 <UButton
                   v-if="canUpdate"
                   icon="i-lucide-pencil"
-                  @click="openModal(product)"
                   size="xs"
                   color="neutral"
                   variant="ghost"
-                  aria-label="ویرایش محصول">
+                  aria-label="ویرایش محصول"
+                  @click="openModal(row)">
                   ویرایش
                 </UButton>
                 <UButton
                   v-if="canDelete"
                   icon="i-lucide-trash-2"
-                  @click="requestDelete(product)"
                   size="xs"
                   color="error"
                   variant="ghost"
-                  :loading="deletingId === (product._id || product.id)"
-                  aria-label="حذف محصول">
+                  :loading="deletingId === (row._id || row.id)"
+                  aria-label="حذف محصول"
+                  @click="requestDelete(row)">
                   حذف
                 </UButton>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-            </table>
-          </TableScrollContainer>
+              </div>
+            </template>
+          </PanelDataTable>
         </div>
         </div>
       </PanelPermissionGuard>
@@ -537,6 +524,13 @@ const editorDraftKey = computed(() => {
 const activeProductsCount = computed(() => products.value.filter((product) => product.status === "active").length);
 const draftProductsCount = computed(() => products.value.filter((product) => product.status === "draft").length);
 const outOfStockCount = computed(() => products.value.filter((product) => Number(product.stock?.quantity || 0) <= 0).length);
+const productTableColumns = [
+  { key: "product", label: "محصول" },
+  { key: "price", label: "قیمت" },
+  { key: "stock", label: "موجودی" },
+  { key: "status", label: "وضعیت" },
+  { key: "actions", label: "اقدامات" },
+];
 let productsRequestId = 0;
 
 onMounted(() => {
@@ -830,6 +824,7 @@ async function fetchProducts() {
     || scopedProductPermission?.companyId
     || "";
   if (props.sellerOnly && !sellerCompanyId) {
+    loading.value = false;
     products.value = [];
     total.value = 0;
     loadError.value = "برای مشاهده محصولات، ابتدا شرکت خود را ثبت کنید.";

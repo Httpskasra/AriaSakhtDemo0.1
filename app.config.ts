@@ -17,22 +17,23 @@ export default defineAppConfig({
           xl: { base: 'px-8 py-3 text-base gap-2' }
         }
       },
-      default: {
+      defaultVariants: {
         size: 'md',
         color: 'primary',
         variant: 'solid'
       }
     },
     card: {
-      rounded: 'rounded-card',
-      shadow: 'shadow-premium'
+      slots: {
+        root: 'rounded-card shadow-premium'
+      }
     },
     input: {
       slots: {
         root: 'w-full',
         base: 'rounded-field font-num'
       },
-      default: {
+      defaultVariants: {
         size: 'lg',
         color: 'primary',
         variant: 'outline'
@@ -43,7 +44,7 @@ export default defineAppConfig({
         root: 'w-full',
         base: 'rounded-field font-num'
       },
-      default: {
+      defaultVariants: {
         size: 'lg',
         color: 'primary',
         variant: 'outline'
@@ -53,7 +54,7 @@ export default defineAppConfig({
       slots: {
         base: 'rounded-field font-num'
       },
-      default: {
+      defaultVariants: {
         size: 'lg',
         color: 'primary',
         variant: 'outline'
@@ -63,7 +64,7 @@ export default defineAppConfig({
       slots: {
         base: 'rounded-field font-num'
       },
-      default: {
+      defaultVariants: {
         size: 'lg',
         color: 'primary',
         variant: 'outline'
@@ -92,7 +93,9 @@ export default defineAppConfig({
       }
     },
     modal: {
-      rounded: 'rounded-dialog'
+      slots: {
+        content: 'rounded-dialog'
+      }
     },
     icons: {
       search: 'i-lucide-search',

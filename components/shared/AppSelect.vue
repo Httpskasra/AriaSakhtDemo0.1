@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, useAttrs } from "vue";
-import { useFormField } from "@nuxt/ui/composables/useFormField";
+import { useAppFormField } from "~/composables/useFormField";
 
 defineOptions({ inheritAttrs: false });
 
@@ -35,7 +35,7 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
-const { id: fieldId, name: fieldName, disabled: fieldDisabled, ariaAttrs, emitFormChange, emitFormInput, emitFormBlur, emitFormFocus } = useFormField(props);
+const { id: fieldId, name: fieldName, disabled: fieldDisabled, ariaAttrs, emitFormChange, emitFormInput, emitFormBlur, emitFormFocus } = useAppFormField(props);
 const items = computed(() => props.items?.length ? props.items : props.options || []);
 const selectAttrs = computed(() => {
   const result = { ...attrs };

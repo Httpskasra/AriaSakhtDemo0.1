@@ -80,14 +80,14 @@ const isVerified = (vendor: Company) => vendor.status === "active" || vendor.isA
 <style scoped>
 .featured-vendors__grid { display:grid; grid-template-columns:1fr; gap:var(--landing-grid-gap); }
 .featured-vendors__grid--single { grid-template-columns:minmax(0, 25rem); justify-content:start; }
-.vendor-card { display:flex; min-width:0; flex-direction:column; padding:1.15rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.vendor-card { display:flex; min-width:0; flex-direction:column; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .vendor-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
-.vendor-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin-bottom:1rem; }
+.vendor-card__top { display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin-bottom:.8rem; }
 .vendor-card__logo { display:grid; width:3.5rem; height:3.5rem; place-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-light); }
 .vendor-card__logo :deep(img) { width:100%; height:100%; object-fit:cover; }
 .vendor-card h3 { margin:0; color:var(--color-text-heading); font-size:1.05rem; font-weight:900; transition:color .16s ease; }
 .vendor-card:hover h3 { color:var(--color-brand-blue); }
-.vendor-card__location { display:flex; min-height:1.5rem; align-items:center; gap:.35rem; margin:.45rem 0 1.15rem; color:var(--color-text-muted); font-size:.75rem; line-height:1.7; }
+.vendor-card__location { display:flex; min-height:1.5rem; align-items:center; gap:.35rem; margin:.4rem 0 .9rem; color:var(--color-text-muted); font-size:.75rem; line-height:1.7; }
 .vendor-card__action { margin-top:auto; min-height:2.6rem; font-weight:800; }
 
 @media (min-width: 768px) {

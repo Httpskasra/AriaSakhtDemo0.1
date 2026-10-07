@@ -178,8 +178,9 @@
   --space-page: clamp(1rem, 3vw, 2rem);
   --layout-content-max: 82.5rem;
   --layout-gutter: 2rem;
-  --landing-section-space: clamp(2.5rem, 5vw, 4.5rem);
-  --landing-grid-gap: 1.5rem;
+  /* Landing rhythm: total space between adjacent sections. */
+  --landing-section-space: clamp(3rem, 4vw, 4.5rem);
+  --landing-grid-gap: clamp(1rem, 1.8vw, 1.5rem);
   --radius-brand: 12px;
   --radius-none: 0;
   --radius-control: 0.75rem;
@@ -426,7 +427,7 @@
   }
 
   .landing-page__section {
-    padding-block: var(--landing-section-space);
+    padding-block: calc(var(--landing-section-space) / 2);
   }
 
   .font-num {

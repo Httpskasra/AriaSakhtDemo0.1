@@ -1,5 +1,3 @@
-import type { ProductVariantSelection } from "~/types/product";
-
 export const OrderStatus = {
   Pending: "pending",
   Paid: "paid",

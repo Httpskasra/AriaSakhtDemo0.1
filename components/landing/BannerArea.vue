@@ -36,9 +36,9 @@
 </template>
 
 <style scoped>
-.landing-promos { padding-block:var(--landing-section-space); }
+.landing-promos { padding-block:calc(var(--landing-section-space) / 2); }
 .landing-promos__grid { display:grid; grid-template-columns:1fr; gap:var(--landing-grid-gap); align-items:stretch; }
-.promo-card { position:relative; display:flex; min-height:15.5rem; height:100%; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.promo-card { position:relative; display:flex; min-height:14rem; height:100%; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .promo-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .promo-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 30%, transparent); outline-offset:3px; }
 .promo-card--products { background:var(--color-text-heading); }
@@ -58,8 +58,8 @@
 
 @media (min-width: 768px) {
   .landing-promos__grid { grid-template-columns:minmax(0, 1fr) minmax(0, 2fr); }
-  .promo-card--products { grid-column:2; }
-  .promo-card--rfq { grid-column:1; }
+  .promo-card--products { grid-column:2; grid-row:1; }
+  .promo-card--rfq { grid-column:1; grid-row:1; }
 }
 
 @media (max-width: 767px) {

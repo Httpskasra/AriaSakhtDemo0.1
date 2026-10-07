@@ -20,14 +20,19 @@
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Star Rating -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">امتیاز شما</label>
-        <div class="flex gap-1">
+      <fieldset>
+        <legend class="block text-sm font-medium text-gray-700 mb-1">امتیاز شما</legend>
+        <div class="flex gap-1" role="radiogroup" aria-label="امتیاز شما از یک تا پنج">
           <button
             v-for="star in 5"
             :key="star"
             type="button"
             @click="form.rating = star"
+            role="radio"
+            :aria-checked="form.rating === star"
+            :aria-label="`امتیاز ${star} از ۵`"
+            :tabindex="form.rating === star ? 0 : -1"
+            @keydown="handleRatingKeydown($event, star)"
             class="focus:outline-none transition-transform active:scale-95"
           >
             <UIcon
@@ -37,7 +42,7 @@
             />
           </button>
         </div>
-      </div>
+      </fieldset>
 
       <!-- Comment Text -->
       <div>
@@ -66,11 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useUser } from '~/composables/useUser'
 import { listOrders } from '~/services/orderService'
 import { OrderStatus } from '~/types/order'
 import { createRating } from '~/services/ratingService'
+import { toUserFacingError } from '~/services/apiClient'
 
 const props = defineProps<{
   productId: string
@@ -78,7 +84,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['comment-added'])
 
-const { user, isAuthenticated } = useUser()
+const { user, isAuthenticated, isUserLoading } = useUser()
 const toast = useToast()
 
 const checkingEligibility = ref(true)
@@ -91,6 +97,7 @@ const form = reactive({
 })
 
 const checkEligibility = async () => {
+  checkingEligibility.value = true
   if (!isAuthenticated.value) {
     checkingEligibility.value = false
     return
@@ -103,10 +110,14 @@ const checkEligibility = async () => {
     // A delivered order is eligible for a product comment.
     canComment.value = orders.some(order => 
       order.status === OrderStatus.Delivered &&
-      order.items.some(item => item.productId === props.productId)
+      order.items.some(item => {
+        const productId = typeof item.productId === 'string' ? item.productId : item.productId?._id || item.productId?.id
+        return productId === props.productId
+      })
     )
   } catch (err) {
     console.error('Eligibility check failed:', err)
+    canComment.value = false
   } finally {
     checkingEligibility.value = false
   }
@@ -131,9 +142,10 @@ const handleSubmit = async () => {
     form.rating = 5
     emit('comment-added')
   } catch (err: any) {
+    const apiError = toUserFacingError(err, 'ثبت دیدگاه فعلاً ممکن نیست.')
     toast.add({ 
       title: 'خطا در ثبت', 
-      description: err.response?.data?.message || 'مشکلی پیش آمد', 
+      description: apiError.message,
       color: 'error'
     })
   } finally {
@@ -141,5 +153,21 @@ const handleSubmit = async () => {
   }
 }
 
-onMounted(checkEligibility)
+watch([isAuthenticated, isUserLoading], ([authenticated, loading]) => {
+  if (loading) return
+  if (!authenticated) {
+    checkingEligibility.value = false
+    canComment.value = false
+    return
+  }
+  void checkEligibility()
+}, { immediate: true })
+
+function handleRatingKeydown(event: KeyboardEvent, current: number) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+  event.preventDefault()
+  const next = event.key === 'Home' ? 1 : event.key === 'End' ? 5 : Math.min(5, Math.max(1, current + (event.key === 'ArrowLeft' ? 1 : -1)))
+  form.rating = next
+  requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(`[aria-label="امتیاز ${next} از ۵"]`)?.focus())
+}
 </script>

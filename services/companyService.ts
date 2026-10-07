@@ -1,5 +1,4 @@
 // services/companyService.ts
-import type { AxiosResponse } from 'axios';
 import type { Company, VendorRequest, VendorRequestStatus } from '~/types/company';
 import { useApiClient } from '~/services/apiClient';
 

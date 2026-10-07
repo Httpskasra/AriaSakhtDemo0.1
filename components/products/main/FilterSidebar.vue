@@ -74,7 +74,9 @@ watch(() => props.initialMaxPrice, value => { maxPrice.value = value; });
 watch(() => props.initialCompanyName, value => { companyName.value = value || ''; });
 watch(() => props.initialCategoryIds, value => { selectedCategories.value = [...(value || [])]; }, { deep: true });
 
-const retryCategories = () => loadCategories().catch(() => undefined);
+const retryCategories = (): void => {
+  void loadCategories().catch(() => undefined);
+};
 
 onMounted(retryCategories);
 

@@ -215,14 +215,13 @@ import { Resource } from "~/types/permissions";
 
 import type {
   Ticket,
-  TicketPriority,
-  TicketStatus,
   TicketComment,
 } from "~/types/ticket";
+import { TicketPriority } from "~/types/ticket";
+import { getTicketPriorityConfig, getTicketStatusConfig } from "~/composables/useStatusStyle";
 import {
   listTickets,
   createTicket,
-  getTicket,
   getTicketComments,
   addTicketComment,
 } from "@/services/ticketService";
@@ -249,7 +248,7 @@ const showCreateModal = ref(false);
 const creatingTicket = ref(false);
 const newTicketTitle = ref("");
 const newTicketDescription = ref("");
-const newTicketPriority = ref<TicketPriority>("low");
+const newTicketPriority = ref<TicketPriority>(TicketPriority.Low);
 
 // تیکت انتخاب‌شده
 const selectedTicketId = ref<string | null>(null);
@@ -366,7 +365,7 @@ const submitNewTicket = async () => {
   if (!created) return;
   newTicketTitle.value = "";
   newTicketDescription.value = "";
-  newTicketPriority.value = "low";
+  newTicketPriority.value = TicketPriority.Low;
   showCreateModal.value = false;
 };
 

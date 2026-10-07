@@ -95,6 +95,13 @@ export default defineNuxtPlugin({
         try {
           const accessToken = await refreshAccessToken();
 
+          // A refresh can also carry a new permission/auth-version snapshot.
+          // Rehydrate the user before retrying the original request so panel
+          // navigation does not keep showing permissions from the old token.
+          if (!isMeRequest) {
+            await useUser().fetchUser(true, accessToken);
+          }
+
           // The request interceptor attaches the refreshed token on retry.
           originalRequest.headers = originalRequest.headers || {};
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;

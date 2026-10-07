@@ -1,46 +1,53 @@
 <script setup lang="ts">
-const props = defineProps<{
-  categoryIds: string[];
-  currentProductId: string;
-}>();
+import { computed } from "vue";
 
+const props = defineProps<{ categoryIds: string[]; currentProductId: string }>();
 const { $axios } = useNuxtApp();
 
-const { data: related } = await useAsyncData(`related-${props.currentProductId}`, async () => {
-  if (!props.categoryIds?.length) return [];
-  
-  const res = await $axios.get('/products/advanced-search', {
-    params: {
-      categoryIds: props.categoryIds,
-      limit: 4
-    }
-  });
-  
-  const payload = res.data as
-    | any[]
-    | { items?: any[]; data?: any[] }
-    | undefined;
-  const products = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload?.items)
-      ? payload.items
-      : Array.isArray(payload?.data)
-        ? payload.data
-        : [];
+const { data: related, pending, error, refresh } = await useAsyncData(
+  `related-${props.currentProductId}`,
+  async () => {
+    if (!props.categoryIds?.length) return [];
+    const response = await $axios.get('/products/advanced-search', { params: { categoryIds: props.categoryIds, limit: 5 } });
+    const payload = response.data as any[] | { items?: any[]; products?: any[]; data?: any[] } | undefined;
+    const products = Array.isArray(payload) ? payload : payload?.items || payload?.products || payload?.data || [];
+    return products.filter((item: any) => String(item.id || item._id) !== props.currentProductId);
+  },
+  { default: () => [], lazy: true, server: false },
+);
 
-  return products.filter((p: any) => String(p.id || p._id) !== props.currentProductId);
-});
+const relatedItems = computed(() => related.value || []);
+const relatedError = computed(() => error.value?.statusMessage || error.value?.message || 'محصولات مشابه فعلاً قابل دریافت نیستند.');
 </script>
 
 <template>
-  <div v-if="related?.length" class="mt-16">
-    <div class="flex items-center gap-2 mb-6">
-      <div class="h-8 w-1 bg-primary rounded-full"></div>
-      <h3 class="text-xl font-bold text-gray-800">محصولات مشابه</h3>
+  <section v-if="pending || relatedItems.length || error" class="related-products" aria-labelledby="related-products-title">
+    <div class="related-products__heading">
+      <span class="related-products__accent" aria-hidden="true"></span>
+      <h2 id="related-products-title">محصولات مشابه</h2>
     </div>
-    
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <CatalogProductCard v-for="item in related" :key="item.id || item._id" :product="item" />
+    <div v-if="pending" class="related-products__loading" role="status" aria-live="polite">
+      <UIcon name="i-lucide-loader-circle" class="animate-spin" aria-hidden="true" />
+      <span>در حال بارگذاری محصولات مشابه…</span>
     </div>
-  </div>
+    <div v-else-if="error" class="related-products__error" role="status">
+      <span>{{ relatedError }}</span>
+      <UButton type="button" color="neutral" variant="soft" size="sm" @click="() => { void refresh(); }">تلاش دوباره</UButton>
+    </div>
+    <div v-else class="related-products__grid">
+      <CatalogProductCard v-for="item in relatedItems" :key="item.id || item._id" :product="item" />
+    </div>
+  </section>
 </template>
+
+<style scoped>
+.related-products { display: grid; gap: 1rem; margin-top: 1rem; }
+.related-products__heading { display: flex; align-items: center; gap: .5rem; }
+.related-products__heading h2 { margin: 0; color: var(--color-text-heading); font-size: 1.1rem; font-weight: 800; }
+.related-products__accent { width: .25rem; height: 1.75rem; border-radius: var(--radius-pill); background: var(--color-brand-blue); }
+.related-products__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.related-products__loading, .related-products__error { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 1.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-bg-light); }
+.related-products__error { justify-content: space-between; color: var(--color-danger-fg); }
+@media (max-width: 1024px) { .related-products__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .related-products__grid { grid-template-columns: 1fr; } .related-products__error { align-items: stretch; flex-direction: column; } }
+</style>

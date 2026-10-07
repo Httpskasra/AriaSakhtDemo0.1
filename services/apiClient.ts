@@ -12,6 +12,11 @@ const messages: Record<number, string> = {
   429: 'تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.',
 };
 
+const codeMessages: Record<string, string> = {
+  AUTH_SESSION_INVALID: 'نشست شما منقضی شده است؛ دوباره وارد شوید.',
+  AUTH_CSRF_INVALID: 'نشست امنیتی منقضی شده است. لطفاً دوباره تلاش کنید.',
+};
+
 export class UserFacingApiError extends Error {
   readonly info: ApiErrorInfo;
 
@@ -30,10 +35,13 @@ export function toUserFacingError(error: unknown, fallback = 'ارتباط با 
   const payloadMessage = Array.isArray(payload?.message)
     ? payload.message.filter((item): item is string => typeof item === 'string').join('، ')
     : typeof payload?.message === 'string' ? payload.message : undefined;
+  const codeMessage = typeof payload?.code === 'string' ? codeMessages[payload.code] : undefined;
   return new UserFacingApiError({
     status,
     code: payload?.code,
-    message: payloadMessage
+    message: codeMessage
+      || (payloadMessage === 'Too many requests' ? messages[429] : undefined)
+      || payloadMessage
       || (status && messages[status])
       || fallback,
     retryable: !status || status >= 500 || status === 408 || status === 429,

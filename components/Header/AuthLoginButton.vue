@@ -6,7 +6,8 @@ const { setStep } = useAuthStep();
 
 const handleClick = () => {
   if (isAuthenticated.value) {
-    return navigateTo("/dashboard");
+    void navigateTo("/dashboard");
+    return;
   }
 
   setStep("signin");

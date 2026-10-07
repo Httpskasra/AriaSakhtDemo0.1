@@ -44,6 +44,9 @@ export default defineNuxtConfig({
     public: {
       siteUrl: process.env.SITE_URL || "https://tejaris.ir",
       apiBase: process.env.API_BASE_URL || "http://localhost:3001/api",
+      // Keep browser-side CSRF/pending-logout cookies aligned with the
+      // backend JWT_REFRESH_TTL_SECONDS value when the same env is provided.
+      authRefreshTtlSeconds: Number(process.env.JWT_REFRESH_TTL_SECONDS || 172800),
       paymentAllowedOrigins: (process.env.PAYMENT_ALLOWED_ORIGINS || "https://gateway.zibal.ir,https://sandbox.zibal.ir")
         .split(',')
         .map((origin: string) => origin.trim())

@@ -175,11 +175,11 @@ async function submit() {
       companyName: String(form.name || ""),
       sellerType: "legal" as const,
       email: String(form.email || ""),
-      phone: toInternationalPhone(String(form.phone || "")) || undefined,
+      phone: toInternationalPhone(String(form.phone || "")) || "",
       registrationNumber: String(form.registrationNumber || "") || undefined,
-      address: String(form.address || "") || undefined,
-      nationalId: String(form.nationalId || "") || undefined,
-      imageUrl: undefined,
+      address: String(form.address || ""),
+      nationalId: String(form.nationalId || ""),
+      imageUrl: "",
     };
 
     if (form.image) {

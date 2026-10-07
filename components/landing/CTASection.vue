@@ -24,12 +24,12 @@
 </template>
 
 <style scoped>
-.landing-cta { padding-block:var(--landing-section-space); }
-.landing-cta__surface { position:relative; display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(13rem, .8fr); align-items:center; gap:2rem; overflow:hidden; padding:clamp(2rem, 4vw, 3rem); border-radius:var(--radius-card); background:var(--color-brand-blue); color:var(--color-bg-surface); }
+.landing-cta { padding-block:calc(var(--landing-section-space) / 2); }
+.landing-cta__surface { position:relative; display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(13rem, .8fr); align-items:center; gap:1.5rem; overflow:hidden; padding:clamp(1.75rem, 3vw, 2.5rem); border-radius:var(--radius-card); background:var(--color-brand-blue); color:var(--color-bg-surface); }
 .landing-cta__icon { position:absolute; inset-block-end:-3rem; inset-inline-end:-2rem; width:15rem; height:15rem; color:color-mix(in srgb, var(--color-bg-surface) 10%, transparent); transform:rotate(-12deg); }
 .landing-cta__content { position:relative; z-index:1; max-width:42rem; }
 .landing-cta__eyebrow { margin:0 0 .5rem; color:var(--color-brand-yellow); font-size:.75rem; font-weight:800; }
-.landing-cta h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.5rem, 3vw, 2.45rem); font-weight:900; line-height:1.45; }
+.landing-cta h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.5rem, 2.6vw, 2.15rem); font-weight:900; line-height:1.45; }
 .landing-cta__description { max-width:34rem; margin:.75rem 0 1.35rem; color:color-mix(in srgb, var(--color-bg-surface) 88%, transparent); font-size:.88rem; line-height:1.9; }
 .landing-cta__actions { display:flex; flex-wrap:wrap; gap:.65rem; }
 .landing-cta__actions :deep(button), .landing-cta__actions :deep(a) { min-height:2.75rem; }

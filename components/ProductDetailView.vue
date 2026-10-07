@@ -7,7 +7,7 @@ import type { Product, ProductImage, ProductVariant, ProductVariantSelection } f
 
 const route = useRoute();
 const productId = computed(() => String(route.params.id || ""));
-const { data: product, loading, error, fetchProduct } = await useProductById(productId);
+const { data: product, loading, error, errorStatus, fetchProduct } = await useProductById(productId);
 const { addProductToCart, loading: cartLoading } = useAddToCart();
 
 const fallbackImage = "/products/building-material.jpg";
@@ -29,14 +29,16 @@ const companyId = computed(() => {
   const value = product.value?.companyId;
   return typeof value === "string" ? value : value?._id || "";
 });
+const hasCompany = computed(() => {
+  const value = product.value?.companyId;
+  return typeof value === "object" && Boolean(value?.name);
+});
 const companyName = computed(() => {
   const value = product.value?.companyId;
-  return typeof value === "object" && value?.name ? value.name : "تأمین‌کننده معتبر";
+  return typeof value === "object" && value?.name ? value.name : "اطلاعات تأمین‌کننده در دسترس نیست";
 });
-const categoryLabels = computed(() => (product.value?.categories || []).map((category) => {
-  if (typeof category === "string") return category;
-  return category.name || category._id || category.id || "دسته‌بندی";
-}));
+const categoryLabels = computed(() => (product.value?.categories || [])
+  .map((category) => typeof category === "object" ? category.name || "دسته‌بندی نامشخص" : "دسته‌بندی نامشخص"));
 const categoryIds = computed(() => (product.value?.categories || []).map((category) => (
   typeof category === "string" ? category : category._id || category.id || ""
 )).filter(Boolean));
@@ -56,8 +58,9 @@ const availabilityLabel = computed(() => {
   if (stockQuantity.value <= 5) return `تنها ${stockQuantity.value.toLocaleString("fa-IR")} عدد باقی مانده`;
   return "موجود و آماده سفارش";
 });
-const displayAttributes = computed(() => Object.entries(product.value?.attributes || {}));
 const displayTags = computed(() => product.value?.tags || []);
+const currencyCode = computed(() => String(product.value?.currency || "IRR").toUpperCase());
+const currencyLabel = computed(() => ({ IRR: "ریال", IRT: "تومان", USD: "دلار", EUR: "یورو" }[currencyCode.value] || currencyCode.value));
 const discountedBasePrice = computed(() => {
   const basePrice = Number(product.value?.basePrice || 0);
   const discount = Math.min(Math.max(Number(product.value?.discount || 0), 0), 100);
@@ -86,16 +89,42 @@ const variantSelectionHint = computed(() => {
   const remaining = (product.value?.variants || []).filter((variant) => !selectedVariants.value[variantKey(variant)]).length;
   return remaining ? `${remaining.toLocaleString("fa-IR")} گزینه دیگر را انتخاب کنید` : "همه گزینه‌ها انتخاب شده‌اند";
 });
-const productUrl = computed(() => `/products/${encodeURIComponent(productId.value)}`);
+const siteUrl = computed(() => String(useRuntimeConfig().public.siteUrl || "https://tejaris.ir").replace(/\/$/, ""));
+const productUrl = computed(() => `${siteUrl.value}/products/${encodeURIComponent(productId.value)}`);
+const absoluteImageUrl = (url: string) => /^https?:\/\//i.test(url) ? url : `${siteUrl.value}${url.startsWith("/") ? "" : "/"}${url}`;
+const productSchema = computed(() => {
+  const current = product.value;
+  if (!current) return {};
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: current.name,
+    description: current.description || undefined,
+    sku: current.sku || undefined,
+    image: images.value.map((image) => absoluteImageUrl(image.url)),
+    offers: {
+      "@type": "Offer",
+      url: productUrl.value,
+      priceCurrency: currencyCode.value,
+      price: finalPrice.value,
+      availability: isAvailable.value ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  };
+});
 
 useSeoMeta({
   title: () => product.value?.name || "جزئیات محصول",
   description: () => product.value?.description?.slice(0, 160) || "مشاهده جزئیات محصول در تجاریس",
   ogTitle: () => product.value?.name || "جزئیات محصول",
   ogDescription: () => product.value?.description?.slice(0, 160) || "مشاهده جزئیات محصول در تجاریس",
-  ogImage: () => images.value[0]?.url || fallbackImage,
+  ogImage: () => absoluteImageUrl(images.value[0]?.url || fallbackImage),
   ogUrl: () => productUrl.value,
 });
+useHead(() => ({
+  meta: [{ property: "og:type", content: "product" }],
+  link: [{ rel: "canonical", href: productUrl.value }],
+  script: [{ type: "application/ld+json", children: JSON.stringify(productSchema.value) }],
+}));
 
 watch(images, (nextImages) => {
   if (selectedImageIndex.value >= nextImages.length) selectedImageIndex.value = 0;
@@ -109,6 +138,11 @@ function selectImage(index: number) {
   selectedImageIndex.value = index;
 }
 
+function moveImage(delta: number) {
+  const next = (selectedImageIndex.value + delta + images.value.length) % images.value.length;
+  selectImage(next);
+}
+
 function changeQuantity(delta: number) {
   const next = quantity.value + delta;
   quantity.value = Math.min(Math.max(1, next), Math.max(1, stockQuantity.value));
@@ -120,6 +154,20 @@ function variantKey(variant: ProductVariant) {
 
 function selectVariant(variant: ProductVariant, value: string) {
   selectedVariants.value = { ...selectedVariants.value, [variantKey(variant)]: value };
+}
+
+function handleVariantKeydown(event: KeyboardEvent, variant: ProductVariant, optionIndex: number) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const last = variant.options.length - 1;
+  const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? last : Math.min(last, Math.max(0, optionIndex + (event.key === "ArrowLeft" ? 1 : -1)));
+  const nextOption = variant.options[nextIndex];
+  selectVariant(variant, nextOption.value);
+  requestAnimationFrame(() => document.getElementById(`variant-${variantKey(variant)}-${nextIndex}`)?.focus());
+}
+
+function formatPrice(value: number) {
+  return Number(value || 0).toLocaleString("fa-IR");
 }
 
 async function handleAddToCart() {
@@ -147,7 +195,8 @@ function retry() {
   void fetchProduct();
 }
 
-function handleImageError(event: Event) {
+function handleImageError(event: string | Event) {
+  if (typeof event === "string") return;
   const image = event.target as HTMLImageElement;
   if (image.src.endsWith(fallbackImage)) return;
   image.src = fallbackImage;
@@ -163,7 +212,7 @@ function handleImageError(event: Event) {
 
     <div v-else-if="error" class="product-detail-state product-detail-state--error" role="alert">
       <UIcon name="i-lucide-circle-alert" class="size-icon-hero" aria-hidden="true" />
-      <p class="product-detail-state__message">{{ error }}</p>
+      <p class="product-detail-state__message">{{ errorStatus === 404 ? "محصول موردنظر پیدا نشد." : error }}</p>
       <div class="product-detail-state__actions">
         <UButton type="button" color="primary" @click="retry">تلاش دوباره</UButton>
         <UButton type="button" color="neutral" variant="soft" to="/products">بازگشت به فروشگاه</UButton>
@@ -182,24 +231,23 @@ function handleImageError(event: Event) {
       <section class="product-detail-card" aria-labelledby="product-title">
         <div class="product-detail-layout">
           <section class="product-gallery" aria-label="تصاویر محصول">
-            <button type="button" class="product-gallery__main" @click="isLightboxOpen = true" aria-label="مشاهده تصویر بزرگ محصول">
-              <img :src="mainImage" :alt="`${product.name} - تصویر ${selectedImageIndex + 1}`" width="800" height="800" @error="handleImageError" />
+            <button type="button" class="product-gallery__main" @click="isLightboxOpen = true" :aria-label="`مشاهده تصویر بزرگ ${product.name}`">
+              <NuxtImg :src="mainImage" :alt="`${product.name} - تصویر ${selectedImageIndex + 1}`" width="800" height="800" sizes="sm:100vw md:50vw lg:40vw" format="webp" @error="handleImageError" />
               <span v-if="isOutOfStock" class="product-gallery__badge product-gallery__badge--danger">ناموجود</span>
               <span v-else-if="product.discount" class="product-gallery__badge product-gallery__badge--success">{{ product.discount }}٪ تخفیف</span>
               <span class="product-gallery__zoom"><UIcon name="i-lucide-expand" aria-hidden="true" /> بزرگ‌نمایی</span>
             </button>
+            <div class="product-gallery__controls">
+              <UButton type="button" color="neutral" variant="soft" icon="i-lucide-chevron-right" aria-label="تصویر قبلی" @click="moveImage(-1)" />
+              <span aria-live="polite">{{ (selectedImageIndex + 1).toLocaleString("fa-IR") }} از {{ images.length.toLocaleString("fa-IR") }}</span>
+              <UButton type="button" color="neutral" variant="soft" icon="i-lucide-chevron-left" aria-label="تصویر بعدی" @click="moveImage(1)" />
+            </div>
             <div class="product-gallery__thumbnails" role="list" aria-label="انتخاب تصویر">
-              <button
-                v-for="(image, index) in images"
-                :key="`${image.url}-${index}`"
-                type="button"
-                class="product-gallery__thumbnail"
-                :class="{ 'product-gallery__thumbnail--active': index === selectedImageIndex }"
-                :aria-label="`نمایش تصویر ${index + 1}`"
-                :aria-pressed="index === selectedImageIndex"
-                @click="selectImage(index)">
-                <img :src="image.url" :alt="`${product.name} - تصویر ${index + 1}`" width="160" height="160" loading="lazy" @error="handleImageError" />
-              </button>
+              <div v-for="(image, index) in images" :key="`${image.url}-${index}`" role="listitem">
+                <button type="button" class="product-gallery__thumbnail" :class="{ 'product-gallery__thumbnail--active': index === selectedImageIndex }" :aria-label="`نمایش تصویر ${index + 1}`" :aria-pressed="index === selectedImageIndex" @click="selectImage(index)">
+                  <NuxtImg :src="image.url" :alt="`${product.name} - تصویر ${index + 1}`" width="160" height="160" loading="lazy" sizes="80px" format="webp" @error="handleImageError" />
+                </button>
+              </div>
             </div>
           </section>
 
@@ -208,10 +256,10 @@ function handleImageError(event: Event) {
               <span class="product-status" :class="{ 'product-status--muted': !isAvailable }">
                 <span class="product-status__dot" aria-hidden="true"></span>{{ statusLabel }}
               </span>
-              <span class="product-summary__sku font-num">SKU: {{ product.sku }}</span>
+              <span class="product-summary__sku font-num" dir="ltr">SKU: {{ product.sku || "—" }}</span>
             </div>
             <h1 id="product-title" class="product-summary__title">{{ product.name }}</h1>
-            <p class="product-summary__company"><UIcon name="i-lucide-building-2" aria-hidden="true" /> {{ companyName }}</p>
+            <p class="product-summary__company" :class="{ 'product-summary__company--muted': !hasCompany }"><UIcon name="i-lucide-building-2" aria-hidden="true" /> {{ companyName }}</p>
 
             <div class="product-summary__rating" aria-label="امتیاز محصول">
               <span class="product-summary__stars" aria-hidden="true">
@@ -222,10 +270,10 @@ function handleImageError(event: Event) {
             </div>
 
             <div class="product-summary__price-card">
-              <span v-if="product.discount" class="product-summary__old-price font-num">{{ product.basePrice.toLocaleString("fa-IR") }} ریال</span>
-              <strong class="product-summary__price font-num">{{ finalPrice.toLocaleString("fa-IR") }} <small>ریال</small></strong>
+              <span v-if="product.discount" class="product-summary__old-price font-num">{{ formatPrice(product.basePrice) }} {{ currencyLabel }}</span>
+              <strong class="product-summary__price font-num">{{ formatPrice(finalPrice) }} <small>{{ currencyLabel }}</small></strong>
               <span v-if="hasVariants" class="product-summary__price-note">
-                {{ selectedVariantAdjustment ? `شامل ${selectedVariantAdjustment.toLocaleString("fa-IR")} ریال افزایش گزینه‌ها` : "قیمت پایه پس از تخفیف" }}
+                {{ selectedVariantAdjustment ? `شامل ${formatPrice(selectedVariantAdjustment)} ${currencyLabel} افزایش گزینه‌ها` : "قیمت پایه پس از تخفیف" }}
               </span>
               <span class="product-summary__availability" :class="{ 'product-summary__availability--danger': !isAvailable }"><UIcon name="i-lucide-package-check" aria-hidden="true" /> {{ availabilityLabel }}</span>
             </div>
@@ -249,10 +297,13 @@ function handleImageError(event: Event) {
                     class="product-variant__option"
                     :class="{ 'product-variant__option--selected': selectedVariants[variantKey(variant)] === option.value }"
                     :aria-checked="selectedVariants[variantKey(variant)] === option.value"
-                    @click="selectVariant(variant, option.value)">
+                    :id="`variant-${variantKey(variant)}-${variant.options.indexOf(option)}`"
+                    :tabindex="selectedVariants[variantKey(variant)] === option.value || (!selectedVariants[variantKey(variant)] && variant.options.indexOf(option) === 0) ? 0 : -1"
+                    @click="selectVariant(variant, option.value)"
+                    @keydown="handleVariantKeydown($event, variant, variant.options.indexOf(option))">
                     <span class="product-variant__option-value">{{ option.value }}</span>
                     <span class="product-variant__option-price">
-                      {{ Number(option.priceModifier || 0) > 0 ? `+${Number(option.priceModifier).toLocaleString("fa-IR")} ریال` : "بدون افزایش" }}
+                      {{ Number(option.priceModifier || 0) > 0 ? `+${formatPrice(Number(option.priceModifier))} ${currencyLabel}` : "بدون افزایش" }}
                     </span>
                   </button>
                 </div>
@@ -291,13 +342,6 @@ function handleImageError(event: Event) {
           </article>
         </div>
 
-        <article v-if="displayAttributes.length" class="product-information-card">
-          <div class="product-section-heading"><UIcon name="i-lucide-sliders-horizontal" aria-hidden="true" /><div><h2>مشخصات فنی</h2><p>ویژگی‌های ثابت محصول؛ این موارد هنگام خرید انتخاب نمی‌شوند.</p></div></div>
-          <dl class="product-attributes-grid">
-            <div v-for="([key, value]) in displayAttributes" :key="key"><dt>{{ key }}</dt><dd>{{ value }}</dd></div>
-          </dl>
-        </article>
-
         <article v-if="categoryLabels.length || displayTags.length" class="product-information-card product-taxonomy-card">
           <div v-if="categoryLabels.length" class="product-taxonomy-group"><strong>دسته‌بندی‌ها</strong><div><span v-for="category in categoryLabels" :key="category" class="product-chip">{{ category }}</span></div></div>
           <div v-if="displayTags.length" class="product-taxonomy-group"><strong>برچسب‌ها</strong><div><span v-for="tag in displayTags" :key="tag" class="product-chip product-chip--muted">#{{ tag }}</span></div></div>
@@ -311,14 +355,14 @@ function handleImageError(event: Event) {
     <UModal v-model="isLightboxOpen" fullscreen>
       <div class="product-lightbox">
         <UButton type="button" color="neutral" variant="soft" icon="i-lucide-x" class="product-lightbox__close" aria-label="بستن تصویر" @click="isLightboxOpen = false" />
-        <img :src="mainImage" :alt="(product?.name || 'محصول') + ' - تصویر بزرگ'" class="product-lightbox__image" @error="handleImageError" />
+        <NuxtImg :src="mainImage" :alt="(product?.name || 'محصول') + ' - تصویر بزرگ'" class="product-lightbox__image" width="1400" height="1400" sizes="90vw" format="webp" @error="handleImageError" />
       </div>
     </UModal>
   </main>
 </template>
 
 <style scoped>
-.product-detail-page { width: min(calc(100% - 2rem), 90rem); margin-inline: auto; padding-block: 1.25rem 3rem; }
+.product-detail-page { width: min(calc(100% - 2rem), var(--layout-content-max)); margin-inline: auto; padding-block: 1.25rem 3rem; }
 .product-breadcrumb { display: flex; align-items: center; gap: .45rem; margin-bottom: 1rem; color: var(--color-text-muted); font-size: .78rem; overflow: hidden; }
 .product-breadcrumb a { color: var(--color-brand-blue); white-space: nowrap; }
 .product-breadcrumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -330,23 +374,27 @@ function handleImageError(event: Event) {
 .product-gallery__main { position: relative; display: block; width: 100%; aspect-ratio: 1; overflow: hidden; padding: 0; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-light); cursor: zoom-in; }
 .product-gallery__main img { width: 100%; height: 100%; object-fit: contain; padding: clamp(.75rem, 3vw, 2rem); }
 .product-gallery__main:focus-visible, .product-gallery__thumbnail:focus-visible, .product-lightbox__close:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.product-gallery__controls { display: flex; align-items: center; justify-content: center; gap: .65rem; margin-top: .65rem; color: var(--color-text-muted); font-size: .75rem; }
+.product-gallery__controls :deep(button) { min-width: 2.25rem; }
 .product-gallery__badge { position: absolute; inset-block-start: 1rem; padding: .35rem .7rem; border-radius: var(--radius-pill); color: var(--color-bg-surface); font-size: .72rem; font-weight: 800; }
 .product-gallery__badge--danger { inset-inline-end: 1rem; background: var(--color-danger-fg); }
 .product-gallery__badge--success { inset-inline-start: 1rem; background: var(--color-success-fg); }
 .product-gallery__zoom { position: absolute; inset-inline-start: 1rem; inset-block-end: 1rem; display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .55rem; border-radius: var(--radius-pill); color: var(--color-text-body); background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent); font-size: .7rem; }
 .product-gallery__thumbnails { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem; margin-top: .75rem; }
+.product-gallery__thumbnails > div { min-width: 0; }
 .product-gallery__thumbnail { aspect-ratio: 1; overflow: hidden; padding: .2rem; border: 2px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-light); opacity: .72; cursor: pointer; }
 .product-gallery__thumbnail img { width: 100%; height: 100%; object-fit: contain; }
 .product-gallery__thumbnail--active { border-color: var(--color-brand-blue); opacity: 1; }
 .product-summary { display: flex; min-width: 0; flex-direction: column; }
 .product-summary__eyebrow, .product-summary__rating, .product-summary__company { display: flex; align-items: center; gap: .5rem; }
 .product-summary__eyebrow { justify-content: space-between; margin-bottom: .8rem; }
-.product-summary__sku { color: var(--color-text-muted); font-size: .75rem; }
+.product-summary__sku { max-width: 55%; color: var(--color-text-muted); font-size: .75rem; overflow-wrap: anywhere; }
 .product-status { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-size: .75rem; font-weight: 700; }
 .product-status--muted { color: var(--color-text-muted); }
-.product-status__dot { width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; }
+.product-status__dot { width: .45rem; height: .45rem; border-radius: var(--radius-pill); background: currentColor; }
 .product-summary__title { margin: 0; color: var(--color-text-heading); font-size: clamp(1.45rem, 3vw, 2.25rem); font-weight: 900; line-height: 1.45; }
 .product-summary__company { margin: .5rem 0 1.25rem; color: var(--color-text-muted); font-size: .82rem; }
+.product-summary__company--muted { color: var(--color-text-muted); font-style: italic; }
 .product-summary__rating { margin-bottom: 1.35rem; color: var(--color-text-muted); font-size: .78rem; }
 .product-summary__stars { display: inline-flex; color: var(--color-border-strong); }
 .product-summary__stars svg { width: 1rem; height: 1rem; }
@@ -382,7 +430,7 @@ function handleImageError(event: Event) {
 .quantity-control span { color: var(--color-text-heading); font-weight: 800; }
 .product-detail-sections { display: grid; gap: 1rem; margin-top: 1rem; }
 .product-section-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.product-information-card { padding: clamp(1rem, 2vw, 1.5rem); box-shadow: none; }
+.product-information-card { padding: clamp(1rem, 2vw, 1.5rem); }
 .product-section-heading { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; color: var(--color-text-heading); }
 .product-section-heading svg { color: var(--color-brand-blue); }
 .product-section-heading h2 { margin: 0; font-size: 1rem; font-weight: 800; }
@@ -410,6 +458,6 @@ function handleImageError(event: Event) {
 .product-lightbox__close { position: absolute; inset-block-start: 1rem; inset-inline-end: 1rem; z-index: 1; }
 
 @media (max-width: 1024px) { .product-detail-layout { grid-template-columns: 1fr; } .product-gallery__main { max-width: 42rem; margin-inline: auto; } }
-@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), 90rem); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid, .product-attributes-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } .product-variants__header { flex-direction: column; } .product-variants__progress { align-self: flex-start; } .product-variant__options { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .product-detail-page { width: min(calc(100% - 1rem), var(--layout-content-max)); padding-block: .75rem 2rem; } .product-detail-card { padding: .75rem; } .product-section-grid { grid-template-columns: 1fr; } .product-summary__actions { flex-wrap: wrap; } .product-summary__cart-button { order: 1; flex-basis: 100%; } .product-summary__favorite { flex: 1; } .quantity-control { flex: 1; } .product-taxonomy-group { flex-direction: column; gap: .5rem; } .product-variants__header { flex-direction: column; } .product-variants__progress { align-self: flex-start; } .product-variant__options { grid-template-columns: 1fr 1fr; } .product-gallery__thumbnails { display: flex; overflow-x: auto; padding-bottom: .25rem; scroll-snap-type: inline proximity; } .product-gallery__thumbnails > div { flex: 0 0 4.5rem; scroll-snap-align: start; } }
 @media (prefers-reduced-motion: reduce) { .product-gallery__thumbnail, .product-gallery__main, .product-status, .product-variant__option { transition: none; } }
 </style>

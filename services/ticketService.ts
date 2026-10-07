@@ -30,19 +30,19 @@ export interface TicketStatusResponseDto {
 // ==== API calls ====
 export async function createTicket(body: CreateTicketDto): Promise<Ticket> {
   const $axios = useApiClient();
-  const { data } = await $axios.post("/tickets", body);
+  const { data } = await $axios.post<Ticket>("/tickets", body);
   return data;
 }
 
 export async function listTickets(params?: { page?: number; limit?: number }): Promise<Ticket[] | { items: Ticket[]; total: number }> {
   const $axios = useApiClient();
-  const { data } = await $axios.get("/tickets", { params });
+  const { data } = await $axios.get<Ticket[] | { items: Ticket[]; total: number }>("/tickets", { params });
   return data;
 }
 
 export async function getTicket(id: string): Promise<Ticket> {
   const $axios = useApiClient();
-  const { data } = await $axios.get(`/tickets/${id}`);
+  const { data } = await $axios.get<Ticket>(`/tickets/${id}`);
   return data;
 }
 
@@ -51,7 +51,7 @@ export async function updateTicket(
   body: UpdateTicketDto
 ): Promise<Ticket> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/tickets/${id}`, body);
+  const { data } = await $axios.patch<Ticket>(`/tickets/${id}`, body);
   return data;
 }
 
@@ -59,7 +59,7 @@ export async function getTicketStatus(
   id: string
 ): Promise<TicketStatusResponseDto> {
   const $axios = useApiClient();
-  const { data } = await $axios.get(`/tickets/${id}/status`);
+  const { data } = await $axios.get<TicketStatusResponseDto>(`/tickets/${id}/status`);
   return data;
 }
 
@@ -69,7 +69,7 @@ export async function patchTicketStatus(
   refund?: boolean
 ): Promise<Ticket> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/tickets/${id}/status`, {
+  const { data } = await $axios.patch<Ticket>(`/tickets/${id}/status`, {
     status,
     refund,
   });
@@ -92,7 +92,7 @@ export async function resolveTicket(
 }
 export async function getTicketComments(id: string): Promise<TicketComment[]> {
   const $axios = useApiClient();
-  const { data } = await $axios.get(`/tickets/${id}/comments`);
+  const { data } = await $axios.get<TicketComment[]>(`/tickets/${id}/comments`);
   return data;
 }
 
@@ -101,6 +101,6 @@ export async function addTicketComment(
   body: CreateTicketCommentDto
 ): Promise<TicketComment> {
   const $axios = useApiClient();
-  const { data } = await $axios.post(`/tickets/${id}/comments`, body);
+  const { data } = await $axios.post<TicketComment>(`/tickets/${id}/comments`, body);
   return data;
 }

@@ -1,7 +1,7 @@
 // services/authService.ts
 import axios from "axios";
 import { useAuthStore } from "~/stores/auth";
-import { useCookie, useRequestHeaders, useRuntimeConfig } from "#app";
+import { useCookie, useRequestHeaders, useResponseHeader, useRuntimeConfig } from "#app";
 import { useApiClient } from '~/services/apiClient';
 
 export interface RefreshTokenRequestDto {
@@ -12,6 +12,7 @@ export interface RefreshTokenRequestDto {
 
 export interface RefreshTokenResponseDto {
   accessToken: string;
+  refreshToken?: string;
   csrfToken?: string;
 }
 
@@ -35,13 +36,17 @@ export interface UpdateUserPermissionsRequestDto {
 
 const refreshLocks = new WeakMap<object, Promise<string>>();
 const refreshBackoff = new WeakMap<object, { until: number; error: unknown }>();
-const csrfCookieOptions = {
-  httpOnly: false,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  path: '/',
-  maxAge: 48 * 60 * 60,
-};
+function csrfCookieOptions() {
+  const config = useRuntimeConfig();
+  const configuredTtl = Number(config.public.authRefreshTtlSeconds);
+  return {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict' as const,
+    path: '/',
+    maxAge: Number.isFinite(configuredTtl) && configuredTtl > 0 ? configuredTtl : 48 * 60 * 60,
+  };
+}
 
 function readCookie(cookieHeader: string | undefined, name: string): string | null {
   const value = cookieHeader
@@ -88,7 +93,10 @@ const isCsrfFailure = (error: unknown): boolean => {
  */
 export const isInvalidRefreshSession = (error: unknown): boolean => {
   const details = responseData(error);
+  const apiError = error as { info?: { status?: number; code?: string } };
   return details.code === 'AUTH_SESSION_INVALID'
+    || apiError.info?.code === 'AUTH_SESSION_INVALID'
+    || apiError.info?.status === 404
     || (details.status === 401 && !details.code);
 };
 
@@ -104,15 +112,21 @@ async function performRefresh(
   const incomingUserAgent = incomingHeaders['user-agent'];
   let upstreamHeaders: Record<string, string> = {
     ...(incomingCookie ? { Cookie: incomingCookie } : {}),
-    // The backend binds refresh sessions to the browser User-Agent. Preserve
-    // it when SSR performs the internal refresh on behalf of that browser.
+    // Preserve the incoming User-Agent for request context and observability
+    // when SSR performs the internal refresh on behalf of that browser.
     ...(incomingUserAgent ? { 'User-Agent': incomingUserAgent } : {}),
+  };
+
+  const forwardSetCookies = (headers: { 'set-cookie'?: string[] }): void => {
+    if (!process.server || !headers['set-cookie']?.length) return;
+    const responseCookies = useResponseHeader('set-cookie');
+    responseCookies.value = [...(responseCookies.value || []), ...headers['set-cookie']];
   };
 
   // Create this before the first await so the Nuxt SSR context is captured.
   // Writing it on both server and client also covers browsers where the
   // cross-origin Set-Cookie response is delayed or not persisted.
-  const csrfCookie = useCookie<string | null>('csrfToken', csrfCookieOptions);
+  const csrfCookie = useCookie<string | null>('csrfToken', csrfCookieOptions());
 
   const browserCookie = process.client && typeof document !== 'undefined' ? document.cookie : undefined;
   // The backend validates the double-submit pair. A token in Pinia/Nuxt state
@@ -148,7 +162,7 @@ async function performRefresh(
   let data: RefreshTokenResponseDto;
   while (true) {
     try {
-      ({ data } = await axios.post<RefreshTokenResponseDto>(
+      const response = await axios.post<RefreshTokenResponseDto>(
         `${apiBase}/auth/refresh`,
         payload,
         {
@@ -156,9 +170,16 @@ async function performRefresh(
           timeout: 10000,
           headers: { ...upstreamHeaders, "X-CSRF-Token": csrfToken },
         },
-      ));
+      );
+      data = response.data;
+      forwardSetCookies(response.headers);
       break;
     } catch (error) {
+      // Invalid refresh sessions are cleared by the backend with Set-Cookie.
+      // Forward that deletion during SSR as well, otherwise the browser keeps
+      // sending the dead cookie and repeats refresh failures on every reload.
+      const response = (error as { response?: { headers?: { 'set-cookie'?: string[] } } }).response;
+      if (response?.headers) forwardSetCookies(response.headers);
       // A rotated/stale CSRF cookie is recoverable. Mint one replacement and
       // retry exactly once; never clear an otherwise valid login for this.
       if (!csrfRetried && isCsrfFailure(error)) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useAttrs } from "vue";
-import { useFormField } from "@nuxt/ui/composables/useFormField";
+import { useAppFormField } from "~/composables/useFormField";
 
 defineOptions({ inheritAttrs: false });
 
@@ -29,7 +29,7 @@ const emit = defineEmits<{ "update:modelValue": [value: string[]] }>();
 const attrs = useAttrs();
 const root = ref<HTMLElement | null>(null);
 const open = ref(false);
-const { id: fieldId, disabled: fieldDisabled, ariaAttrs, emitFormChange, emitFormInput, emitFormBlur, emitFormFocus } = useFormField(props);
+const { id: fieldId, disabled: fieldDisabled, ariaAttrs, emitFormChange, emitFormInput, emitFormBlur, emitFormFocus } = useAppFormField(props);
 const triggerAttrs = computed(() => {
   const result = { ...attrs, ...(ariaAttrs.value || {}) };
   delete result.class;
@@ -143,7 +143,7 @@ onUnmounted(() => {
 .app-multi-select__value { min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .app-multi-select__placeholder { color:var(--color-text-muted); }
 .app-multi-select__options { position:absolute; inset-inline:0; top:calc(100% + .35rem); z-index:80; display:grid; max-height:16rem; gap:.2rem; overflow-y:auto; padding:.35rem; border:1px solid var(--color-border-strong); border-radius:var(--radius-field); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
-.app-multi-select__option { display:flex; min-height:2.5rem; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem .65rem; border:0; border-radius:.45rem; color:var(--color-text-body); background:transparent; font:inherit; font-size:.78rem; text-align:right; cursor:pointer; }
+.app-multi-select__option { display:flex; min-height:2.5rem; align-items:center; justify-content:space-between; gap:.5rem; padding:.5rem .65rem; border:0; border-radius:var(--radius-field); color:var(--color-text-body); background:transparent; font:inherit; font-size:.78rem; text-align:right; cursor:pointer; }
 .app-multi-select__option:hover, .app-multi-select__option--selected { color:var(--color-text-heading); background:var(--color-bg-light); }
 .app-multi-select__option span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .app-multi-select__empty { margin:0; padding:.75rem; color:var(--color-text-muted); font-size:.75rem; }

@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useFavoritesStore } from '~/stores/favorites';
+import { useUser } from '~/composables/useUser';
 
 const props = defineProps<{ productId: string }>();
 const store = useFavoritesStore();
+const { isAuthenticated, isUserLoading } = useUser();
 const busy = ref(false);
 const isFavorite = computed(() => store.productIds.has(props.productId));
 
-onMounted(() => {
+watch([isAuthenticated, isUserLoading], ([authenticated, loading]) => {
+  if (loading) return;
+  if (!authenticated) { store.clear(); return; }
   if (!store.initialized && !store.loading) void store.fetch().catch(() => undefined);
-});
+}, { immediate: true });
 
 async function toggle() {
   if (busy.value || !props.productId) return;

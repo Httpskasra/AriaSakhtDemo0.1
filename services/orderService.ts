@@ -6,9 +6,7 @@ import { useApiClient } from '~/services/apiClient';
 import type {
   Order,
   OrderItemDto,
-  OrderStatus,
   OrdersListResponse,
-  OrderStatusUpdateDto,
 } from '~/types/order';
 
 // ==== Types (طبق CreateOrderDto بک‌اند) ====
@@ -43,8 +41,11 @@ export async function createOrder(options: CreateOrderOptions = {}): Promise<Ord
   const userId = user.value?.userId;
   if (!userId) throw new Error('برای ایجاد سفارش باید وارد حساب کاربری شوید.');
 
-  const { data: cart } = await getPopulatedCart();
-  const items = (cart.items || []).map((item): OrderItemDto => {
+  const { data: cartResponse } = await getPopulatedCart();
+  const cartItems = Array.isArray(cartResponse)
+    ? cartResponse.flatMap((cart) => cart.items || [])
+    : cartResponse.items || [];
+  const items: OrderItemDto[] = cartItems.map((item): OrderItemDto => {
     const productId = typeof item.productId === 'string'
       ? item.productId
       : item.productId?._id || item.productId?.id;
@@ -94,7 +95,7 @@ export async function listOrders(params?: {
   limit?: number;
 }): Promise<Order[] | OrdersListResponse> {
   const $axios = useApiClient();
-  const { data } = await $axios.get("/orders", { params });
+  const { data } = await $axios.get<Order[] | OrdersListResponse>("/orders", { params });
   return data;
 }
 
@@ -104,7 +105,7 @@ export async function listOrders(params?: {
  */
 export async function getOrder(id: string): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.get(`/orders/${id}`);
+  const { data } = await $axios.get<Order>(`/orders/${id}`);
   return data;
 }
 
@@ -113,7 +114,7 @@ export async function getOrder(id: string): Promise<Order> {
  */
 export async function markOrderAsPaid(id: string): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/orders/${id}/mark-paid`);
+  const { data } = await $axios.patch<Order>(`/orders/${id}/mark-paid`);
   return data;
 }
 
@@ -125,7 +126,7 @@ export async function markOrderAsShipped(
   body?: { transportId?: string }
 ): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/orders/${id}/mark-shipped`, body || {});
+  const { data } = await $axios.patch<Order>(`/orders/${id}/mark-shipped`, body || {});
   return data;
 }
 
@@ -134,7 +135,7 @@ export async function markOrderAsShipped(
  */
 export async function markOrderAsDelivered(id: string): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/orders/${id}/mark-delivered`);
+  const { data } = await $axios.patch<Order>(`/orders/${id}/mark-delivered`);
   return data;
 }
 
@@ -143,7 +144,7 @@ export async function markOrderAsDelivered(id: string): Promise<Order> {
  */
 export async function refundOrder(id: string): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(`/orders/${id}/refund`);
+  const { data } = await $axios.patch<Order>(`/orders/${id}/refund`);
   return data;
 }
 
@@ -155,7 +156,7 @@ export async function confirmDelivery(
   body?: { confirmation?: boolean }
 ): Promise<Order> {
   const $axios = useApiClient();
-  const { data } = await $axios.patch(
+  const { data } = await $axios.patch<Order>(
     `/orders/${id}/confirm-delivery`,
     body || {}
   );

@@ -25,6 +25,13 @@ export interface Rating {
   updatedAt?: string;
 }
 
+export interface RatingsPage {
+  items: Rating[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 /**
  * API calls for Ratings
  * F4: Local 401 handling removed as it is handled by the global Axios interceptor.
@@ -39,12 +46,20 @@ export async function createRating(body: CreateRatingDto): Promise<Rating> {
 export async function getRatingsByProduct(
   productId: string,
   params?: { page?: number; limit?: number }
-): Promise<Rating[]> {
+): Promise<RatingsPage> {
   const { $axios } = useNuxtApp();
   const { data } = await $axios.get(`/ratings/product/${productId}`, {
     params,
   });
-  return data;
+  if (Array.isArray(data)) {
+    return { items: data, total: data.length, page: params?.page || 1, limit: params?.limit || data.length || 1 };
+  }
+  return {
+    items: Array.isArray(data?.items) ? data.items : [],
+    total: Number(data?.total || 0),
+    page: Number(data?.page || params?.page || 1),
+    limit: Number(data?.limit || params?.limit || 5),
+  };
 }
 
 export async function getUserProductRating(
@@ -77,7 +92,7 @@ export async function getAverageRating(productId: string): Promise<number> {
   try {
     const { data } = await $axios.get(`/ratings/product/${productId}/average`);
     return data.average || 0;
-  } catch (err) {
+  } catch {
     return 0;
   }
 }
@@ -87,7 +102,7 @@ export async function getRatingCount(productId: string): Promise<number> {
   try {
     const { data } = await $axios.get(`/ratings/product/${productId}/count`);
     return data.count || 0;
-  } catch (err) {
+  } catch {
     return 0;
   }
 }

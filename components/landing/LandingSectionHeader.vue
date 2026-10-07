@@ -26,7 +26,7 @@ withDefaults(defineProps<{
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.4rem;
 }
 
 .landing-section-header__copy {
@@ -58,7 +58,7 @@ withDefaults(defineProps<{
     align-items: stretch;
     flex-direction: column;
     gap: .85rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.1rem;
   }
 
   .landing-section-header__action {
