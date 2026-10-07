@@ -74,6 +74,10 @@ export default defineNuxtPlugin({
       const originalRequest = error.config as any;
       const requestUrl = String(originalRequest?.url || '');
       const isAuthBootstrapRequest = /\/auth\/(refresh|csrf|signin|signup|verify-otp)$/.test(requestUrl);
+      const isMeRequest = /\/auth\/me$/.test(requestUrl);
+      const hadAuthorization = Boolean(
+        originalRequest?.headers?.Authorization || originalRequest?.headers?.authorization,
+      );
       
       // If 401 Unauthorized and not already retrying
       if (
@@ -81,7 +85,10 @@ export default defineNuxtPlugin({
         originalRequest &&
         !originalRequest._retry &&
         !originalRequest._skipAuthRefresh &&
-        !isAuthBootstrapRequest
+        !isAuthBootstrapRequest &&
+        // useUser performs the explicit bootstrap refresh when /auth/me has
+        // no access token. Do not create a second refresh from this interceptor.
+        (!isMeRequest || hadAuthorization)
       ) {
         originalRequest._retry = true;
         

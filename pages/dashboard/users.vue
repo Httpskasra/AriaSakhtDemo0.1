@@ -215,28 +215,30 @@
           <UButton size="xs" color="neutral" variant="outline" @click="loadCompanyAccessData">تلاش دوباره</UButton>
         </div>
         <form v-else class="company-access__form" @submit.prevent="saveCompanyAccess">
-          <UFormField label="شرکت" name="companyId" required>
-            <AppSelect
-              v-model="companyAccessForm.companyId"
-              :items="companyOptions"
-              value-key="value"
-              label-key="label"
-              placeholder="شرکت را انتخاب کنید"
-              @update:model-value="syncCompanyAccessForCompany" />
-          </UFormField>
+          <div class="company-access__setup-grid">
+            <UFormField label="شرکت" name="companyId" required>
+              <AppSelect
+                v-model="companyAccessForm.companyId"
+                :items="companyOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="شرکت را انتخاب کنید"
+                @update:model-value="syncCompanyAccessForCompany" />
+            </UFormField>
+
+            <label class="company-access__admin-toggle">
+              <input v-model="companyAccessForm.isCompanyAdmin" type="checkbox" />
+              <span>
+                <strong>مدیر شرکت باشد</strong>
+                <small>مدیریت همین شرکت، مستقل از نقش‌های سراسری کاربر.</small>
+              </span>
+            </label>
+          </div>
 
           <div class="company-access__context" v-if="companyAccessForm.companyId">
             <UIcon name="i-lucide-info" aria-hidden="true" />
-            <span>مجوزهای این فرم فقط برای شرکت انتخاب‌شده اعمال می‌شوند و به دسترسی‌های سراسری کاربر دست نمی‌زنند.</span>
+            <span>این مجوزها فقط برای شرکت انتخاب‌شده اعمال می‌شوند و دسترسی‌های سراسری کاربر را تغییر نمی‌دهند.</span>
           </div>
-
-          <label class="company-access__admin-toggle">
-            <input v-model="companyAccessForm.isCompanyAdmin" type="checkbox" />
-            <span>
-              <strong>مدیر شرکت باشد</strong>
-              <small>مدیر شرکت بودن از نقش‌های سراسری جداست و فقط به همین شرکت مربوط می‌شود.</small>
-            </span>
-          </label>
 
           <section class="company-access__permissions" aria-labelledby="company-access-permissions-title">
             <div class="company-access__section-heading">
@@ -268,8 +270,8 @@
           </section>
 
           <div class="company-access__actions-row">
-            <UButton type="button" color="neutral" variant="soft" :disabled="companyAccessSaving" @click="closeCompanyAccess">انصراف</UButton>
             <UButton type="submit" :loading="companyAccessSaving" :disabled="!companyAccessForm.companyId || companyAccessSaving">ذخیره دسترسی</UButton>
+            <UButton type="button" color="neutral" variant="soft" :disabled="companyAccessSaving" @click="closeCompanyAccess">انصراف</UButton>
           </div>
         </form>
       </div>
@@ -605,39 +607,50 @@ watch(isReady, (ready) => { if (ready) fetchUsers(); }, { once: true });
 .user-details__empty { margin:0; padding:.85rem; border:1px dashed var(--color-border-strong); border-radius:var(--radius-field); color:var(--color-text-muted); font-size:.8rem; }
 .users-table__operations { vertical-align:top; }
 .users-table__operations .panel-row-actions { align-items:stretch; flex-direction:column; }
-.company-access-modal { display:grid; gap:1.25rem; width:100%; max-width:52rem; margin:0 auto; }
-.company-access__hero { display:flex; align-items:center; gap:.85rem; padding-block:.2rem 1.1rem; border-bottom:1px solid var(--color-border); }
-.company-access__icon { display:grid; width:3.25rem; height:3.25rem; flex:none; place-items:center; border:1px solid var(--color-info-border); border-radius:var(--radius-compact-list-item); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.35rem; }
-.company-access__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.15rem; font-weight:800; }
-.company-access__hero p:last-child { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.8rem; }
-.company-access__form { display:grid; gap:1rem; }
-.company-access__context { display:flex; align-items:flex-start; gap:.5rem; padding:.75rem .85rem; border:1px solid var(--color-info-border); border-radius:var(--radius-field); background:var(--color-info-bg); color:var(--color-info-fg); font-size:.78rem; line-height:1.8; }
-.company-access__admin-toggle { display:flex; align-items:flex-start; gap:.65rem; padding:.85rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); cursor:pointer; }
-.company-access__admin-toggle input { width:1.1rem; height:1.1rem; margin-top:.15rem; accent-color:var(--color-brand-blue); }
-.company-access__admin-toggle span { display:grid; gap:.2rem; }
-.company-access__admin-toggle strong { color:var(--color-text-heading); font-size:.84rem; }
-.company-access__admin-toggle small { color:var(--color-text-muted); font-size:.73rem; line-height:1.7; }
-.company-access__permissions { display:grid; gap:.7rem; }
+.company-access-modal { display:grid; gap:.9rem; width:100%; max-width:52rem; margin:0 auto; }
+.company-access__hero { display:flex; align-items:center; gap:.75rem; padding-block:0 .85rem; border-bottom:1px solid var(--color-border); }
+.company-access__icon { display:grid; width:2.75rem; height:2.75rem; flex:none; place-items:center; border:1px solid var(--color-info-border); border-radius:var(--radius-compact-list-item); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.15rem; }
+.company-access__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.08rem; font-weight:800; }
+.company-access__hero p:last-child { margin:.2rem 0 0; color:var(--color-text-muted); font-size:.76rem; }
+.company-access__form { display:grid; gap:.8rem; }
+.company-access__setup-grid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(15rem, .85fr); align-items:stretch; gap:.75rem; }
+.company-access__setup-grid > :deep(.u-form-field) { min-width:0; }
+.company-access__context { display:flex; align-items:flex-start; gap:.5rem; padding:.65rem .8rem; border:1px solid var(--color-info-border); border-radius:var(--radius-field); background:var(--color-info-bg); color:var(--color-info-fg); font-size:.76rem; line-height:1.75; }
+.company-access__context :deep(svg) { flex:none; margin-top:.15rem; }
+.company-access__admin-toggle { display:flex; align-items:flex-start; gap:.6rem; min-width:0; padding:.7rem .8rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); cursor:pointer; }
+.company-access__admin-toggle:hover { border-color:var(--color-info-border); background:var(--color-info-bg); }
+.company-access__admin-toggle:has(input:focus-visible) { outline:2px solid var(--color-brand-blue); outline-offset:2px; }
+.company-access__admin-toggle input { width:1.05rem; height:1.05rem; flex:none; margin-top:.12rem; accent-color:var(--color-brand-blue); }
+.company-access__admin-toggle span { display:grid; min-width:0; gap:.15rem; }
+.company-access__admin-toggle strong { color:var(--color-text-heading); font-size:.82rem; }
+.company-access__admin-toggle small { color:var(--color-text-muted); font-size:.7rem; line-height:1.6; }
+.company-access__permissions { display:grid; gap:.55rem; }
 .company-access__section-heading { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
-.company-access__section-heading h3 { margin:0; color:var(--color-text-heading); font-size:.92rem; font-weight:800; }
-.company-access__section-heading p { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.74rem; }
-.company-access__permission-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; }
-.company-access__permission-card { display:grid; gap:.65rem; min-width:0; padding:.8rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.company-access__section-heading h3 { margin:0; color:var(--color-text-heading); font-size:.9rem; font-weight:800; }
+.company-access__section-heading p { margin:.2rem 0 0; color:var(--color-text-muted); font-size:.72rem; }
+.company-access__permission-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem; }
+.company-access__permission-card { display:grid; gap:.5rem; min-width:0; padding:.65rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
+.company-access__permission-card:hover { border-color:var(--color-info-border); }
 .company-access__permission-title { display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
-.company-access__permission-title strong { color:var(--color-text-heading); font-size:.82rem; }
-.company-access__select-all { padding:0; border:0; background:transparent; color:var(--color-brand-blue); font:inherit; font-size:.7rem; cursor:pointer; }
+.company-access__permission-title strong { color:var(--color-text-heading); font-size:.8rem; }
+.company-access__select-all { padding:0; border:0; background:transparent; color:var(--color-brand-blue); font:inherit; font-size:.68rem; cursor:pointer; }
 .company-access__select-all:focus-visible { outline:2px solid var(--color-brand-blue); outline-offset:3px; border-radius:.2rem; }
 .company-access__actions { display:flex; flex-wrap:wrap; gap:.35rem; }
-.company-access__actions .action-checkbox { min-height:2rem; padding:.25rem .5rem; font-size:.72rem; }
+.company-access__actions .action-checkbox { display:inline-flex; min-height:1.85rem; align-items:center; gap:.35rem; padding:.2rem .45rem; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:var(--color-bg-surface); color:var(--color-text-body); cursor:pointer; font-size:.7rem; transition:border-color .18s ease, background-color .18s ease, color .18s ease; }
+.company-access__actions .action-checkbox:hover { border-color:var(--color-info-border); color:var(--color-text-heading); }
+.company-access__actions .action-checkbox--selected { border-color:var(--color-info-border); background:var(--color-info-bg); color:var(--color-info-fg); }
+.company-access__actions .action-checkbox input { width:.9rem; height:.9rem; margin:0; accent-color:var(--color-brand-blue); }
+.company-access__actions .action-checkbox input:focus-visible { outline:2px solid var(--color-brand-blue); outline-offset:2px; }
 .company-access__error { display:flex; align-items:center; gap:.6rem; padding:.85rem; border:1px solid var(--color-danger-border); border-radius:var(--radius-field); background:var(--color-danger-bg); color:var(--color-danger-fg); font-size:.8rem; }
 .company-access__error span { flex:1; }
-.company-access__actions-row { display:flex; justify-content:flex-start; gap:.65rem; padding-top:.25rem; border-top:1px solid var(--color-border); }
+.company-access__actions-row { display:flex; align-items:center; justify-content:flex-start; gap:.55rem; padding-top:.7rem; border-top:1px solid var(--color-border); }
+.company-access__actions-row :deep(button) { min-height:2.5rem; }
 @media (max-width:640px) {
   .user-details__hero { align-items:flex-start; flex-wrap:wrap; }
   .permission-count--hero { width:100%; margin-inline-start:0; }
   .user-details__grid, .user-permissions-list { grid-template-columns:1fr; }
   .user-details__grid-wide { grid-column:auto; }
-  .company-access__permission-grid { grid-template-columns:1fr; }
+  .company-access__setup-grid, .company-access__permission-grid { grid-template-columns:1fr; }
   .company-access__hero { align-items:flex-start; }
 }
 @media (prefers-reduced-motion:reduce) { .users-table__row { transition:none; } }

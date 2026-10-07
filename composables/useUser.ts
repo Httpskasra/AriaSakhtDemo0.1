@@ -4,6 +4,8 @@ import { useState } from "#app";
 import { computed } from "vue";
 import { useApiClient } from '~/services/apiClient';
 import { usePendingLogout } from '~/composables/usePendingLogout';
+import { refreshAccessToken } from '~/services/authService';
+import { useAuthStore } from '~/stores/auth';
 
 // The auth bootstrap plugin and protected-route middleware can call useUser()
 // during the same hydration cycle. Keep one request per Nuxt runtime so they
@@ -20,6 +22,7 @@ export const useUser = () => {
   // merely because /auth/me was temporarily unavailable.
   const authUnavailable = useState<boolean>("user-auth-unavailable", () => false);
   const requestVersion = useState<number>("user-request-version", () => 0);
+  const authStore = useAuthStore();
   // Server-side requests must remain local to this composable invocation so
   // one SSR request can never share a user/profile Promise with another.
   let serverUserRequest: Promise<boolean> | null = null;
@@ -73,9 +76,17 @@ export const useUser = () => {
       authUnavailable.value = false;
       const currentRequest = ++requestVersion.value;
       try {
-        const requestConfig: (AxiosRequestConfig & { _skipAuthRefresh?: boolean }) | undefined = accessToken
+        // /auth/me is the session bootstrap request. If there is no access
+        // token yet, refresh explicitly first so the request never enters the
+        // generic 401 interceptor and starts a second refresh in parallel.
+        let bootstrapAccessToken = accessToken;
+        if (!bootstrapAccessToken && !authStore.getAccessToken()) {
+          bootstrapAccessToken = await refreshAccessToken();
+        }
+
+        const requestConfig: (AxiosRequestConfig & { _skipAuthRefresh?: boolean }) | undefined = bootstrapAccessToken
           ? {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: { Authorization: `Bearer ${bootstrapAccessToken}` },
             _skipAuthRefresh: true,
           }
           : undefined;

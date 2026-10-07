@@ -34,6 +34,7 @@ export interface UpdateUserPermissionsRequestDto {
 }
 
 const refreshLocks = new WeakMap<object, Promise<string>>();
+const refreshBackoff = new WeakMap<object, { until: number; error: unknown }>();
 const csrfCookieOptions = {
   httpOnly: false,
   secure: process.env.NODE_ENV === 'production',
@@ -179,12 +180,41 @@ async function performRefresh(
  */
 export const refreshAccessToken = (): Promise<string> => {
   const authStore = useAuthStore();
+  const blocked = refreshBackoff.get(authStore);
+  if (blocked) {
+    if (blocked.until > Date.now()) return Promise.reject(blocked.error);
+    refreshBackoff.delete(authStore);
+  }
+
   const existingRefresh = refreshLocks.get(authStore);
   if (existingRefresh) return existingRefresh;
 
-  const refreshPromise = performRefresh(authStore).finally(() => {
-    refreshLocks.delete(authStore);
-  });
+  const refreshPromise = performRefresh(authStore)
+    .then((token) => {
+      refreshBackoff.delete(authStore);
+      return token;
+    })
+    .catch((error) => {
+      // A rate-limited refresh must not immediately be retried by every
+      // request that received the same expired access token. Respect the
+      // server's Retry-After header when present and keep the session state
+      // intact; only AUTH_SESSION_INVALID is a real logout.
+      const details = error as {
+        response?: { status?: number; headers?: Record<string, string | string[] | undefined> };
+      };
+      if (details.response?.status === 429) {
+        const retryAfter = details.response.headers?.['retry-after'];
+        const retryAfterSeconds = Number(Array.isArray(retryAfter) ? retryAfter[0] : retryAfter);
+        const backoffMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+          ? Math.min(retryAfterSeconds * 1000, 15 * 60 * 1000)
+          : 5000;
+        refreshBackoff.set(authStore, { until: Date.now() + backoffMs, error });
+      }
+      throw error;
+    })
+    .finally(() => {
+      refreshLocks.delete(authStore);
+    });
   refreshLocks.set(authStore, refreshPromise);
   return refreshPromise;
 };

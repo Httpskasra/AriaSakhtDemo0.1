@@ -295,7 +295,10 @@
                 </label>
 
                 <div v-if="imageFiles.length" class="products-pending-files">
-                  <span>{{ imageFiles.length }} تصویر آماده آپلود است.</span>
+                  <span class="products-pending-files__message">
+                    <strong>{{ imageFiles.length }} تصویر انتخاب شده است</strong>
+                    <small>برای افزودن تصویر به محصول، روی «آپلود تصاویر» بزنید.</small>
+                  </span>
                   <UButton
                     v-if="!uploading"
                     type="button"
@@ -303,11 +306,13 @@
                     icon="i-lucide-cloud-upload"
                     color="primary"
                     variant="solid"
-                    class="products-primary-action"
+                    class="products-primary-action products-upload-button"
+                    aria-label="آپلود تصاویر انتخاب‌شده"
+                    title="آپلود تصاویر انتخاب‌شده"
                     @click="uploadSelectedImages">
-                    آپلود و افزودن
+                    <span class="products-upload-button__label">آپلود تصاویر</span>
                   </UButton>
-                  <span v-else class="products-upload-status">در حال آپلود...</span>
+                  <span v-else class="products-upload-status">در حال آپلود تصاویر...</span>
                 </div>
 
                 <div v-if="imagePreviews.length" class="products-image-grid" aria-label="پیش‌نمایش تصاویر انتخاب‌شده">
@@ -532,6 +537,7 @@ const editorDraftKey = computed(() => {
 const activeProductsCount = computed(() => products.value.filter((product) => product.status === "active").length);
 const draftProductsCount = computed(() => products.value.filter((product) => product.status === "draft").length);
 const outOfStockCount = computed(() => products.value.filter((product) => Number(product.stock?.quantity || 0) <= 0).length);
+let productsRequestId = 0;
 
 onMounted(() => {
   if (!isReady.value) return;
@@ -546,6 +552,14 @@ watch(isReady, (ready) => {
   if (canCreate.value || canUpdate.value) fetchCategories();
   if (props.editorOnly && canCreate.value) restoreEditorDraft();
 }, { once: true });
+
+watch(() => route.path, (path, previousPath) => {
+  if (props.editorOnly || path === previousPath || !canRead.value) return;
+  const listPath = editorListPath();
+  if (path.replace(/\/+$/, "") === listPath && previousPath?.replace(/\/+$/, "") !== listPath) {
+    fetchProducts();
+  }
+});
 
 watch([form, tagsInput, attributesPairs], () => {
   if (props.editorOnly && isReady.value && !suppressEditorDraftSave.value) scheduleEditorDraftSave();
@@ -803,6 +817,7 @@ function statusFa(s: Product["status"]) {
 
 async function fetchProducts() {
   if (!canRead.value) return;
+  const requestId = ++productsRequestId;
   const currentUser = user.value as (typeof user.value & {
     companyId?: string;
     profile?: { companyId?: string };
@@ -826,21 +841,23 @@ async function fetchProducts() {
     const result = props.sellerOnly
       ? await listCompanyProducts(sellerCompanyId, { page: page.value, limit: limit.value, sort: sort.value })
       : await listAdminProducts({ page: page.value, limit: limit.value, sort: sort.value, filter: search.value.trim() || undefined });
-    products.value = result.items;
-    total.value = result.total;
-    const lastPage = Math.max(1, Math.ceil(result.total / limit.value));
+    if (requestId !== productsRequestId) return;
+    products.value = Array.isArray(result.items) ? result.items : [];
+    total.value = Number(result.total) || products.value.length;
+    const lastPage = Math.max(1, Math.ceil(total.value / limit.value));
     if (page.value > lastPage) {
       page.value = lastPage;
       await fetchProducts();
       return;
     }
   } catch (e) {
+    if (requestId !== productsRequestId) return;
     console.error("خطا در دریافت محصولات:", e);
     products.value = [];
     total.value = 0;
     loadError.value = errorMessage(e);
   } finally {
-    loading.value = false;
+    if (requestId === productsRequestId) loading.value = false;
   }
 }
 
@@ -1213,6 +1230,9 @@ function numberFormat(n?: number) {
 .products-upload-dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .products-upload-dropzone:focus-within { box-shadow: var(--focus-ring); }
 .products-pending-files { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border-radius: var(--radius-field); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .78rem; }
+.products-pending-files__message { display: grid; min-width: 0; gap: .15rem; }
+.products-pending-files__message strong { color: var(--color-text-heading); font-size: .8rem; font-weight: 800; line-height: 1.6; }
+.products-pending-files__message small { color: var(--color-text-muted); font-size: .7rem; line-height: 1.7; }
 .products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
 .products-primary-action {
   min-height: 2.75rem;
@@ -1228,6 +1248,8 @@ function numberFormat(n?: number) {
 }
 .products-primary-action:focus-visible { box-shadow: var(--focus-ring); }
 .products-primary-action :deep(svg) { color: currentColor !important; }
+.products-upload-button { min-width: 9.5rem; white-space: nowrap; }
+.products-upload-button :deep(.truncate), .products-upload-button__label { color: var(--color-bg-surface) !important; }
 .products-secondary-action {
   min-height: 2.5rem;
   border: 1px solid var(--color-border-strong) !important;

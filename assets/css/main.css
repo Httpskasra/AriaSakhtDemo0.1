@@ -636,6 +636,7 @@
    * visually colliding with the close action.
    */
   .tejaris-toaster__viewport {
+    position: fixed !important;
     top: max(1rem, env(safe-area-inset-top));
     right: max(1rem, env(safe-area-inset-right));
     left: auto;
@@ -644,7 +645,9 @@
     gap: .75rem;
     direction: rtl;
     pointer-events: none;
-    z-index: 1100;
+    /* Toasts must stay above modal, drawer and blur overlays. */
+    z-index: 20000 !important;
+    isolation: isolate;
   }
 
   .tejaris-toaster__base {
@@ -669,6 +672,8 @@
     font-family: var(--font-num);
     text-align: right;
     isolation: isolate;
+    opacity: 1;
+    filter: none;
   }
 
   .tejaris-toast__content {

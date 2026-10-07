@@ -100,6 +100,33 @@ function submitProduct(status: Product["status"] = "active") {
   submittedProduct.status = status;
   emit("submit", submittedProduct);
 }
+
+/**
+ * The page editor keeps its actions visible while the long form scrolls. When
+ * a user clicks a field close to that bar, browser native scrolling can leave
+ * the field underneath the sticky actions. Bring only form controls into a
+ * safe viewport area; action buttons themselves must not trigger a scroll.
+ */
+function keepFocusedFieldVisible(event: FocusEvent) {
+  if (!props.fullPage || typeof window === "undefined") return;
+
+  const target = event.target instanceof HTMLElement
+    ? event.target.closest<HTMLElement>("input, textarea, select, [role=combobox]")
+    : null;
+  if (!target) return;
+
+  requestAnimationFrame(() => {
+    const actions = document.querySelector<HTMLElement>(".product-editor--page .product-editor__actions");
+    const rect = target.getBoundingClientRect();
+    const actionsTop = actions?.getBoundingClientRect().top ?? window.innerHeight;
+    const safeTop = 72;
+    const safeBottom = Math.min(window.innerHeight - 16, actionsTop - 16);
+
+    if (rect.top < safeTop || rect.bottom > safeBottom) {
+      target.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
+    }
+  });
+}
 </script>
 
 <template>
@@ -123,7 +150,7 @@ function submitProduct(status: Product["status"] = "active") {
       title="ذخیره‌ی خودکار فعال است"
       description="اطلاعات فرم هنگام ورود به‌صورت محلی ذخیره می‌شود. با «ذخیره پیش‌نویس» محصول در فهرست مدیریت ثبت می‌شود؛ برای نمایش در فروشگاه «ثبت و انتشار محصول» را بزنید." />
 
-    <UForm :state="localForm" :aria-labelledby="fullPage ? 'product-page-form-title' : 'product-form-title'" class="product-form" @submit.prevent="submitProduct('active')">
+    <UForm :state="localForm" :aria-labelledby="fullPage ? 'product-page-form-title' : 'product-form-title'" class="product-form" @focusin="keepFocusedFieldVisible" @submit.prevent="submitProduct('active')">
       <section class="product-form__section">
         <div class="product-form__section-heading"><span>اطلاعات اصلی</span><small>فیلدهای ضروری محصول</small></div>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -188,9 +215,24 @@ function submitProduct(status: Product["status"] = "active") {
           </label>
 
           <div v-if="imageFiles.length" class="products-pending-files">
-            <span>{{ imageFiles.length }} تصویر آماده آپلود است.</span>
-            <UButton v-if="!uploading" type="button" size="sm" icon="i-lucide-cloud-upload" color="primary" variant="solid" class="products-primary-action" @click="emit('upload')">آپلود و افزودن</UButton>
-            <span v-else class="products-upload-status">در حال آپلود...</span>
+            <span class="products-pending-files__message">
+              <strong>{{ imageFiles.length }} تصویر انتخاب شده است</strong>
+              <small>برای افزودن تصویر به محصول، روی «آپلود تصاویر» بزنید.</small>
+            </span>
+            <UButton
+              v-if="!uploading"
+              type="button"
+              size="sm"
+              icon="i-lucide-cloud-upload"
+              color="primary"
+              variant="solid"
+              class="products-primary-action products-upload-button"
+              aria-label="آپلود تصاویر انتخاب‌شده"
+              title="آپلود تصاویر انتخاب‌شده"
+              @click="emit('upload')">
+              <span class="products-upload-button__label">آپلود تصاویر</span>
+            </UButton>
+            <span v-else class="products-upload-status">در حال آپلود تصاویر...</span>
           </div>
 
           <div v-if="imagePreviews.length" class="products-image-grid" aria-label="پیش‌نمایش تصاویر انتخاب‌شده">
@@ -317,8 +359,15 @@ function submitProduct(status: Product["status"] = "active") {
 .products-upload-dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .products-upload-dropzone:focus-within { box-shadow: var(--focus-ring); }
 .products-pending-files { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .65rem .75rem; border-radius: var(--radius-field); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .78rem; }
+.products-pending-files__message { display: grid; min-width: 0; gap: .15rem; }
+.products-pending-files__message strong { color: var(--color-text-heading); font-size: .8rem; font-weight: 800; line-height: 1.6; }
+.products-pending-files__message small { color: var(--color-text-muted); font-size: .7rem; line-height: 1.7; }
 .products-upload-status { color: var(--color-brand-blue); font-weight: 700; }
 .products-primary-action { min-height: 2.75rem; border: 1px solid var(--color-brand-blue) !important; background: var(--color-brand-blue) !important; color: var(--color-bg-surface) !important; font-weight: 800; }
+.products-upload-button { display: inline-flex; min-width: 9.5rem; align-items: center; justify-content: center; gap: .4rem; color: var(--color-bg-surface) !important; white-space: nowrap; }
+.products-upload-button:hover:not(:disabled) { border-color: var(--color-brand-blue) !important; background: color-mix(in srgb, var(--color-brand-blue) 88%, black) !important; color: var(--color-bg-surface) !important; }
+.products-upload-button:focus-visible { box-shadow: var(--focus-ring); }
+.products-upload-button :deep(svg), .products-upload-button :deep(.truncate), .products-upload-button__label { color: var(--color-bg-surface) !important; }
 .products-secondary-action { min-height: 2.5rem; border: 1px solid var(--color-border-strong) !important; background: var(--color-bg-surface) !important; color: var(--color-text-heading) !important; font-weight: 800; }
 .products-secondary-action:hover:not(:disabled) { border-color: var(--color-brand-blue) !important; background: var(--color-info-bg) !important; color: var(--color-brand-blue) !important; }
 .products-image-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .65rem; }
@@ -328,10 +377,12 @@ function submitProduct(status: Product["status"] = "active") {
 .products-image-tile__label { position: absolute; inset-inline: .35rem; inset-block-end: .35rem; padding: .2rem .3rem; border-radius: var(--radius-pill); color: var(--color-text-heading); background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent); font-size: .62rem; text-align: center; }
 .products-image-tile--pending { border-style: dashed; border-color: var(--color-info-border); }
 .products-images-empty { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: 5rem; margin: 0; border: 1px dashed var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); font-size: .78rem; }
-.product-editor__actions { display: flex; justify-content: flex-start; gap: .6rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); box-shadow: var(--shadow-raised); position: sticky; bottom: .75rem; z-index: 3; }
+.product-editor__actions { display: flex; justify-content: flex-start; gap: .6rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); box-shadow: var(--shadow-raised); }
+.product-editor--page .product-editor__actions { position: sticky; inset-block-end: .75rem; z-index: 5; isolation: isolate; }
+.product-editor--page :deep(input), .product-editor--page :deep(textarea), .product-editor--page :deep(select), .product-editor--page :deep([role=combobox]) { scroll-margin-block: 6rem; }
 .product-editor__actions :deep(button) { min-height: 2.75rem; }
 .ltr { direction: ltr; }
 @media (max-width: 700px) { .product-option-row, .product-attribute-row { grid-template-columns: 1fr; align-items: stretch; } .product-option-row .product-field-error, .product-attribute-row .product-field-error { grid-column: auto; } }
-@media (max-width: 480px) { .product-form__section { padding: .75rem; } .product-form__section-heading { align-items: flex-start; flex-direction: column; gap: .2rem; } .product-option-card, .product-attribute-row { padding: .7rem; } .product-option-card__header { align-items: stretch; flex-direction: column; } .products-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .products-pending-files, .product-editor__actions { align-items: stretch; flex-direction: column; } }
+@media (max-width: 480px) { .product-form__section { padding: .75rem; } .product-form__section-heading { align-items: flex-start; flex-direction: column; gap: .2rem; } .product-option-card, .product-attribute-row { padding: .7rem; } .product-option-card__header { align-items: stretch; flex-direction: column; } .products-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .products-pending-files, .product-editor__actions { align-items: stretch; flex-direction: column; } .products-upload-button { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .product-editor__actions { transition: none; } }
 </style>
