@@ -74,7 +74,6 @@ const handleAddToCart = async () => {
           <span class="font-num">{{ ratingValue.toFixed(1) }}</span>
           <span class="font-num">({{ ratingCount.toLocaleString('fa-IR') }})</span>
         </span>
-        <span v-else class="catalog-product-card__rating catalog-product-card__rating--empty">بدون امتیاز</span>
       </div>
 
       <NuxtLink :to="`/products/${productId}`" class="catalog-product-card__title-link">

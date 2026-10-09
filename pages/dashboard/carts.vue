@@ -24,8 +24,12 @@
 
         <div class="cart-items">
           <article v-for="item in cartItems" :key="cartItemKey(item)" class="cart-item">
+            <NuxtLink class="item-media" :to="`/products/${encodeURIComponent(item.productId)}`" :aria-label="`مشاهده ${item.productName}`">
+              <img :src="item.imageUrl" :alt="item.productName" loading="lazy" @error="handleImageError" />
+            </NuxtLink>
             <div class="item-info">
-              <h3>{{ item.productName }}</h3>
+              <span class="item-kicker">محصول</span>
+              <h3><NuxtLink :to="`/products/${encodeURIComponent(item.productId)}`">{{ item.productName }}</NuxtLink></h3>
               <p class="item-meta ltr">SKU: {{ item.sku }}</p>
               <div v-if="item.variants?.length || item.variant" class="item-variants" aria-label="گزینه‌های انتخاب‌شده">
                 <span class="item-meta__label">انتخاب شما:</span>
@@ -36,8 +40,8 @@
 
             <div class="item-price">
               <span>قیمت واحد</span>
-              <strong>{{ numberFormat(item.price) }} ریال</strong>
-              <small>جمع: {{ numberFormat((item.price || 0) * item.quantity) }} ریال</small>
+              <strong>{{ numberFormat(item.price) }} <small>{{ currencyLabel(item.currency) }}</small></strong>
+              <small>جمع: {{ numberFormat((item.price || 0) * item.quantity) }} {{ currencyLabel(item.currency) }}</small>
             </div>
 
             <div class="item-actions">
@@ -53,9 +57,9 @@
         <h2 id="cart-summary-title">خلاصه سبد</h2>
         <dl class="summary-list">
           <div><dt>تعداد اقلام</dt><dd>{{ numberFormat(totalItems) }}</dd></div>
-          <div><dt>قیمت کل</dt><dd>{{ numberFormat(totalPrice) }} ریال</dd></div>
-          <div><dt>هزینه ارسال</dt><dd>{{ numberFormat(shippingCost) }} ریال</dd></div>
-          <div class="summary-total"><dt>جمع نهایی</dt><dd>{{ numberFormat(totalPrice + shippingCost) }} ریال</dd></div>
+          <div><dt>قیمت کل</dt><dd>{{ numberFormat(totalPrice) }} {{ currencyLabel(cartCurrency) }}</dd></div>
+          <div><dt>هزینه ارسال</dt><dd>{{ numberFormat(shippingCost) }} {{ currencyLabel(cartCurrency) }}</dd></div>
+          <div class="summary-total"><dt>جمع نهایی</dt><dd>{{ numberFormat(totalPrice + shippingCost) }} {{ currencyLabel(cartCurrency) }}</dd></div>
         </dl>
         <div class="summary-actions">
           <UButton v-if="canUpdate" block size="lg" icon="i-lucide-credit-card" :loading="isCheckingOut" :disabled="Boolean(updatingId || removingId)" @click="checkout">ثبت سفارش</UButton>
@@ -94,6 +98,8 @@ interface CartItem {
   productName: string;
   sku: string;
   price: number;
+  imageUrl: string;
+  currency: string;
   quantity: number;
   variant?: ProductVariantSelection;
   variants?: ProductVariantSelection[];
@@ -118,20 +124,29 @@ let cartRequest: Promise<void> | null = null;
 
 const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
 const totalPrice = computed(() => cartItems.value.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0));
+const cartCurrency = computed(() => cartItems.value[0]?.currency || "IRR");
 
 function numberFormat(value?: number) {
   return typeof value === "number" ? value.toLocaleString("fa-IR") : "—";
+}
+
+function currencyLabel(currency?: string) {
+  const code = String(currency || "IRR").toUpperCase();
+  return ({ IRR: "ریال", IRT: "تومان", USD: "دلار", EUR: "یورو" } as Record<string, string>)[code] || code;
 }
 
 function normalizeCartItem(item: any): CartItem | null {
   if (!item?.productId) return null;
   const product = typeof item.productId === "object" ? item.productId : null;
   const company = typeof item.companyId === "object" ? item.companyId : null;
+  const images = Array.isArray(product?.images) ? product.images : [];
   return {
     productId: String(product?._id || product?.id || item.productId),
     productName: product?.name || "محصول نامشخص",
     sku: product?.sku || "—",
     price: Number(item.priceAtAdd || product?.finalPrice || product?.basePrice || 0),
+    imageUrl: images[0]?.url || "/products/building-material.jpg",
+    currency: product?.currency || "IRR",
     quantity: Math.max(1, Number(item.quantity) || 1),
     variant: item.variant,
     variants: Array.isArray(item.variants) ? item.variants : undefined,
@@ -139,6 +154,12 @@ function normalizeCartItem(item: any): CartItem | null {
     companyName: company?.name,
     priceAtAdd: item.priceAtAdd,
   };
+}
+
+function handleImageError(event: Event) {
+  const image = event.target as HTMLImageElement;
+  if (image.src.endsWith("/products/building-material.jpg")) return;
+  image.src = "/products/building-material.jpg";
 }
 
 async function fetchCart() {
@@ -271,14 +292,21 @@ defineExpose({ addToCart });
 .panel-section-heading h2, .summary-panel h2, .confirm-content h2 { margin: 0; color: var(--color-text-heading); font-size: 1.05rem; }
 .panel-section-heading p { margin: .35rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
 .cart-items { display: grid; gap: .75rem; }
-.cart-item { display: grid; grid-template-columns: minmax(0, 1fr) 10rem auto; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-app); }
-.item-info h3 { margin: 0 0 .45rem; color: var(--color-text-heading); font-size: .98rem; }
+.cart-item { display: grid; grid-template-columns: 5.75rem minmax(0, 1fr) minmax(10rem, 13rem) auto; gap: 1rem; align-items: center; padding: .85rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); background: var(--color-bg-app); }
+.item-media { display: grid; width: 5.75rem; height: 5.75rem; place-items: center; overflow: hidden; border-radius: var(--radius-compact-list-item); background: var(--color-bg-surface); }
+.item-media img { width: 100%; height: 100%; object-fit: contain; }
+.item-info { min-width: 0; }
+.item-kicker { color: var(--color-brand-blue); font-size: .7rem; font-weight: var(--font-weight-bold); }
+.item-info h3 { margin: .2rem 0 .4rem; color: var(--color-text-heading); font-size: .98rem; line-height: 1.7; }
+.item-info h3 a { color: inherit; overflow-wrap: anywhere; }
+.item-info h3 a:hover, .item-info h3 a:focus-visible { color: var(--color-brand-blue); }
 .item-meta { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .8rem; }
 .item-variants { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .45rem; }
 .item-meta__label { color: var(--color-text-muted); font-size: .76rem; }
 .item-variant-chip { padding: .25rem .45rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .72rem; }
 .item-price { display: grid; gap: .2rem; text-align: center; color: var(--color-text-muted); font-size: .76rem; }
 .item-price strong { color: var(--color-text-heading); font-size: .9rem; }
+.item-price strong small { color: var(--color-text-muted); font-size: .7rem; font-weight: var(--font-weight-semibold); }
 .item-price small { font-size: .75rem; }
 .item-actions { display: flex; align-items: center; gap: .5rem; }
 .item-actions label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -296,5 +324,6 @@ defineExpose({ addToCart });
 .confirm-actions { display: flex; justify-content: flex-end; gap: .65rem; }
 .ltr { direction: ltr; text-align: right; }
 @media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } .summary-panel { position: static; } }
-@media (max-width: 640px) { .cart-items-panel, .summary-panel { padding: 1rem; } .panel-section-heading { align-items: flex-start; flex-direction: column; } .cart-item { grid-template-columns: 1fr; gap: .75rem; } .item-price { text-align: right; justify-items: start; } .item-actions { justify-content: space-between; } .confirm-actions { flex-direction: column-reverse; } }
+@media (max-width: 1050px) { .cart-item { grid-template-columns: 5rem minmax(0, 1fr) minmax(9rem, 11rem); } .item-media { width: 5rem; height: 5rem; } .item-actions { grid-column: 1 / -1; justify-content: flex-end; border-top: 1px solid var(--color-border); padding-top: .7rem; } }
+@media (max-width: 640px) { .cart-items-panel, .summary-panel { padding: 1rem; } .panel-section-heading { align-items: flex-start; flex-direction: column; } .cart-item { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .7rem; } .item-media { width: 4.5rem; height: 4.5rem; } .item-price { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding-top: .7rem; border-top: 1px solid var(--color-border); text-align: right; } .item-actions { grid-column: 1 / -1; justify-content: space-between; padding-top: .7rem; } .confirm-actions { flex-direction: column-reverse; } }
 </style>

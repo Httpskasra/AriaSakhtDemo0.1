@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { navigateTo } from "#app";
 import { useAuthStep } from "~/composables/useAuthStep";
 import { useCategories } from "~/composables/useCategories";
 import { useUser } from "~/composables/useUser";
@@ -17,6 +16,7 @@ const { categories, loading: categoriesLoading, load } = useCategories();
 // request itself. The drawer still renders a loading state until it is ready.
 void load().catch(() => undefined);
 const mobileMenuOpen = ref(false);
+const cartDrawerOpen = ref(false);
 const localScrolled = ref(false);
 const effectiveScrolled = computed(() => props.isScrolled || localScrolled.value);
 const topCategories = computed(() => categories.value.filter(category => !getParentCategoryId(category)));
@@ -24,7 +24,14 @@ const categoryPath = (category: Category) => ({ path: "/products", query: { cate
 const cartCountLabel = computed(() => cartStore.itemCount > 99 ? "99+" : String(cartStore.itemCount));
 const supportPhone = "021-12345678";
 
-function handleCartClick() { return isAuthenticated.value ? navigateTo("/dashboard/account/cart") : setStep("signin"); }
+function handleCartClick() {
+  if (!isAuthenticated.value) {
+    setStep("signin");
+    return;
+  }
+  mobileMenuOpen.value = false;
+  cartDrawerOpen.value = true;
+}
 function closeMobileMenu() { mobileMenuOpen.value = false; }
 function openAuth() { setStep("signin"); closeMobileMenu(); }
 function syncScrollState() { localScrolled.value = window.scrollY > 24; }
@@ -72,6 +79,7 @@ onBeforeUnmount(() => window.removeEventListener("scroll", syncScrollState));
       </nav></AppDrawer></ClientOnly>
     </div>
   </header>
+  <ClientOnly><CartDrawer v-model="cartDrawerOpen" /></ClientOnly>
 </template>
 
 <style scoped>
