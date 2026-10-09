@@ -112,15 +112,15 @@ const formatPrice = (price: number) => {
 .featured-product-skeleton__line--price { width: 6rem; height: 1.5rem; }
 .featured-product-skeleton__line--small { width: 3rem; }
 .featured-product__image { position: relative; overflow: hidden; aspect-ratio: 1; background: var(--color-bg-light); }
-.featured-product__discount { position: absolute; inset-block-start: .75rem; inset-inline-start: .75rem; padding: .25rem .5rem; border-radius: var(--radius-compact-list-item); color: var(--color-bg-surface); background: var(--color-danger-fg); font-size: .7rem; font-weight: 800; box-shadow: var(--shadow-raised); }
-.featured-product__vendor { overflow: hidden; color: var(--color-text-muted); font-size: .65rem; font-weight: 800; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-.featured-product__name { display: block; height: 3rem; overflow: hidden; color: var(--color-text-heading); font-weight: 800; line-height: 1.5; transition: color .16s ease; }
+.featured-product__discount { position: absolute; inset-block-start: .75rem; inset-inline-start: .75rem; padding: .25rem .5rem; border-radius: var(--radius-compact-list-item); color: var(--color-bg-surface); background: var(--color-danger-fg); font-size: .7rem; font-weight: var(--font-weight-extrabold); box-shadow: var(--shadow-raised); }
+.featured-product__vendor { overflow: hidden; color: var(--color-text-muted); font-size: .65rem; font-weight: var(--font-weight-extrabold); text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.featured-product__name { display: block; height: 3rem; overflow: hidden; color: var(--color-text-heading); font-weight: var(--font-weight-extrabold); line-height: var(--line-height-section); transition: color .16s ease; }
 .featured-product__name:hover { color: var(--color-brand-blue); }
 .featured-product__footer { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border); }
 .featured-product__old-price { color: var(--color-text-muted); font-size: .65rem; text-decoration: line-through; text-decoration-color: var(--color-danger-fg); }
-.featured-product__price { color: var(--color-text-heading); font-size: 1.1rem; font-weight: 900; }
-.featured-product__from { color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
-.featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: 600; }
+.featured-product__price { color: var(--color-text-heading); font-size: 1.1rem; font-weight: var(--font-weight-extrabold); }
+.featured-product__from { color: var(--color-text-muted); font-size: .7rem; font-weight: var(--font-weight-bold); }
+.featured-product__currency { color: var(--color-text-muted); font-size: .65rem; font-weight: var(--font-weight-semibold); }
 .featured-product__cart { transition: background-color .16s ease, color .16s ease; }
 @keyframes featured-pulse { 50% { opacity: .45; } }
 

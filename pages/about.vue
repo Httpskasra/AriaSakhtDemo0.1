@@ -153,7 +153,7 @@ const team = [
 .value-card h3 {
   color: var(--color-text-heading);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .value-card p {
@@ -208,7 +208,7 @@ const team = [
   background: var(--ui-color-primary-50);
 }
 
-.about-cta h2 { color: var(--color-text-heading); font-size: 1.125rem; font-weight: 800; }
+.about-cta h2 { color: var(--color-text-heading); font-size: 1.125rem; font-weight: var(--font-weight-extrabold); }
 .about-cta p { margin-top: .375rem; color: var(--color-text-body); font-size: .875rem; }
 .about-cta__actions { display: flex; flex-wrap: wrap; gap: .75rem; }
 

@@ -161,8 +161,8 @@ function handleRatingKeydown(event: KeyboardEvent, current: number) {
 .product-comment-form { display: grid; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--color-border); }
 .product-comment-form__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .product-comment-form__header > svg { color: var(--color-brand-blue); }
-.product-comment-form__eyebrow { display: block; margin-bottom: .25rem; color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
-.product-comment-form h3 { margin: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 900; }
+.product-comment-form__eyebrow { display: block; margin-bottom: .25rem; color: var(--color-text-muted); font-size: .7rem; font-weight: var(--font-weight-bold); }
+.product-comment-form h3 { margin: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: var(--font-weight-extrabold); }
 .product-comment-state { display: flex; align-items: flex-start; gap: .65rem; padding: .85rem 1rem; border-radius: var(--radius-field); line-height: 1.8; }
 .product-comment-state svg { flex: 0 0 auto; margin-top: .2rem; }
 .product-comment-state p { margin: 0; font-size: .8rem; }
@@ -171,7 +171,7 @@ function handleRatingKeydown(event: KeyboardEvent, current: number) {
 .product-comment-state--loading { justify-content: center; color: var(--color-text-muted); }
 .product-comment-form__fields { display: grid; gap: 1rem; }
 .product-comment-form__rating { margin: 0; padding: 0; border: 0; }
-.product-comment-form__rating legend, .product-comment-form__message label { display: block; margin-bottom: .45rem; color: var(--color-text-heading); font-size: .8rem; font-weight: 800; }
+.product-comment-form__rating legend, .product-comment-form__message label { display: block; margin-bottom: .45rem; color: var(--color-text-heading); font-size: .8rem; font-weight: var(--font-weight-extrabold); }
 .product-comment-form__stars { display: inline-flex; gap: .2rem; direction: rtl; }
 .product-comment-form__stars button { display: inline-grid; min-width: 2.2rem; min-height: 2.2rem; place-items: center; border-radius: var(--radius-field); color: var(--color-border-strong); }
 .product-comment-form__stars button:hover, .product-comment-form__stars button:focus-visible { color: var(--color-brand-yellow); background: var(--color-bg-light); }

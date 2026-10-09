@@ -48,10 +48,10 @@
 .promo-card__scrim { position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, color-mix(in srgb, var(--color-text-heading) 40%, transparent), var(--color-text-heading) 58%); }
 .promo-card__content { position:relative; z-index:1; width:min(100%, 31rem); padding:clamp(1.35rem, 3vw, 2.25rem); direction:rtl; }
 .promo-card--rfq .promo-card__content { padding:0; }
-.promo-card__eyebrow { display:inline-flex; min-height:1.7rem; align-items:center; margin-bottom:.75rem; padding:.2rem .55rem; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-brand-yellow) 90%, white); color:var(--color-text-heading); font-size:.68rem; font-weight:900; }
-.promo-card h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.25rem, 2.5vw, 1.85rem); font-weight:900; line-height:1.45; }
+.promo-card__eyebrow { display:inline-flex; min-height:1.7rem; align-items:center; margin-bottom:.75rem; padding:.2rem .55rem; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-brand-yellow) 90%, white); color:var(--color-text-heading); font-size:.68rem; font-weight: var(--font-weight-extrabold); }
+.promo-card h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.25rem, 2.5vw, 1.85rem); font-weight: var(--font-weight-extrabold); line-height:var(--line-height-section); }
 .promo-card p { max-width:29rem; margin:.6rem 0 1.15rem; color:color-mix(in srgb, var(--color-bg-surface) 84%, transparent); font-size:.8rem; line-height:1.9; }
-.promo-card__action { display:inline-flex; min-height:2.5rem; align-items:center; gap:.4rem; padding:.45rem .8rem; border-radius:var(--radius-compact-list-item); background:var(--color-bg-surface); color:var(--color-text-heading); font-size:.76rem; font-weight:900; }
+.promo-card__action { display:inline-flex; min-height:2.5rem; align-items:center; gap:.4rem; padding:.45rem .8rem; border-radius:var(--radius-compact-list-item); background:var(--color-bg-surface); color:var(--color-text-heading); font-size:.76rem; font-weight: var(--font-weight-extrabold); }
 .promo-card__action :deep(svg) { width:1rem; color:var(--color-brand-blue); }
 .promo-card--rfq .promo-card__action { color:var(--color-brand-blue); }
 .promo-card__accent-icon { position:absolute; inset-block-start:-1.25rem; inset-inline-start:-1.25rem; z-index:0; width:7.5rem; height:7.5rem; color:color-mix(in srgb, var(--color-bg-surface) 13%, transparent); transform:rotate(-12deg); }

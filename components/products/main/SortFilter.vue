@@ -77,7 +77,7 @@ const options = [
   flex: 0 0 auto;
   white-space: nowrap;
   font-size: .8125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-body);
 }
 
@@ -92,7 +92,7 @@ const options = [
   color: var(--color-text-heading);
   cursor: pointer;
   font-size: .8125rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .sort-filter__select:disabled {

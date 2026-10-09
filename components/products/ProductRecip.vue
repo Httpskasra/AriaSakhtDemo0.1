@@ -125,7 +125,6 @@ const copyProductLink = () => {
 .recip-header h3 {
   margin: 0;
   color: var(--color-text-heading);
-  font-family: var(--font-yekan);
   font-size: 1.05rem;
 }
 
@@ -156,20 +155,18 @@ li:last-child {
 .product-recip__label {
   font-size: .82rem;
   color: var(--color-text-muted);
-  font-family: var(--font-yekan);
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .val {
   font-size: .82rem;
   color: var(--color-brand-blue);
-  font-family: var(--font-num);
   text-align: left;
 }
 
 .val.discount {
   color: var(--color-danger-fg);
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
 }
 
 .val.available {

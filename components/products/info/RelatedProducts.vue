@@ -46,8 +46,8 @@ const relatedError = computed(() => error.value?.statusMessage || error.value?.m
 <style scoped>
 .related-products { display: grid; gap: 1rem; margin-top: 0; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
 .related-products__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.related-products__heading h2 { margin: .2rem 0 0; color: var(--color-text-heading); font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 900; }
-.related-products__eyebrow { display: block; color: var(--color-text-muted); font-size: .72rem; font-weight: 700; }
+.related-products__heading h2 { margin: .2rem 0 0; color: var(--color-text-heading); font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: var(--font-weight-extrabold); }
+.related-products__eyebrow { display: block; color: var(--color-text-muted); font-size: .72rem; font-weight: var(--font-weight-bold); }
 .related-products__accent { width: 2.25rem; height: .25rem; border-radius: var(--radius-pill); background: var(--color-brand-blue); }
 .related-products__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .related-products__loading, .related-products__error { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: 1.25rem; border: 1px solid var(--color-border); border-radius: var(--radius-field); color: var(--color-text-muted); background: var(--color-bg-light); }

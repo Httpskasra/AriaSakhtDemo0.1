@@ -7,7 +7,7 @@
             <div class="flex size-9 items-center justify-center rounded-field bg-primary-500">
               <UIcon name="i-lucide-layers" class="size-icon-action text-white" />
             </div>
-            <span class="text-xl font-black tracking-tighter text-slate-800">تجاریس</span>
+            <span class="text-xl font-extrabold tracking-tighter text-slate-800">تجاریس</span>
           </NuxtLink>
           <p class="text-sm leading-relaxed text-slate-500">
             تجاریس بازار آنلاین تخصصی صنعت و ساختمان است؛ خریداران را مستقیماً به تولیدکنندگان و تأمین‌کنندگان ثبت‌شده متصل می‌کنیم.

@@ -40,7 +40,7 @@ withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 .header-brand__name {
   color: var(--color-text-heading);
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: var(--font-weight-extrabold);
 }
 
 .header-brand--compact .header-brand__mark {

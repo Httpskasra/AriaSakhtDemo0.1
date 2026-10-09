@@ -90,7 +90,6 @@ ul {
   margin: 0;
   padding: 0;
   color: var(--color-text-muted);
-  font-family: var(--font-body);
   list-style: none;
 }
 
@@ -105,7 +104,7 @@ li button {
   font: inherit;
   cursor: pointer;
   font-size: .85rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   white-space: nowrap;
 }
 

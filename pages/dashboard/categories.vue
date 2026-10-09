@@ -390,7 +390,7 @@ watch(isReady, (ready) => { if (ready) fetchCategories(); }, { once: true });
   gap: .55rem;
   min-height: 2.25rem;
   padding-inline-start: calc(var(--category-depth, 0) * 1.25rem);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .category-name-cell__marker {

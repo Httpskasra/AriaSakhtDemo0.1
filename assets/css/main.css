@@ -107,10 +107,27 @@
   --green-number: var(--color-success-fg);
   --red-danger: var(--color-danger-fg);
   --yellow-warning: var(--color-brand-yellow);
-  --font-num: "IRANYekanXFaNum", sans-serif;
-  /* One panel typeface; the FaNum face keeps Persian digits consistent. */
-  --font-yekan: var(--font-num);
-  --font-body: var(--font-num);
+  --font-family-base: "IRANYekanXFaNum", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-size-h1: clamp(2rem, 3.7vw, 3.35rem);
+  --font-size-h2: clamp(1.35rem, 2.2vw, 1.8rem);
+  --font-size-h3: 1.05rem;
+  --font-size-body: 1rem;
+  --font-size-body-sm: .875rem;
+  --font-size-caption: .75rem;
+  --font-size-nav: .875rem;
+  --font-size-button: .875rem;
+  --font-size-input: 1rem;
+  --line-height-heading: 1.25;
+  --line-height-section: 1.35;
+  --line-height-compact: 1.5;
+  --line-height-body: 1.7;
+  --line-height-metadata: 1.45;
+  --letter-spacing-normal: normal;
   --space-page: clamp(1rem, 3vw, 2rem);
   --layout-content-max: 82.5rem;
   --layout-gutter: 2rem;
@@ -133,8 +150,6 @@
   --spacing-icon-action: 1.25rem;
   --spacing-icon-empty-state: 2rem;
   --spacing-icon-hero: 3rem;
-  --line-height-metadata: 1.4;
-  --line-height-body: 1.6;
   --line-height-long-form: 2.1;
   --shadow-surface: none;
   --shadow-raised: 0 4px 20px -1px rgb(0 0 0 / 5%), 0 2px 4px -1px rgb(0 0 0 / 3%);
@@ -248,7 +263,6 @@
     border: 0;
     outline: 0;
     direction: ltr;
-    font-family: var(--font-num);
     font-size: .9rem;
     text-align: left;
   }
@@ -264,7 +278,7 @@
     color: var(--color-bg-surface);
     background: var(--color-brand-blue);
     font-size: .78rem;
-    font-weight: 700;
+    font-weight: var(--font-weight-bold);
   }
 
   .auth-input-error {
@@ -288,17 +302,61 @@
 /* Light-only token contract: there is no dark-mode variant or user-facing toggle. */
 
 @layer base {
-  /* Keep the entire application on one typeface, including Nuxt UI controls. */
-  :where(html, body, body *) {
-    font-family: var(--font-num) !important;
+  html {
+    font-family: var(--font-family-base);
   }
 
   body {
     background-color: var(--color-bg-light);
     color: var(--color-text-heading);
     direction: rtl;
-    font-family: var(--font-num);
+    font-family: inherit;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
     -webkit-font-smoothing: antialiased;
+  }
+
+  :where(button, input, optgroup, select, textarea) {
+    font-family: inherit;
+  }
+
+  :where(button) {
+    font-size: var(--font-size-button);
+    line-height: var(--line-height-compact);
+  }
+
+  :where(input, optgroup, select, textarea) {
+    font-size: var(--font-size-input);
+    line-height: var(--line-height-body);
+  }
+
+  :where(h1, h2, h3, h4, h5, h6) {
+    font-family: inherit;
+    letter-spacing: var(--letter-spacing-normal);
+  }
+
+  :where(h1) {
+    font-size: var(--font-size-h1);
+    font-weight: var(--font-weight-extrabold);
+    line-height: var(--line-height-heading);
+  }
+
+  :where(h2) {
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-extrabold);
+    line-height: var(--line-height-section);
+  }
+
+  :where(h3) {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-section);
+  }
+
+  :where(h4, h5, h6) {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-section);
   }
 
   :where(button, a, input, select, textarea, [tabindex]):focus-visible {
@@ -372,7 +430,6 @@
   }
 
   .font-num {
-    font-family: var(--font-num);
     font-variant-numeric: lining-nums tabular-nums;
   }
 
@@ -403,7 +460,7 @@
   }
 
   .panel-table-card { overflow: hidden; border: 1px solid var(--color-border); }
-  .panel-modal-title { margin: 0 0 1.5rem; color: var(--color-text-heading); font-size: 1.2rem; font-weight: 800; }
+  .panel-modal-title { margin: 0 0 1.5rem; color: var(--color-text-heading); font-size: 1.2rem; font-weight: var(--font-weight-extrabold); }
 
   .modal-actions {
     display: flex;
@@ -418,14 +475,14 @@
     margin: 0;
     color: var(--color-brand-blue);
     font-size: .75rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-extrabold);
   }
 
   .section-title {
     margin: .25rem 0 0;
     color: var(--color-text-heading);
     font-size: 1.25rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-extrabold);
   }
 
   .panel-permission-state {
@@ -442,7 +499,7 @@
   .panel-permission-state h2,
   .panel-permission-state p { margin: 0; }
 
-  .panel-permission-state h2 { color: var(--color-text-heading); font-size: 1.08rem; font-weight: 800; }
+  .panel-permission-state h2 { color: var(--color-text-heading); font-size: 1.08rem; font-weight: var(--font-weight-extrabold); }
 
   .panel-table {
     width: 100%;
@@ -464,7 +521,7 @@
     color: var(--color-text-muted);
     background: var(--color-bg-light);
     font-size: .78rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-extrabold);
   }
 
   .panel-table td { color: var(--color-text-body); font-size: .86rem; }
@@ -516,7 +573,7 @@
   .panel-layout .premium-card th {
     color: var(--color-text-muted);
     font-size: .78rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-extrabold);
   }
 
   .panel-layout .premium-card td {
@@ -611,7 +668,6 @@
     color: var(--color-text-heading);
     box-shadow: var(--shadow-overlay);
     direction: rtl;
-    font-family: var(--font-num);
     text-align: right;
     isolation: isolate;
     opacity: 1;
@@ -639,14 +695,14 @@
   .tejaris-toast__title {
     color: var(--color-text-heading);
     font-size: .95rem;
-    font-weight: 800;
+    font-weight: var(--font-weight-extrabold);
     line-height: 1.65;
   }
 
   .tejaris-toast__description {
     color: var(--color-text-body);
     font-size: .84rem;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
     line-height: 1.85;
   }
 

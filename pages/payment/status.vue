@@ -74,7 +74,7 @@ onBeforeUnmount(() => { if (pollTimer) clearTimeout(pollTimer); });
     <div class="max-w-md w-full premium-card overflow-hidden border border-gray-100">
       <div :class="['py-12 flex flex-col items-center justify-center text-white', loading || isPending ? 'bg-amber-500' : isSuccess ? 'bg-green-500' : 'bg-red-500']">
         <UIcon :name="loading || isPending ? 'i-lucide-loader-circle' : isSuccess ? 'i-lucide-check-circle' : 'i-lucide-x-circle'" class="size-icon-hero" :class="{ 'animate-spin': loading }" />
-        <h1 class="text-3xl font-black mt-4 mb-2">{{ statusTitle }}</h1>
+        <h1 class="text-3xl font-extrabold mt-4 mb-2">{{ statusTitle }}</h1>
         <p class="text-white/85 font-medium text-center px-4">
           {{ loading ? 'لطفاً چند لحظه صبر کنید.' : errorMessage || (isSuccess ? 'وضعیت تراکنش توسط سرور تایید شده است.' : isPending ? 'نتیجه نهایی هنوز از درگاه دریافت نشده است.' : 'تراکنش توسط سرور تایید نشده است.') }}
         </p>

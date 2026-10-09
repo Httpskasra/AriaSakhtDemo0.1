@@ -287,8 +287,8 @@ defineExpose({ addToCart });
 .summary-list { display: grid; gap: .25rem; margin: 1rem 0; }
 .summary-list > div { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0; color: var(--color-text-muted); font-size: .88rem; border-bottom: 1px solid var(--color-border); }
 .summary-list dt, .summary-list dd { margin: 0; }
-.summary-list dd { color: var(--color-text-heading); font-weight: 600; }
-.summary-list .summary-total { border-bottom: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 700; }
+.summary-list dd { color: var(--color-text-heading); font-weight: var(--font-weight-semibold); }
+.summary-list .summary-total { border-bottom: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: var(--font-weight-bold); }
 .summary-actions { display: grid; gap: .65rem; }
 .permission-note { margin:0; color:var(--color-text-muted); font-size:.8rem; line-height:1.7; }
 .confirm-content { display: grid; gap: 1rem; }

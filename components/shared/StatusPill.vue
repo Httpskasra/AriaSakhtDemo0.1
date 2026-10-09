@@ -30,8 +30,7 @@ const style = computed(() => useStatusStyle(props.semantic));
   width: fit-content;
   white-space: nowrap;
   border-radius: var(--radius-pill);
-  font-family: var(--font-num);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-metadata);
 }
 

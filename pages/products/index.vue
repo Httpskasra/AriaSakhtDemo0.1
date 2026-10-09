@@ -206,7 +206,7 @@ const onPageChange = (newPage: number) => {
 .active-filters { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
 .filter-chip { display: inline-flex; align-items: center; gap: .375rem; min-height: 2rem; padding: .25rem .625rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-pill); background: var(--color-info-bg); color: var(--color-info-fg); font-size: .75rem; }
 .filter-chip button, button.filter-chip { cursor: pointer; }
-.clear-filters-link { min-height: 2rem; color: var(--color-text-body); font-size: .75rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.clear-filters-link { min-height: 2rem; color: var(--color-text-body); font-size: .75rem; font-weight: var(--font-weight-bold); text-decoration: underline; text-underline-offset: 3px; }
 .filter-count { display: inline-grid; place-items: center; min-width: 1.35rem; height: 1.35rem; margin-inline-start: .375rem; border-radius: var(--radius-pill); background: var(--color-brand-blue); color: var(--color-bg-surface); font-size: .7rem; }
 .products-load-error { margin-top: .75rem; color: var(--color-danger-fg); font-size: .8125rem; text-align: center; }
 @media (max-width: 639px) {

@@ -41,7 +41,7 @@ const stats = [
 .marketplace-stat__icon { display: grid; width: 3rem; height: 3rem; flex: none; place-items: center; border-radius: var(--radius-card); background: var(--color-info-bg); color: var(--color-brand-blue); font-size: var(--spacing-icon-action); transition: transform .2s ease; }
 .marketplace-stat:hover .marketplace-stat__icon { transform: scale(1.08); }
 .marketplace-stat__copy { min-width: 0; }
-.marketplace-stat__value { color: var(--color-text-heading); font-size: 1.5rem; font-weight: 900; }
-.marketplace-stat__label { color: var(--color-text-muted); font-size: .875rem; font-weight: 600; }
+.marketplace-stat__value { color: var(--color-text-heading); font-size: 1.5rem; font-weight: var(--font-weight-extrabold); }
+.marketplace-stat__label { color: var(--color-text-muted); font-size: .875rem; font-weight: var(--font-weight-semibold); }
 @media (min-width: 1024px) { .marketplace-stats__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; } }
 </style>

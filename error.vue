@@ -38,8 +38,8 @@ defineProps<{
 
 <style scoped>
 .error-page { display: grid; min-height: 100vh; place-items: center; align-content: center; gap: 1.25rem; padding: 3rem 1.5rem; background: var(--color-bg-app); text-align: center; }
-.error-page__code { margin: 0; color: var(--color-danger-fg); font-size: clamp(3.5rem, 10vw, 7rem); font-weight: 900; line-height: 1; }
-.error-page__message { max-width: 38rem; margin: 0; color: var(--color-text-heading); font-size: clamp(1.35rem, 4vw, 2rem); font-weight: 700; }
+.error-page__code { margin: 0; color: var(--color-danger-fg); font-size: clamp(3.5rem, 10vw, 7rem); font-weight: var(--font-weight-extrabold); line-height: 1; }
+.error-page__message { max-width: 38rem; margin: 0; color: var(--color-text-heading); font-size: clamp(1.35rem, 4vw, 2rem); font-weight: var(--font-weight-bold); }
 .error-page__illustration { width: min(100%, 28rem); max-height: 35vh; margin: .5rem 0 1rem; object-fit: contain; }
 .error-page__link { display: inline-flex; align-items: center; justify-content: center; min-height: var(--control-height-md); padding: .65rem 2rem; border-radius: var(--radius-field); background: var(--color-brand-blue); color: var(--color-bg-surface); box-shadow: var(--shadow-raised); transition: background-color .16s ease, transform .16s ease; }
 .error-page__link:hover { background: var(--color-brand-blue-hover); transform: translateY(-1px); }

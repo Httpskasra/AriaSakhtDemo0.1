@@ -122,7 +122,7 @@ onMounted(() => { if (isReady.value) fetchCurrent(); });
 <style scoped>
 .banking-admin-page { display: grid; gap: 1rem; min-width: 0; }
 .banking-admin-tabs { display: flex; gap: .5rem; flex-wrap: wrap; padding: .35rem; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); }
-.banking-admin-tabs button { min-height: 2.75rem; display: inline-flex; align-items: center; gap: .45rem; padding: .65rem 1rem; border: 0; border-radius: var(--radius-field); color: var(--color-text-muted); background: transparent; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.banking-admin-tabs button { min-height: 2.75rem; display: inline-flex; align-items: center; gap: .45rem; padding: .65rem 1rem; border: 0; border-radius: var(--radius-field); color: var(--color-text-muted); background: transparent; font: inherit; font-size: .85rem; font-weight: var(--font-weight-bold); cursor: pointer; }
 .banking-admin-tabs button:hover, .banking-admin-tabs button:focus-visible { color: var(--color-brand-blue); background: var(--color-info-bg); outline: none; }
 .banking-admin-tabs button.is-active { color: var(--color-brand-blue); background: var(--color-info-bg); box-shadow: inset 0 -2px 0 var(--color-brand-blue); }
 .filter-copy { display: grid; gap: .2rem; margin-inline-end: auto; color: var(--color-text-muted); font-size: .78rem; }

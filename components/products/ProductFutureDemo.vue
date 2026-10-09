@@ -43,7 +43,6 @@ const limitedAttributes = computed(() => {
 }
 
 .no-attributes p {
-  font-family: var(--font-yekan);
   font-size: .85rem;
 }
 
@@ -74,17 +73,15 @@ li:hover {
 
 .product-future__label {
   color: var(--color-text-muted);
-  font-family: var(--font-yekan);
   font-size: .78rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
   text-align: center;
 }
 
 .val {
   color: var(--color-brand-blue);
-  font-family: var(--font-num);
   font-size: .85rem;
-  font-weight: bold;
+  font-weight: var(--font-weight-bold);
   text-align: center;
 }
 

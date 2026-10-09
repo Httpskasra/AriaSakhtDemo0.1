@@ -49,14 +49,14 @@ function formatValue(value: string | number) {
 <style scoped>
 .product-specifications { width: 100%; }
 .product-specifications__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: .7rem; }
-.product-specifications__eyebrow { display: block; margin-bottom: .25rem; color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
-.product-specifications h3 { margin: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: 900; }
-.product-specifications__count { padding: .3rem .6rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .72rem; font-weight: 800; white-space: nowrap; }
+.product-specifications__eyebrow { display: block; margin-bottom: .25rem; color: var(--color-text-muted); font-size: .7rem; font-weight: var(--font-weight-bold); }
+.product-specifications h3 { margin: 0; color: var(--color-text-heading); font-size: 1rem; font-weight: var(--font-weight-extrabold); }
+.product-specifications__count { padding: .3rem .6rem; border-radius: var(--radius-pill); color: var(--color-brand-blue); background: var(--color-info-bg); font-size: .72rem; font-weight: var(--font-weight-extrabold); white-space: nowrap; }
 .product-specifications__table { overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-field); }
 .product-specifications__row { display: grid; grid-template-columns: minmax(9rem, .75fr) minmax(0, 1.25fr); gap: 1rem; margin: 0; padding: .6rem .85rem; border-top: 1px solid var(--color-border); }
-.product-specifications__row--head { border-top: 0; color: var(--color-text-muted); background: var(--color-bg-light); font-size: .72rem; font-weight: 800; }
+.product-specifications__row--head { border-top: 0; color: var(--color-text-muted); background: var(--color-bg-light); font-size: .72rem; font-weight: var(--font-weight-extrabold); }
 .product-specifications__row dt { color: var(--color-text-muted); font-size: .78rem; }
-.product-specifications__row dd { min-width: 0; margin: 0; color: var(--color-text-heading); font-size: .84rem; font-weight: 700; overflow-wrap: anywhere; }
+.product-specifications__row dd { min-width: 0; margin: 0; color: var(--color-text-heading); font-size: .84rem; font-weight: var(--font-weight-bold); overflow-wrap: anywhere; }
 .product-specifications__empty { display: flex; align-items: flex-start; gap: .65rem; padding: .75rem 0; color: var(--color-text-muted); }
 .product-specifications__empty svg { flex: 0 0 auto; margin-top: .1rem; color: var(--color-brand-blue); }
 .product-specifications__empty strong { display: block; color: var(--color-text-heading); font-size: .88rem; }

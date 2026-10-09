@@ -75,7 +75,7 @@ const handleError = () => {
 .product-image { position: relative; overflow: hidden; aspect-ratio: 1; border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-bg-surface); box-shadow: var(--shadow-raised); }
 .product-image__source { width: 100%; height: 100%; padding: 1rem; cursor: zoom-in; object-fit: contain; transition: transform .5s ease; }
 .product-image:hover .product-image__source { transform: scale(1.05); }
-.product-image__empty { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 2rem; color: var(--color-text-muted); background: var(--color-bg-light); text-align: center; font-size: .75rem; font-weight: 600; }
+.product-image__empty { display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 2rem; color: var(--color-text-muted); background: var(--color-bg-light); text-align: center; font-size: .75rem; font-weight: var(--font-weight-semibold); }
 .product-image__empty-icon { width: var(--spacing-icon-hero); height: var(--spacing-icon-hero); opacity: .5; }
 .product-image__hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; background: color-mix(in srgb, var(--color-text-heading) 5%, transparent); transition: opacity .16s ease; }
 .product-image:hover .product-image__hint { opacity: 1; }
@@ -85,5 +85,5 @@ const handleError = () => {
 .product-image__lightbox-stage { display: flex; min-height: 60vh; align-items: center; justify-content: center; border-radius: var(--radius-compact-list-item); background: var(--color-bg-light); }
 .product-image__lightbox-source { max-width: 100%; max-height: 85vh; object-fit: contain; }
 .product-image__caption { padding: 1rem; text-align: center; }
-.product-image__caption h3 { margin: 0; color: var(--color-text-heading); font-weight: 800; }
+.product-image__caption h3 { margin: 0; color: var(--color-text-heading); font-weight: var(--font-weight-extrabold); }
 </style>

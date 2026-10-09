@@ -70,7 +70,7 @@ const categoryCount = (category: Category) => {
 .category-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .category-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 25%, transparent); outline-offset:2px; }
 .category-card__icon { display:grid; width:2.75rem; height:2.75rem; place-items:center; flex:none; border-radius:var(--radius-card); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.35rem; }
-.category-card h3 { margin:0; color:var(--color-text-heading); font-size:.82rem; font-weight:800; line-height:1.7; }
+.category-card h3 { margin:0; color:var(--color-text-heading); font-size:.82rem; font-weight: var(--font-weight-extrabold); line-height:var(--line-height-section); }
 .category-card span { color:var(--color-text-muted); font-size:.67rem; }
 .category-skeleton { min-height:7.75rem; padding:.85rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
 .category-feedback {

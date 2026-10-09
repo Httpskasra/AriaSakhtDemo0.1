@@ -88,10 +88,10 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", handleOutsideP
 .global-product-search.header :deep(.search-input input) { min-height:2.65rem; padding-block:.5rem; border-width:1px; font-size:.78rem; }
 .global-product-search.header :deep(.search-submit) { width:2.35rem; min-width:2.35rem; min-height:2.35rem; }
 .suggestions { position:absolute; inset-block-start:calc(100% + .5rem); inset-inline:0; z-index:70; max-height:min(22rem,calc(100dvh - 8rem)); overflow-y:auto; padding:.9rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-overlay); }
-.suggestions__heading { display:flex; align-items:center; gap:.4rem; margin-bottom:.7rem; color:var(--color-text-body); font-size:.72rem; font-weight:800; }
+.suggestions__heading { display:flex; align-items:center; gap:.4rem; margin-bottom:.7rem; color:var(--color-text-body); font-size:.72rem; font-weight: var(--font-weight-extrabold); }
 .suggestions__heading :deep(svg) { width:1rem; color:var(--color-brand-blue); }
 .suggestion-tags { display:flex; flex-wrap:wrap; gap:.5rem; }
-.suggestion-tags button { min-height:2.75rem; padding-inline:.8rem; border:1px solid var(--color-info-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-info-fg); font-size:.72rem; font-weight:700; }
+.suggestion-tags button { min-height:2.75rem; padding-inline:.8rem; border:1px solid var(--color-info-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-info-fg); font-size:.72rem; font-weight: var(--font-weight-bold); }
 .suggestion-tags button:hover,.suggestion-tags button:focus-visible,.suggestion-tags button.suggestion--active { border-color:var(--color-brand-blue); background:var(--color-info-bg); outline:3px solid color-mix(in srgb, var(--color-brand-blue) 15%, transparent); }
 .suggestions__empty { margin:0; color:var(--color-text-muted); font-size:.75rem; line-height:1.8; }
 @media (max-width:767px) { :deep(.search-input input) { min-height:3rem; font-size:.8rem; } .global-product-search.header :deep(.search-input input) { min-height:2.8rem; font-size:.76rem; } .global-product-search.header :deep(.search-submit) { min-height:2.5rem; } .suggestions { inset-inline:.25rem; max-height:min(18rem,calc(100dvh - 13rem)); padding:.75rem; border-radius:var(--radius-card); } }

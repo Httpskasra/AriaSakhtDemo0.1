@@ -22,6 +22,6 @@ defineProps<{
 .panel-stat-card:hover { transform:translateY(-2px); border-color:var(--color-brand-blue); box-shadow:var(--shadow-raised); }
 .panel-stat-card__icon { display:grid; place-items:center; width:2.5rem; height:2.5rem; margin-bottom:.25rem; border-radius:var(--radius-compact-list-item); background:var(--color-info-bg); color:var(--color-brand-blue); font-size:1.25rem; }
 .panel-stat-card__label { color:var(--color-text-muted); font-size:.88rem; }
-.panel-stat-card strong { color:var(--color-text-heading); font-size:1.35rem; font-weight:800; }
+.panel-stat-card strong { color:var(--color-text-heading); font-size:1.35rem; font-weight: var(--font-weight-extrabold); }
 .panel-stat-card__link { display:flex; align-items:center; gap:.25rem; color:var(--color-brand-blue); font-size:.78rem; }
 </style>

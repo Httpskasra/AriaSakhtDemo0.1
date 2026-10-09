@@ -420,14 +420,14 @@ watch(isReady, (ready) => { if (ready) refreshWallet(); }, { once: true });
 .transactions-table :deep(th), .transactions-table :deep(td) { vertical-align: middle; }
 .transaction-type { display: inline-flex; align-items: center; gap: .45rem; min-width: 9rem; }
 .transaction-type > :first-child { width: 1rem; height: 1rem; color: var(--color-text-muted); }
-.transaction-amount { display: inline-flex; align-items: center; gap: .25rem; font-weight: 700; white-space: nowrap; }
+.transaction-amount { display: inline-flex; align-items: center; gap: .25rem; font-weight: var(--font-weight-bold); white-space: nowrap; }
 .transaction-amount b { font-size: 1rem; }
 .transaction-amount--in { color: var(--color-success-fg); }
 .transaction-amount--out { color: var(--color-danger-fg); }
 .transaction-amount--neutral { color: var(--color-text-body); }
 .wallet-form { display: grid; gap: 1rem; }
 .form-field { display: grid; gap: .4rem; }
-.form-field label { color: var(--color-text-heading); font-size: .85rem; font-weight: 600; }
+.form-field label { color: var(--color-text-heading); font-size: .85rem; font-weight: var(--font-weight-semibold); }
 .form-field small { color: var(--color-text-muted); font-size: .75rem; }
 .form-error { margin: 0; padding: .65rem .75rem; color: var(--color-danger-fg); background: var(--color-danger-bg); border-radius: var(--radius-field); font-size: .82rem; }
 @media (max-width: 900px) { .wallet-overview, .banking-grid { grid-template-columns: 1fr; } }

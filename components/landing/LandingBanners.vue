@@ -35,7 +35,7 @@ const banners = [
           />
           <div class="absolute inset-0 bg-gradient-to-l from-slate-900/80 to-transparent flex flex-col justify-center p-10 text-white">
             <div class="max-w-xs space-y-3">
-              <h3 class="text-2xl font-black">{{ banner.title }}</h3>
+              <h3 class="text-2xl font-extrabold">{{ banner.title }}</h3>
               <p class="text-sm opacity-90">{{ banner.subtitle }}</p>
               <span class="inline-flex mt-4 rounded-brand bg-white px-4 py-2 font-bold text-slate-900 hover:bg-brand-yellow hover:text-slate-900">
                 مشاهده محصولات

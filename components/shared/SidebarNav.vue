@@ -128,8 +128,7 @@ async function handleAction(item: SidebarNavItem) {
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
-  font-family: var(--font-yekan);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   font-size: 0.875rem;
   text-align: right;
   text-decoration: none;
@@ -141,7 +140,7 @@ async function handleAction(item: SidebarNavItem) {
   margin: 1rem 1.25rem .35rem;
   color: var(--color-text-muted);
   font-size: .68rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   letter-spacing: .02em;
 }
 

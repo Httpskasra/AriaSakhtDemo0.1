@@ -138,7 +138,7 @@ onMounted(() => { if (canRead.value) void fetchOrders(); });
 .order-details dl { display:grid; gap:.75rem; margin:0; }
 .order-details dl > div { display:flex; justify-content:space-between; gap:1rem; padding:.65rem 0; border-bottom:1px solid var(--color-border); }
 .order-details dt { color:var(--color-text-muted); }
-.order-details dd { margin:0; color:var(--color-text-heading); font-weight:700; }
+.order-details dd { margin:0; color:var(--color-text-heading); font-weight: var(--font-weight-bold); }
 .no-access { padding: 2rem; text-align: center; color: var(--color-text-muted); background: var(--color-bg-surface); border-radius: var(--radius-card); }
 .order-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
 </style>

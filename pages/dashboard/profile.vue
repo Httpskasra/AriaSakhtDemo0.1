@@ -169,10 +169,10 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", handleBeforeUnl
 .profile-form { display:grid; gap:1.5rem; padding:clamp(1rem, 3vw, 2rem); }
 .profile-form__section { display:grid; gap:1rem; }
 .profile-form__section + .profile-form__section { padding-top:1.25rem; border-top:1px solid var(--color-border); }
-.profile-form__section h2 { margin:0; color:var(--color-text-heading); font-size:1rem; font-weight:800; }
+.profile-form__section h2 { margin:0; color:var(--color-text-heading); font-size:1rem; font-weight: var(--font-weight-extrabold); }
 .profile-form__grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; }
 .profile-form__actions { display:flex; justify-content:flex-start; }
-.profile-card :deep(label) { color: var(--color-text-heading); font-weight: 700; }
+.profile-card :deep(label) { color: var(--color-text-heading); font-weight: var(--font-weight-bold); }
 .profile-card :deep(input),
 .profile-card :deep(textarea) {
   border-color: var(--color-border);

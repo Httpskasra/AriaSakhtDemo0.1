@@ -21,7 +21,6 @@ defineProps<{
 .dashboard-page-header {
   min-height: 4.25rem;
   color: var(--color-text-heading);
-  font-family: var(--font-yekan);
   width: 100%;
   display: flex;
   align-items: center;
@@ -38,7 +37,7 @@ defineProps<{
 .dashboard-page-header h1 {
   margin: 0;
   font-size: clamp(1.15rem, 2vw, 1.5rem);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 .dashboard-page-header__text { min-width: 0; }
 .dashboard-page-header__text p { margin: .25rem 0 0; color: var(--color-text-muted); font-size: .8rem; }

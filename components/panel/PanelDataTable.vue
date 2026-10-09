@@ -31,7 +31,7 @@ const getKey = (row: Record<string, any>, index: number) => String(row[props.row
 .panel-data-table:focus-visible { box-shadow:var(--focus-ring); }
 .panel-data-table table { width:100%; border-collapse:collapse; }
 .panel-data-table th, .panel-data-table td { padding:.85rem 1rem; text-align:right; border-bottom:1px solid var(--color-border); white-space:nowrap; }
-.panel-data-table th { position:sticky; top:0; z-index:1; color:var(--color-text-muted); background:var(--color-bg-light); font-size:.8rem; font-weight:700; }
+.panel-data-table th { position:sticky; top:0; z-index:1; color:var(--color-text-muted); background:var(--color-bg-light); font-size:.8rem; font-weight: var(--font-weight-bold); }
 .panel-data-table td { color:var(--color-text-body); font-size:.875rem; }
 .panel-data-table tbody tr { transition:background-color .15s ease; }
 .panel-data-table tbody tr:hover { background:var(--color-bg-light); }

@@ -29,5 +29,5 @@ const end = computed(() => Math.min(props.page * props.limit, props.total));
 
 <style scoped>
 .record-count { color: var(--color-text-muted); font-size: .875rem; }
-.record-count__value { color: var(--color-text-heading); font-weight: 700; }
+.record-count__value { color: var(--color-text-heading); font-weight: var(--font-weight-bold); }
 </style>

@@ -323,8 +323,7 @@ const clearCategories = () => {
 .filter-panel__title {
   margin: 0;
   color: var(--color-text-heading);
-  font-family: var(--font-body);
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   font-size: 1.25rem;
   line-height: 1.5;
 }
@@ -332,8 +331,7 @@ const clearCategories = () => {
 .filter-group__title {
   margin: 0;
   color: var(--color-text-heading);
-  font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   font-size: 0.9375rem;
   line-height: 1.5;
 }
@@ -341,8 +339,7 @@ const clearCategories = () => {
 .filter-label {
   display: block;
   color: var(--color-text-heading);
-  font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   font-size: 0.8125rem;
   line-height: 1.5;
 }
@@ -419,7 +416,7 @@ const clearCategories = () => {
 
 .category-option__button:hover,
 .category-option__button:focus-visible { background: var(--color-bg-light); color: var(--color-brand-blue); }
-.category-option__button--parent { color: var(--color-text-heading); font-weight: 800; }
+.category-option__button--parent { color: var(--color-text-heading); font-weight: var(--font-weight-extrabold); }
 .category-option__button--child { min-height: 2.2rem; padding-inline-start: calc(1rem + (var(--category-depth, 1) - 1) * .7rem); font-size: .75rem; }
 .category-option__button--selected { background: var(--color-info-bg); color: var(--color-brand-blue); }
 .category-option__button--partial { background: color-mix(in srgb, var(--color-info-bg) 55%, var(--color-bg-surface)); color: var(--color-brand-blue); }
@@ -444,9 +441,9 @@ const clearCategories = () => {
 
 .category-option__check :deep(svg) { width: .85rem; height: .85rem; stroke-width: 3; }
 .category-option__button--selected .category-option__check { border-color: var(--color-brand-blue); background: var(--color-brand-blue); transform: scale(1.04); }
-.category-option__name { min-width: 0; flex: 1; overflow: hidden; font-size: .78rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.category-option__button--child .category-option__name { font-weight: 600; }
-.category-option__count { min-width: 1.35rem; padding: .15rem .35rem; border-radius: var(--radius-pill); background: var(--color-neutral-bg); color: var(--color-text-muted); font-size: .65rem; font-weight: 800; text-align: center; }
+.category-option__name { min-width: 0; flex: 1; overflow: hidden; font-size: .78rem; font-weight: var(--font-weight-bold); text-overflow: ellipsis; white-space: nowrap; }
+.category-option__button--child .category-option__name { font-weight: var(--font-weight-semibold); }
+.category-option__count { min-width: 1.35rem; padding: .15rem .35rem; border-radius: var(--radius-pill); background: var(--color-neutral-bg); color: var(--color-text-muted); font-size: .65rem; font-weight: var(--font-weight-extrabold); text-align: center; }
 
 .category-selection-summary {
   display: flex;
@@ -460,14 +457,14 @@ const clearCategories = () => {
   background: var(--color-bg-light);
   color: var(--color-text-body);
   font-size: .7rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .category-selection-summary button {
   min-height: 1.75rem;
   color: var(--color-brand-blue);
   font-size: .68rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -493,7 +490,7 @@ const clearCategories = () => {
 .filter-reset {
   color: var(--color-text-muted);
   font-size: .75rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   transition: color 150ms ease, background-color 150ms ease;
 }
 
@@ -519,7 +516,7 @@ const clearCategories = () => {
   flex: 0 0 auto;
   color: var(--color-text-body);
   font-size: .8125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .filter-help {

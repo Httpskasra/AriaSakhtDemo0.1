@@ -48,16 +48,14 @@ withDefaults(defineProps<{
 }
 
 .sidebar-identity__text h3 {
-  font-family: var(--font-yekan);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-heading);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
 }
 
 .sidebar-identity__text p {
-  font-family: var(--font-num);
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   color: var(--color-text-muted);
   font-size: 0.875rem;
 }

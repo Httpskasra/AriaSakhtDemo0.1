@@ -123,13 +123,13 @@ watch(isReady, (ready) => { if (ready) fetchTransactions(); }, { once: true });
 .transactions-page { display: grid; gap: 1rem; }
 .filter-select { min-width: 10rem; }
 .amount, .reference, .ltr { direction: ltr; text-align: left; }
-.amount { display: inline-flex; align-items: center; gap: .25rem; font-weight: 700; white-space: nowrap; }
+.amount { display: inline-flex; align-items: center; gap: .25rem; font-weight: var(--font-weight-bold); white-space: nowrap; }
 .amount--in { color: var(--color-success-fg); }
 .amount--out { color: var(--color-danger-fg); }
 .amount--neutral { color: var(--color-text-body); }
 .transaction-type { display: inline-flex; align-items: center; gap: .45rem; min-width: 9rem; }
 .transaction-type > :first-child { width: 1rem; height: 1rem; color: var(--color-text-muted); }
-.reference { font-family: var(--font-num); font-size: .8rem; }
+.reference { font-size: .8rem; font-variant-numeric: lining-nums tabular-nums; }
 .transaction-details { display: grid; gap: 1rem; }
 .transaction-details h2 { margin: 0; color: var(--color-text-heading); font-size: 1.1rem; }
 .transaction-details dl { display: grid; gap: .75rem; margin: 0; }

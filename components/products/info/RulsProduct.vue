@@ -26,6 +26,6 @@ defineProps<{ data: Product }>();
 .product-rules li > svg { margin-top: .2rem; color: var(--color-brand-blue); }
 .product-rules li p { margin: 0; }
 .product-rules strong { color: var(--color-text-heading); }
-.product-rules__link { display: inline-flex; margin-top: .85rem; color: var(--color-brand-blue); font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
+.product-rules__link { display: inline-flex; margin-top: .85rem; color: var(--color-brand-blue); font-weight: var(--font-weight-bold); text-decoration: underline; text-underline-offset: .2em; }
 @media (max-width: 700px) { .product-rules ul { grid-template-columns: 1fr; } }
 </style>

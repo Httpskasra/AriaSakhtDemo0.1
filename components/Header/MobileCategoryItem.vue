@@ -82,7 +82,7 @@ const hasChildren = computed(
   background: transparent;
   border: none;
   padding: .75rem 1rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   font-size: .75rem;
 }

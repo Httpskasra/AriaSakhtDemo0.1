@@ -36,9 +36,10 @@ withDefaults(defineProps<{
 .landing-section-header h2 {
   margin: 0;
   color: var(--color-text-heading);
-  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
-  font-weight: 900;
-  line-height: 1.45;
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-section);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 .landing-section-header p {

@@ -267,13 +267,11 @@ const closeModal = () => {
   margin: 0;
   padding: 0;
   text-align: center;
-  font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.8;
 }
 
 .otp-phone {
-  font-family: var(--font-num);
   color: var(--color-text-heading);
   border-bottom: 1px solid var(--color-brand-blue);
   direction: ltr;
@@ -295,7 +293,6 @@ const closeModal = () => {
   border-radius: var(--radius-field);
   color: var(--color-text-heading);
   direction: ltr;
-  font-family: var(--font-num);
   font-size: 1.25rem;
   text-align: center;
   outline: none;
@@ -337,7 +334,6 @@ const closeModal = () => {
 
 .otp-timer {
   color: var(--color-text-heading);
-  font-family: var(--font-num);
 }
 
 .otp-expired {

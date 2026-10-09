@@ -276,11 +276,11 @@ watch(statusFilter, fetchRequests);
 <style scoped>
 .vendor-requests-page { display:grid; gap:1rem; }
 .vendor-requests-table-wrap { overflow-x:auto; }
-.vendor-request-filter-label { display:flex; align-items:center; min-height:2.5rem; color:var(--color-text-muted); font-size:.82rem; font-weight:700; white-space:nowrap; }
+.vendor-request-filter-label { display:flex; align-items:center; min-height:2.5rem; color:var(--color-text-muted); font-size:.82rem; font-weight: var(--font-weight-bold); white-space:nowrap; }
 .vendor-request-filter { min-width:12rem; }
 .vendor-requests-table { width:100%; min-width:68rem; border-collapse:separate; border-spacing:0; font-size:.85rem; }
 .vendor-requests-table th, .vendor-requests-table td { padding:1rem .85rem; border-bottom:1px solid var(--color-border); text-align:right; vertical-align:middle; }
-.vendor-requests-table th { color:var(--color-text-muted); background:var(--color-bg-light); font-size:.78rem; font-weight:700; white-space:nowrap; }
+.vendor-requests-table th { color:var(--color-text-muted); background:var(--color-bg-light); font-size:.78rem; font-weight: var(--font-weight-bold); white-space:nowrap; }
 .vendor-requests-table thead th:first-child { border-start-start-radius:var(--radius-field); }
 .vendor-requests-table thead th:last-child { border-start-end-radius:var(--radius-field); }
 .vendor-requests-table tbody tr { transition:background-color 150ms ease; }
@@ -290,13 +290,13 @@ watch(statusFilter, fetchRequests);
 .vendor-request-name { display:flex; align-items:center; gap:.65rem; min-width:12rem; }
 .vendor-request-name img, .vendor-request-name > span { display:grid; place-items:center; width:2.75rem; height:2.75rem; flex:none; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); object-fit:contain; padding:.3rem; }
 .vendor-request-name__copy { display:grid; gap:.2rem; min-width:0; }
-.vendor-request-name__copy strong { overflow:hidden; color:var(--color-text-heading); font-size:.85rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.vendor-request-name__copy strong { overflow:hidden; color:var(--color-text-heading); font-size:.85rem; font-weight: var(--font-weight-extrabold); text-overflow:ellipsis; white-space:nowrap; }
 .vendor-request-name__copy small { color:var(--color-text-muted); font-size:.72rem; }
 .vendor-request-contact { overflow:hidden; max-width:15rem; color:var(--color-text-body); text-overflow:ellipsis; white-space:nowrap; }
-.vendor-request-type { display:inline-flex; align-items:center; min-height:1.7rem; padding:.2rem .55rem; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-text-body); font-size:.72rem; font-weight:700; }
+.vendor-request-type { display:inline-flex; align-items:center; min-height:1.7rem; padding:.2rem .55rem; border:1px solid var(--color-border); border-radius:var(--radius-pill); background:var(--color-bg-light); color:var(--color-text-body); font-size:.72rem; font-weight: var(--font-weight-bold); }
 .vendor-request-reviewed { color:var(--color-text-muted); font-size:.78rem; }
 .review-form { display:grid; gap:1rem; }
-.review-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight:800; }
+.review-form h2 { margin:0; color:var(--color-text-heading); font-size:1.1rem; font-weight: var(--font-weight-extrabold); }
 .review-form p { margin:0; color:var(--color-text-muted); }
 .review-form .form-error { color:var(--color-danger); }
 .vendor-request-details { display:grid; gap:1.1rem; width:100%; min-height:0; padding-top:.5rem; }
@@ -305,16 +305,16 @@ watch(statusFilter, fetchRequests);
 .vendor-request-details__logo { display:grid; place-items:center; width:4.5rem; height:4.5rem; flex:none; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-dark, #1e293b); color:var(--color-brand-blue); }
 .vendor-request-details__logo img { display:block; width:100%; height:100%; padding:.45rem; object-fit:contain; }
 .vendor-request-details__logo .iconify { font-size:1.75rem; }
-.vendor-request-details__eyebrow { margin:0 0 .25rem; color:var(--color-brand-blue); font-size:.75rem; font-weight:800; }
-.vendor-request-details__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.25rem; font-weight:800; overflow-wrap:anywhere; }
+.vendor-request-details__eyebrow { margin:0 0 .25rem; color:var(--color-brand-blue); font-size:.75rem; font-weight: var(--font-weight-extrabold); }
+.vendor-request-details__hero h2 { margin:0; color:var(--color-text-heading); font-size:1.25rem; font-weight: var(--font-weight-extrabold); overflow-wrap:anywhere; }
 .vendor-request-details__hero p:last-child { margin:.25rem 0 0; color:var(--color-text-muted); font-size:.82rem; }
 .vendor-request-details__section { display:grid; gap:.75rem; }
-.vendor-request-details__section h3 { margin:0; color:var(--color-text-heading); font-size:.9rem; font-weight:800; }
+.vendor-request-details__section h3 { margin:0; color:var(--color-text-heading); font-size:.9rem; font-weight: var(--font-weight-extrabold); }
 .vendor-request-details__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; margin:0; }
 .vendor-request-details__grid > div { min-width:0; padding:.75rem; border:1px solid var(--color-border); border-radius:var(--radius-field); background:var(--color-bg-light); }
 .vendor-request-details__grid-wide { grid-column:1/-1; }
 .vendor-request-details__grid dt { color:var(--color-text-muted); font-size:.75rem; }
-.vendor-request-details__grid dd { margin:.35rem 0 0; color:var(--color-text-heading); font-size:.84rem; font-weight:700; overflow-wrap:anywhere; }
+.vendor-request-details__grid dd { margin:.35rem 0 0; color:var(--color-text-heading); font-size:.84rem; font-weight: var(--font-weight-bold); overflow-wrap:anywhere; }
 .vendor-request-details__grid dd.vendor-request-details__rejection { color:var(--color-danger-fg); }
 .vendor-request-details__actions { display:flex; align-items:center; justify-content:flex-start; flex-wrap:wrap; gap:.6rem; margin-top:.1rem; padding:1rem 0 0; border-top:1px solid var(--color-border); }
 .vendor-request-details__actions :deep(button) { min-height:2.75rem; }

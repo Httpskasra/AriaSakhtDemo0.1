@@ -71,7 +71,7 @@ onMounted(fetchRatings);
 <style scoped>
 .product-comments-list { width: 100%; margin-top: 0; }
 .product-comments-list__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .6rem; }
-.product-comments-list__heading h3 { margin: 0; color: var(--color-text-heading); font-size: .95rem; font-weight: 900; }
+.product-comments-list__heading h3 { margin: 0; color: var(--color-text-heading); font-size: .95rem; font-weight: var(--font-weight-extrabold); }
 .product-comments-list__heading span { color: var(--color-text-muted); font-size: .72rem; }
 .loading, .no-comments { display: flex; align-items: center; justify-content: center; gap: .5rem; padding: 1rem; color: var(--color-text-muted); text-align: center; }
 .error-message { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--color-danger-fg) 25%, var(--color-bg-surface)); border-radius: var(--radius-field); color: var(--color-danger-fg); background: var(--color-danger-bg); }

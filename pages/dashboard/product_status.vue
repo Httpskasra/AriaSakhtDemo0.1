@@ -111,7 +111,7 @@ watch(isReady, (ready) => { if (ready) fetchProducts(); }, { once: true });
 .product-identity span { color: var(--color-text-muted); font-size: .7rem; }
 .product-image, .image-placeholder { display: grid; place-items: center; width: 3rem; height: 3rem; padding: .2rem; object-fit: contain; border-radius: var(--radius-field); background: var(--color-bg-light); }
 .image-placeholder { color: var(--color-text-disabled); }
-.stock-value { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-weight: 700; }
+.stock-value { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-success-fg); font-weight: var(--font-weight-bold); }
 .stock-value--empty { color: var(--color-danger-fg); }
 .status-actions { display: flex; align-items: center; min-width: 5rem; }
 .muted { color: var(--color-text-muted); font-size: .8rem; }

@@ -569,7 +569,7 @@ onMounted(fetchTickets);
   margin: 0;
   color: var(--color-text-heading);
   font-size: .9rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   overflow-wrap: anywhere;
 }
 
@@ -592,7 +592,7 @@ onMounted(fetchTickets);
   padding: .15rem .45rem;
   border-radius: var(--radius-pill);
   font-size: .7rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .empty-details {
@@ -616,7 +616,7 @@ onMounted(fetchTickets);
   margin: 0 0 .65rem;
   color: var(--color-text-heading);
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   overflow-wrap: anywhere;
 }
 
@@ -628,7 +628,7 @@ onMounted(fetchTickets);
   margin: 0 0 .55rem;
   color: var(--color-text-heading);
   font-size: .9rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
 }
 
 .details-section p {
@@ -709,7 +709,6 @@ onMounted(fetchTickets);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-field);
   direction: rtl;
-  font-family: var(--font-body);
   font-size: .85rem;
   resize: vertical;
   text-align: right;
@@ -736,7 +735,7 @@ onMounted(fetchTickets);
   margin: 0 0 .25rem;
   color: var(--color-text-heading);
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
 }
 
 .form-field {
@@ -747,7 +746,7 @@ onMounted(fetchTickets);
 .form-field label {
   color: var(--color-text-heading);
   font-size: .85rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .create-ticket-actions {

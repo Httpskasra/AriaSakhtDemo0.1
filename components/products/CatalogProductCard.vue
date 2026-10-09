@@ -17,10 +17,8 @@ const finalPrice = computed(() => Math.max(0, Number(props.product.finalPrice ??
 const currencyCode = computed(() => String(props.product.currency || 'IRR').toUpperCase());
 const currencyLabel = computed(() => ({ IRR: 'ریال', IRT: 'تومان', USD: 'دلار', EUR: 'یورو' }[currencyCode.value] || currencyCode.value));
 const hasDiscount = computed(() => discountPercent.value > 0 && basePrice.value > finalPrice.value);
-const companyName = computed(() => {
-  if (typeof props.product.companyId === 'object' && props.product.companyId?.name) return props.product.companyId.name;
-  return 'اطلاعات تأمین‌کننده در دسترس نیست';
-});
+const companyName = computed(() => typeof props.product.companyId === 'object' ? props.product.companyId?.name?.trim() || '' : '');
+const hasCompany = computed(() => Boolean(companyName.value));
 const availabilityLabel = computed(() => isOutOfStock.value ? 'ناموجود' : 'موجود');
 const imageSource = computed(() => props.product.images?.[0]?.url || '/products/building-material.jpg');
 
@@ -69,8 +67,8 @@ const handleAddToCart = async () => {
     </div>
 
     <div class="catalog-product-card__body">
-      <div class="catalog-product-card__meta">
-        <span class="catalog-product-card__sku font-num" dir="ltr">کد: {{ product.sku || '—' }}</span>
+      <div v-if="product.sku || hasRatings" class="catalog-product-card__meta">
+        <span v-if="product.sku" class="catalog-product-card__sku font-num" dir="ltr">کد: {{ product.sku }}</span>
         <span v-if="hasRatings" class="catalog-product-card__rating" :aria-label="`امتیاز ${ratingValue.toFixed(1)} از ۵، ${ratingCount.toLocaleString('fa-IR')} نظر`">
           <UIcon name="i-lucide-star" aria-hidden="true" />
           <span class="font-num">{{ ratingValue.toFixed(1) }}</span>
@@ -83,7 +81,7 @@ const handleAddToCart = async () => {
         <h3 class="catalog-product-card__title">{{ product.name }}</h3>
       </NuxtLink>
 
-      <div class="catalog-product-card__supplier" :title="companyName">
+      <div v-if="hasCompany" class="catalog-product-card__supplier" :title="companyName">
         <UIcon name="i-lucide-building-2" aria-hidden="true" />
         <span>{{ companyName }}</span>
       </div>
@@ -103,11 +101,14 @@ const handleAddToCart = async () => {
             <span>{{ currencyLabel }}</span>
           </div>
         </div>
-        <ActionButton
+        <UButton
+          type="button"
+          size="sm"
+          color="primary"
+          variant="soft"
           :icon="hasVariants ? 'i-lucide-list-checks' : 'i-lucide-shopping-cart'"
-          :label="isOutOfStock ? 'ناموجود' : hasVariants ? 'انتخاب گزینه‌ها' : 'افزودن به سبد'"
+          :label="isOutOfStock ? 'ناموجود' : hasVariants ? 'انتخاب گزینه‌ها' : 'افزودن'"
           :aria-label="isOutOfStock ? 'محصول ناموجود است' : hasVariants ? 'انتخاب گزینه‌های محصول' : 'افزودن به سبد خرید'"
-          tone="primary"
           :loading="cartLoading"
           :disabled="cartLoading || isOutOfStock"
           @click.prevent="handleAddToCart" />
@@ -155,7 +156,7 @@ const handleAddToCart = async () => {
   border-radius: var(--radius-compact-list-item);
   color: var(--color-bg-surface);
   font-size: .72rem;
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
 }
 
 .catalog-product-card__discount { inset-inline-start: .75rem; background: var(--color-danger-fg); box-shadow: var(--shadow-raised); }
@@ -163,35 +164,35 @@ const handleAddToCart = async () => {
 .catalog-product-card__favorite { position: absolute; inset-block-start: .75rem; inset-inline-end: .75rem; z-index: 1; }
 .catalog-product-card__favorite :deep(button) { min-width: 2.5rem; min-height: 2.5rem; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-bg-surface) 92%, transparent); }
 
-.catalog-product-card__body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: .65rem; padding: 1rem; }
+.catalog-product-card__body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: .55rem; padding: 1rem 1.1rem 1.05rem; }
 .catalog-product-card__meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-width: 0; }
 .catalog-product-card__sku { min-width: 0; overflow: hidden; color: var(--color-text-muted); font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
-.catalog-product-card__rating { display: inline-flex; align-items: center; flex: 0 0 auto; gap: .2rem; color: var(--color-text-body); font-size: .7rem; font-weight: 700; }
+.catalog-product-card__rating { display: inline-flex; align-items: center; flex: 0 0 auto; gap: .2rem; color: var(--color-text-body); font-size: .7rem; font-weight: var(--font-weight-bold); }
 .catalog-product-card__rating svg { width: .95rem; height: .95rem; color: var(--color-brand-yellow); fill: currentColor; }
-.catalog-product-card__rating--empty { color: var(--color-text-muted); font-weight: 600; }
+.catalog-product-card__rating--empty { color: var(--color-text-muted); font-weight: var(--font-weight-semibold); }
 .catalog-product-card__title-link { min-width: 0; color: inherit; }
-.catalog-product-card__title { display: -webkit-box; min-height: 3.1rem; margin: 0; overflow: hidden; color: var(--color-text-heading); font-size: .98rem; font-weight: 800; line-height: 1.6; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.catalog-product-card__title { display: -webkit-box; min-height: 3.1rem; margin: 0; overflow: hidden; color: var(--color-text-heading); font-size: .98rem; font-weight: var(--font-weight-extrabold); line-height: var(--line-height-section); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .catalog-product-card__title-link:hover .catalog-product-card__title { color: var(--color-brand-blue); }
 .catalog-product-card__supplier { display: flex; align-items: center; gap: .4rem; min-width: 0; color: var(--color-text-muted); font-size: .76rem; }
 .catalog-product-card__supplier svg { flex: 0 0 auto; width: 1rem; height: 1rem; color: var(--color-text-muted); }
 .catalog-product-card__supplier span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.catalog-product-card__availability { display: flex; align-items: center; gap: .35rem; min-width: 0; color: var(--color-success-fg); font-size: .72rem; font-weight: 700; }
+.catalog-product-card__availability { display: flex; align-items: center; gap: .35rem; min-width: 0; color: var(--color-success-fg); font-size: .72rem; font-weight: var(--font-weight-bold); }
 .catalog-product-card__availability--unavailable { color: var(--color-danger-fg); }
 .catalog-product-card__availability svg { flex: 0 0 auto; width: 1rem; height: 1rem; }
-.catalog-product-card__stock { overflow: hidden; color: var(--color-text-muted); font-size: .68rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-product-card__stock { overflow: hidden; color: var(--color-text-muted); font-size: .68rem; font-weight: var(--font-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .catalog-product-card__footer { display: flex; align-items: flex-end; justify-content: space-between; gap: .7rem; min-width: 0; margin-top: auto; padding-top: .8rem; border-top: 1px solid var(--color-border); }
 .catalog-product-card__prices { display: grid; min-width: 0; gap: .15rem; }
 .catalog-product-card__old-price { color: var(--color-text-muted); font-size: .68rem; text-decoration: line-through; text-decoration-color: var(--color-danger-fg); white-space: nowrap; }
 .catalog-product-card__current-price { display: flex; align-items: baseline; gap: .25rem; color: var(--color-text-heading); white-space: nowrap; }
-.catalog-product-card__current-price strong { font-size: clamp(1.05rem, 2vw, 1.3rem); font-weight: 900; }
-.catalog-product-card__current-price > span:last-child { color: var(--color-text-muted); font-size: .68rem; font-weight: 700; }
-.catalog-product-card__from { color: var(--color-text-muted); font-size: .7rem; font-weight: 700; }
-.catalog-product-card__footer :deep(.action-button) { min-height: 2.75rem; flex: 0 0 auto; padding-inline: .85rem; }
+.catalog-product-card__current-price strong { font-size: clamp(1.05rem, 2vw, 1.3rem); font-weight: var(--font-weight-extrabold); }
+.catalog-product-card__current-price > span:last-child { color: var(--color-text-muted); font-size: .68rem; font-weight: var(--font-weight-bold); }
+.catalog-product-card__from { color: var(--color-text-muted); font-size: .7rem; font-weight: var(--font-weight-bold); }
+.catalog-product-card__footer :deep(button) { min-height: 2.75rem; flex: 0 0 auto; padding-inline: .85rem; }
 
 @media (max-width: 380px) {
   .catalog-product-card__body { padding: .85rem; }
   .catalog-product-card__footer { align-items: stretch; flex-direction: column; }
-  .catalog-product-card__footer :deep(.action-button) { width: 100%; }
+  .catalog-product-card__footer :deep(button) { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

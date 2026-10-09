@@ -144,6 +144,6 @@ onMounted(loadOverview);
   color: var(--color-text-heading);
   font-size: 1.75rem;
 }
-.dashboard-empty-state h1 { margin: 0; color: var(--color-text-heading); font-size: 1.5rem; font-weight: 800; }
+.dashboard-empty-state h1 { margin: 0; color: var(--color-text-heading); font-size: 1.5rem; font-weight: var(--font-weight-extrabold); }
 .dashboard-empty-state p { margin: 0 0 0.5rem; color: var(--color-text-muted); }
 </style>

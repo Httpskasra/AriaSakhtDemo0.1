@@ -283,7 +283,7 @@ const onSubmit = async () => {
 .company-form :deep(label) {
   color: var(--color-text-heading);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .company-form { display: grid; gap: 1.5rem; color: var(--color-text-heading); text-align: right; }
@@ -381,7 +381,7 @@ const onSubmit = async () => {
 
 .seller-type-copy strong {
   font-size: .875rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .seller-type-copy small {
@@ -546,7 +546,7 @@ const onSubmit = async () => {
 
 .seller-help { display: flex; align-items: flex-start; gap: .75rem; margin-top: 2rem; padding: 1rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-field); color: var(--color-info-fg); background: var(--color-info-bg); line-height: var(--line-height-long-form); }
 .seller-help__icon { width: var(--spacing-icon-action); height: var(--spacing-icon-action); flex: none; margin-top: .125rem; }
-.seller-help__title { margin: 0 0 .25rem; font-weight: 800; }
+.seller-help__title { margin: 0 0 .25rem; font-weight: var(--font-weight-extrabold); }
 .seller-help p:last-child { margin: 0; }
 
 @media (max-width: 767px) {

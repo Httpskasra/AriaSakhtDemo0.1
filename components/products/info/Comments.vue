@@ -53,7 +53,7 @@ const dateLabel = computed(() => {
   gap: .65rem;
   color: var(--color-text-muted);
   font-size: .75rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .product-comment-card__avatar {
@@ -69,7 +69,7 @@ const dateLabel = computed(() => {
 .product-comment-card__stars { display: inline-flex; gap: .1rem; color: var(--color-border-strong); }
 .product-comment-card__stars svg { width: .95rem; height: .95rem; }
 .product-comment-card__star--active { color: var(--color-brand-yellow); fill: currentColor; }
-.product-comment-card__date { color: var(--color-text-muted); font-size: .68rem; font-weight: 500; }
+.product-comment-card__date { color: var(--color-text-muted); font-size: .68rem; font-weight: var(--font-weight-medium); }
 .product-comment-card__text {
   max-width: 75ch;
   margin: .75rem 0 0;

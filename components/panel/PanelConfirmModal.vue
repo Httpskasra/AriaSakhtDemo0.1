@@ -42,6 +42,6 @@ const emit = defineEmits<{
 <style scoped>
 .panel-confirm-modal { display: grid; gap: .75rem; padding-top: 1rem; }
 .panel-confirm-modal__icon { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: var(--radius-circle); color: var(--color-danger-fg); background: var(--color-danger-bg); font-size: 1.35rem; }
-.panel-confirm-modal h2 { margin: 0; color: var(--color-text-heading); font-size: 1.15rem; font-weight: 800; }
+.panel-confirm-modal h2 { margin: 0; color: var(--color-text-heading); font-size: 1.15rem; font-weight: var(--font-weight-extrabold); }
 .panel-confirm-modal p { margin: 0; color: var(--color-text-muted); line-height: var(--line-height-long-form); }
 </style>

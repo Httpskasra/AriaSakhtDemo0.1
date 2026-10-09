@@ -53,13 +53,13 @@ withDefaults(defineProps<{
   margin-bottom: .375rem;
   color: var(--color-text-muted);
   font-size: .75rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .public-page-header__title {
   color: var(--color-text-heading);
   font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
+  font-weight: var(--font-weight-extrabold);
   line-height: 1.35;
 }
 
