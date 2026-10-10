@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import type { LocationQueryRaw } from "vue-router";
+
 const { variant = "default" } = defineProps<{ variant?: "default" | "header" }>();
 const router = useRouter();
 const route = useRoute();
@@ -66,11 +68,20 @@ watch(() => [route.path, route.query.query] as const, ([, value]) => {
 });
 async function handleSearch() {
   const searchQuery = searchInput.value.trim();
-  if (!searchQuery) return;
-  const query = { ...(route.path.startsWith("/products") ? route.query : {}), query: searchQuery, page: 1, limit: 12 };
-  await router[route.path.startsWith("/products") ? "replace" : "push"]({ path: "/products", query });
+  const isProductsPage = route.path.startsWith("/products");
+  // An empty value is meaningful on the catalog page: it removes the active
+  // search instead of silently keeping the previous query in the URL.
+  if (!searchQuery && !isProductsPage) return;
+
+  const query: LocationQueryRaw = isProductsPage ? { ...route.query } : {};
+  delete query.query;
+  query.page = 1;
+  query.limit = 12;
+  if (searchQuery) query.query = searchQuery;
+
+  await router[isProductsPage ? "replace" : "push"]({ path: "/products", query });
   isFocused.value = false; activeSuggestionIndex.value = -1;
-  if (!route.path.startsWith("/products")) searchInput.value = "";
+  if (!isProductsPage) searchInput.value = "";
 }
 async function selectSuggestion(suggestion: string) { searchInput.value = suggestion; await handleSearch(); }
 onMounted(() => document.addEventListener("pointerdown", handleOutsidePointer));

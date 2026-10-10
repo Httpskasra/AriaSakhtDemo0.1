@@ -57,7 +57,7 @@ export const addToCart = async (cartItem: CartItemDto) => {
  */
 export const removeFromCart = async (productId: string, variants?: CartItemDto["variants"]) => {
   const $axios = useApi();
-  return await $axios.delete(`/carts/items/${productId}`, {
+  return await $axios.delete<Cart>(`/carts/items/${productId}`, {
     params: variants?.length ? { variants: JSON.stringify(variants) } : undefined,
   });
 };
@@ -67,7 +67,7 @@ export const removeFromCart = async (productId: string, variants?: CartItemDto["
  */
 export const clearCart = async () => {
   const $axios = useApi();
-  return await $axios.delete("/carts/clear");
+  return await $axios.delete<Cart>("/carts/clear");
 };
 
 /**

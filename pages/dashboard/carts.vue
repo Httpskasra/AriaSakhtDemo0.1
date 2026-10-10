@@ -89,6 +89,7 @@ import { toUserFacingError } from "~/services/apiClient";
 import type { Cart, CartItemDto, ProductVariantSelection } from "~/types/product";
 import { useAccess } from "~/composables/useAccess";
 import { Resource } from "~/types/permissions";
+import { useCartStore } from "~/stores/cart";
 
 
 useHead({ title: "داشبورد | سبد خرید" });
@@ -111,6 +112,7 @@ interface CartItem {
 const feedback = useFeedback();
 const { fetchUser } = useUser();
 const { canCreate, canUpdate, canDelete, isReady } = useAccess(Resource.CARTS);
+const cartStore = useCartStore();
 const cartItems = ref<CartItem[]>([]);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
@@ -173,10 +175,11 @@ async function fetchCart() {
       let populatedCarts: Cart | Cart[] | null = null;
       try { populatedCarts = (await getPopulatedCart()).data; } catch { /* The active-cart response is enough for an empty or legacy cart. */ }
       const populatedCart = Array.isArray(populatedCarts)
-        ? populatedCarts.find((candidate) => candidate?.id === activeCart?.id || candidate?.status === "active")
-        : populatedCarts;
+        ? populatedCarts.find((candidate) => candidate?.status === "active" && (!activeCart?.id || candidate.id === activeCart.id))
+        : populatedCarts?.status === "active" ? populatedCarts : undefined;
       const data = populatedCart || activeCart;
       cartItems.value = Array.isArray(data?.items) ? data.items.map(normalizeCartItem).filter(Boolean) as CartItem[] : [];
+      cartStore.setCart(data || activeCart || null);
     } catch (error) {
       cartItems.value = [];
       loadError.value = toUserFacingError(error, "دریافت سبد خرید انجام نشد.").message;
@@ -218,7 +221,8 @@ async function updateQuantity(item: CartItem) {
   item.quantity = quantity;
   updatingId.value = cartItemKey(item);
   try {
-    await addCartItem({ productId: item.productId, quantity, variants: cartItemSelections(item), variant: item.variant, companyId: item.companyId, priceAtAdd: item.priceAtAdd });
+    const { data } = await addCartItem({ productId: item.productId, quantity, variants: cartItemSelections(item), variant: item.variant, companyId: item.companyId, priceAtAdd: item.priceAtAdd });
+    cartStore.setCart(data);
     await fetchCart();
     feedback.success("تعداد محصول به‌روزرسانی شد");
   } catch (error) {
@@ -233,7 +237,8 @@ async function removeFromCart(item: CartItem) {
   if (!canDelete.value) return;
   removingId.value = cartItemKey(item);
   try {
-    await removeCartItem(item.productId, cartItemSelections(item));
+    const { data } = await removeCartItem(item.productId, cartItemSelections(item));
+    cartStore.setCart(data);
     const key = cartItemKey(item);
     cartItems.value = cartItems.value.filter((candidate) => cartItemKey(candidate) !== key);
     feedback.success("محصول از سبد حذف شد");
@@ -248,7 +253,8 @@ async function clearCart() {
   if (!canDelete.value) return;
   clearing.value = true;
   try {
-    await clearCartRequest();
+    const { data } = await clearCartRequest();
+    cartStore.setCart(data);
     cartItems.value = [];
     showClearConfirm.value = false;
     feedback.success("سبد خرید خالی شد");
@@ -266,6 +272,7 @@ async function checkout() {
   try {
     await checkoutCart({});
     cartItems.value = [];
+    cartStore.clear();
     feedback.success("سفارش ثبت شد", "برای پرداخت، سفارش موردنظر را از بخش سفارش‌ها انتخاب کنید.");
     await navigateTo({ path: "/dashboard/account/orders", query: { checkout: "success" } });
   } catch (error) {

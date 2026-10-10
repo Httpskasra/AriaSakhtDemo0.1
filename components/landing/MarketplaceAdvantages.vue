@@ -45,17 +45,17 @@ const advantages = [
 </script>
 
 <style scoped>
-.marketplace-advantages__surface { position: relative; overflow: hidden; padding: clamp(1.75rem, 3vw, 2.5rem); border-radius: var(--radius-card); background: var(--color-text-heading); box-shadow: var(--shadow-raised); }
+.marketplace-advantages__surface { position: relative; overflow: hidden; padding: clamp(1.25rem, 2.2vw, 1.8rem); border-radius: var(--radius-card); background: var(--color-text-heading); box-shadow: var(--shadow-raised); }
 .marketplace-advantages__glow { position: absolute; width: 24rem; height: 24rem; inset-block-start: -6rem; inset-inline-end: -6rem; border-radius: var(--radius-circle); background: color-mix(in srgb, var(--color-brand-blue) 20%, transparent); filter: blur(7.5rem); }
 .marketplace-advantages__content { position: relative; z-index: 1; }
-.marketplace-advantages__heading { margin-bottom: 1.5rem; text-align: center; }
-.marketplace-advantages__heading h2 { margin: 0 0 .65rem; color: var(--color-bg-surface); font-size: clamp(1.5rem, 3.3vw, 2.15rem); font-weight: var(--font-weight-extrabold); }
+.marketplace-advantages__heading { margin-bottom: 1rem; text-align: center; }
+.marketplace-advantages__heading h2 { margin: 0 0 .4rem; color: var(--color-bg-surface); font-size: clamp(1.25rem, 2.5vw, 1.7rem); font-weight: var(--font-weight-extrabold); }
 .marketplace-advantages__heading p, .marketplace-advantage p { color: var(--color-border-strong); }
-.marketplace-advantages__heading p { max-width: 36rem; margin: auto; font-size: .88rem; line-height: 1.9; }
+.marketplace-advantages__heading p { max-width: 36rem; margin: auto; font-size: .76rem; line-height: 1.75; }
 .marketplace-advantages__grid { display: grid; grid-template-columns: 1fr; gap: var(--landing-grid-gap); }
 .marketplace-advantage { display: flex; flex-direction: column; align-items: center; text-align: center; }
-.marketplace-advantage__icon { display: grid; width: 3rem; height: 3rem; place-items: center; margin-bottom: 1rem; border: 1px solid color-mix(in srgb, var(--color-bg-surface) 10%, transparent); border-radius: var(--radius-card); color: var(--color-brand-yellow); background: color-mix(in srgb, var(--color-bg-surface) 5%, transparent); font-size: var(--spacing-icon-action); }
-.marketplace-advantage h3 { margin: 0 0 .55rem; color: var(--color-bg-surface); font-size: .98rem; font-weight: var(--font-weight-extrabold); }
-.marketplace-advantage p { max-width: 18rem; margin: 0; font-size: .82rem; line-height: 1.9; }
-@media (min-width: 768px) { .marketplace-advantages__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; } }
+.marketplace-advantage__icon { display: grid; width: 2.4rem; height: 2.4rem; place-items: center; margin-bottom: .65rem; border: 1px solid color-mix(in srgb, var(--color-bg-surface) 10%, transparent); border-radius: var(--radius-card); color: var(--color-brand-yellow); background: color-mix(in srgb, var(--color-bg-surface) 5%, transparent); font-size: 1.05rem; }
+.marketplace-advantage h3 { margin: 0 0 .35rem; color: var(--color-bg-surface); font-size: .82rem; font-weight: var(--font-weight-extrabold); }
+.marketplace-advantage p { max-width: 18rem; margin: 0; font-size: .7rem; line-height: 1.75; }
+@media (min-width: 768px) { .marketplace-advantages__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; } }
 </style>

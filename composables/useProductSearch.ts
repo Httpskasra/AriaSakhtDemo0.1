@@ -46,7 +46,7 @@ export const useProductSearch = () => {
   };
 
   /* ---------- Update query string while preserving existing values ---------- */
-  const updateQueryString = (newParams: Record<string, any> = {}) => {
+  const updateQueryString = async (newParams: Record<string, any> = {}) => {
     const query: Record<string, any> = { ...route.query };
 
     const updateField = (key: string) => {
@@ -64,11 +64,15 @@ export const useProductSearch = () => {
     query.page = newParams.page ?? 1;
     query.limit = newParams.limit ?? limit.value;
 
-    router.replace({ query });
+    // Make query deletion an actual navigation. Otherwise a cleared search
+    // can remain in the URL and immediately trigger the previous request.
+    await router.replace({ path: route.path, query });
   };
 
-  const clearAllFilters = () => {
-    router.replace({ query: {} });
+  const clearSearch = () => updateQueryString({ query: null, page: 1 });
+
+  const clearAllFilters = async () => {
+    await router.replace({ path: route.path, query: {} });
   };
 
   const onFiltersFromSidebar = (filters: {
@@ -104,6 +108,7 @@ export const useProductSearch = () => {
     categoryIds,
     buildParams,
     updateQueryString,
+    clearSearch,
     clearAllFilters,
     onFiltersFromSidebar,
     onSortChange,

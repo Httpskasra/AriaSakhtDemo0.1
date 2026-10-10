@@ -38,15 +38,15 @@
 <style scoped>
 .landing-promos { padding-block:calc(var(--landing-section-space) / 2); }
 .landing-promos__grid { display:grid; grid-template-columns:1fr; gap:var(--landing-grid-gap); align-items:stretch; }
-.promo-card { position:relative; display:flex; min-height:14rem; height:100%; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.promo-card { position:relative; display:flex; min-height:11rem; height:100%; align-items:center; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-card); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); isolation:isolate; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .promo-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .promo-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 30%, transparent); outline-offset:3px; }
 .promo-card--products { background:var(--color-text-heading); }
-.promo-card--rfq { padding:clamp(1.35rem, 3vw, 2rem); background:var(--color-brand-blue); }
+.promo-card--rfq { padding:clamp(1rem, 2vw, 1.35rem); background:var(--color-brand-blue); }
 .promo-card__visual { position:absolute; inset-block:0; inset-inline-start:0; z-index:-2; width:46%; overflow:hidden; }
 .promo-card__image { display:block; width:100%; height:100%; object-fit:cover; object-position:left center; }
 .promo-card__scrim { position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, color-mix(in srgb, var(--color-text-heading) 40%, transparent), var(--color-text-heading) 58%); }
-.promo-card__content { position:relative; z-index:1; width:min(100%, 31rem); padding:clamp(1.35rem, 3vw, 2.25rem); direction:rtl; }
+.promo-card__content { position:relative; z-index:1; width:min(100%, 31rem); padding:clamp(1rem, 2.2vw, 1.5rem); direction:rtl; }
 .promo-card--rfq .promo-card__content { padding:0; }
 .promo-card__eyebrow { display:inline-flex; min-height:1.7rem; align-items:center; margin-bottom:.75rem; padding:.2rem .55rem; border-radius:var(--radius-pill); background:color-mix(in srgb, var(--color-brand-yellow) 90%, white); color:var(--color-text-heading); font-size:.68rem; font-weight: var(--font-weight-extrabold); }
 .promo-card h2 { margin:0; color:var(--color-bg-surface); font-size:clamp(1.25rem, 2.5vw, 1.85rem); font-weight: var(--font-weight-extrabold); line-height:var(--line-height-section); }

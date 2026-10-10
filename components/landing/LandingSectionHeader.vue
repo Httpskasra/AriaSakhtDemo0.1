@@ -25,8 +25,8 @@ withDefaults(defineProps<{
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1.4rem;
+  gap: 1rem;
+  margin-bottom: .9rem;
 }
 
 .landing-section-header__copy {
@@ -36,7 +36,7 @@ withDefaults(defineProps<{
 .landing-section-header h2 {
   margin: 0;
   color: var(--color-text-heading);
-  font-size: var(--font-size-h2);
+  font-size: clamp(1.15rem, 1.7vw, 1.45rem);
   font-weight: var(--font-weight-extrabold);
   line-height: var(--line-height-section);
   letter-spacing: var(--letter-spacing-normal);
@@ -44,22 +44,29 @@ withDefaults(defineProps<{
 
 .landing-section-header p {
   max-width: 40rem;
-  margin: .5rem 0 0;
+  margin: .35rem 0 0;
   color: var(--color-text-muted);
-  font-size: .85rem;
-  line-height: 1.8;
+  font-size: .76rem;
+  line-height: 1.7;
 }
 
 .landing-section-header__action {
   flex: none;
 }
 
+.landing-section-header__action :deep(button),
+.landing-section-header__action :deep(a) {
+  min-height: 2.15rem;
+  padding-inline: .75rem;
+  font-size: .68rem;
+}
+
 @media (max-width: 639px) {
   .landing-section-header {
     align-items: stretch;
     flex-direction: column;
-    gap: .85rem;
-    margin-bottom: 1.1rem;
+    gap: .65rem;
+    margin-bottom: .8rem;
   }
 
   .landing-section-header__action {

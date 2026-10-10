@@ -31,8 +31,11 @@ export const useAddToCart = () => {
       try {
         response = await addToCart(cartItem);
       } catch (requestError: any) {
-        // Compatibility fallback for older backends without atomic cart creation.
-        if (requestError?.response?.status !== 404) throw requestError;
+        // Keep a narrow fallback for an already-deployed backend that still
+        // returns 404 only when the user's active cart does not exist. Do not
+        // create a cart for unrelated 404s such as a missing product.
+        const message = String(requestError?.response?.data?.message || '');
+        if (requestError?.response?.status !== 404 || !/active cart/i.test(message)) throw requestError;
         await createCart({ items: [] });
         response = await addToCart(cartItem);
       }

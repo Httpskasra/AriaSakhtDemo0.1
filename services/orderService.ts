@@ -42,9 +42,10 @@ export async function createOrder(options: CreateOrderOptions = {}): Promise<Ord
   if (!userId) throw new Error('برای ایجاد سفارش باید وارد حساب کاربری شوید.');
 
   const { data: cartResponse } = await getPopulatedCart();
-  const cartItems = Array.isArray(cartResponse)
-    ? cartResponse.flatMap((cart) => cart.items || [])
-    : cartResponse.items || [];
+  const activeCart = Array.isArray(cartResponse)
+    ? cartResponse.find((cart) => cart.status === 'active')
+    : cartResponse.status === 'active' ? cartResponse : undefined;
+  const cartItems = activeCart?.items || [];
   const items: OrderItemDto[] = cartItems.map((item): OrderItemDto => {
     const productId = typeof item.productId === 'string'
       ? item.productId

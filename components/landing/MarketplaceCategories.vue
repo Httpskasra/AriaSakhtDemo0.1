@@ -196,7 +196,7 @@ const categoryCount = (category: Category) => {
 
 <style scoped>
 .marketplace-categories__grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--landing-grid-gap); }
-.category-card { position:relative; display:grid; min-height:6.75rem; place-items:center; overflow:hidden; isolation:isolate; padding:.8rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-text-heading); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); text-align:center; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.category-card { position:relative; display:grid; min-height:5.5rem; place-items:center; overflow:hidden; isolation:isolate; padding:.6rem .5rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-text-heading); box-shadow:var(--shadow-raised); color:var(--color-bg-surface); text-align:center; transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 .category-card:hover { border-color:var(--color-info-border); box-shadow:var(--shadow-raised); transform:translateY(-2px); }
 .category-card:focus-visible { outline:3px solid color-mix(in srgb, var(--color-brand-blue) 25%, transparent); outline-offset:2px; }
 .category-card__image, .category-card__scrim { position:absolute; inset:0; width:100%; height:100%; }
@@ -205,10 +205,10 @@ const categoryCount = (category: Category) => {
 .category-card__content { position:relative; z-index:2; display:grid; min-width:0; max-width:100%; gap:.2rem; place-items:center; }
 .category-card h3 { margin:0; color:var(--color-bg-surface); font-size:.82rem; font-weight:var(--font-weight-extrabold); line-height:var(--line-height-section); }
 .category-card span { color:color-mix(in srgb, var(--color-bg-surface) 82%, transparent); font-size:.67rem; }
-.category-skeleton { display:grid; min-height:7.75rem; place-items:center; padding:.85rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
-.category-feedback {
+.category-skeleton { display:grid; min-height:5.5rem; place-items:center; padding:.65rem; border:1px solid var(--color-border); border-radius:var(--radius-card); background:var(--color-bg-surface); box-shadow:var(--shadow-raised); }
+  .category-feedback {
   display: flex;
-  min-height: 9rem;
+  min-height: 6.5rem;
   align-items: center;
   justify-content: center;
   gap: .75rem;

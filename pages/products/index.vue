@@ -43,7 +43,16 @@ const { data: productsData, pending, error, refresh } = await useAsyncData('prod
     productsLoadError.value = 'دریافت محصولات با مشکل مواجه شد. لطفاً دوباره تلاش کنید.';
     return { items: [], total: 0, page: page.value, limit: limit.value };
   }
-}, { watch: [() => route.fullPath], dedupe: 'cancel' });
+}, {
+  // Product results are optional page content. Do not make SSR/navigation
+  // wait for the catalog API: filters, toolbar and page chrome must render
+  // immediately while only ProductGrid shows its loading state.
+  server: false,
+  lazy: true,
+  default: () => ({ items: [], total: 0, page: page.value, limit: limit.value }),
+  watch: [() => route.fullPath],
+  dedupe: 'cancel',
+});
 
 const visibleCategoryFilterIds = computed(() => {
   const selected = new Set(categoryIds.value);
@@ -65,10 +74,10 @@ const activeFilterLabels = computed(() => [
   ...visibleCategoryFilterIds.value.map(categoryLabel),
 ].filter(Boolean));
 
-const clearSearch = () => {
+const clearSearch = async () => {
   clearPendingSearchUpdate();
   searchInput.value = '';
-  return updateQueryString({ query: '' });
+  await updateQueryString({ query: null, page: 1 });
 };
 const clearMaxPrice = () => updateQueryString({ maxPrice: null });
 const clearMinPrice = () => updateQueryString({ minPrice: null });

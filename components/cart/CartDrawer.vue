@@ -77,8 +77,8 @@ function normalizeCartItem(item: any): DrawerItem | null {
 }
 
 function selectedCart(data: Cart | Cart[] | null, activeCart: Cart) {
-  if (!Array.isArray(data)) return data || activeCart;
-  return data.find((candidate) => candidate?.id === activeCart?.id || candidate?.status === "active") || activeCart;
+  if (!Array.isArray(data)) return data?.status === "active" ? data : activeCart;
+  return data.find((candidate) => candidate?.status === "active" && (!activeCart?.id || candidate.id === activeCart.id)) || activeCart;
 }
 
 async function loadCart() {
