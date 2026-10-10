@@ -6,6 +6,7 @@ import { getCategoryFilterIds, getCategoryId, getParentCategoryId } from '~/serv
 
 const { buildParams, changePage, page, limit, sortOption, searchQuery, minPrice, maxPrice, companyName, categoryIds, onFiltersFromSidebar, clearAllFilters, updateQueryString, onSortChange } = useProductSearch();
 const { categories: availableCategories, load: loadCategories } = useCategories();
+const route = useRoute();
 // Let the product request and the shared category request run in parallel.
 // Waiting for categories here made the whole catalog appear blocked even when
 // the product API was already available.
@@ -14,12 +15,24 @@ const mobileFiltersOpen = ref(false);
 const productsLoadError = ref<string | null>(null);
 const searchInput = ref(searchQuery.value);
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
-watch(searchQuery, value => { searchInput.value = value; });
+const clearPendingSearchUpdate = () => {
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+    searchTimer = undefined;
+  }
+};
+watch(searchQuery, value => {
+  clearPendingSearchUpdate();
+  searchInput.value = value;
+});
 watch(searchInput, value => {
-  if (searchTimer) clearTimeout(searchTimer);
+  clearPendingSearchUpdate();
+  // Route-to-input synchronization must not schedule the previous query back
+  // into the URL after a user clears the search.
+  if (value.trim() === searchQuery.value.trim()) return;
   searchTimer = setTimeout(() => updateQueryString({ query: value.trim() }), 300);
 });
-onBeforeUnmount(() => { if (searchTimer) clearTimeout(searchTimer); });
+onBeforeUnmount(clearPendingSearchUpdate);
 
 const { data: productsData, pending, error, refresh } = await useAsyncData('products-list', async () => {
   productsLoadError.value = null;
@@ -30,7 +43,7 @@ const { data: productsData, pending, error, refresh } = await useAsyncData('prod
     productsLoadError.value = 'دریافت محصولات با مشکل مواجه شد. لطفاً دوباره تلاش کنید.';
     return { items: [], total: 0, page: page.value, limit: limit.value };
   }
-}, { watch: [() => useRoute().query], dedupe: 'cancel' });
+}, { watch: [() => route.fullPath], dedupe: 'cancel' });
 
 const visibleCategoryFilterIds = computed(() => {
   const selected = new Set(categoryIds.value);
@@ -52,7 +65,11 @@ const activeFilterLabels = computed(() => [
   ...visibleCategoryFilterIds.value.map(categoryLabel),
 ].filter(Boolean));
 
-const clearSearch = () => updateQueryString({ query: '' });
+const clearSearch = () => {
+  clearPendingSearchUpdate();
+  searchInput.value = '';
+  return updateQueryString({ query: '' });
+};
 const clearMaxPrice = () => updateQueryString({ maxPrice: null });
 const clearMinPrice = () => updateQueryString({ minPrice: null });
 const clearCompanyName = () => updateQueryString({ companyName: null });

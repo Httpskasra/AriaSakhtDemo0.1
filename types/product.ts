@@ -51,6 +51,7 @@ export interface Product {
   // Denormalized Rating Fields
   avgRate?: number;
   totalRatings?: number;
+  totalSold?: number;
   ratingsSummary?: Record<number, number>;
   denormComments?: Array<{
     userId?: string;

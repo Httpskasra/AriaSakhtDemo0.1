@@ -68,7 +68,7 @@ export const useProductSearch = () => {
   };
 
   const clearAllFilters = () => {
-    router.replace({ query: { query: route.query.query } });
+    router.replace({ query: {} });
   };
 
   const onFiltersFromSidebar = (filters: {

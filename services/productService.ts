@@ -267,13 +267,43 @@ export const advancedSearchProducts = async (
   }
 };
 
-/* ================== Top sales & offers ================== */
+/* ================== Landing product rankings ================== */
 
 export const getTopProducts = async (limit?: number) => {
   const $axios = useApi();
   return await $axios.get<Product[]>("/products/top-sales", {
     params: { limit },
   });
+};
+
+export const getPopularProducts = async (limit?: number) => {
+  const $axios = useApi();
+  return await $axios.get<Product[]>("/products/popular", {
+    params: { limit },
+  });
+};
+
+export const getLatestProducts = async (limit = 8) => {
+  const response = await advancedSearchProducts({
+    page: 1,
+    limit,
+    sort: 'createdAt:desc',
+  });
+  return response.data;
+};
+
+export const getProductsByCompany = async (
+  companyId: string,
+  params: { limit?: number; page?: number; sort?: string } = {},
+): Promise<Product[]> => {
+  const { data } = await useApi().get<Product[] | PaginatedResponse<Product>>(
+    '/products/company/' + encodeURIComponent(companyId),
+    { params },
+  );
+
+  return Array.isArray(data)
+    ? data
+    : data?.items || [];
 };
 
 export const getOfferProducts = async (limit?: number, page?: number) => {

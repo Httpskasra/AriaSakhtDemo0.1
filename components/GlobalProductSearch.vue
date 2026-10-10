@@ -60,7 +60,10 @@ function handleKeydown(event: KeyboardEvent) {
   }
   else if (event.key === "Escape") { event.preventDefault(); isFocused.value = false; activeSuggestionIndex.value = -1; }
 }
-watch(() => route.query.query, value => { if (!isFocused.value) searchInput.value = typeof value === "string" ? value : ""; });
+watch(() => [route.path, route.query.query] as const, ([, value]) => {
+  searchInput.value = typeof value === "string" ? value : "";
+  activeSuggestionIndex.value = -1;
+});
 async function handleSearch() {
   const searchQuery = searchInput.value.trim();
   if (!searchQuery) return;

@@ -84,11 +84,12 @@ export default defineNuxtPlugin({
       return;
     }
 
-    // Retry an auth bootstrap that failed during SSR because of a temporary
-    // infrastructure problem. This prevents one transient outage from
-    // becoming a guest session after the page has hydrated.
+    // Do not immediately force a second refresh after SSR already reported an
+    // unavailable auth service. Public pages must remain usable for guests,
+    // and retrying here can turn one transient failure into a refresh 429.
+    // Login and protected flows still use their explicit forced retry paths.
     if (authStatus.value === "loading" || authStatus.value === "unavailable") {
-      await fetchUser(authStatus.value === "unavailable");
+      await fetchUser();
     }
   },
 });
